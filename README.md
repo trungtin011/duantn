@@ -18,7 +18,7 @@ php artisan migrate
 
 Chuyển sang nhánh của mình  
 ``` bash
-git checkout -b (Tên nhánh của mình).
+git switch (Tên nhánh của mình).
 ```
 Push code 
 ``` bash
