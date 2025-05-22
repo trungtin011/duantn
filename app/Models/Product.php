@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Product extends Model
 {
     protected $fillable = [
-        'shop_id',
+        'shopID',
         'name',
         'slug',
         'description',
@@ -51,22 +51,22 @@ class Product extends Model
     // Relationships
     public function shop(): BelongsTo
     {
-        return $this->belongsTo(Shop::class);
+        return $this->belongsTo(Shop::class, 'shopID');
     }
 
     public function variants(): HasMany
     {
-        return $this->hasMany(ProductVariant::class);
+        return $this->hasMany(ProductVariant::class, 'productID');
     }
 
     public function images(): HasMany
     {
-        return $this->hasMany(ProductImage::class);
+        return $this->hasMany(ProductImage::class, 'productID');
     }
 
     public function dimension(): HasOne
     {
-        return $this->hasOne(ProductDimension::class);
+        return $this->hasOne(ProductDimension::class, 'productID');
     }
 
     // Scopes

@@ -12,7 +12,7 @@ class Seller extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'userID',
         'status',
         'identity_card',
         'identity_card_date',
@@ -30,12 +30,12 @@ class Seller extends Model
     // Relationships
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'userID');
     }
 
     public function businessLicense(): BelongsTo
     {
-        return $this->belongsTo(BusinessLicense::class);
+        return $this->belongsTo(BusinessLicense::class, 'business_license_id');
     }
 
     // Scopes

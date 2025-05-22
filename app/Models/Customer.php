@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Customer extends Model
 {
     protected $fillable = [
-        'user_id',
+        'userID',
         'ranking',
         'preferred_payment_method',
         'total_orders',
@@ -27,7 +27,7 @@ class Customer extends Model
     // Relationships
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'userID');
     }
 
     // Scopes

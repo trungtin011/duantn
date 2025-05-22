@@ -11,7 +11,7 @@ class UserAddress extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'userID',
         'receiver_name',
         'receiver_phone',
         'address',
@@ -31,7 +31,7 @@ class UserAddress extends Model
     // Relationships
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'userID');
     }
 
     // Methods

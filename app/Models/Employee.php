@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Employee extends Model
 {
     protected $fillable = [
-        'user_id',
+        'userID',
         'position',
         'status',
         'salary',
-        'shop_id',
+        'shopID',
         'hired_date'
     ];
 
@@ -24,12 +24,12 @@ class Employee extends Model
     // Relationships
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'userID');
     }
 
     public function shop(): BelongsTo
     {
-        return $this->belongsTo(Shop::class);
+        return $this->belongsTo(Shop::class, 'shopID');
     }
 
     // Scopes

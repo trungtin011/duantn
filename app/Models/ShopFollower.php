@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ShopFollower extends Model
 {
-    protected $fillable = ['shop_id', 'user_id'];
+    protected $fillable = ['shopID', 'followerID'];
 }
 
     
