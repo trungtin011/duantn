@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProductImage extends Model
 {
     protected $fillable = [
-        'product_id',
+        'productID',
         'image_path',
-        'variant_id',
+        'variantID',
         'is_default',
         'display_order',
         'alt_text'
@@ -24,12 +24,12 @@ class ProductImage extends Model
     // Relationships
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'productID');
     }
 
     public function variant(): BelongsTo
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(ProductVariant::class, 'variantID');
     }
 
     // Scopes

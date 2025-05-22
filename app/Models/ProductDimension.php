@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProductDimension extends Model
 {
     protected $fillable = [
-        'product_id',
-        'variant_id',
+        'productID',
+        'variantID',
         'length',
         'width',
         'height',
@@ -26,12 +26,12 @@ class ProductDimension extends Model
     // Relationships
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'productID');
     }
 
     public function variant(): BelongsTo
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(ProductVariant::class, 'variantID');
     }
 
     // Methods

@@ -26,43 +26,13 @@ return new class extends Migration
             $table->text('shop_banner');
             $table->enum('shop_status', ['active', 'inactive','banned'])->default('active');
             $table->timestamps();
-
             $table->foreign('ownerID')->references('id')->on('users')->onDelete('cascade');
             $table->index('shop_status');
             $table->index('shop_rating');
         });
-
-        Schema::create('shop_addresses', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('shopID');
-            $table->string('shop_address',255);
-            $table->string('shop_province',100);
-            $table->string('shop_district',100);
-            $table->string('shop_ward',100);
-            $table->text('note')->nullable();
-            $table->boolean('is_default')->default(false);
-            $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
-            $table->timestamps();
-        });
-
-        Schema::create('shop_followers', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('shopID');
-            $table->unsignedBigInteger('followerID');
-            $table->boolean('notifications_enabled')->default(true);
-            $table->timestamp('followed_at')->useCurrent();
-            $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
-            $table->foreign('followerID')->references('id')->on('users')->onDelete('cascade');
-            $table->timestamps();
-
-            $table->unique(['shopID', 'followerID']);
-        });
     }
-
     public function down(): void
     {
         Schema::dropIfExists('shops');
-        Schema::dropIfExists('shop_addresses');
-        Schema::dropIfExists('shop_followers'); 
     }
-};
+}; 
