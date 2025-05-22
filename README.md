@@ -6,6 +6,7 @@ cp .env.example .env
 ```
 ```bash
 php artisan migrate
+```
 
 ```bash
 php artisan make:model TenModel
