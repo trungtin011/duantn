@@ -1,9 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+
+
+
+
+
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('user.home');
+})->name('home');
 
 Route::get('/seller/register', function () {
     return view('seller.register.register');
