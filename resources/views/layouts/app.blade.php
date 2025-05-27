@@ -12,36 +12,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet" />
     <style>
-        /* Tùy chỉnh thêm hiệu ứng */
-        .product-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .buy-now-btn:hover {
-            transform: translateY(-2px);
-            transition: all 0.3s ease;
-        }
-
-        /* Tùy chỉnh cho dropdown */
-        .dropdown-content {
-            display: none;
-        }
-
-        .dropdown-content.show {
-            display: block;
-        }
-
-        /* Hiệu ứng xoay mũi tên */
-        .arrow-icon, .arrow-icon-second {
-            transition: transform 0.3s ease;
-        }
-
-        .arrow-icon.rotate, .arrow-icon-second.rotate {
-            transform: rotate(90deg);
-        }
-
         .main-header {
             background: #fff;
             border-bottom: 1px solid #eee;
@@ -136,6 +106,7 @@
         }
     </style>
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
 </head>
 
 <body>
