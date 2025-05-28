@@ -85,3 +85,35 @@ paginationButtons.forEach((button, index) => {
 
 // Khởi tạo slide đầu tiên
 goToSlide(0);
+
+
+const swiper = new Swiper('.swiper-container', {
+    slidesPerView: 4,
+    spaceBetween: 16,
+    navigation: {
+        nextEl: '.next-slide',
+        prevEl: '.prev-slide',
+    },
+});
+
+// Slider Danh mục
+const slider = document.getElementById('category-slider');
+const prevButton = document.getElementById('prev-slide-category');
+const nextButton = document.getElementById('next-slide-category');
+let currentIndex = 0;
+const itemsPerPage = 6; // Hiển thị 6 danh mục mỗi lần
+const totalItems = 10; // Tổng số danh mục (có thể thay đổi nếu bạn thêm danh mục)
+
+nextButton.addEventListener('click', () => {
+    if (currentIndex < totalItems - itemsPerPage) {
+        currentIndex += itemsPerPage;
+        slider.style.transform = `translateX(-${(currentIndex * (223 + 30)) / itemsPerPage}px)`;
+    }
+});
+
+prevButton.addEventListener('click', () => {
+    if (currentIndex > 0) {
+        currentIndex -= itemsPerPage;
+        slider.style.transform = `translateX(-${(currentIndex * (223 + 30)) / itemsPerPage}px)`;
+    }
+});

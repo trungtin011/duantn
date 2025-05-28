@@ -97,4 +97,28 @@
     font-weight: bold;
 }
 
+/* CSS cho khuyến mãi */
+/* Đảm bảo nút "Thêm vào giỏ hàng" có vị trí ban đầu ở dưới cùng và ẩn */
+.card-button-container {
+    transition: all 0.3s ease-in-out;
+    /* Hiệu ứng mượt mà cho vị trí và opacity */
+    transform: translateY(100%);
+    /* Đẩy nút xuống dưới hoàn toàn */
+    opacity: 0;
+    /* Ẩn nút */
+}
 
+/* Khi hover vào thẻ <a>, hiển thị nút với hiệu ứng trượt lên */
+.card_product:hover .card-button-container {
+    transform: translateY(0);
+    /* Đưa nút trở lại vị trí ban đầu */
+    opacity: 1;
+    /* Hiển thị nút */
+}
+
+/* Đảm bảo container của nút có vị trí tương đối để không ảnh hưởng bố cục */
+.background-card {
+    position: relative;
+    overflow: hidden;
+    /* Ẩn phần nút khi trượt ra ngoài */
+}
