@@ -20,6 +20,7 @@ Route::get('/seller/register2', function () {
 Route::get('/seller/register3', function () {
     return view('seller.register.register3');
 });
+<<<<<<< Updated upstream
 
 Route::get('/404', function () {
     return view('error.404NotFound');
@@ -39,3 +40,14 @@ Route::get('/signup', function () {
 Route::get('/login', function () {
     return view('login');
 });
+=======
+Route::get('/user/order/order-history', function () {
+    return view('user.order.order_history');
+}); 
+
+Route::get('/user/cart', function () {
+    return view('user.cart');
+});
+
+
+>>>>>>> Stashed changes
