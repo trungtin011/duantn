@@ -121,7 +121,7 @@
                     <li class="nav-item"><a class="nav-link active" href="/">Trang chủ</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Về chúng tôi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Đăng ký</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('signup') }}">Đăng ký</a></li>
                 </ul>
             </nav>
             <form class="d-flex align-items-center" style="gap:10px;">

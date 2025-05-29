@@ -2,36 +2,45 @@
 
 @section('content')
     <!-- Main Banner -->
-    <section class="container mx-auto py-8 flex">
+    <section class="container mx-auto py-8 flex relative">
         <!-- Sidebar Menu with Dropdown -->
         <div class="w-1/4 pr-10">
             <ul class="space-y-2">
                 <li>
-                    <button id="dropdownToggle"
-                        class="text-gray-700 hover:text-black flex items-center justify-between w-full mb-2">
-                        Danh mục sản phẩm
-                        <svg class="w-[21px] h-[21px] ml-1 arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-                    <ul id="dropdownMenu" class="dropdown-content pl-4 space-y-2 mb-3">
-                        <li><a href="#" class="text-gray-700 hover:text-black">Điện thoại - di động</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Máy tính</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Phụ kiện</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Máy ảnh</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Tổng hợp</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Gaming</a></li>
-                    </ul>
+                    <div id="dropdownToggle">
+                        <button
+                            class="text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
+                            Thời trang phụ nữ
+                            <!-- Arrow icon -->
+                            <svg class="w-[21px] h-[21px] ml-1 arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <div id="dropdownMenu" class="dropdown-content text-[18px] border-1 border-gray-300 px-4 pl-2 font-semibold absolute top-[32px] left-[390px] z-10 w-[1134px] h-[400px] bg-white">
+                            <div class="flex flex-col gap-[10px]">
+                                <div class="w-1/2 flex gap-[50px]">
+                                    <a href="#" class="text-gray-700 hover:text-black">Điện thoại - di động</a>
+                                    <a href="#" class="text-gray-700 hover:text-black">Máy tính</a>
+                                    <a href="#" class="text-gray-700 hover:text-black">Phụ kiện</a>
+                                </div>      
+                                <div class="w-1/2 flex gap-[50px]">
+                                    <a href="#" class="text-gray-700 hover:text-black">Máy ảnh</a>
+                                    <a href="#" class="text-gray-700 hover:text-black">Tổng hợp</a>
+                                    <a href="#" class="text-gray-700 hover:text-black">Gaming</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <button id="dropdownToggleSecond"
-                        class="text-gray-700 hover:text-black flex items-center justify-between w-full mb-2">
-                        Thương hiệu
+                        class="text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
+                        Thời trang nam
                         <svg class="w-[21px] h-[21px] ml-1 arrow-icon-second" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
                     </button>
-                    <ul id="dropdownMenuSecond" class="dropdown-content pl-4 space-y-2">
+                    <ul id="dropdownMenuSecond" class="dropdown-content pl-4 space-y-2 text-[18px] font-semibold">
                         <li><a href="#" class="text-gray-700 hover:text-black">Apple</a></li>
                         <li><a href="#" class="text-gray-700 hover:text-black">Samsung</a></li>
                         <li><a href="#" class="text-gray-700 hover:text-black">Sony</a></li>
@@ -40,6 +49,13 @@
                         <li><a href="#" class="text-gray-700 hover:text-black">Asus</a></li>
                     </ul>
                 </li>
+                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Đồ điện tử</a></li>
+                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">phong cách sống</a></li>
+                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thuốc</a></li>
+                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thể thao</a></li>
+                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Đồ chơi trẻ em</a></li>
+                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thực phẩm thú cưng</a></li>
+                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Sức khỏe và sắc đẹp</a></li>
             </ul>
         </div>
         <!-- Banner -->
@@ -1212,9 +1228,9 @@
                     data-index="1"><i class="fa-solid fa-arrow-right text-[20px]"></i></button>
             </div>
         </div>
-        <div class="container-fluid p-0 h-[620px] overflow-hidden">
+        <div class="container-fluid p-0 h-[700px] overflow-hidden">
             <div class="swiper-container-explore">
-                <div class="swiper-wrapper">
+                <div class="swiper-wrapper flex gap-[40px]">
                     <?php
                     // Dữ liệu mẫu (có thể thay bằng kết quả từ cơ sở dữ liệu)
                     $products = [
