@@ -120,8 +120,20 @@
     height: 100%;
 }
 
-.swiper-slide {
+.slide-explore {
     width: 100% !important;
+    max-width: 100%;
+    height: auto !important;
+}
+
+.card_product_explore {
+    max-height: 340px;
+    /* Để 2 hàng vừa trong 700px */
+    overflow: hidden;
+}
+
+.slide-promotion, .slide-best-seller {
+    width: 360px !important;
     max-width: 100%;
     height: auto !important;
 }
@@ -130,6 +142,7 @@
     max-height: 340px;
     /* Để 2 hàng vừa trong 700px */
     overflow: hidden;
+    width: 360px;
 }
 
 .card_product img {

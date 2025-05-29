@@ -222,7 +222,7 @@
             <div class="swiper-container">
                 <div class="swiper-wrapper">
                     <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-promotion w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -283,7 +283,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-promotion w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -344,7 +344,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-promotion w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -405,7 +405,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-promotion w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -466,7 +466,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-promotion w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -527,7 +527,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-promotion w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -795,7 +795,7 @@
             <div class="swiper-container-best-seller">
                 <div class="swiper-wrapper">
                     <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-best-seller w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -852,7 +852,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 2 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-best-seller w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -909,7 +909,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 3 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-best-seller w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -966,7 +966,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 4 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-best-seller w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -1023,7 +1023,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 5 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-best-seller w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -1080,7 +1080,7 @@
                         </div>
                     </div>
                     <!-- Sản phẩm 6 -->
-                    <div class="swiper-slide w-1/4">
+                    <div class="swiper-slide slide-best-seller w-1/4">
                         <!-- Nội dung sản phẩm 1 -->
                         <div class="card_product flex flex-col gap-[8px] object-cover">
                             <div class="background-card bg-[#F5F5F5] h-[210px] relative">
@@ -1234,11 +1234,11 @@
                     $rows = array_merge($rows, $rows); // Tạo 4 slide
                     ?>
                     <?php foreach ($rows as $row): ?>
-                    <div class="swiper-slide">
+                    <div class="swiper-slide slide-explore">
                         <div class="flex gap-[5px]">
                             <?php foreach ($row as $product): ?>
                             <div class="w-1/4">
-                                <div class="card_product flex flex-col gap-[8px] object-cover w-[355px]">
+                                <div class="card_product_explore flex flex-col gap-[8px] object-cover w-[355px]">
                                     <div class="background-card bg-[#F5F5F5] h-[210px] relative">
                                         <div class="absolute top-0 right-0 w-full">
                                             <div class="flex justify-end p-3">
