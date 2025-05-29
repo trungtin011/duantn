@@ -35,7 +35,7 @@
             <a href="#" class="hover:text-blue-600">Trang chủ</a>
             <a href="#" class="hover:text-blue-600">Liên hệ</a>
             <a href="#" class="hover:text-blue-600">Về chúng tôi</a>
-            <a href="#" class="hover:text-blue-600">Đăng ký</a>
+            <a href="/signup" class="hover:text-blue-600">Đăng ký</a>
         </nav>
         <div class="relative w-64 hidden md:block">
             <input type="text" placeholder="Bạn muốn tìm kiếm gì?" class="w-full border rounded px-3 py-1 pl-10 focus:ring-2 focus:ring-blue-400">
@@ -46,31 +46,32 @@
     </header>
 
 <main class="flex items-center justify-center min-h-screen bg-white">
-    <div class="flex w-full max-w-5xl shadow-lg rounded-lg overflow-hidden">
+    <div class="flex w-full max-w-7xl shadow-2xl rounded-2xl overflow-hidden">
         <!-- Bên trái: hình ảnh -->
-        <div class="w-1/2 bg-cover bg-center" style="background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');">
+        <div class="w-1/2 bg-cover bg-center min-h-[600px]" style="background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');">
         </div>
 
         <!-- Bên phải: form đăng nhập -->
-        <div class="w-1/2 bg-white p-12">
-            <h2 class="text-3xl font-bold mb-2">Đăng nhập</h2>
-            <p class="text-gray-600 mb-6">Nhập thông tin của bạn bên dưới</p>
+        <div class="w-1/2 bg-white p-16">
+            <h2 class="text-4xl font-bold mb-4">Đăng nhập</h2>
+            <p class="text-gray-600 mb-8 text-lg">Nhập thông tin của bạn bên dưới</p>
             <form>
-                <div class="mb-4">
-                    <input type="text" placeholder="Email hoặc số điện thoại" class="w-full border-b border-gray-300 px-1 py-2 focus:outline-none focus:border-black placeholder-gray-400">
-                </div>
                 <div class="mb-6">
-                    <input type="password" placeholder="Mật khẩu" class="w-full border-b border-gray-300 px-1 py-2 focus:outline-none focus:border-black placeholder-gray-400">
+                    <input type="text" placeholder="Email hoặc số điện thoại" class="text-lg w-full border-b border-gray-300 px-1 py-3 focus:outline-none focus:border-black placeholder-gray-400">
+                </div>
+                <div class="mb-8">
+                    <input type="password" placeholder="Mật khẩu" class="text-lg w-full border-b border-gray-300 px-1 py-3 focus:outline-none focus:border-black placeholder-gray-400">
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-black text-white py-2 px-6 rounded hover:bg-gray-800">Đăng nhập</button>
+                    <button type="submit" class="bg-black text-white py-3 px-8 rounded hover:bg-gray-800 text-lg">Đăng nhập</button>
                     <a href="#" class="text-sm text-gray-400 hover:underline">Quên mật khẩu?</a>
                 </div>
             </form>
         </div>
     </div>
 </main>
+
 
 
 
