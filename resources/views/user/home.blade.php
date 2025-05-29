@@ -19,10 +19,13 @@
                         <div id="dropdownMenu" class="dropdown-content text-[18px] border-1 border-gray-300 px-4 pl-2 font-semibold absolute top-[32px] left-[390px] z-10 w-[1134px] h-[400px] bg-white">
                             <div class="flex flex-col gap-[10px]">
                                 <div class="w-1/2 flex gap-[50px]">
-                                    <a href="#" class="text-gray-700 hover:text-black">Điện thoại - di động</a>
+                                    <a href="#" class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                        <img src="https://down-vn.img.susercontent.com/file/31234a27876fb89cd522d7e3db1ba5ca@resize_w320_nl.webp" alt="phone" class="w-[100px] h-[100px]">
+                                        <span class="capitalize text-[16px] w-[100px] text-center">Điện thoại & Phụ kiện</span>
+                                    </a>
                                     <a href="#" class="text-gray-700 hover:text-black">Máy tính</a>
                                     <a href="#" class="text-gray-700 hover:text-black">Phụ kiện</a>
-                                </div>      
+                                </div>
                                 <div class="w-1/2 flex gap-[50px]">
                                     <a href="#" class="text-gray-700 hover:text-black">Máy ảnh</a>
                                     <a href="#" class="text-gray-700 hover:text-black">Tổng hợp</a>
