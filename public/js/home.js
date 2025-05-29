@@ -96,6 +96,27 @@ const swiper = new Swiper('.swiper-container', {
     },
 });
 
+const swiperBestSeller = new Swiper('.swiper-container-best-seller', {
+    slidesPerView: 4,
+    spaceBetween: 16,
+    navigation: {
+        nextEl: '.next-slide-best-seller',
+        prevEl: '.prev-slide-best-seller',
+    },
+});
+
+const swiperExplore = new Swiper('.swiper-container-explore', {
+    slidesPerView: 2,
+    slidesPerGroup: 1,
+    // spaceBetween: 50,
+    direction: 'vertical',
+    loop: true,
+    navigation: {
+        nextEl: '.next-slide-explore',
+        prevEl: '.prev-slide-explore',
+    },
+});
+
 // Slider Danh mục
 const slider = document.getElementById('category-slider');
 const prevButton = document.getElementById('prev-slide-category');
