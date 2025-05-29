@@ -40,10 +40,11 @@ Route::get('/client/checkout', function () {
 // trang đăng ký và đăng nhập
 Route::get('/signup', function () {
     return view('register');
-});
+})->name('signup');
+
 Route::get('/login', function () {
     return view('login');
-});
+})->name('login');
 
 // trang lịch sử đơn hàng
 Route::get('/user/order/order-history', function () {
