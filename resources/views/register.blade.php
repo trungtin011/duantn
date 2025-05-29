@@ -30,7 +30,7 @@
 
     <!-- Header -->
     <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-blue-700">EXCLUSIVE</h1>
+        <h1 class="text-2xl font-bold text-black0-700">EXCLUSIVE</h1>
         <nav class="space-x-4 text-gray-600">
             <a href="#" class="hover:text-blue-600">Trang chủ</a>
             <a href="#" class="hover:text-blue-600">Liên hệ</a>
