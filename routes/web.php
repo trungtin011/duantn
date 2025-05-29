@@ -33,3 +33,9 @@ Route::get('/client/checkout', function () {
     return view('client.checkout');
 });
 
+Route::get('/signup', function () {
+    return view('register');
+});
+Route::get('/login', function () {
+    return view('login');
+});
