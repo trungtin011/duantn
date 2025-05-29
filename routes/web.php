@@ -1,10 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 // trang chủ
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('user.home');
+})->name('home');
 
 // trang đăng ký seller
 Route::get('/seller/register', function () {
