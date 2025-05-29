@@ -21,3 +21,15 @@ Route::get('/seller/register3', function () {
     return view('seller.register.register3');
 });
 
+Route::get('/404', function () {
+    return view('error.404NotFound');
+});
+
+Route::get('/client/wishlist', function () {
+    return view('client.wishlist');
+});
+
+Route::get('/client/checkout', function () {
+    return view('client.checkout');
+});
+
