@@ -134,7 +134,7 @@
             <nav>
                 <ul class="navbar-nav flex-row align-items-center">
                     <li class="nav-item"><a class="nav-link active" href="/">Trang chủ</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Liên hệ</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Về chúng tôi</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('signup') }}">Đăng ký</a></li>
                 </ul>
