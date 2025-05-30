@@ -2,11 +2,54 @@
 
 use Illuminate\Support\Facades\Route;
 
+///////////////////////////////////////////////////////////
 // trang chủ
 Route::get('/', function () {
     return view('user.home');
 })->name('home');
 
+// trang liên hệ
+Route::get('/contact', function () {
+    return view('user.contact');
+})->name('contact');
+
+// trang wishlist
+Route::get('/client/wishlist', function () {
+    return view('client.wishlist');
+});
+
+Route::get('/client/checkout', function () {
+    return view('client.checkout');
+});
+
+// trang lịch sử đơn hàng
+Route::get('/user/order/order-history', function () {
+    return view('user.order.order_history');
+});
+
+// trang giỏ hàng
+Route::get('/user/cart', function () {
+    return view('user.cart');
+});
+
+// trang 404
+Route::get('/404', function () {
+    return view('error.404NotFound');
+});
+///////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////
+// trang đăng ký, đăng nhập, quên mật khẩu
+Route::get('/signup', function () {
+    return view('auth.register');
+})->name('signup');
+
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+///////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////
 // trang đăng ký seller
 Route::get('/seller/register', function () {
     return view('seller.register.register');
@@ -24,34 +67,4 @@ Route::get('/seller/register3', function () {
     return view('seller.register.register3');
 });
 
-// trang 404
-Route::get('/404', function () {
-    return view('error.404NotFound');
-});
-
-Route::get('/client/wishlist', function () {
-    return view('client.wishlist');
-});
-
-Route::get('/client/checkout', function () {
-    return view('client.checkout');
-});
-
-// trang đăng ký và đăng nhập
-Route::get('/signup', function () {
-    return view('register');
-})->name('signup');
-
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
-
-// trang lịch sử đơn hàng
-Route::get('/user/order/order-history', function () {
-    return view('user.order.order_history');
-}); 
-
-// trang giỏ hàng
-Route::get('/user/cart', function () {
-    return view('user.cart');
-});
+///////////////////////////////////////////////////////////
