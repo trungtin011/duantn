@@ -1,73 +1,61 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mx-auto">
+    <div class="container mx-auto px-0">
         <!-- breadcrumb -->
-        <div class="flex items-center gap-2 my-[80px]">
-            <a href="{{ route('home') }}" class="text-gray-500">Trang chủ</a>
+        <div class="flex flex-wrap items-center gap-2 my-10 md:my-20 text-sm md:text-base">
+            <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
             <span>/</span>
             <span>Liên hệ</span>
         </div>
 
-        <!-- form liên hệ -->
-        <div class="flex gap-[30px]">
-            <div class="w-1/3 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] p-[15px]">
-                <div class="flex flex-col gap-[16px] p-[35px]">
-                    <div class="flex items-center gap-[20px]">
-                        <div class="flex items-center justify-center bg-[#BDBDBD] rounded-full w-[50px] h-[50px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="text-[24px] text-[#fff] w-[30px] h-[30px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-                            </svg>
+        <!-- contact section -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Contact Info -->
+            <div class="w-full lg:w-1/3 bg-white shadow-md rounded-lg p-5 space-y-8">
+                <!-- Call -->
+                <div class="space-y-2">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-400 text-white rounded-full flex items-center justify-center">
+                            <i class="fas fa-phone text-xl"></i>
                         </div>
-                        <span class="text-[24px] font-semibold">Gọi cho chúng tôi</span>
+                        <h3 class="text-xl font-semibold">Gọi cho chúng tôi</h3>
                     </div>
-                    <span class="text-[18px]">Chúng tôi phục vụ 24/7, 7 ngày một tuần.</span>
-                    <div class="flex items-center gap-[10px]">
-                        <div class="flex items-center gap-[10px] text-[18px]">
-                            <span class="">Số điện thoại:</span>
-                            <span class="">+84 8919576</span>
-                        </div>
-                    </div>
+                    <p>Chúng tôi phục vụ 24/7, 7 ngày một tuần.</p>
+                    <p>Số điện thoại: <strong>+84 8919576</strong></p>
                 </div>
-                <div class=" mx-[35px] m-[15px] border-t-[1px] border-[#000]">
-                </div>
-                <div class="flex flex-col gap-[16px] p-[35px]">
-                    <div class="flex items-center gap-[20px]">
-                        <div class="flex items-center justify-center bg-[#BDBDBD] rounded-full w-[50px] h-[50px]">
 
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="text-[24px] text-[#fff] w-[30px] h-[30px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                            </svg>
+                <div class="border-t border-gray-300"></div>
+
+                <!-- Email -->
+                <div class="space-y-2">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-400 text-white rounded-full flex items-center justify-center">
+                            <i class="fas fa-envelope text-xl"></i>
                         </div>
-                        <span class="text-[24px] font-semibold">Viết thư cho Hoa Kỳ</span>
+                        <h3 class="text-xl font-semibold">Viết thư cho chúng tôi</h3>
                     </div>
-                    <span class="text-[18px]">Hãy điền vào mẫu và chúng tôi sẽ liên hệ với bạn trong vòng 24 giờ.</span>
-                    <div class="flex items-center gap-[10px]">
-                        <div class="flex flex-col gap-[10px] text-[18px]">
-                            <span class="">Emails: customer@exclusive.com</span>
-                            <span class="">Emails: support@exclusive.com</span>
-                        </div>
-                    </div>
+                    <p>Điền vào biểu mẫu và chúng tôi sẽ liên hệ với bạn trong vòng 24 giờ.</p>
+                    <p>Email: <br><strong>customer@exclusive.com</strong><br><strong>support@exclusive.com</strong></p>
                 </div>
             </div>
-            <div class="w-2/3 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] h-[503px]">
-                <form action="">
-                    <div class="flex flex-col gap-[16px] p-[35px]">
-                        <div class="flex items-center gap-[20px]">
-                            <input type="text" placeholder="Tên của bạn" class="w-full p-[20px] bg-[#F5F5F5]">
-                            <input type="text" placeholder="Địa chỉ Email của bạn" class="w-full bg-[#F5F5F5] p-[20px]">
-                            <input type="text" placeholder="Số điện thoại của bạn" class="w-full bg-[#F5F5F5] p-[20px]">
-                        </div>
-                        <textarea name="" id="" cols="30" rows="10" placeholder="Nội dung"
-                            class="w-full bg-[#F5F5F5] p-[20px]"></textarea>
-                        <div class="flex justify-end">
-                            <button
-                                class="bg-[#000] text-[#fff] text-[18px] font-bold p-[15px] w-[150px] rounded-[4px]">Gửi</button>
-                        </div>
+
+            <!-- Contact Form -->
+            <div class="w-full lg:w-2/3 bg-white shadow-md rounded-lg p-5">
+                <form action="#" method="POST" class="space-y-6">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input type="text" placeholder="Tên của bạn"
+                            class="w-full p-3 rounded-md bg-gray-100 focus:outline-none">
+                        <input type="email" placeholder="Email của bạn"
+                            class="w-full p-3 rounded-md bg-gray-100 focus:outline-none">
+                        <input type="text" placeholder="Số điện thoại"
+                            class="w-full p-3 rounded-md bg-gray-100 focus:outline-none">
+                    </div>
+                    <textarea placeholder="Nội dung" rows="6"
+                        class="w-full p-3 rounded-md bg-gray-100 resize-none focus:outline-none"></textarea>
+                    <div class="flex justify-end">
+                        <button type="submit"
+                            class="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition font-semibold">Gửi</button>
                     </div>
                 </form>
             </div>
