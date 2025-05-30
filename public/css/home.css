@@ -27,7 +27,7 @@
 
 .arrow-icon.rotate,
 .arrow-icon-second.rotate {
-    transform: rotate(90deg);
+    transform: rotate(-90deg);
 }
 
 /* Tùy chỉnh thêm hiệu ứng */
@@ -40,26 +40,6 @@
 .buy-now-btn:hover {
     transform: translateY(-2px);
     transition: all 0.3s ease;
-}
-
-/* Tùy chỉnh cho dropdown */
-.dropdown-content {
-    display: none;
-}
-
-.dropdown-content.show {
-    display: block;
-}
-
-/* Hiệu ứng xoay mũi tên */
-.arrow-icon,
-.arrow-icon-second {
-    transition: transform 0.3s ease;
-}
-
-.arrow-icon.rotate,
-.arrow-icon-second.rotate {
-    transform: rotate(90deg);
 }
 
 /* CSS cho slider */

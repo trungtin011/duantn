@@ -12,24 +12,61 @@
                             class="text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
                             Thời trang phụ nữ
                             <!-- Arrow icon -->
-                            <svg class="w-[21px] h-[21px] ml-1 arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-[21px] h-[21px] ml-1 arrow-icon">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                             </svg>
+
                         </button>
-                        <div id="dropdownMenu" class="dropdown-content text-[18px] border-1 border-gray-300 px-4 pl-2 font-semibold absolute top-[32px] left-[390px] z-10 w-[1134px] h-[400px] bg-white">
-                            <div class="flex flex-col gap-[10px]">
-                                <div class="w-1/2 flex gap-[50px]">
-                                    <a href="#" class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/31234a27876fb89cd522d7e3db1ba5ca@resize_w320_nl.webp" alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Điện thoại & Phụ kiện</span>
-                                    </a>
-                                    <a href="#" class="text-gray-700 hover:text-black">Máy tính</a>
-                                    <a href="#" class="text-gray-700 hover:text-black">Phụ kiện</a>
+                        <div id="dropdownMenu"
+                            class="dropdown-content text-[18px] shadow-lg font-semibold absolute top-[32px] left-[390px] z-10 w-[1134px] h-[400px] bg-white">
+                            <div class="flex h-[100%]">
+                                <div class="flex flex-col gap-[25px] p-4">
+                                    <div class="w-1/2 flex gap-[40px]">
+                                        <a href="#"
+                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                            <img src="https://down-vn.img.susercontent.com/file/48630b7c76a7b62bc070c9e227097847@resize_w320_nl.webp"
+                                                alt="phone" class="w-[100px] h-[100px]">
+                                            <span class="capitalize text-[16px] w-[100px] text-center">Giày dép nữ</span>
+                                        </a>
+                                        <a href="#"
+                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                            <img src="https://down-vn.img.susercontent.com/file/75ea42f9eca124e9cb3cde744c060e4d@resize_w320_nl.webp"
+                                                alt="phone" class="w-[100px] h-[100px]">
+                                            <span class="capitalize text-[16px] w-[100px] text-center">Thời trang nữ</span>
+                                        </a>
+                                        <a href="#"
+                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                            <img src="https://down-vn.img.susercontent.com/file/8e71245b9659ea72c1b4e737be5cf42e@resize_w320_nl.webp"
+                                                alt="phone" class="w-[100px] h-[100px]">
+                                            <span class="capitalize text-[16px] w-[100px] text-center">Phụ kiện & trang sức
+                                                nữ</span>
+                                        </a>
+                                        <a href="#"
+                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                            <img src="https://down-vn.img.susercontent.com/file/fa6ada2555e8e51f369718bbc92ccc52@resize_w320_nl.webp"
+                                                alt="phone" class="w-[100px] h-[100px]">
+                                            <span class="capitalize text-[16px] w-[100px] text-center">Túi ví nữ</span>
+                                        </a>
+                                    </div>
+                                    <div class="w-1/2 flex gap-[40px]">
+                                        <a href="#"
+                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
+                                            <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
+                                                alt="phone" class="w-[80px] h-[80px] mt-[15px]">
+                                            <span class="capitalize text-[16px] w-[100px] text-center">Mẹ & bé</span>
+                                        </a>
+                                        <a href="#"
+                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
+                                            <img src="https://down-vn.img.susercontent.com/file/ef1f336ecc6f97b790d5aae9916dcb72@resize_w320_nl.webp"
+                                                alt="phone" class="w-[80px] h-[80px] mt-[15px]">
+                                            <span class="capitalize text-[16px] w-[100px] text-center">Sắc đẹp</span>
+                                        </a>
+                                    </div>
                                 </div>
-                                <div class="w-1/2 flex gap-[50px]">
-                                    <a href="#" class="text-gray-700 hover:text-black">Máy ảnh</a>
-                                    <a href="#" class="text-gray-700 hover:text-black">Tổng hợp</a>
-                                    <a href="#" class="text-gray-700 hover:text-black">Gaming</a>
+                                <div class="flex justify-center items-center">
+                                    <img src="{{ asset('images/thoitrangnu.jpg') }}" alt="banner"
+                                        class="object-cover w-[100%] h-[400px] object-cover">
                                 </div>
                             </div>
                         </div>
@@ -38,27 +75,88 @@
                     <button id="dropdownToggleSecond"
                         class="text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
                         Thời trang nam
-                        <svg class="w-[21px] h-[21px] ml-1 arrow-icon-second" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-[21px] h-[21px] ml-1 arrow-icon-second">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                         </svg>
                     </button>
-                    <ul id="dropdownMenuSecond" class="dropdown-content pl-4 space-y-2 text-[18px] font-semibold">
-                        <li><a href="#" class="text-gray-700 hover:text-black">Apple</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Samsung</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Sony</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">LG</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Dell</a></li>
-                        <li><a href="#" class="text-gray-700 hover:text-black">Asus</a></li>
-                    </ul>
+                    <div id="dropdownMenuSecond"
+                        class="dropdown-content text-[18px] shadow-lg font-semibold absolute top-[32px] left-[390px] z-10 w-[1134px] h-[400px] bg-white">
+                        <div class="flex h-[100%]">
+                            <div class="flex flex-col gap-[25px] p-4">
+                                <div class="w-1/2 flex gap-[40px]">
+                                    <a href="#"
+                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                        <img src="https://down-vn.img.susercontent.com/file/74ca517e1fa74dc4d974e5d03c3139de@resize_w320_nl.webp"
+                                            alt="phone" class="w-[100px] h-[100px]">
+                                        <span class="capitalize text-[16px] w-[100px] text-center">Giày dép nam</span>
+                                    </a>
+                                    <a href="#"
+                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                        <img src="https://down-vn.img.susercontent.com/file/687f3967b7c2fe6a134a2c11894eea4b@resize_w320_nl.webp"
+                                            alt="phone" class="w-[100px] h-[100px]">
+                                        <span class="capitalize text-[16px] w-[100px] text-center">Thời trang nam</span>
+                                    </a>
+                                    <a href="#"
+                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                        <img src="https://down-vn.img.susercontent.com/file/86c294aae72ca1db5f541790f7796260@resize_w320_nl.webp"
+                                            alt="phone" class="w-[100px] h-[100px]">
+                                        <span class="capitalize text-[16px] w-[100px] text-center">Đồng hồ nam</span>
+                                    </a>
+                                    <a href="#"
+                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
+                                        <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
+                                            alt="phone" class="w-[100px] h-[100px]">
+                                        <span class="capitalize text-[16px] w-[100px] text-center">Thể thao nam</span>
+                                    </a>
+                                </div>
+                                <div class="w-1/2 flex gap-[40px]">
+                                    <a href="#"
+                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
+                                        <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
+                                            alt="phone" class="w-[80px] h-[80px] mt-[15px]">
+                                        <span class="capitalize text-[16px] w-[100px] text-center">Mẹ & bé</span>
+                                    </a>
+                                    <a href="#"
+                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
+                                        <img src="https://down-vn.img.susercontent.com/file/ef1f336ecc6f97b790d5aae9916dcb72@resize_w320_nl.webp"
+                                            alt="phone" class="w-[80px] h-[80px] mt-[15px]">
+                                        <span class="capitalize text-[16px] w-[100px] text-center">Sắc đẹp</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="flex justify-center items-center">
+                                <img src="{{ asset('images/thoitrangnam.jpg') }}" alt="banner"
+                                    class="object-cover w-[100%] h-[400px] object-cover">
+                            </div>
+                        </div>
+                    </div>
                 </li>
-                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Đồ điện tử</a></li>
-                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">phong cách sống</a></li>
-                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thuốc</a></li>
-                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thể thao</a></li>
-                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Đồ chơi trẻ em</a></li>
-                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thực phẩm thú cưng</a></li>
-                <li><a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Sức khỏe và sắc đẹp</a></li>
+                <li>
+                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Đồ điện tử</a>
+                </li>
+                <li>
+                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">phong cách sống</a>
+                </li>
+                <li>
+                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thuốc</a>
+                </li>
+                <li>
+                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thể thao</a>
+                </li>
+                <li>
+                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Đồ chơi trẻ em</a>
+                </li>
+                <li>
+                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thực phẩm thú
+                        cưng
+                    </a>
+                </li>
+                <li>
+                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Sức khỏe và sắc
+                        đẹp
+                    </a>
+                </li>
             </ul>
         </div>
         <!-- Banner -->
@@ -205,7 +303,7 @@
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Hôm nay</span>
         </div>
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-[60px]">
             <div class="flex items-center justify-center">
                 <h2 class="text-[36px] font-bold mr-[87px]">Khuyến mãi</h2>
                 <div class="flex space-x-4 text-lg">
@@ -797,7 +895,7 @@
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Tháng này</span>
         </div>
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-[60px]">
             <div class="flex items-center justify-center">
                 <h2 class="text-[36px] font-bold mr-[87px]">Sản phẩm bán chạy</h2>
             </div>
@@ -1218,7 +1316,7 @@
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Sản phẩm của chúng tôi</span>
         </div>
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center mb-[60px]">
             <div class="flex items-center justify-center">
                 <h2 class="text-[36px] font-bold mr-[87px]">Khám phá sản phẩm của chúng tôi</h2>
             </div>
@@ -1265,7 +1363,8 @@
                                                     <button
                                                         class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                            viewBox="0 0 24 24" stroke-width="1.5"
+                                                            stroke="currentColor"
                                                             class="w-[22px] h-[20px] text-center items-center justify-center flex">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
@@ -1330,24 +1429,118 @@
 
     <!-- Hàng mới về -->
     <section class="container mx-auto px-4 py-8">
-        <h2 class="text-2xl font-bold mb-4">HÀNG MỚI VỀ</h2>
-        <div class="grid grid-cols-3 gap-4">
-            <div class="bg-gray-200 h-64 flex items-center justify-center">
-                <div class="text-center">
-                    <h3 class="text-xl font-bold">PlayStation 5</h3>
-                    <button class="mt-2 px-4 py-2 bg-green-500 text-white rounded buy-now-btn">MUA NGAY</button>
+        <div class="flex gap-3 items-center mb-3">
+            <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
+            <span style="color: #BDBDBD;" class="font-bold">Nổi bật</span>
+        </div>
+        <div class="flex justify-between items-center mb-[60px]">
+            <div class="flex items-center justify-center">
+                <h2 class="text-[36px] font-bold mr-[87px]">Hàng mới về</h2>
+            </div>
+        </div>
+        <div class="flex gap-[30px]">
+            <div class="relative w-[744px] h-[600px] bg-[#0D0D0D] flex items-end justify-center rounded-[4px]">
+                <img src="{{ asset('images/ps5_slim.png') }}" alt="banner"
+                    class="object-cover w-[511px] h-[511px]">
+                <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[16px] w-[400px]">
+                    <h2 class="text-[28px] font-bold">PlayStation 5 Slim</h2>
+                    <p class="text-[18px]">PlayStation 5 Slim là bản nâng cấp của PlayStation 5, với thiết kế nhỏ gọn và
+                        hiệu suất cao hơn.</p>
+                    <button class="text-white buy-now-btn flex items-center">
+                        <span style="border-bottom: 1px solid #858585; padding-bottom: 5px; font-size: 18px;">Mua
+                            ngay</span>
+                    </button>
                 </div>
             </div>
-            <div class="bg-gray-200 h-64 flex items-center justify-center">
-                <div class="text-center">
-                    <h3 class="text-xl font-bold">Loa thông minh</h3>
-                    <button class="mt-2 px-4 py-2 bg-green-500 text-white rounded buy-now-btn">MUA NGAY</button>
+            <div class="w-[744px] flex flex-col justify-center items-center gap-[30px]">
+                <div class="relative flex justify-end items-center w-[100%] h-[284px] bg-[#0D0D0D] rounded-[4px]">
+                    <img src="{{ asset('images/attractive_woman1.png') }}" alt="banner"
+                        class="object-cover w-[432px] h-[284px]">
+                    <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[16px] w-[400px]">
+                        <h2 class="text-[28px] font-bold">Bộ sưu tập của phụ nữ</h2>
+                        <p class="text-[18px]">Bộ sưu tập phụ nữ nổi bật mang đến cho bạn cảm giác khác biệt.</p>
+                        <button class="text-white buy-now-btn flex items-center">
+                            <span style="border-bottom: 1px solid #858585; padding-bottom: 5px; font-size: 18px;">Mua
+                                ngay</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="w-[100%] flex gap-[30px]">
+                    <div class="relative flex justify-center items-center w-[364px] h-[284px] bg-[#0D0D0D] rounded-[4px]">
+                        <img src="{{ asset('images/speaker.png') }}" alt="banner"
+                            class="object-cover w-[190px] h-[221px]">
+                        <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[10px] w-[400px]">
+                            <h2 class="text-[28px] font-bold">Loa</h2>
+                            <p class="text-[18px]">Loa không dây Amazon</p>
+                            <button class="text-white buy-now-btn flex items-center">
+                                <span style="border-bottom: 1px solid #858585; padding-bottom: 5px; font-size: 18px;">Mua
+                                    ngay</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative flex justify-center items-center w-[364px] h-[284px] bg-[#0D0D0D] rounded-[4px]">
+                        <img src="{{ asset('images/perfume.png') }}" alt="banner"
+                            class="object-cover w-[201px] h-[203px]">
+                        <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[10px] w-[400px]">
+                            <h2 class="text-[28px] font-bold">Nước hoa</h2>
+                            <p class="text-[18px]">NƯỚC HOA GUCCI INTENSE OUD</p>
+                            <button class="text-white buy-now-btn flex items-center">
+                                <span style="border-bottom: 1px solid #858585; padding-bottom: 5px; font-size: 18px;">Mua
+                                    ngay</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="bg-gray-200 h-64 flex items-center justify-center">
-                <div class="text-center">
-                    <h3 class="text-xl font-bold">Nước hoa Gucci</h3>
-                    <button class="mt-2 px-4 py-2 bg-green-500 text-white rounded buy-now-btn">MUA NGAY</button>
+        </div>
+    </section>
+
+    <!-- Dịch vụ -->
+    <section class="container mx-auto px-4 py-8">
+        <div class="flex gap-3 items-center gap-[88px]">
+            <div class="flex flex-col items-center justify-center gap-[30px] w-1/3">
+                <div class="bg-[#C1C1C1] rounded-full flex items-center justify-center w-[80px] h-[80px]">
+                    <div class="bg-[#000] rounded-full flex items-center justify-center w-[58px] h-[58px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                            class="bi bi-truck text-center text-[30px] text-[#fff] w-[30px]" viewBox="0 0 16 16">
+                            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                          </svg>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-[10px] text-center">
+                    <h2 class="text-[24px] font-bold">Giao hàng miễn phí và nhanh chóng</h2>
+                    <p class="text-[14px]">Miễn phí vận chuyển cho đơn hàng trên 1 trăm nghìn đồng</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-center justify-center gap-[30px] w-1/3">
+                <div class="bg-[#C1C1C1] rounded-full flex items-center justify-center w-[80px] h-[80px]">
+                    <div class="bg-[#000] rounded-full flex items-center justify-center w-[58px] h-[58px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                            class="bi bi-headset text-center text-[30px] text-[#fff] w-[30px]" viewBox="0 0 16 16">
+                            <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
+                          </svg>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-[10px] text-center">
+                    <h2 class="text-[24px] font-bold">Chăm sóc khách hàng 24/7</h2>
+                    <p class="text-[14px]">Hỗ trợ khách hàng thân thiện 24/7</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-center justify-center gap-[30px] w-1/3">
+                <div class="bg-[#C1C1C1] rounded-full flex items-center justify-center w-[80px] h-[80px]">
+                    <div class="bg-[#000] rounded-full flex items-center justify-center w-[58px] h-[58px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                            class="bi bi-shield-check text-center text-[30px] text-[#fff] w-[30px]" viewBox="0 0 16 16">
+                            <path
+                                d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56" />
+                            <path
+                                d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-[10px] text-center">
+                    <h2 class="text-[24px] font-bold">Đảm bảo hoàn tiền</h2>
+                    <p class="text-[14px]">Đảm bảo hoàn tiền trong 30 ngày</p>
                 </div>
             </div>
         </div>
