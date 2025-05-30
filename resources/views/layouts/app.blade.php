@@ -112,6 +112,21 @@
 </head>
 
 <body>
+    <!-- Top Header -->
+    <div class="bg-[#000] text-[#fff] p-[15px]">
+        <div class="w-[859px] mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-[10px]">
+                <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
+                <button class="text-[#fff] font-bold" style="border-bottom: 1px solid #FAFAFA">Mua ngay</button>
+            </div>
+            <div class="flex items-center gap-[10px]">
+                <select class="bg-transparent" style="width:90px;">
+                    <option>English</option>
+                    <option>Tiếng Việt</option>
+                </select>
+            </div>
+        </div>
+    </div>
     <!-- Header -->
     <header class="main-header">
         <div class="container d-flex align-items-center justify-content-between">
