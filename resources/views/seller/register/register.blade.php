@@ -1,83 +1,127 @@
-@extends('layouts.app')
+@extends('layouts.seller')
 
 @section('content')
-<div class="container py-5 d-flex flex-column align-items-center" style="min-height:80vh; background:#f7f7f7;">
-    <div class="w-100" style="max-width:900px;">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb small" style="--bs-breadcrumb-divider: '>'; color:#bdbdbd;">
-                <li class="breadcrumb-item"><a href="/" style="color:#bdbdbd;">Trang chủ</a></li>
-                <li class="breadcrumb-item active" aria-current="page" style="color:#bdbdbd;">Đăng ký trở thành người bán</li>
-            </ol>
-        </nav>
-        <!-- Stepper -->
-        <div class="mb-4 px-4">
-            <div class="d-flex justify-content-between align-items-center position-relative" style="margin-bottom:30px;">
-                <div class="stepper-step text-center flex-fill">
-                    <div class="step-dot active"></div>
-                    <div class="step-label">Thông tin shop</div>
-                </div>
-                <div class="stepper-line"></div>
-                <div class="stepper-step text-center flex-fill">
-                    <div class="step-dot"></div>
-                    <div class="step-label">Cài đặt vận chuyển</div>
-                </div>
-                <div class="stepper-line"></div>
-                <div class="stepper-step text-center flex-fill">
-                    <div class="step-dot"></div>
-                    <div class="step-label">Thông tin thuế</div>
-                </div>
-                <div class="stepper-line"></div>
-                <div class="stepper-step text-center flex-fill">
-                    <div class="step-dot"></div>
-                    <div class="step-label">Thực tính danh</div>
-                </div>
-                <div class="stepper-line"></div>
-                <div class="stepper-step text-center flex-fill">
-                    <div class="step-dot"></div>
-                    <div class="step-label">Hoàn thành</div>
+    <style>
+        .stepper-step {
+            position: relative;
+        }
+
+        .step-dot {
+            width: 24px;
+            height: 24px;
+            background-color: #e5e7eb;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            transition: background-color 0.3s;
+        }
+
+        .step-dot.active {
+            background-color: #ef4444;
+        }
+
+        .step-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .stepper-line {
+            flex: 1;
+            height: 2px;
+            background-color: #e5e7eb;
+            margin: 0 10px;
+        }
+    </style>
+
+    <div class="container bg-white mx-auto py-5 mt-5 flex flex-col items-center" style="min-height: 80vh;">
+        <div class="w-full" style="max-width: 1000px;">
+            <!-- Breadcrumb -->
+
+            <!-- Stepper -->
+            <div class="px-4 py-4">
+                <div class="flex items-center justify-between relative mb-8">
+                    <div class="stepper-step text-center flex-1">
+                        <div class="step-dot active"></div>
+                        <div class="step-label">Thông tin shop</div>
+                    </div>
+                    <div class="stepper-line"></div>
+                    <div class="stepper-step text-center flex-1">
+                        <div class="step-dot"></div>
+                        <div class="step-label">Cài đặt vận chuyển</div>
+                    </div>
+                    <div class="stepper-line"></div>
+                    <div class="stepper-step text-center flex-1">
+                        <div class="step-dot"></div>
+                        <div class="step-label">Thông tin thuế</div>
+                    </div>
+                    <div class="stepper-line"></div>
+                    <div class="stepper-step text-center flex-1">
+                        <div class="step-dot"></div>
+                        <div class="step-label">Thực tính danh</div>
+                    </div>
+                    <div class="stepper-line"></div>
+                    <div class="stepper-step text-center flex-1">
+                        <div class="step-dot"></div>
+                        <div class="step-label">Hoàn thành</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <!-- Card Form -->
-        <div class="card shadow-sm rounded-4 p-4">
-            <form>
-                <div class="mb-3 row align-items-center">
-                    <label class="col-sm-3 col-form-label fw-semibold">Tên người dùng:</label>
-                    <div class="col-sm-9">
-                        <input type="text" class="form-control form-control-lg" name="username" placeholder="">
+
+            <!-- hr -->
+            <div class="w-full h-[1px] bg-gray-200"></div>
+            <!-- Form -->
+            <div class="bg-white shadow-sm rounded-2xl p-6">
+                <form>
+                    <div class="mb-4 flex items-center">
+                        <label class="w-1/4 font-semibold text-gray-700">Tên người dùng:</label>
+                        <div class="w-3/4">
+                            <input type="text"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="username" placeholder="">
+                        </div>
                     </div>
-                </div>
-                <div class="mb-3 row align-items-center">
-                    <label class="col-sm-3 col-form-label fw-semibold">Tên Shop:</label>
-                    <div class="col-sm-9">
-                        <input type="text" class="form-control form-control-lg" name="shop_name" placeholder="">
+                    <div class="mb-4 flex items-center">
+                        <label class="w-1/4 font-semibold text-gray-700">Tên Shop:</label>
+                        <div class="w-3/4">
+                            <input type="text"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="shop_name" placeholder="">
+                        </div>
                     </div>
-                </div>
-                <div class="mb-3 row align-items-start">
-                    <label class="col-sm-3 col-form-label fw-semibold">Địa chỉ lấy hàng:</label>
-                    <div class="col-sm-9">
-                        <input type="text" class="form-control form-control-lg" name="address" placeholder="">
-                        <button type="button" class="btn btn-outline-secondary btn-sm px-3 mt-2">+ Thêm địa chỉ</button>
+                    <div class="mb-4 flex items-start">
+                        <label class="w-1/4 font-semibold text-gray-700">Địa chỉ lấy hàng:</label>
+                        <div class="w-3/4">
+                            <input type="text"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="address" placeholder="">
+                            <button type="button"
+                                class="mt-2 border border-gray-300 text-gray-700 px-4 py-1 rounded hover:bg-gray-100">+ Thêm
+                                địa chỉ</button>
+                        </div>
                     </div>
-                </div>
-                <div class="mb-3 row align-items-center">
-                    <label class="col-sm-3 col-form-label fw-semibold">Email:</label>
-                    <div class="col-sm-9">
-                        <input type="email" class="form-control form-control-lg" name="email" placeholder="">
+                    <div class="mb-4 flex items-center">
+                        <label class="w-1/4 font-semibold text-gray-700">Email:</label>
+                        <div class="w-3/4">
+                            <input type="email"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="email" placeholder="">
+                        </div>
                     </div>
-                </div>
-                <div class="mb-4 row align-items-center">
-                    <label class="col-sm-3 col-form-label fw-semibold">Số điện thoại:</label>
-                    <div class="col-sm-9">
-                        <input type="text" class="form-control form-control-lg" name="phone" placeholder="">
+                    <div class="mb-6 flex items-center">
+                        <label class="w-1/4 font-semibold text-gray-700">Số điện thoại:</label>
+                        <div class="w-3/4">
+                            <input type="text"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="phone" placeholder="">
+                        </div>
                     </div>
-                </div>
-                <div class="d-flex justify-content-end gap-2">
-                    <button type="submit" class="btn btn-light border">Lưu</button>
-                    <button type="button" class="btn btn-danger px-4">Tiếp theo</button>
-                </div>
-            </form>
+                    <div class="flex justify-end gap-3">
+                        <button type="submit"
+                            class="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-100">Lưu</button>
+                        <button type="button" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">Tiếp
+                            theo</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 @endsection

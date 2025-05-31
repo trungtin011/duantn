@@ -4,7 +4,7 @@
 @section('content')
     <div class="container mx-auto px-0 relative">
         <!-- breadcrumb -->
-        <div class="flex flex-wrap items-center gap-2 my-10 px-[10px] sm:px-0 md:my-20 text-sm md:text-base">
+        <div class="flex flex-wrap items-center gap-2 b-10 px-[10px] sm:px-0 md:mb-20 text-sm md:text-base">
             <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
             <span>/</span>
             <span>Về chúng tôi</span>
