@@ -14,7 +14,8 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
-    {{-- <link rel="stylesheet" href="{{ asset('css/cart.css') }}"> --}}
+    <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
     @stack('styles')
 </head>
 
@@ -36,7 +37,7 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false }">
+    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
         <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
             <!-- Logo -->
             <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
@@ -58,11 +59,61 @@
             <div class="hidden md:flex items-center gap-3">
                 <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                <a ><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
+                <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
                 <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
-                <a href="{{ route('cart') }}"><i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
-                <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700">
-                    <i class="fa fa-user"></i>
+                <a href="{{ route('cart') }}"><i
+                        class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
+                <div class="relative" @click="userDropdownOpen = !userDropdownOpen"
+                    @click.away="userDropdownOpen = false">
+                    <div
+                        class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-200">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    <!-- Dropdown Menu -->
+                    <div x-show="userDropdownOpen"
+                        class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-gradient-to-b from-gray-800 to-purple-900 bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-10">
+                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            </svg>
+                            Quản lý tài khoản
+                        </a>
+                        <a href="{{ route('order_history') }}"
+                            class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                            </svg>
+                            Đơn hàng của tôi
+                        </a>
+                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            Đơn hàng bị hủy
+                        </a>
+                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                            </svg>
+                            Đánh giá của tôi
+                        </a>
+                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                            </svg>
+                            Đăng xuất
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -79,9 +130,10 @@
             <div class="md:hidden flex items-center justify-center gap-3 mt-4">
                 <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                <a ><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
+                <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
                 <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
-                <a href="{{ route('cart') }}"><i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('cart') }}"><i
+                        class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
                 <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700">
                     <i class="fa fa-user"></i>
                 </div>
@@ -89,9 +141,8 @@
         </div>
     </header>
 
-
     <!-- Main Content -->
-    <main>
+    <main class="bg-white">
         @yield('content')
     </main>
 
@@ -161,7 +212,7 @@
         </div>
 
         <div class="border-t border-[#222] mt-10 py-4 text-center text-sm text-gray-400">
-            &copy; Copyright Rimel 2022. All rights reserved.
+            © Copyright Rimel 2022. All rights reserved.
         </div>
     </footer>
 

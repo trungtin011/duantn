@@ -3,7 +3,7 @@
     margin-top: 50px;   
     display: flex;
     flex-direction: column;
-    gap: 64px;
+    gap: 60px;
     align-items: flex-start;
     width: 100%;
 }

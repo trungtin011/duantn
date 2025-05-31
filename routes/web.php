@@ -18,6 +18,11 @@ Route::get('/about', function () {
     return view('user.about');
 })->name('about');
 
+// trang chi tiết sản phẩm
+Route::get('/user/product-detail', function () {
+    return view('user.product_detail');
+})->name('product_detail');
+
 // trang wishlist
 Route::get('/client/wishlist', function () {
     return view('client.wishlist');
@@ -31,7 +36,12 @@ Route::get('/client/checkout', function () {
 // trang lịch sử đơn hàng
 Route::get('/user/order/order-history', function () {
     return view('user.order.order_history');
-});
+})->name('order_history');
+
+// trang chi tiết đơn hàng
+Route::get('/user/order/order-detail', function () {
+    return view('user.order.orderDetail');
+})->name('order_detail');
 
 // trang giỏ hàng
 Route::get('/user/cart', function () {
