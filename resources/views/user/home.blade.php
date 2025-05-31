@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Trang chủ')
 @section('content')
     <!-- Main Banner -->
     <section class="container mx-auto py-8 flex relative">

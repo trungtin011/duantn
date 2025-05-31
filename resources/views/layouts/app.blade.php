@@ -14,6 +14,7 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/cart.css') }}">
     @stack('styles')
 </head>
 
@@ -36,15 +37,15 @@
 
     <!-- Header -->
     <header class="bg-white border-b" x-data="{ mobileMenuOpen: false }">
-        <div class="container mx-auto px-0 py-3 flex justify-between items-center">
+        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
             <!-- Logo -->
             <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
 
             <!-- Menu cho desktop -->
             <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
-                <li><a href="/" class="hover:text-orange-500">Trang chủ</a></li>
+                <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
                 <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
-                <li><a href="#" class="hover:text-orange-500">Về chúng tôi</a></li>
+                <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
                 <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
             </ul>
 
@@ -57,9 +58,9 @@
             <div class="hidden md:flex items-center gap-3">
                 <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                <button><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></button>
-                <button><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></button>
-                <button><i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></button>
+                <a ><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('cart') }}"><i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
                 <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700">
                     <i class="fa fa-user"></i>
                 </div>
@@ -69,18 +70,18 @@
         <!-- Menu xổ xuống mobile -->
         <div x-show="mobileMenuOpen" class="md:hidden px-4 pb-4">
             <ul class="flex flex-col gap-3 text-sm font-medium text-gray-700 border-t pt-3">
-                <li><a href="/" class="hover:text-orange-500">Trang chủ</a></li>
+                <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
                 <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
-                <li><a href="#" class="hover:text-orange-500">Về chúng tôi</a></li>
+                <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
                 <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
             </ul>
 
             <div class="md:hidden flex items-center justify-center gap-3 mt-4">
                 <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                <button><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></button>
-                <button><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></button>
-                <button><i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></button>
+                <a ><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('cart') }}"><i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
                 <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700">
                     <i class="fa fa-user"></i>
                 </div>
