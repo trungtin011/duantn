@@ -13,14 +13,19 @@ Route::get('/contact', function () {
     return view('user.contact');
 })->name('contact');
 
+// trang about
+Route::get('/about', function () {
+    return view('user.about');
+})->name('about');
+
 // trang wishlist
 Route::get('/client/wishlist', function () {
     return view('client.wishlist');
-});
+})->name('wishlist');
 
 Route::get('/client/checkout', function () {
     return view('client.checkout');
-});
+})->name('checkout');
 
 // trang lịch sử đơn hàng
 Route::get('/user/order/order-history', function () {
@@ -30,12 +35,12 @@ Route::get('/user/order/order-history', function () {
 // trang giỏ hàng
 Route::get('/user/cart', function () {
     return view('user.cart');
-});
+})->name('cart');
 
 // trang 404
 Route::get('/404', function () {
     return view('error.404NotFound');
-});
+})->name('404');
 ///////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////

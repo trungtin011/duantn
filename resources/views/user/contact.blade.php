@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Liên hệ')
 @section('content')
     <div class="container mx-auto px-0">
         <!-- breadcrumb -->
