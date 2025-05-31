@@ -1,10 +1,7 @@
 
 @extends('layouts.app')
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/cart.css') }}">
-@endpush
-
+@section('title', 'Giỏ hàng')
 @section('content')
 <div class="container py-5" style="min-height:80vh;">
     <div class="w-100" style="max-width:900px; margin:auto;">
