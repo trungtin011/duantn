@@ -1,55 +1,212 @@
 @extends('layouts.app')
 
 @section('content')
-    <!-- Main đăng ký -->
-    <div class="flex items-center justify-center min-h-screen bg-gray-100 px-4">
-        <div class="flex flex-col md:flex-row w-full max-w-7xl shadow-2xl rounded-2xl overflow-hidden">
-            <!-- Hình ảnh bên trái -->
-            <div class="w-full md:w-1/2 bg-cover bg-center min-h-[300px] md:min-h-[600px]"
-                style="background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');">
-            </div>
+    <div class="register-container">
+        <div class="register-box">
+            <!-- Bên trái: hình ảnh -->
+            <div class="register-image"></div>
 
-            <!-- Form bên phải -->
-            <div class="w-full md:w-1/2 bg-white p-6 md:p-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Tạo một tài khoản</h2>
-                <p class="text-gray-600 mb-8 text-base md:text-lg">Nhập thông tin của bạn bên dưới</p>
+            <!-- Bên phải: form đăng ký -->
+            <div class="register-form">
+                <h2 class="title">Tạo một tài khoản</h2>
+                <p class="subtitle">Nhập thông tin của bạn bên dưới</p>
                 <form>
-                    <div class="mb-6">
-                        <input type="text" placeholder="Tên"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400" />
+                    <div class="form-group">
+                        <input type="text" placeholder="Tên" class="input-text">
                     </div>
-                    <div class="mb-6">
-                        <input type="email" placeholder="Email hoặc số điện thoại"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400" />
+                    <div class="form-group">
+                        <input type="email" placeholder="Email hoặc số điện thoại" class="input-text">
                     </div>
-                    <div class="mb-8">
-                        <input type="password" placeholder="Mật khẩu"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400" />
+                    <div class="form-group">
+                        <input type="password" placeholder="Mật khẩu" class="input-text">
                     </div>
 
-                    <!-- Nút -->
-                    <button type="submit"
-                        class="w-full bg-black hover:bg-gray-800 text-white py-3 text-base md:text-lg rounded">Tạo tài
-                        khoản</button>
-                    <button type="button"
-                        class="w-full flex items-center justify-center border border-gray-300 bg-white hover:bg-gray-100 text-black py-3 text-base md:text-lg rounded mt-4">
-                        <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google icon" class="h-5 w-5 mr-2">
+                    <button type="submit" class="submit-button">Tạo tài khoản</button>
+
+                    <button type="button" class="google-button">
+                        <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google icon" class="google-icon">
                         Đăng ký với Google
                     </button>
 
-                    <div class="flex justify-between mt-6 text-sm flex-wrap gap-2">
-                        <a href="#" class="text-gray-600 hover:underline">Đã có tài khoản?</a>
-                        <a href="{{ route('login') }}" class="text-gray-600 hover:underline">Đăng nhập</a>
+                    <div class="extra-links">
+                        <a href="#" class="extra-link">Đã có tài khoản?</a>
+                        <a href="{{ route('login') }}" class="extra-link">Đăng nhập</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
     <style>
-        .bg-image {
-            background-image: url('https://images.unsplash.com/photo-1591337676887-a217a3fca0ed?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .register-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f3f4f6;
+            padding: 1rem;
+        }
+
+        .register-box {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1120px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .register-box {
+                flex-direction: row;
+            }
+        }
+
+        .register-image {
+            width: 100%;
+            min-height: 300px;
+            background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');
             background-size: cover;
             background-position: center;
+        }
+
+        @media (min-width: 768px) {
+            .register-image {
+                width: 50%;
+                min-height: 600px;
+            }
+        }
+
+        .register-form {
+            width: 100%;
+            background-color: #ffffff;
+            padding: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .register-form {
+                width: 50%;
+                padding: 4rem;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .subtitle {
+            color: #4B5563;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .subtitle {
+                font-size: 1.125rem;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-text {
+            width: 100%;
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            outline: none;
+        }
+
+        @media (min-width: 768px) {
+            .input-text {
+                font-size: 1.125rem;
+            }
+        }
+
+        .input-text:focus {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 2px #bfdbfe;
+        }
+
+        .submit-button {
+            width: 100%;
+            background-color: #000;
+            color: #fff;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-button:hover {
+            background-color: #1f2937;
+        }
+
+        .google-button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            border: 1px solid #d1d5db;
+            color: #000;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .google-button:hover {
+            background-color: #f3f4f6;
+        }
+
+        .google-icon {
+            height: 20px;
+            width: 20px;
+            margin-right: 0.5rem;
+        }
+
+        .extra-links {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            gap: 0.5rem;
+        }
+
+        .extra-link {
+            color: #4B5563;
+            text-decoration: none;
+        }
+
+        .extra-link:hover {
+            text-decoration: underline;
         }
     </style>
 @endsection
