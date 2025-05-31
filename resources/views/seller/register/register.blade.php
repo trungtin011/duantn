@@ -1,7 +1,5 @@
 @extends('layouts.app')
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/seller-register.css') }}">
-@endpush
+
 @section('content')
 <div class="container py-5 d-flex flex-column align-items-center" style="min-height:80vh; background:#f7f7f7;">
     <div class="w-100" style="max-width:900px;">
