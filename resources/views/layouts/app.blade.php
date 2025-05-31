@@ -104,6 +104,7 @@
             color: #bbb;
             font-size: 0.95rem;
         }
+        
     </style>
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
@@ -127,7 +128,35 @@
                 <button class="icon-btn" type="button"><i class="fa fa-search"></i></button>
                 <button class="icon-btn" type="button"><i class="fa fa-heart"></i></button>
                 <button class="icon-btn" type="button"><i class="fa fa-shopping-cart"></i></button>
-                <span class="user-icon"><i class="fa fa-user"></i></span>
+                <!-- User Dropdown -->
+                <div class="user-dropdown">
+                    <div class="user-icon" id="userDropdownToggle">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    <div class="dropdown-menu-custom" id="userDropdownMenu">
+                        <a href="#" class="dropdown-item-custom">
+                            <i class="fa fa-user"></i>
+                            Quản lý tài khoản
+                        </a>
+                        <a href="#" class="dropdown-item-custom">
+                            <i class="fa fa-shopping-bag"></i>
+                            Đơn hàng của tôi
+                        </a>
+                        <a href="#" class="dropdown-item-custom">
+                            <i class="fa fa-times-circle"></i>
+                            Đơn hàng bị hủy
+                        </a>
+                        <a href="#" class="dropdown-item-custom">
+                            <i class="fa fa-star"></i>
+                            Đánh giá của tôi
+                        </a>
+                        <div class="dropdown-divider-custom"></div>
+                        <button class="dropdown-item-custom" onclick="logout()">
+                            <i class="fa fa-sign-out-alt"></i>
+                            Đăng xuất
+                        </button>
+                    </div>
+                </div>
                 <select class="form-select form-select-sm ms-2" style="width:90px;">
                     <option>English</option>
                     <option>Tiếng Việt</option>
