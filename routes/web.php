@@ -54,3 +54,27 @@ Route::get('/user/order/order-history', function () {
 Route::get('/user/cart', function () {
     return view('user.cart');
 });
+
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+})->name('admin.dashboard');
+
+Route::get('/admin/products', function () {
+    return view('admin.products.index');
+})->name('admin.products.index');
+
+Route::get('/admin/categories', function () {
+    return view('admin.categories.index');
+})->name('admin.categories.index');
+
+Route::get('/admin/orders', function () {
+    return view('admin.orders.index');
+})->name('admin.orders.index');
+
+Route::get('/admin/reviews', function () {
+    return view('admin.reviews.index');
+})->name('admin.reviews.index');
+
+Route::get('/admin/settings', function () {
+    return view('admin.settings.index');
+})->name('admin.settings.index');
