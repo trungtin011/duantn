@@ -3,10 +3,7 @@
 @section('content')
     <div class="register-container">
         <div class="register-box">
-            <!-- Bên trái: hình ảnh -->
             <div class="register-image"></div>
-
-            <!-- Bên phải: form đăng ký -->
             <div class="register-form">
                 <h2 class="title">Tạo một tài khoản</h2>
                 <p class="subtitle">Nhập thông tin của bạn bên dưới</p>
