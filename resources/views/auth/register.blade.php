@@ -37,9 +37,10 @@
                         Đăng ký với Google
                     </button>
 
-                    <div class="flex justify-between mt-6 text-sm flex-wrap gap-2">
-                        <a href="#" class="text-gray-600 hover:underline">Đã có tài khoản?</a>
-                        <a href="{{ route('login') }}" class="text-gray-600 hover:underline">Đăng nhập</a>
+                    <div class="flex mt-6 text-sm flex-wrap gap-2">
+                        <span href="#" class="text-gray-600">Đã có tài khoản?
+                            <a href="{{ route('login') }}" class="text-gray-600 hover:underline">Đăng nhập</a>
+                        </span>
                     </div>
                 </form>
             </div>
