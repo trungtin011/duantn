@@ -1268,29 +1268,30 @@
                                             </div>
                                         </div>
                                         <div class="flex justify-center items-center h-full">
-                                            <img src="{{ asset('images/<?php echo $product['image']; ?>') }}"
-                                                class="w-[172px] h-[152px] object-cover" alt="<?php echo $product['name']; ?>">
+                                            <img src="{{ asset('images/' . $product['image']) }}"
+                                                class="w-[172px] h-[152px] object-cover" alt="{{ $product['name'] }}">
                                         </div>
                                         <div
                                             class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
                                             <button class="text-white">Thêm vào giỏ hàng</button>
                                         </div>
                                     </div>
-                                    <h3 class="text-[20px] mt-2"><?php echo $product['name']; ?></h3>
+                                    <h3 class="text-[20px] mt-2">{{ $product['name'] }}</h3>
                                     <div class="flex items-center gap-[12px]">
-                                        <p class="text-[#7F7F7F]">$<?php echo $product['price']; ?></p>
-                                        <p class="text-[#BDBDBD] line-through">$<?php echo $product['old_price']; ?></p>
+                                        <p class="text-[#7F7F7F]">${{ $product['price'] }}</p>
+                                        <p class="text-[#BDBDBD] line-through">${{ $product['old_price'] }}</p>
                                     </div>
                                     <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
                                         <div>
-                                            <?php
-                                            for ($i = 1; $i <= 5; $i++) {
-                                                $starClass = $i <= $product['rating'] ? 'fa-solid' : 'fa-regular';
-                                                echo "<i class='$starClass fa-star'></i>";
-                                            }
-                                            ?>
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                @if ($i <= $product['rating'])
+                                                    <i class="fa-solid fa-star"></i>
+                                                @else
+                                                    <i class="fa-regular fa-star"></i>
+                                                @endif
+                                            @endfor
                                         </div>
-                                        <div class="text-[#7F7F7F] font-bold">(<?php echo $product['reviews']; ?>)</div>
+                                        <div class="text-[#7F7F7F] font-bold">({{ $product['reviews'] }})</div>
                                     </div>
                                 </div>
                             </div>
