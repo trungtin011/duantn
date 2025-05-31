@@ -299,7 +299,7 @@
     </section>
 
     <!-- Khuyến mãi with Countdown Timer -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Hôm nay</span>
@@ -711,7 +711,7 @@
     </section>
 
     <!-- Danh mục sản phẩm -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Danh mục</span>
@@ -733,7 +733,7 @@
                 </div>
             </div>
             <div class="overflow-hidden">
-                <div id="category-slider" class="flex flex-row flex-nowrap gap-[30px] transition-transform duration-500">
+                <div id="category-slider" class="flex flex-row flex-nowrap gap-[33px] transition-transform duration-500">
                     <!-- Danh mục 1: Phones -->
                     <div class="flex-shrink-0 w-[223px]">
                         <div
@@ -891,7 +891,7 @@
     </section>
 
     <!-- Sản phẩm bán chạy -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Tháng này</span>
@@ -1261,7 +1261,7 @@
     </section>
 
     <!-- Banner phụ -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="bg-black text-white min-h-[600px] flex flex-col md:flex-row">
             <!-- Bên trái: Text + Nút + Đồng hồ -->
             <div class="w-full md:w-5/12 flex flex-col justify-center p-8 md:p-[55px] gap-10">
@@ -1313,7 +1313,7 @@
 
 
     <!-- Khám phá sản phẩm -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Sản phẩm của chúng tôi</span>
@@ -1430,7 +1430,7 @@
     </section>
 
     <!-- Hàng mới về -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Nổi bật</span>
@@ -1498,7 +1498,7 @@
     </section>
 
     <!-- Dịch vụ -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center gap-[88px]">
             <div class="flex flex-col items-center justify-center gap-[30px] w-1/3">
                 <div class="bg-[#C1C1C1] rounded-full flex items-center justify-center w-[80px] h-[80px]">
