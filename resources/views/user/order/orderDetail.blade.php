@@ -1,142 +1,170 @@
 @extends('layouts.app')
 
 @section('content')
-<link rel="stylesheet" href="orderDetail.css">
-    <div class="container py-5">
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card shadow-sm border-0 rounded-3 bg-light">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1 fw-bold text-dark">Chi tiết đơn hàng</h2>
-                            <p class="text-muted mb-0 fs-6">Đơn hàng #19893 | Order Created: Jan 26, 2023 10:30 AM</p>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <select class="form-select form-select-sm shadow-sm" style="width: 200px;">
-                                <option value="delivered">Change Status: Delivered</option>
-                                <option value="processing">Change Status: Processing</option>
-                                <option value="cancelled">Change Status: Cancelled</option>
-                            </select>
-                            <button type="submit" class="btn btn-primary btn-sm save-btn">Lưu</button>
-                        </div>
-                    </div>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <div class="container mx-auto py-5">
+        <!-- breadcrumb -->
+        <div class="flex flex-wrap items-center gap-2 mb-10 px-[10px] sm:px-0 md:mb-20 text-sm md:text-base">
+            <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
+            <span>/</span>
+            <span>Chi tiết đơn hàng</span>
+        </div>
+
+        <!-- Header: Chi tiết đơn hàng -->
+        <div class="mb-4">
+            <div class="bg-gray-100 shadow-sm rounded-lg p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-1">Chi tiết đơn hàng</h2>
+                    <p class="text-gray-500 text-sm">Đơn hàng #19893 | Order Created: Jan 26, 2023 10:30 AM</p>
                 </div>
+                {{-- <div class="flex items-center gap-2">
+                    <select
+                        class="border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style="width: 200px;">
+                        <option value="delivered">Change Status: Delivered</option>
+                        <option value="processing">Change Status: Processing</option>
+                        <option value="cancelled">Change Status: Cancelled</option>
+                    </select>
+                    <button type="submit"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">Lưu</button>
+                </div> --}}
             </div>
         </div>
 
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title fw-semibold text-dark mb-3"><i class="bi bi-person-fill me-2 text-primary"></i>Khách hàng</h5>
-                        <p class="card-text text-muted">
-                            <strong>Tên:</strong> Nguyễn Văn A<br>
-                            <strong>Email:</strong> thanhlinh1923@gmail.com<br>
-                            <strong>Số điện thoại:</strong> 0123456789
-                        </p>
-                    </div>
-                </div>
+        <!-- Thông tin khách hàng, thanh toán, giao hàng -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <!-- Khách hàng -->
+            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
+                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                    Khách hàng
+                </h5>
+                <p class="text-gray-600 text-sm">
+                    <strong>Tên:</strong> Nguyễn Văn A<br>
+                    <strong>Email:</strong> thanhlinh1923@gmail.com<br>
+                    <strong>Số điện thoại:</strong> 0123456789
+                </p>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title fw-semibold text-dark mb-3"><i class="bi bi-credit-card-fill me-2 text-primary"></i>Thông tin thanh toán</h5>
-                        <p class="card-text text-muted">
-                            <strong>Phương thức thanh toán:</strong> VNPay<br>
-                            <strong>Tên chủ tài khoản:</strong> Nguyễn Văn A<br>
-                            <strong>Số tài khoản:</strong> 1234 **** ****
-                        </p>
-                    </div>
-                </div>
+            <!-- Thông tin thanh toán -->
+            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
+                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                    </svg>
+                    Thông tin thanh toán
+                </h5>
+                <p class="text-gray-600 text-sm">
+                    <strong>Phương thức thanh toán:</strong> VNPay<br>
+                    <strong>Tên chủ tài khoản:</strong> Nguyễn Văn A<br>
+                    <strong>Số tài khoản:</strong> 1234 **** ****
+                </p>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title fw-semibold text-dark mb-3"><i class="bi bi-truck me-2 text-primary"></i>Thông tin giao hàng</h5>
-                        <p class="card-text text-muted">
-                            <strong>Phương thức vận chuyển:</strong> GHN<br>
-                            <strong>Địa chỉ:</strong> 11 Hàng Điều, Tân Lộc, BMT
-                        </p>
-                    </div>
-                </div>
+            <!-- Thông tin giao hàng -->
+            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
+                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677h.75m0-11.177v-.548c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v.548m12 0h.75" />
+                    </svg>
+                    Thông tin giao hàng
+                </h5>
+                <p class="text-gray-600 text-sm">
+                    <strong>Phương thức vận chuyển:</strong> GHN<br>
+                    <strong>Địa chỉ:</strong> 11 Hàng Điều, Tân Lộc, BMT
+                </p>
             </div>
         </div>
 
-        <div class="row g-4">
-            <div class="col-md-8">
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-body">
-                        <h5 class="card-title fw-semibold text-dark mb-4">Danh sách sản phẩm</h5>
-                        <div class="table-responsive">
-                            <table class="table table-borderless table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">Sản phẩm</th>
-                                        <th scope="col">Đơn giá</th>
-                                        <th scope="col">Số lượng</th>
-                                        <th scope="col">Thành giá</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp" alt="Puma" class="me-2 rounded" style="width: 40px; height: auto; vertical-align: middle;">
-                                            Puma Sneakers
-                                        </td>
-                                        <td>99,999 VND</td>
-                                        <td>3</td>
-                                        <td>299,997 VND</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp" alt="Puma" class="me-2 rounded" style="width: 40px; height: auto; vertical-align: middle;">
-                                            Puma Sneakers
-                                        </td>
-                                        <td>99,999 VND</td>
-                                        <td>3</td>
-                                        <td>299,997 VND</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp" alt="Puma" class="me-2 rounded" style="width: 40px; height: auto; vertical-align: middle;">
-                                            Puma Sneakers
-                                        </td>
-                                        <td>99,999 VND</td>
-                                        <td>3</td>
-                                        <td>299,997 VND</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-body">
-                        <h5 class="card-title fw-semibold text-dark mb-4">Tổng quan đơn hàng</h5>
-                        <table class="table table-borderless">
+        <!-- Danh sách sản phẩm và Tổng quan đơn hàng -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Danh sách sản phẩm -->
+            <div class="md:col-span-2">
+                <div class="bg-white shadow-sm rounded-lg p-4">
+                    <h5 class="font-semibold text-gray-800 mb-4">Danh sách sản phẩm</h5>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 text-sm font-semibold text-gray-700">Sản phẩm</th>
+                                    <th class="p-3 text-sm font-semibold text-gray-700">Đơn giá</th>
+                                    <th class="p-3 text-sm font-semibold text-gray-700">Số lượng</th>
+                                    <th class="p-3 text-sm font-semibold text-gray-700">Thành giá</th>
+                                </tr>
+                            </thead>
                             <tbody>
-                                <tr>
-                                    <td class="text-muted">Tổng tiền hàng</td>
-                                    <td class="text-end fw-medium">299,997 VND</td>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="p-3">
+                                        <div class="flex items-center">
+                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp"
+                                                alt="Puma" class="w-10 h-10 rounded mr-3 object-cover">
+                                            Puma Sneakers
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-gray-600">99,999 VND</td>
+                                    <td class="p-3 text-gray-600">3</td>
+                                    <td class="p-3 text-gray-600">299,997 VND</td>
                                 </tr>
-                                <tr>
-                                    <td class="text-muted">Phí ship</td>
-                                    <td class="text-end fw-medium">0 VND</td>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="p-3">
+                                        <div class="flex items-center">
+                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp"
+                                                alt="Puma" class="w-10 h-10 rounded mr-3 object-cover">
+                                            Puma Sneakers
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-gray-600">99,999 VND</td>
+                                    <td class="p-3 text-gray-600">3</td>
+                                    <td class="p-3 text-gray-600">299,997 VND</td>
                                 </tr>
-                                <tr>
-                                    <td class="text-muted">Giảm giá</td>
-                                    <td class="text-end fw-medium text-success">0 VND</td>
-                                </tr>
-                                <tr class="border-top pt-2">
-                                    <td class="fw-bold text-dark">Tổng cộng</td>
-                                    <td class="text-end fw-bold text-primary">299,997 VND</td>
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="p-3">
+                                        <div class="flex items-center">
+                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp"
+                                                alt="Puma" class="w-10 h-10 rounded mr-3 object-cover">
+                                            Puma Sneakers
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-gray-600">99,999 VND</td>
+                                    <td class="p-3 text-gray-600">3</td>
+                                    <td class="p-3 text-gray-600">299,997 VND</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- Tổng quan đơn hàng -->
+            <div class="md:col-span-1">
+                <div class="bg-white shadow-sm rounded-lg p-4">
+                    <h5 class="font-semibold text-gray-800 mb-4">Tổng quan đơn hàng</h5>
+                    <table class="w-full text-sm">
+                        <tbody>
+                            <tr>
+                                <td class="py-2 text-gray-600">Tổng tiền hàng</td>
+                                <td class="py-2 text-right font-medium text-gray-800">299,997 VND</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 text-gray-600">Phí ship</td>
+                                <td class="py-2 text-right font-medium text-gray-800">0 VND</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 text-gray-600">Giảm giá</td>
+                                <td class="py-2 text-right font-medium text-green-600">0 VND</td>
+                            </tr>
+                            <tr class="border-t border-gray-200 pt-2">
+                                <td class="py-2 font-bold text-gray-800">Tổng cộng</td>
+                                <td class="py-2 text-right font-bold text-blue-600">299,997 VND</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
