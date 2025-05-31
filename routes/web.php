@@ -23,6 +23,7 @@ Route::get('/client/wishlist', function () {
     return view('client.wishlist');
 })->name('wishlist');
 
+// trang checkout
 Route::get('/client/checkout', function () {
     return view('client.checkout');
 })->name('checkout');
@@ -71,59 +72,35 @@ Route::get('/seller/register2', function () {
 Route::get('/seller/register3', function () {
     return view('seller.register.register3');
 });
+///////////////////////////////////////////////////////////
 
-
-// trang 404
-Route::get('/404', function () {
-    return view('error.404NotFound');
-});
-
-Route::get('/client/wishlist', function () {
-    return view('client.wishlist');
-});
-
-Route::get('/client/checkout', function () {
-    return view('client.checkout');
-});
-
-// trang đăng ký và đăng nhập
-Route::get('/signup', function () {
-    return view('register');
-});
-Route::get('/login', function () {
-    return view('login');
-});
-
-// trang lịch sử đơn hàng
-Route::get('/user/order/order-history', function () {
-    return view('user.order.order_history');
-}); 
-
-// trang giỏ hàng
-Route::get('/user/cart', function () {
-    return view('user.cart');
-});
-
+///////////////////////////////////////////////////////////
+// trang chủ admin
 Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard');
 
+// trang sản phẩm admin
 Route::get('/admin/products', function () {
     return view('admin.products.index');
 })->name('admin.products.index');
 
+// trang danh mục admin
 Route::get('/admin/categories', function () {
     return view('admin.categories.index');
 })->name('admin.categories.index');
 
+// trang đơn hàng admin
 Route::get('/admin/orders', function () {
     return view('admin.orders.index');
 })->name('admin.orders.index');
 
+// trang đánh giá admin
 Route::get('/admin/reviews', function () {
     return view('admin.reviews.index');
 })->name('admin.reviews.index');
 
+// trang cài đặt admin
 Route::get('/admin/settings', function () {
     return view('admin.settings.index');
 })->name('admin.settings.index');
