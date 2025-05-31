@@ -1,32 +1,42 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exclusive</title>
+    <title>@yield('title')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <style>
         .main-header {
             background: #fff;
             border-bottom: 1px solid #eee;
             padding: 0.5rem 0;
         }
+
         .main-header .navbar-nav .nav-link {
             color: #222;
             font-weight: 500;
             margin-right: 1rem;
         }
+
         .main-header .navbar-nav .nav-link.active {
             color: #ff7a00;
         }
+
         .main-header .search-box {
             border-radius: 20px;
             border: 1px solid #eee;
             padding: 0.25rem 1rem;
             width: 220px;
         }
+
         .main-header .icon-btn {
             background: none;
             border: none;
@@ -34,9 +44,11 @@
             color: #222;
             font-size: 1.2rem;
         }
+
         .main-header .icon-btn:hover {
             color: #ff7a00;
         }
+
         .main-header .user-icon {
             border-radius: 50%;
             background: #f5f5f5;
@@ -47,36 +59,45 @@
             justify-content: center;
             font-size: 1.2rem;
         }
+
         .footer {
             background: #111;
             color: #fff;
             padding: 40px 0 0 0;
         }
+
         .footer .footer-title {
             font-weight: bold;
             margin-bottom: 1rem;
         }
-        .footer .footer-link, .footer .footer-link:visited {
+
+        .footer .footer-link,
+        .footer .footer-link:visited {
             color: #bbb;
             text-decoration: none;
             display: block;
             margin-bottom: 0.5rem;
         }
+
         .footer .footer-link:hover {
             color: #ff7a00;
         }
+
         .footer .footer-app img {
             width: 120px;
             margin-bottom: 10px;
         }
+
         .footer .footer-social a {
             color: #fff;
             margin-right: 10px;
             font-size: 1.2rem;
         }
+
         .footer .footer-social a:hover {
             color: #ff7a00;
         }
+
         .footer-bottom {
             border-top: 1px solid #222;
             margin-top: 30px;
@@ -87,8 +108,25 @@
         }
     </style>
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
 </head>
+
 <body>
+    <!-- Top Header -->
+    <div class="bg-[#000] text-[#fff] p-[15px]">
+        <div class="w-[859px] mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-[10px]">
+                <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
+                <button class="text-[#fff] font-bold" style="border-bottom: 1px solid #FAFAFA">Mua ngay</button>
+            </div>
+            <div class="flex items-center gap-[10px]">
+                <select class="bg-transparent" style="width:90px;">
+                    <option>English</option>
+                    <option>Tiếng Việt</option>
+                </select>
+            </div>
+        </div>
+    </div>
     <!-- Header -->
     <header class="main-header">
         <div class="container d-flex align-items-center justify-content-between">
@@ -98,7 +136,7 @@
                     <li class="nav-item"><a class="nav-link active" href="/">Trang chủ</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Về chúng tôi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Đăng ký</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('signup') }}">Đăng ký</a></li>
                 </ul>
             </nav>
             <form class="d-flex align-items-center" style="gap:10px;">
@@ -154,8 +192,10 @@
                 <div class="col-md-2 mb-4">
                     <div class="footer-title">Tải App</div>
                     <div class="footer-app mb-2">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
-                        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="App Store">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+                            alt="Google Play">
+                        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                            alt="App Store">
                     </div>
                     <div style="font-size:0.85rem; color:#bbb;">Tiết kiệm 5.3 ứng dụng dành cho người dùng mới</div>
                 </div>
@@ -177,4 +217,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
 </body>
-</html> 
+
+</html>
