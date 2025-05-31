@@ -72,7 +72,7 @@ Route::get('/seller/register3', function () {
     return view('seller.register.register3');
 });
 
-<<<<<<< HEAD
+
 // trang 404
 Route::get('/404', function () {
     return view('error.404NotFound');
@@ -127,6 +127,3 @@ Route::get('/admin/reviews', function () {
 Route::get('/admin/settings', function () {
     return view('admin.settings.index');
 })->name('admin.settings.index');
-=======
-///////////////////////////////////////////////////////////
->>>>>>> 5385a0bd8dd4305a3022e05da8b0f4ee0329656b
