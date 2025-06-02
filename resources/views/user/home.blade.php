@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Trang chủ')
 @section('content')
     <!-- Main Banner -->
     <section class="container mx-auto py-8 flex relative">
@@ -19,7 +20,7 @@
 
                         </button>
                         <div id="dropdownMenu"
-                            class="dropdown-content text-[18px] shadow-lg font-semibold absolute top-[32px] left-[390px] z-10 w-[1134px] h-[400px] bg-white">
+                            class="dropdown-content text-[18px] shadow-lg font-semibold absolute top-[32px] left-[384px] z-10 w-[1152px] h-[400px] bg-white">
                             <div class="flex h-[100%]">
                                 <div class="flex flex-col gap-[25px] p-4">
                                     <div class="w-1/2 flex gap-[40px]">
@@ -81,7 +82,7 @@
                         </svg>
                     </button>
                     <div id="dropdownMenuSecond"
-                        class="dropdown-content text-[18px] shadow-lg font-semibold absolute top-[32px] left-[390px] z-10 w-[1134px] h-[400px] bg-white">
+                        class="dropdown-content text-[18px] shadow-lg font-semibold absolute top-[32px] left-[384px] z-10 w-[1152px] h-[400px] bg-white">
                         <div class="flex h-[100%]">
                             <div class="flex flex-col gap-[25px] p-4">
                                 <div class="w-1/2 flex gap-[40px]">
@@ -171,7 +172,7 @@
                                     style="width: 40px; height: 49px;">
                                 <span class="text-white text-[16px]">iPhone 14 Series</span>
                             </div>
-                            <h1 class="text-[48px] font-bold text-white w-[295px]">Giảm Giá Lên Đến 10%</h1>
+                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
                             <button class="mt-4 text-white buy-now-btn flex items-center">
                                 <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
                                     ngay</span>
@@ -194,7 +195,7 @@
                                     style="width: 40px; height: 49px;">
                                 <span class="text-white text-[16px]">iPhone 14 Series</span>
                             </div>
-                            <h1 class="text-[48px] font-bold text-white w-[295px]">Giảm Giá Lên Đến 10%</h1>
+                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
                             <button class="mt-4 text-white buy-now-btn flex items-center">
                                 <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
                                     ngay</span>
@@ -217,7 +218,7 @@
                                     style="width: 40px; height: 49px;">
                                 <span class="text-white text-[16px]">iPhone 14 Series</span>
                             </div>
-                            <h1 class="text-[48px] font-bold text-white w-[295px]">Giảm Giá Lên Đến 10%</h1>
+                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
                             <button class="mt-4 text-white buy-now-btn flex items-center">
                                 <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
                                     ngay</span>
@@ -240,7 +241,7 @@
                                     style="width: 40px; height: 49px;">
                                 <span class="text-white text-[16px]">iPhone 14 Series</span>
                             </div>
-                            <h1 class="text-[48px] font-bold text-white w-[295px]">Giảm Giá Lên Đến 10%</h1>
+                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
                             <button class="mt-4 text-white buy-now-btn flex items-center">
                                 <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
                                     ngay</span>
@@ -263,7 +264,7 @@
                                     style="width: 40px; height: 49px;">
                                 <span class="text-white text-[16px]">iPhone 14 Series</span>
                             </div>
-                            <h1 class="text-[48px] font-bold text-white w-[295px]">Giảm Giá Lên Đến 10%</h1>
+                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
                             <button class="mt-4 text-white buy-now-btn flex items-center">
                                 <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
                                     ngay</span>
@@ -298,7 +299,7 @@
     </section>
 
     <!-- Khuyến mãi with Countdown Timer -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Hôm nay</span>
@@ -710,7 +711,7 @@
     </section>
 
     <!-- Danh mục sản phẩm -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Danh mục</span>
@@ -732,7 +733,7 @@
                 </div>
             </div>
             <div class="overflow-hidden">
-                <div id="category-slider" class="flex flex-row flex-nowrap gap-[30px] transition-transform duration-500">
+                <div id="category-slider" class="flex flex-row flex-nowrap gap-[33px] transition-transform duration-500">
                     <!-- Danh mục 1: Phones -->
                     <div class="flex-shrink-0 w-[223px]">
                         <div
@@ -890,7 +891,7 @@
     </section>
 
     <!-- Sản phẩm bán chạy -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Tháng này</span>
@@ -1260,58 +1261,59 @@
     </section>
 
     <!-- Banner phụ -->
-    <section class="container mx-auto px-4 py-8">
-        <div class="bg-black text-white h-[600px]">
-            <div class="row h-full">
-                <div class="col-md-5">
-                    <div class="flex flex-col justify-center h-full p-[55px] gap-[40px]">
-                        <div class="flex flex-col gap-[32px]">
-                            <span class="text-[20px] text-[#00FF66] font-semibold">Danh mục</span>
-                            <h2 class="text-[#fff] text-[63px] font-bold">Nâng cao trải nghiệm âm nhạc</h2>
-                            <div class="timer-container flex items-center gap-[24px]">
-                                <div
-                                    class="timer-item w-[62px] h-[62px] rounded-full bg-[#fff] text-[#000] flex flex-col items-center justify-center">
-                                    <span class="timer-value text-[18px] font-bold">23</span>
-                                    <span class="timer-label text-[13px]">Giờ</span>
-                                </div>
-                                <div
-                                    class="timer-item w-[62px] h-[62px] rounded-full bg-[#fff] text-[#000] flex flex-col items-center justify-center">
-                                    <span class="timer-value text-[18px] font-bold">05</span>
-                                    <span class="timer-label text-[13px]">Ngày</span>
-                                </div>
-                                <div
-                                    class="timer-item w-[62px] h-[62px] rounded-full bg-[#fff] text-[#000] flex flex-col items-center justify-center">
-                                    <span class="timer-value text-[18px] font-bold">05</span>
-                                    <span class="timer-label text-[13px]">Phút</span>
-                                </div>
-                                <div
-                                    class="timer-item w-[62px] h-[62px] rounded-full bg-[#fff] text-[#000] flex flex-col items-center justify-center">
-                                    <span class="timer-value text-[18px] font-bold">05</span>
-                                    <span class="timer-label text-[13px]">Giây</span>
-                                </div>
-                            </div>
+    <section class="container mx-auto py-8">
+        <div class="bg-black text-white min-h-[600px] flex flex-col md:flex-row">
+            <!-- Bên trái: Text + Nút + Đồng hồ -->
+            <div class="w-full md:w-5/12 flex flex-col justify-center p-8 md:p-[55px] gap-10">
+                <div class="flex flex-col gap-8">
+                    <span class="text-[20px] text-[#00FF66] font-semibold">Danh mục</span>
+                    <h2 class="text-[40px] md:text-[63px] font-bold leading-tight">Nâng cao trải nghiệm âm nhạc</h2>
+                    <div class="flex items-center gap-6 flex-wrap">
+                        <div
+                            class="w-[62px] h-[62px] rounded-full bg-white text-black flex flex-col items-center justify-center">
+                            <span class="text-[18px] font-bold">23</span>
+                            <span class="text-[13px]">Giờ</span>
                         </div>
-                        <button
-                            class="bg-[#00FF66] text-[#fff] text-[20px] font-semibold px-[24px] py-[12px] w-[179px] h-[58px] rounded-[4px]">Mua
-                            ngay</button>
+                        <div
+                            class="w-[62px] h-[62px] rounded-full bg-white text-black flex flex-col items-center justify-center">
+                            <span class="text-[18px] font-bold">05</span>
+                            <span class="text-[13px]">Ngày</span>
+                        </div>
+                        <div
+                            class="w-[62px] h-[62px] rounded-full bg-white text-black flex flex-col items-center justify-center">
+                            <span class="text-[18px] font-bold">05</span>
+                            <span class="text-[13px]">Phút</span>
+                        </div>
+                        <div
+                            class="w-[62px] h-[62px] rounded-full bg-white text-black flex flex-col items-center justify-center">
+                            <span class="text-[18px] font-bold">05</span>
+                            <span class="text-[13px]">Giây</span>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-7">
-                    <div class="flex justify-center items-center h-full p-[55px]">
-                        <div class="w-[310px] h-[300px] rounded-full absolute"
-                            style="background: radial-gradient(circle, #D9D9D9 100%); filter: blur(150px);">
-                        </div>
-                        <div class="relative">
-                            <img src="{{ asset('images/jbl_boombox.png') }}" class="object-cover" alt="">
-                        </div>
-                    </div>
+                <button class="bg-[#00FF66] text-white text-[20px] font-semibold px-6 py-3 w-[179px] h-[58px] rounded-md">
+                    Mua ngay
+                </button>
+            </div>
+
+            <!-- Bên phải: Ảnh sản phẩm -->
+            <div class="w-full md:w-7/12 relative flex justify-center items-center p-8 md:p-[55px]">
+                <!-- Vòng sáng -->
+                <div class="w-[310px] h-[300px] rounded-full absolute z-0"
+                    style="background: radial-gradient(circle, #D9D9D9 100%); filter: blur(150px);">
+                </div>
+                <!-- Ảnh loa -->
+                <div class="relative z-10">
+                    <img src="{{ asset('images/jbl_boombox.png') }}" alt="Loa JBL"
+                        class="object-cover max-w-full h-auto">
                 </div>
             </div>
         </div>
     </section>
 
+
     <!-- Khám phá sản phẩm -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Sản phẩm của chúng tôi</span>
@@ -1386,29 +1388,30 @@
                                             </div>
                                         </div>
                                         <div class="flex justify-center items-center h-full">
-                                            <img src="{{ asset('images/<?php echo $product['image']; ?>') }}"
-                                                class="w-[172px] h-[152px] object-cover" alt="<?php echo $product['name']; ?>">
+                                            <img src="{{ asset('images/' . $product['image']) }}"
+                                                class="w-[172px] h-[152px] object-cover" alt="{{ $product['name'] }}">
                                         </div>
                                         <div
                                             class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
                                             <button class="text-white">Thêm vào giỏ hàng</button>
                                         </div>
                                     </div>
-                                    <h3 class="text-[20px] mt-2"><?php echo $product['name']; ?></h3>
+                                    <h3 class="text-[20px] mt-2">{{ $product['name'] }}</h3>
                                     <div class="flex items-center gap-[12px]">
-                                        <p class="text-[#7F7F7F]">$<?php echo $product['price']; ?></p>
-                                        <p class="text-[#BDBDBD] line-through">$<?php echo $product['old_price']; ?></p>
+                                        <p class="text-[#7F7F7F]">${{ $product['price'] }}</p>
+                                        <p class="text-[#BDBDBD] line-through">${{ $product['old_price'] }}</p>
                                     </div>
                                     <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
                                         <div>
-                                            <?php
-                                            for ($i = 1; $i <= 5; $i++) {
-                                                $starClass = $i <= $product['rating'] ? 'fa-solid' : 'fa-regular';
-                                                echo "<i class='$starClass fa-star'></i>";
-                                            }
-                                            ?>
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                @if ($i <= $product['rating'])
+                                                    <i class="fa-solid fa-star"></i>
+                                                @else
+                                                    <i class="fa-regular fa-star"></i>
+                                                @endif
+                                            @endfor
                                         </div>
-                                        <div class="text-[#7F7F7F] font-bold">(<?php echo $product['reviews']; ?>)</div>
+                                        <div class="text-[#7F7F7F] font-bold">({{ $product['reviews'] }})</div>
                                     </div>
                                 </div>
                             </div>
@@ -1420,15 +1423,15 @@
             </div>
         </div>
         <div class="flex justify-center items-center mt-5">
-            <button
-                class="border-1 border-[#000] px-4 py-2 rounded-[4px] w-[264px] h-[56px] text-[#000] hover:bg-[#000] hover:text-[#FFF]">
+            <button class="px-4 py-2 rounded-[4px] w-[264px] h-[56px] text-[#000] hover:bg-[#000] hover:text-[#FFF]"
+                style="border: 1px solid #000;">
                 Xem tất cả sản phẩm
             </button>
         </div>
     </section>
 
     <!-- Hàng mới về -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
             <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Nổi bật</span>
@@ -1496,15 +1499,16 @@
     </section>
 
     <!-- Dịch vụ -->
-    <section class="container mx-auto px-4 py-8">
+    <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center gap-[88px]">
             <div class="flex flex-col items-center justify-center gap-[30px] w-1/3">
                 <div class="bg-[#C1C1C1] rounded-full flex items-center justify-center w-[80px] h-[80px]">
                     <div class="bg-[#000] rounded-full flex items-center justify-center w-[58px] h-[58px]">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             class="bi bi-truck text-center text-[30px] text-[#fff] w-[30px]" viewBox="0 0 16 16">
-                            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
-                          </svg>
+                            <path
+                                d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2" />
+                        </svg>
                     </div>
                 </div>
                 <div class="flex flex-col gap-[10px] text-center">
@@ -1517,8 +1521,9 @@
                     <div class="bg-[#000] rounded-full flex items-center justify-center w-[58px] h-[58px]">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             class="bi bi-headset text-center text-[30px] text-[#fff] w-[30px]" viewBox="0 0 16 16">
-                            <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5"/>
-                          </svg>
+                            <path
+                                d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5" />
+                        </svg>
                     </div>
                 </div>
                 <div class="flex flex-col gap-[10px] text-center">

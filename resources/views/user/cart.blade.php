@@ -1,109 +1,118 @@
-
 @extends('layouts.app')
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/cart.css') }}">
-@endpush
+@section('title', 'Giỏ hàng')
 
 @section('content')
-<div class="container py-5" style="min-height:80vh;">
-    <div class="w-100" style="max-width:900px; margin:auto;">
-        <div class="d-flex align-items-center mb-4 text-secondary">
-            <a href="#" class="text-secondary text-decoration-none">Home</a>
-            <span class="mx-2">/</span>
-            <span>Cart</span>
-        </div>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <div class="container mx-auto py-5" style="min-height: 80vh;">
+        <div class="container mx-auto py-5">
+            <!-- breadcrumb -->
+            <div class="flex flex-wrap items-center gap-2 mb-10 px-[10px] sm:px-0 md:mb-20 text-sm md:text-base">
+                <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
+                <span>/</span>
+                <span>Giỏ hàng</span>
+            </div>
 
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead>
+            <!-- Bảng sản phẩm -->
+            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="py-3 px-4">Sản phẩm</th>
-                            <th scope="col" class="py-3">Giá</th>
-                            <th scope="col" class="py-3">Số lượng</th>
-                            <th scope="col" class="py-3">Tổng</th>
+                            <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Sản phẩm</th>
+                            <th class="py-3 text-sm font-semibold text-gray-700">Giá</th>
+                            <th class="py-3 text-sm font-semibold text-gray-700">Số lượng</th>
+                            <th class="py-3 text-sm font-semibold text-gray-700">Tổng</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Example Product 1 --}}
-                        <tr>
-                            <td class="align-middle py-3 px-4">
-                                <div class="d-flex align-items-center">
-                                    <img src="{{ asset('images/lcd_monitor.png') }}" alt="LCD Monitor" style="width: 60px; height: 60px; object-fit: contain; margin-right: 15px;">
-                                    <span>LCD Monitor</span>
+                        <!-- Sản phẩm 1: LCD Monitor -->
+                        <tr class="border-b border-gray-200">
+                            <td class="py-4 px-4">
+                                <div class="flex items-center">
+                                    <img src="https://cdn.kkfashion.vn/26926-large_default/ao-thun-nu-mau-den-in-hinh-buom-asm16-35.jpg"
+                                        alt="LCD Monitor" class="w-[150px] h-[150px] object-contain mr-4">
+                                    <span class="text-gray-700">LCD Monitor</span>
                                 </div>
                             </td>
-                            <td class="align-middle py-3">$650</td>
-                            <td class="align-middle py-3">
-                                <div class="input-group input-group-sm" style="width: 100px;">
-                                    <input type="number" class="form-control text-center" value="1" min="1" max="99">
+                            <td class="py-4 text-center text-gray-700">$650</td>
+                            <td class="py-4 text-center">
+                                <div class="flex items-center justify-center">
+                                    <button class="px-2 py-1 border border-gray-300 hover:bg-gray-100">-</button>
+                                    <input type="text" value="1"
+                                        class="w-12 text-center border-t border-b border-gray-300 focus:outline-none">
+                                    <button class="px-2 py-1 border border-gray-300 hover:bg-gray-100">+</button>
                                 </div>
                             </td>
-                            <td class="align-middle py-3">$650</td>
+                            <td class="py-4 text-center text-gray-700">$650</td>
                         </tr>
-                        {{-- Example Product 2 --}}
-                        <tr>
-                            <td class="align-middle py-3 px-4">
-                                <div class="d-flex align-items-center">
-                                    <img src="{{ asset('images/h1_gamepad.png') }}" alt="H1 Gamepad" style="width: 60px; height: 60px; object-fit: contain; margin-right: 15px;">
-                                    <span>H1 Gamepad</span>
+                        <!-- Sản phẩm 2: H1 Gamepad -->
+                        <tr class="border-b border-gray-200">
+                            <td class="py-4 px-4">
+                                <div class="flex items-center">
+                                    <img src="https://cdn.kkfashion.vn/26926-large_default/ao-thun-nu-mau-den-in-hinh-buom-asm16-35.jpg"
+                                        alt="H1 Gamepad" class="w-[150px] h-[150px] object-contain mr-4">
+                                    <span class="text-gray-700">H1 Gamepad</span>
                                 </div>
                             </td>
-                            <td class="align-middle py-3">$550</td>
-                            <td class="align-middle py-3">
-                                <div class="input-group input-group-sm" style="width: 100px;">
-                                    <input type="number" class="form-control text-center" value="2" min="1" max="99">
+                            <td class="py-4 text-center text-gray-700">$550</td>
+                            <td class="py-4 text-center">
+                                <div class="flex items-center justify-center">
+                                    <button class="px-2 py-1 border border-gray-300 hover:bg-gray-100">-</button>
+                                    <input type="text" value="2"
+                                        class="w-12 text-center border-t border-b border-gray-300 focus:outline-none">
+                                    <button class="px-2 py-1 border border-gray-300 hover:bg-gray-100">+</button>
                                 </div>
                             </td>
-                            <td class="align-middle py-3">$1100</td>
+                            <td class="py-4 text-center text-gray-700">$1100</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <div class="d-flex justify-content-between mt-4">
-            <a href="#" class="btn btn-light border px-4 py-2">Quay lại cửa hàng</a>
-            <button class="btn btn-light border px-4 py-2">Cập nhật giỏ hàng</button>
-        </div>
+            <!-- Nút hành động -->
+            <div class="flex justify-between mt-6">
+                <a href="#" class="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-100">Quay lại
+                    cửa hàng</a>
+                <button class="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-100">Cập nhật giỏ
+                    hàng</button>
+            </div>
 
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h6 class="mb-3">Mã giảm giá</h6>
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Nhập mã giảm giá">
-                            <button class="btn btn-dark">Áp dụng mã</button>
-                        </div>
+            <!-- Mã giảm giá và Tổng số giỏ hàng -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- Mã giảm giá -->
+                <div class="shadow-sm rounded-lg py-4">
+                    <h6 class="text-gray-700 mb-3">Mã giảm giá</h6>
+                    <div class="flex">
+                        <input type="text"
+                            class="border border-gray-300 rounded-l-md p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Nhập mã giảm giá">
+                        <button class="bg-gray-800 text-white px-4 py-2 rounded-r-md hover:bg-gray-900">Áp dụng mã</button>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h5 class="fw-bold mb-3">Tổng số giỏ hàng</h5>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Tổng phụ:</span>
-                            <span>$1750</span>
+                <!-- Tổng số giỏ hàng -->
+                <div class="shadow-sm rounded-lg py-4">
+                    <h5 class="font-bold text-gray-800 mb-3">Tổng số giỏ hàng</h5>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tổng phụ:</span>
+                            <span class="text-gray-700">1750.000đ</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Vận chuyển:</span>
-                            <span>Free</span>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Vận chuyển:</span>
+                            <span class="text-gray-700">Free</span>
                         </div>
-                        <hr>
-                        <div class="d-flex justify-content-between fw-bold">
-                            <span>Tổng tiền:</span>
-                            <span>$1750</span>
+                        <hr class="border-gray-200">
+                        <div class="flex justify-between font-bold">
+                            <span class="text-gray-800">Tổng tiền:</span>
+                            <span class="text-red-800">1750.000đ</span>
                         </div>
-                        <div class="mt-4 text-end">
-                            <a href="#" class="btn btn-dark px-5 py-2">Tiến hành thanh toán</a>
-                        </div>
+                    </div>
+                    <div class="text-right mt-4">
+                        <a href="#" class="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-900">Tiến hành thanh
+                            toán</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
