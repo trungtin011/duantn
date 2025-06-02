@@ -142,12 +142,12 @@
     </header>
 
     <!-- Main Content -->
-    <main class="bg-white">
+    <main class="bg-white pb-10">
         @yield('content')
     </main>
 
     <!-- Footer -->
-    <footer class="bg-[#111] text-white mt-10 pt-10">
+    <footer class="bg-[#111] text-white pt-10">
         <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             <!-- Exclusive -->
             <div>
