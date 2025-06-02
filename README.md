@@ -26,6 +26,7 @@ php artisan storage:link
 ```bash
 php artisan serve
 ```
+composer require laravel/socialite
 
 # up git lên
 # git add .

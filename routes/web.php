@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\GoogleController;
 ///////////////////////////////////////////////////////////
 // trang chủ
 Route::get('/', function () {
@@ -121,3 +122,6 @@ Route::get('/admin/reviews', function () {
 Route::get('/admin/settings', function () {
     return view('admin.settings.index');
 })->name('admin.settings.index');
+Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
