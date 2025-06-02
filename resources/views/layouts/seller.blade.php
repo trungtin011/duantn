@@ -13,9 +13,8 @@
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
-    <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/seller/seller-register.css') }}">
+    <script src="{{ asset('js/seller/register.js') }}"></script>
     @stack('styles')
 </head>
 
@@ -31,7 +30,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="">
+    <main class="bg-white">
         @yield('content')
     </main>
 

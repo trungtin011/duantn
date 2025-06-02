@@ -82,6 +82,10 @@ Route::get('/seller/register2', function () {
 Route::get('/seller/register3', function () {
     return view('seller.register.register3');
 });
+
+Route::get('/seller/register4', function () {
+    return view('seller.register.register4');
+});
 ///////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////

@@ -1,9 +1,11 @@
 /* Stepper */
+/* Stepper */
 .stepper-step {
     min-width: 120px;
     position: relative;
     z-index: 2;
 }
+
 .step-dot {
     width: 14px;
     height: 14px;
@@ -13,15 +15,46 @@
     border: 2px solid #fff;
     box-shadow: 0 0 0 2px #f4a26133;
 }
+
 .step-dot.active {
     background: #f4a261;
     box-shadow: 0 0 0 2px #f4a261;
 }
+
+.step-dot.done {
+    background: #fbd5b0;
+    /* Cam nhạt */
+    box-shadow: 0 0 0 2px #f4a26180;
+    /* viền nhẹ hơn */
+}
+
+.step-dot.disabled {
+    background: #e2e8f0;
+    box-shadow: none;
+}
+
 .step-label {
     font-size: 0.85rem;
     color: #4a5568;
     font-weight: 500;
+    text-align: center;
 }
+
+.step-label.active {
+    color: #f4a261;
+    font-weight: 600;
+}
+
+.step-label.done {
+    color: #1a202c;
+    font-weight: 600;
+}
+
+.step-label.disabled {
+    color: #cbd5e0;
+    font-weight: 400;
+}
+
 .stepper-line {
     flex: 1;
     height: 2px;
@@ -31,12 +64,22 @@
     margin-right: -7px;
     z-index: 1;
 }
+
+.stepper-line.done {
+    background: #f4a261;
+}
+
+.stepper-line.disabled {
+    background: #e2e8f0;
+}
+
 /* Card */
 .card {
     background: #fff;
     border: 1px solid #e2e8f0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
 /* Form */
 .form-control-lg {
     font-size: 1rem;
@@ -44,44 +87,53 @@
     border-radius: 8px;
     border: 1px solid #e2e8f0;
 }
+
 .form-control-lg:focus {
     border-color: #f4a261;
     box-shadow: 0 0 0 2px #f4a26133;
 }
+
 /* Button */
 .btn-danger {
     background: #e53e3e;
     border: none;
 }
+
 .btn-danger:hover {
     background: #c53030;
 }
+
 .btn-outline-secondary {
     font-size: 0.85rem;
     color: #718096;
     border: 1px solid #e2e8f0;
     background: #edf2f7;
 }
+
 .btn-outline-secondary:hover {
     background: #e2e8f0;
     color: #4a5568;
 }
+
 .btn-light {
     background: #edf2f7;
     color: #4a5568;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
 }
+
 /* Breadcrumb */
 .breadcrumb {
     background: none;
     padding: 0;
     margin-bottom: 18px;
 }
-.breadcrumb-item + .breadcrumb-item::before {
+
+.breadcrumb-item+.breadcrumb-item::before {
     color: #bdbdbd;
 }
+
 .col-form-label {
     font-size: 0.9rem;
     color: #2d3748;
-} 
+}
