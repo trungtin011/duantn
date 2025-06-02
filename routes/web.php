@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\LoginController;
 ///////////////////////////////////////////////////////////
 // trang chủ
 Route::get('/', function () {
@@ -59,10 +60,12 @@ Route::get('/404', function () {
 Route::get('/signup', function () {
     return view('auth.register');
 })->name('signup');
-
+Route::post('/signup', [RegisterController::class, 'register'])->name('register.post');
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 ///////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////
