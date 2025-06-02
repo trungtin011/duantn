@@ -55,3 +55,9 @@ Route::get('/user/order/order-history', function () {
 Route::get('/user/cart', function () {
     return view('user.cart');
 });
+Route::get('/signup', function () {
+    return view('register');
+});
+Route::get('/login', function () {
+    return view('login');
+});
