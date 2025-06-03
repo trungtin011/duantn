@@ -47,7 +47,19 @@
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
                 <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
                 <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
+                @guest
                 <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
+                @endguest
+                @auth
+                @if(Auth::user()->role == 'customer' || Auth::user()->role === 'customer')
+                <li>
+                    <a href="{{ route('seller.register') }}" class="text-orange-500 font-semibold hover:text-orange-600">
+                        Bạn có muốn trở thành người bán?
+                    </a>
+                </li>
+                @endif
+                @endauth
+
             </ul>
 
             <!-- Icon menu mobile -->
@@ -65,9 +77,13 @@
                         class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
                 <div class="relative" @click="userDropdownOpen = !userDropdownOpen"
                     @click.away="userDropdownOpen = false">
-                    <div
-                        class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-200">
-                        <i class="fa fa-user"></i>
+                    <div class="flex items-center gap-2 w-auto">
+                        <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-200">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        @auth
+                        <span class="text-sm font-semibold text-gray-700">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
+                        @endauth
                     </div>
                     <!-- Dropdown Menu -->
                     <div x-show="userDropdownOpen"
@@ -105,14 +121,16 @@
                             </svg>
                             Đánh giá của tôi
                         </a>
-                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+
+                        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();" class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
                             </svg>
                             Đăng xuất
                         </a>
+                        <form id="logout-form-header" action="{{ route('logout') }}" method="POST" class="hidden">
+                            @csrf
+                        </form>
                     </div>
                 </div>
             </div>
@@ -124,7 +142,10 @@
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
                 <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
                 <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
+                @guest
                 <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
+                @endguest
+
             </ul>
 
             <div class="md:hidden flex items-center justify-center gap-3 mt-4">
@@ -142,12 +163,12 @@
     </header>
 
     <!-- Main Content -->
-    <main class="bg-white">
+    <main class="bg-white pb-10">
         @yield('content')
     </main>
 
     <!-- Footer -->
-    <footer class="bg-[#111] text-white mt-10 pt-10">
+    <footer class="bg-[#111] text-white pt-10">
         <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             <!-- Exclusive -->
             <div>
@@ -173,11 +194,30 @@
             <!-- Tài khoản -->
             <div>
                 <h4 class="font-bold mb-2">Tài khoản</h4>
+                @auth
+                <span class="text-sm text-gray-400 block mb-1">
+                    Xin chào, {{ Auth::user()->fullname ?? Auth::user()->username }}
+                </span>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Tài khoản của tôi</a>
-                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng nhập/Đăng ký</a>
-                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
-                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
+                <a href="{{ route('order_history') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đơn hàng</a>
+                <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
+                <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
+                @if(Auth::user()->role === 'customer')
+                <a href="{{ route('seller.register') }}" class="text-sm text-orange-500 font-semibold block mt-1">Bạn có muốn trở thành người bán?</a>
+                @endif
+                <a href="{{ route('logout') }}"
+                    onclick="event.preventDefault(); document.getElementById('logout-form-footer').submit();"
+                    class="text-sm text-gray-400 hover:text-orange-500 block">Đăng xuất</a>
+                <form id="logout-form-footer" action="{{ route('logout') }}" method="POST" class="hidden">
+                    @csrf
+                </form>
+                @else
+                <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng nhập</a>
+                <a href="{{ route('register') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng ký</a>
+                <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
+                <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
+                @endauth
             </div>
 
             <!-- Liên kết nhanh -->
