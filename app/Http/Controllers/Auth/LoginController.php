@@ -33,23 +33,20 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-
-            $user = Auth::user();
-            if ($user->role === \App\Enums\UserRole::ADMIN) {
-                return redirect()->route('admin.dashboard')->with('success', 'Đăng nhập thành công!');
-            } elseif ($user->role === \App\Enums\UserRole::SELLER) {
-                return redirect()->route('seller.index')->with('success', 'Đăng nhập thành công!');
-            } elseif ($user->role === \App\Enums\UserRole::CUSTOMER) {
-                return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
-            } elseif ($user->role === \App\Enums\UserRole::EMPLOYEE) {
-                return redirect()->route('orders.index')->with('success', 'Đăng nhập thành công!');
-            }
-
-            return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
+            // Chuyển về trang chính sau khi đăng nhập thành công
+            return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }
 
         return back()->withErrors([
             'login' => 'Tài khoản hoặc mật khẩu không đúng.',
         ])->withInput($request->only('login'));
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('home');
     }
 }
