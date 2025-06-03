@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use Illuminate\Support\Facades\Auth;
 
 ///////////////////////////////////////////////////////////
 // trang chủ
@@ -59,9 +60,7 @@ Route::get('/404', function () {
 Route::get('/403', function () {
     return view('error.403');
 })->name('403');
-///////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////
 // trang đăng ký, đăng nhập, quên mật khẩu
 Route::get('/signup', function () {
     return view('auth.register');
@@ -72,9 +71,11 @@ Route::get('/login', function () {
 })->name('login');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
-///////////////////////////////////////////////////////////
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 
-///////////////////////////////////////////////////////////
+// Route logout
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
 // trang đăng ký seller
 Route::middleware('CheckRole:seller')->group(function () {
     Route::get('/seller', function () {
