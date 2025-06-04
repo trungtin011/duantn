@@ -44,8 +44,8 @@ class UserAddress extends Model
     {
         // Remove default status from other addresses
         $this->user->addresses()->update(['is_default' => false]);
-        
+
         // Set this address as default
         $this->update(['is_default' => true]);
     }
-} 
+}
