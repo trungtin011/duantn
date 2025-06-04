@@ -9,7 +9,6 @@
             style="background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');">
         </div>
 
-<<<<<<< HEAD
         <!-- Form bên phải -->
         <div class="w-full md:w-1/2 bg-white p-6 md:p-16">
             <h2 class="text-3xl md:text-4xl font-bold mb-4">Tạo một tài khoản</h2>
@@ -25,7 +24,6 @@
                     <input type="text" name="fullname" placeholder="Họ và tên"
                         class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
                 </div>
-=======
             <!-- Form bên phải -->
             <div class="w-full md:w-1/2 bg-white p-6 md:p-16">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">Tạo một tài khoản</h2>
@@ -87,7 +85,6 @@
                         <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google icon" class="h-5 w-5 mr-2">
                         Đăng ký với Google
                     </button>
->>>>>>> tin
 
                 <div class="mb-6">
                     <input type="text" name="phone" placeholder="Số điện thoại"
