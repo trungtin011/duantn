@@ -49,7 +49,7 @@ class User extends Authenticatable
     // Relationships
     public function addresses(): HasMany
     {
-        return $this->hasMany(UserAddress::class);
+        return $this->hasMany(UserAddress::class, 'userID');
     }
 
     public function customer(): HasOne
