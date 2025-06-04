@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-<<<<<<< HEAD
 <div class="login-container">
     <div class="login-box">
         <div class="login-image"></div>
@@ -9,7 +8,6 @@
             @if(session('success'))
             <div style="color: green; margin-bottom: 20px;">
                 {{ session('success') }}
-=======
     <div class="login-container">
         <div class="login-box">
             <div class="login-image"></div>
@@ -54,7 +52,6 @@
                         </span>
                     </div>
                 </form>
->>>>>>> tin
             </div>
             @endif
             <h2 class="title">Đăng nhập</h2>
