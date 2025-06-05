@@ -10,8 +10,10 @@
     <select name="address_type" class="border rounded px-3 py-2">
         <option value="home" {{ old('address_type', $address->address_type ?? '') === 'home' ? 'selected' : '' }}>Nhà riêng</option>
         <option value="office" {{ old('address_type', $address->address_type ?? '') === 'office' ? 'selected' : '' }}>Công ty</option>
-        <option value="other" {{ old('address_type', $address->address_type ?? '') === 'other' ? 'selected' : '' }}>Khác</option>
+        <option value="other" {{ old('addr  ess_type', $address->address_type ?? '') === 'other' ? 'selected' : '' }}>Khác</option>
     </select>
+
+
 
     <label><input type="checkbox" name="is_default" {{ old('is_default', $address->is_default ?? false) ? 'checked' : '' }}> Đặt làm mặc định</label>
 
