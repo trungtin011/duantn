@@ -33,22 +33,15 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-<<<<<<< HEAD
             return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
-=======
             // Chuyển về trang chính sau khi đăng nhập thành công
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
->>>>>>> tin
         }
 
         return back()->withErrors([
             'login' => 'Tài khoản hoặc mật khẩu không đúng.',
         ])->withInput($request->only('login'));
     }
-<<<<<<< HEAD
-}
-
-=======
 
     public function logout(Request $request)
     {
@@ -58,4 +51,3 @@ class LoginController extends Controller
         return redirect()->route('home');
     }
 }
->>>>>>> tin
