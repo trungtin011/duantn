@@ -10,24 +10,26 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('shopID');
-            $table->string('name',100);
-            $table->string('slug',100);
+            $table->unsignedBigInteger('shopID')->nullable();
+            $table->string('name', 100);
+            $table->string('slug', 100);
             $table->text('description');
             $table->decimal('price', 12, 0);
             $table->decimal('purchase_price', 12, 0);
             $table->decimal('sale_price', 12, 0);
             $table->integer('sold_quantity');
             $table->integer('stock_total');
-            $table->string('sku',100)->unique();
-            $table->string('brand',100);
-            $table->string('category',100);
-            $table->string('sub_category',100);
-            $table->enum('status',['active','out_of_stock','deleted']);
+            $table->string('sku', 100)->unique();
+            $table->string('brand', 100);
+            $table->string('category', 100);
+            $table->string('sub_category', 100)->nullable();
+            $table->string('sub_brand', 100)->nullable();
+            $table->enum('status', ['active', 'out_of_stock', 'deleted']);
             $table->string('meta_title', 255)->nullable();
             $table->text('meta_description')->nullable();
             $table->string('meta_keywords', 255)->nullable();
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_variant')->default(false);
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
             $table->timestamps();
             $table->index('name');
@@ -36,8 +38,9 @@ return new class extends Migration
             $table->index('status');
         });
     }
+
     public function down(): void
     {
         Schema::dropIfExists('products');
     }
-}; 
+};

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -69,6 +70,16 @@ class Product extends Model
         return $this->hasOne(ProductDimension::class, 'productID');
     }
 
+    public function attribute()
+    {
+        return $this->hasMany(ProductAttribute::class, 'product_id');
+    }
+
+    public function dimensions()
+    {
+        return $this->hasOne(ProductDimension::class, 'productID');
+    }
+
     // Scopes
     public function scopeActive($query)
     {
@@ -125,4 +136,24 @@ class Product extends Model
     {
         return $this->stock_total + $this->variants->sum('stock');
     }
-} 
+
+    public function attributes()
+    {
+        return $this->hasMany(\App\Models\Attribute::class);
+    }
+
+    public function attributeValues()
+    {
+        return $this->hasManyThrough(\App\Models\AttributeValue::class, \App\Models\Attribute::class, 'product_id', 'attribute_id');
+    }
+
+    // Phương thức để lấy đường dẫn ảnh chính
+    public function getImageUrlAttribute()
+    {
+        $mainImage = $this->images()->where('is_default', 1)->first();
+        if ($mainImage) {
+            return Storage::url($mainImage->image_path); // Tạo URL từ đường dẫn lưu trữ
+        }
+        return Storage::url('product_images/default.png'); // Ảnh mặc định nếu không có
+    }
+}
