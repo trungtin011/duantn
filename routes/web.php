@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\AttributeController;
 ///////////////////////////////////////////////////////////
 // trang chủ
 Route::get('/', function () {
@@ -72,6 +73,7 @@ Route::get('/login', function () {
 })->name('login');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 ///////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////
@@ -111,14 +113,37 @@ Route::middleware('CheckRole:admin')->group(function () {
     })->name('admin.dashboard');
 
     // trang sản phẩm admin
-    Route::get('/admin/products', function () {
-        return view('admin.products.index');
-    })->name('admin.products.index');
+    Route::prefix('admin')->group(function () {
+        Route::get('/products', [ProductController::class, 'index'])->name('admin.products.index');
+        Route::get('/products/create', [ProductController::class, 'create'])->name('admin.products.create');
+        Route::post('/products', [ProductController::class, 'store'])->name('admin.products.store');
+        Route::get('/products/{product}/variants/create', [ProductController::class, 'createVariant'])->name('admin.products.variants.create');
+        Route::post('/products/{product}/variants', [ProductController::class, 'storeVariant'])->name('admin.products.variants.store');
+        Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
+        Route::put('/products/{id}', [ProductController::class, 'update'])->name('admin.products.update');
+        Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+        Route::get('/products/{id}', [ProductController::class, 'show'])->name('admin.products.show');
+        Route::get('/get-sub-brands', [ProductController::class, 'getSubBrands'])->name('admin.get-sub-brands');
+        Route::get('/get-sub-categories', [ProductController::class, 'getSubCategories'])->name('admin.get-sub-categories');
 
-    // trang danh mục admin
-    Route::get('/admin/categories', function () {
-        return view('admin.categories.index');
-    })->name('admin.categories.index');
+        // Attribute
+        Route::prefix('products/attributes')->group(function () {
+            Route::get('/', [AttributeController::class, 'index'])->name('admin.products.attributes.index');
+            Route::post('/', [AttributeController::class, 'store'])->name('admin.products.attributes.store');
+            Route::delete('/{id}', [AttributeController::class, 'destroy'])->name('admin.products.attributes.destroy');
+        });
+
+    });
+
+    Route::prefix('admin')->group(function () {
+        // trang danh mục admin
+        Route::get('/categories', function () {
+            return view('admin.categories.index');
+        })->name('admin.categories.index');
+
+
+    });
+
 
     // trang đơn hàng admin
     Route::get('/admin/orders', function () {

@@ -2,7 +2,7 @@
 
 @section('content')
     <!-- Main đăng ký -->
-    <div class="flex items-center justify-center min-h-screen bg-gray-100 px-4">
+    <div class="flex items-center justify-center px-4 pt-10">
         <div class="flex flex-col md:flex-row w-full max-w-7xl shadow-2xl rounded-2xl overflow-hidden">
             <!-- Hình ảnh bên trái -->
             <div class="w-full md:w-1/2 bg-cover bg-center min-h-[300px] md:min-h-[600px]"
