@@ -53,13 +53,15 @@
                     </div>
 
                     <div class="col-md-6">
-                        <select name="role" class="form-select">
-                            @foreach(UserRole::cases() as $role)
-                                <option value="{{ $role->value }}" {{ $selectedRole === $role->value ? 'selected' : '' }}>
-                                    {{ $role->name === 'ADMIN' ? 'Quản trị viên' : ($role->name === 'CUSTOMER' ? 'Khách hàng' : $role->name) }}
-                                </option>
-                            @endforeach
+                        <label for="role" class="form-label">Quyền</label>
+                        <select name="role" id="role" class="form-select" required>
+                            <option value="customer" {{ old('role', $user->role) == 'customer' ? 'selected' : '' }}>Khách hàng</option>
+                            <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Quản Trị viên</option>
+                            <option value="seller" {{ old('role', $user->role) == 'seller' ? 'selected' : '' }}>Bán hàng</option>
+                            <option value="employee" {{ old('role', $user->role) == 'employee' ? 'selected' : '' }}>Nhân viên</option>
                         </select>
+                        {{-- <pre>{{ dd($user->role) }}</pre> --}}
+                        <div class="invalid-feedback">Vui lòng chọn quyền.</div>
                     </div>
 
                     <div class="col-md-6">
