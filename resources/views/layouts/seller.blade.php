@@ -19,20 +19,14 @@
 </head>
 
 <body class="font-[Inter]">
-    <!-- Header -->
-    <header class="bg-white border-b">
-        <div class="sm:px-[16px] sm:px-0 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
-                <span>Đăng ký trở thành người bán</span>
-            </div>
-        </div>
-    </header>
+    @include('layouts.seller_menu')
 
     <!-- Main Content -->
     <main class="bg-white">
         @yield('content')
     </main>
+
+    @include('layouts.seller_footer')
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @stack('scripts')
