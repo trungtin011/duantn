@@ -34,8 +34,10 @@
         <!-- Ngày sinh -->
         <div class="mb-4">
             <label>Ngày sinh:</label>
-            <input type="date" name="birthday" value="{{ old('birthday', $user->birthday) }}"
+            <input type="date" name="birthday"
+                value="{{ old('birthday', optional($user->birthday)->format('Y-m-d')) }}"
                 class="w-full border rounded px-3 py-2">
+
         </div>
 
         <!-- Giới tính -->
@@ -43,10 +45,11 @@
             <label>Giới tính:</label>
             <select name="gender" class="w-full border rounded px-3 py-2">
                 <option value="">-- Chọn --</option>
-                <option value="male" {{ $user->gender === 'male' ? 'selected' : '' }}>Nam</option>
-                <option value="female" {{ $user->gender === 'female' ? 'selected' : '' }}>Nữ</option>
-                <option value="other" {{ $user->gender === 'other' ? 'selected' : '' }}>Khác</option>
+                <option value="male" {{ old('gender', $user->gender->value ?? '') == 'male' ? 'selected' : '' }}>Nam</option>
+                <option value="female" {{ old('gender', $user->gender->value ?? '') == 'female' ? 'selected' : '' }}>Nữ</option>
+                <option value="other" {{ old('gender', $user->gender->value ?? '') == 'other' ? 'selected' : '' }}>Khác</option>
             </select>
+
         </div>
 
         <!-- Avatar -->

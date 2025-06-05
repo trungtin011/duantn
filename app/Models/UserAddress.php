@@ -48,4 +48,14 @@ class UserAddress extends Model
         // Set this address as default
         $this->update(['is_default' => true]);
     }
+    public function getAddressTypeLabel()
+{
+    return match ($this->address_type) {
+        'home' => 'Nhà riêng',
+        'office' => 'Công ty',
+        'other' => 'Khác',
+        default => 'Không xác định',
+    };
+}
+
 }
