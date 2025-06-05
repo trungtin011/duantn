@@ -3,12 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-<<<<<<< HEAD
-=======
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Auth;
 
->>>>>>> tin
-///////////////////////////////////////////////////////////
 // trang chủ
 Route::get('/', function () {
     return view('user.home');
@@ -74,14 +71,11 @@ Route::get('/login', function () {
 })->name('login');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
-<<<<<<< HEAD
-///////////////////////////////////////////////////////////
-=======
+
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 
 // Route logout
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
->>>>>>> tin
 
 // trang đăng ký seller
 Route::middleware('CheckRole:seller')->group(function () {
@@ -109,9 +103,7 @@ Route::middleware('CheckRole:seller')->group(function () {
         return view('seller.register.register4');
     });
 });
-///////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////
 // trang chủ admin
 Route::middleware('CheckRole:admin')->group(function () {
     Route::get('/admin/dashboard', function () {
@@ -142,5 +134,12 @@ Route::middleware('CheckRole:admin')->group(function () {
     Route::get('/admin/settings', function () {
         return view('admin.settings.index');
     })->name('admin.settings.index');
+
+    //quản lý user
+    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/user/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/admin/user', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/admin/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/admin/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 });
-///////////////////////////////////////////////////////////
