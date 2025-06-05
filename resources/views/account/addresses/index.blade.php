@@ -15,7 +15,7 @@
     <div><strong>SĐT:</strong> {{ $address->receiver_phone }}</div>
     <div><strong>Địa chỉ:</strong> {{ $address->address }}, {{ $address->ward }}, {{ $address->district }}, {{ $address->province }}</div>
     <div><strong>Mã bưu điện:</strong> {{ $address->zip_code }}</div>
-    <div><strong>Loại:</strong> {{ ucfirst($address->address_type) }}</div>
+    <div><strong>Loại:</strong> {{ $address->getAddressTypeLabel() }}</div>
     <div><strong>Mặc định:</strong> {{ $address->is_default ? 'Có' : 'Không' }}</div>
 
     <div class="mt-2 flex gap-2">
