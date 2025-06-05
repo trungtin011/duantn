@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserAddressController;
 ///////////////////////////////////////////////////////////
@@ -124,8 +123,10 @@ Route::get('/admin/reviews', function () {
 Route::get('/admin/settings', function () {
     return view('admin.settings.index');
 })->name('admin.settings.index');
-Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
-Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+Route::get('/auth/google', [LoginController::class, 'redirectToGoogle'])->name('auth.google.login');
+Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallback']);
+Route::get('/auth/facebook', [LoginController::class, 'redirectToFacebook'])->name('auth.facebook.login');
+Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCallback']);
 // Trang thông tin người dùng
 Route::middleware(['auth'])->group(function () {
     Route::get('/account', [UserController::class, 'dashboard'])->name('account.dashboard');
