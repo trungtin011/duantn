@@ -17,7 +17,8 @@
             </script>
             <!-- Card Form -->
             <div class="bg-white rounded-2xl p-6">
-                <form>
+                <form method="POST" action="{{ route('seller.register.step2') }}">
+                    @csrf
                     <!-- Hỏa Tốc -->
                     <div class="mb-10 flex flex-col gap-5">
                         <div class="flex justify-between">
@@ -32,7 +33,8 @@
                             <span class="ms-2 pl-[10px]">Hỏa tốc</span>
                             <span class="text-[#DB4444] ms-2">[COD đã được kích hoạt]</span>
                             <label class="relative ms-auto inline-flex items-center cursor-pointer pr-[10px]">
-                                <input type="checkbox" class="sr-only peer" checked />
+                                <input type="checkbox" name="shipping_options[]" value="express" class="sr-only peer"
+                                    {{ (is_array(old('shipping_options', session('register.shipping_options', []))) && in_array('express', old('shipping_options', session('register.shipping_options', [])))) ? 'checked' : '' }} />
                                 <div
                                     class="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full peer transition-all duration-300">
                                 </div>
@@ -58,7 +60,8 @@
                             <span class="ms-2 pl-[10px]">Nhanh</span>
                             <span class="text-[#DB4444] ms-2">[COD đã được kích hoạt]</span>
                             <label class="relative ms-auto inline-flex items-center cursor-pointer pr-[10px]">
-                                <input type="checkbox" class="sr-only peer" checked />
+                                <input type="checkbox" name="shipping_options[]" value="fast" class="sr-only peer"
+                                    {{ (is_array(old('shipping_options', session('register.shipping_options', []))) && in_array('fast', old('shipping_options', session('register.shipping_options', [])))) ? 'checked' : '' }} />
                                 <div
                                     class="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full peer transition-all duration-300">
                                 </div>
@@ -83,7 +86,8 @@
                             <span class="ms-2 pl-[10px]">Tiết Kiệm</span>
                             <span class="text-[#DB4444] ms-2">[COD đã được kích hoạt]</span>
                             <label class="relative ms-auto inline-flex items-center cursor-pointer pr-[10px]">
-                                <input type="checkbox" class="sr-only peer" checked />
+                                <input type="checkbox" name="shipping_options[]" value="economy" class="sr-only peer"
+                                    {{ (is_array(old('shipping_options', session('register.shipping_options', []))) && in_array('economy', old('shipping_options', session('register.shipping_options', [])))) ? 'checked' : '' }} />
                                 <div
                                     class="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full peer transition-all duration-300">
                                 </div>
@@ -107,7 +111,8 @@
                             class="flex items-center border rounded-[4px] px-[16px] py-[20px] text-[16px]">
                             <span class="ms-2 pl-[10px]">Tự Nhận Hàng</span>
                             <label class="relative ms-auto inline-flex items-center cursor-pointer pr-[10px]">
-                                <input type="checkbox" class="sr-only peer" checked />
+                                <input type="checkbox" name="shipping_options[]" value="pickup" class="sr-only peer"
+                                    {{ (is_array(old('shipping_options', session('register.shipping_options', []))) && in_array('pickup', old('shipping_options', session('register.shipping_options', [])))) ? 'checked' : '' }} />
                                 <div
                                     class="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full peer transition-all duration-300">
                                 </div>
@@ -132,7 +137,8 @@
                             <span class="ms-2 pl-[10px]">Hàng công kềnh</span>
                             <span class="text-[#DB4444] ms-2">[COD đã được kích hoạt]</span>
                             <label class="relative ms-auto inline-flex items-center cursor-pointer pr-[10px]">
-                                <input type="checkbox" class="sr-only peer" checked />
+                                <input type="checkbox" name="shipping_options[]" value="heavy" class="sr-only peer"
+                                    {{ (is_array(old('shipping_options', session('register.shipping_options', []))) && in_array('heavy', old('shipping_options', session('register.shipping_options', [])))) ? 'checked' : '' }} />
                                 <div
                                     class="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full peer transition-all duration-300">
                                 </div>
@@ -146,16 +152,26 @@
                     <!-- Hr -->
                     <hr class="my-10">
 
+                    <!-- Hiển thị lỗi validate -->
+                    @if ($errors->any())
+                        <div class="mb-4 text-red-600">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <!-- Button -->
                     <div class="flex justify-between">
                         <div class="">
-                            <button type="button" class="px-4 py-2 bg-white border rounded hover:bg-gray-100">Quay
-                                lại</button>
+                            <a href="{{ route('seller.register.step1') }}"
+                                class="px-4 py-2 bg-white border rounded hover:bg-gray-100">Quay lại</a>
                         </div>
                         <div class="flex justify-end gap-3">
-                            <button type="submit" class="px-4 py-2 bg-white border rounded hover:bg-gray-100">Lưu</button>
-                            <button type="button" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Tiếp
-                                theo</button>
+                            <button type="submit"
+                                class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Tiếp theo</button>
                         </div>
                     </div>
                 </form>
