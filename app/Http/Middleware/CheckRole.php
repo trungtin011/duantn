@@ -13,7 +13,6 @@ class CheckRole
         if (!Auth::check() || Auth::user()->role !== UserRole::from($role)) {
             return redirect()->route('403');
         }
-
         return $next($request);
     }
 }
