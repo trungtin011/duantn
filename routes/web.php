@@ -108,6 +108,15 @@ Route::middleware('auth')->group(function () {
     // Bước 5: Hoàn tất đăng ký
     Route::get('/seller/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
     Route::post('/seller/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
+
+    // Cài đặt cửa hàng cho seller
+    Route::get('/seller/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'index'])->name('seller.settings');
+    Route::post('/seller/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'update'])->name('seller.settings');
+
+    // Trang thông tin cá nhân seller
+    Route::get('/seller/profile', function () {
+        return view('seller.profile');
+    })->name('seller.profile');
 });
 
 // API OCR CCCD cho frontend JS
