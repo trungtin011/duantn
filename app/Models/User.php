@@ -49,7 +49,7 @@ class User extends Authenticatable
     // Relationships
     public function addresses(): HasMany
     {
-        return $this->hasMany(UserAddress::class);
+        return $this->hasMany(UserAddress::class, 'userID');
     }
 
     public function customer(): HasOne
@@ -113,4 +113,14 @@ class User extends Authenticatable
     {
         return $this->addresses()->where('is_default', true)->first();
     }
+    public function getGenderLabel(): string
+{
+    return match ($this->gender->value ?? null) {
+        'male' => 'Nam',
+        'female' => 'Nữ',
+        'other' => 'Khác',
+        default => 'Không xác định',
+    };
+}
+    
 }

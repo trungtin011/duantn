@@ -93,7 +93,7 @@
                     <!-- Dropdown Menu -->
                     <div x-show="userDropdownOpen"
                         class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-gradient-to-b from-gray-800 to-purple-900 bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-10">
-                        <a href="#" class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                        <a href="{{ route('account.dashboard') }}" class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -101,6 +101,7 @@
                             </svg>
                             Quản lý tài khoản
                         </a>
+
                         <a href="{{ route('order_history') }}"
                             class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
