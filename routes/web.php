@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
 use App\Http\Controllers\User\NotificationControllers as UserNotificationControllers;
@@ -77,6 +76,7 @@ Route::get('/login', function () {
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+///////////////////////////////////////////////////////////
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 
 // Route logout
@@ -185,4 +185,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/mark-as-read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
+Route::middleware(['auth'])->group(function () {
+    Route::get('/account', [UserController::class, 'dashboard'])->name('account.dashboard');
+    Route::get('/account/profile', [UserController::class, 'edit'])->name('account.profile');
+    Route::post('/account/profile', [UserController::class, 'update'])->name('account.profile.update');
+
+    Route::get('/account/password', [UserController::class, 'changePasswordForm'])->name('account.password');
+    Route::post('/account/password', [UserController::class, 'updatePassword'])->name('account.password.update');
+});
+Route::middleware('auth')->prefix('account')->group(function () {
+    Route::get('/addresses', [UserAddressController::class, 'index'])->name('account.addresses');
+    Route::get('/addresses/create', [UserAddressController::class, 'create'])->name('account.addresses.create');
+    Route::post('/addresses', [UserAddressController::class, 'store'])->name('account.addresses.store');
+    Route::get('/addresses/{address}/edit', [UserAddressController::class, 'edit'])->name('account.addresses.edit');
+    Route::put('/addresses/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
+    Route::delete('/addresses/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
 });
