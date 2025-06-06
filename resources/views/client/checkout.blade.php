@@ -284,7 +284,7 @@
                     </div>
                     <div class="flex justify-start">
                         <!-- Nút đặt hàng -->
-                        <button type="submit" class="bg-[#F1416C] text-white px-4 py-3 hover:bg-pink-600">
+                        <button type="submit" class="bg-[#F1416C] text-white px-4 py-3 hover:bg-pink-600" >
                             Đặt hàng
                         </button>
                     </div>
@@ -301,18 +301,13 @@
             const createAddressForm = document.querySelector('.create-address-form');
 
             showAddressFormBtn.addEventListener('click', function() {
-                // Kiểm tra trạng thái hiển thị thực tế của form
                 const isHidden = window.getComputedStyle(createAddressForm).display === 'none';
 
-                // Thay đổi trạng thái hiển thị của form
                 createAddressForm.style.display = isHidden ? 'block' : 'none';
 
-                // Thay đổi nội dung và biểu tượng của nút
                 if (isHidden) {
-                    // Form hiển thị -> đổi nút thành "Đóng"
                     showAddressFormBtn.innerHTML = '<i class="fa fa-times"></i> Đóng';
                 } else {
-                    // Form ẩn -> đổi nút thành "Thêm địa chỉ"
                     showAddressFormBtn.innerHTML = '<i class="fa fa-plus"></i> Thêm địa chỉ';
                 }
             });

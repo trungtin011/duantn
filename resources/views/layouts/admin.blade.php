@@ -20,6 +20,7 @@
         <a href="{{ route('admin.reviews.index') }}" class="{{ request()->routeIs('admin.reviews.index') ? 'active' : '' }}"><i class="fa-solid fa-star"></i> Reviews</a>
         <a href="#"><i class="fa-solid fa-ticket"></i> Coupons</a>
         <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
+        <a href="{{ route('admin.notifications.index') }}" class="{{ request()->routeIs('admin.notifications.index') ? 'active' : '' }}"><i class="fa-solid fa-bell"></i> Notifications</a>
         <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><i class="fa-solid fa-gear"></i> Shop Settings</a>
         <a href="#"><i class="fa-solid fa-file"></i> Pages</a>
     </div>
@@ -37,5 +38,6 @@
     </div>
 </div>
 @yield('scripts')
+<script src="{{ asset('js/app.js') }}" type="module"></script>
 </body>
 </html> 

@@ -37,7 +37,7 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
+    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
         <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
             <!-- Logo -->
             <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
@@ -73,6 +73,10 @@
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
                 <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
                 <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
+                <a href="#" id="notification-bell" class="relative">
+                    <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
+                    <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">3</span>
+                </a>
                 <a href="{{ route('cart') }}"><i
                         class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
                 <div class="relative" @click="userDropdownOpen = !userDropdownOpen"
@@ -85,6 +89,7 @@
                         <span class="text-sm font-semibold text-gray-700">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
                         @endauth
                     </div>
+
                     <!-- Dropdown Menu -->
                     <div x-show="userDropdownOpen"
                         class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-gradient-to-b from-gray-800 to-purple-900 bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-10">
@@ -257,6 +262,7 @@
     </footer>
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="{{ asset('js/app.js') }}" type="module"></script>
     @stack('scripts')
 </body>
 

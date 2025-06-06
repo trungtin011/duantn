@@ -3,11 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-<<<<<<< HEAD
-=======
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
+use App\Http\Controllers\User\NotificationControllers as UserNotificationControllers;
+use App\Http\Controllers\NotificationController;
 
->>>>>>> tin
 ///////////////////////////////////////////////////////////
 // trang chủ
 Route::get('/', function () {
@@ -68,21 +69,22 @@ Route::get('/403', function () {
 Route::get('/signup', function () {
     return view('auth.register');
 })->name('signup');
-Route::post('/signup', [RegisterController::class, 'register'])->name('register.post');
+Route::post('/signup',[RegisterController::class, 'register'])->name('register.post');
+
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
-<<<<<<< HEAD
-///////////////////////////////////////////////////////////
-=======
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 
 // Route logout
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
->>>>>>> tin
 
+
+Route::get('/notifications', [UserNotificationControllers::class, 'index'])->name('notifications');
+Route::post('/notifications/markAsRead', [UserNotificationControllers::class, 'markAsRead'])->name('notifications.markAsRead');
 // trang đăng ký seller
 Route::middleware('CheckRole:seller')->group(function () {
     Route::get('/seller', function () {
@@ -142,5 +144,45 @@ Route::middleware('CheckRole:admin')->group(function () {
     Route::get('/admin/settings', function () {
         return view('admin.settings.index');
     })->name('admin.settings.index');
+
+
+
+
+    /////////////NOTIFICATION///////////////////////////
+
+    // trang thông báo admin
+    Route::get('/admin/notifications', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
+    Route::post('/admin/notifications/store', [AdminNotificationsControllers::class, 'store'])->name('admin.notifications.store');
+    Route::put('/admin/notifications/update/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
+    Route::get('/admin/notifications/delete/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
+
+
+    // trang tạo thông báo admin
+    Route::get('/admin/notifications/create', function () {
+        return view('admin.notifications.create');
+    })->name('admin.notifications.create');
+
+    // trang sửa thông báo admin
+    Route::get('/admin/notifications/edit/{id}', function () {
+        return view('admin.notifications.edit');
+    })->name('admin.notifications.edit');
+
+    /////////////////////////////////////////////////////////
+    
+
+
+
+    /////////////////////////////////////////////////////////
+
+
+
 });
 ///////////////////////////////////////////////////////////
+
+Route::middleware(['auth'])->group(function () {
+    // Notification routes
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/mark-as-read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
