@@ -30,9 +30,7 @@
                     </div>
                     <!-- Ảnh chính -->
                     <div class="w-3/4">
-                        <img id="mainProductImage"
-                            src="https://img.tripi.vn/cdn-cgi/image/width=700,height=700/https://gcs.tripi.vn/public-tripi/tripi-feed/img/474069zWk/anh-ban-phim-co-dep_033839277.jpg"
-                            class="w-full h-full rounded object-cover cursor-pointer" alt="Sản phẩm chính">
+                        <img src="{{ $product->images->first()->image_path ?? 'default.jpg' }}" alt="{{ $product->name }}" class="w-full rounded">
                     </div>
                 </div>
             </div>
