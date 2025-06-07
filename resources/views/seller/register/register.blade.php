@@ -71,14 +71,16 @@
                                 <div>
                                     <input type="file" name="shop_logo" accept="image/*"
                                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required>
+                                        required id="shop_logo_input">
                                     <span class="text-xs text-gray-500">Chọn ảnh logo shop (bắt buộc, jpg/png/jpeg, tối đa 2MB)</span>
+                                    <div id="shop_logo_list" class="flex flex-wrap gap-2 mt-2"></div>
                                 </div>
                                 <div>
                                     <input type="file" name="shop_banner" accept="image/*"
                                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required>
+                                        required id="shop_banner_input">
                                     <span class="text-xs text-gray-500">Chọn ảnh banner shop (bắt buộc, jpg/png/jpeg, tối đa 4MB)</span>
+                                    <div id="shop_banner_list" class="flex flex-wrap gap-2 mt-2"></div>
                                 </div>
                             </div>
                         </div>
@@ -101,4 +103,38 @@
         <!-- Modal -->
         @include('seller.register.modal')
     </div>
+@endsection
+
+@section('scripts')
+<script>
+function renderImageList(inputId, listId, maxSizeMB) {
+    document.getElementById(inputId).addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const list = document.getElementById(listId);
+        list.innerHTML = '';
+        if (file) {
+            const maxSize = maxSizeMB * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('Kích thước ảnh vượt quá ' + maxSizeMB + 'MB.');
+                e.target.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                img.style.maxWidth = inputId === 'shop_logo_input' ? '120px' : '200px';
+                img.style.maxHeight = '120px';
+                img.style.borderRadius = '8px';
+                img.style.boxShadow = '0 0 4px #ccc';
+                img.alt = 'Preview';
+                list.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+renderImageList('shop_logo_input', 'shop_logo_list', 2);
+renderImageList('shop_banner_input', 'shop_banner_list', 4);
+</script>
 @endsection

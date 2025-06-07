@@ -125,6 +125,7 @@
                                 <p class="text-sm text-gray-500">Vui lòng cung cấp ảnh chụp thẻ CMND/CCCD/hộ chiếu của bạn<br>Các thông tin phải rõ ràng (Kích thước ảnh không vượt quá 5.0 MB)</p>
                                 <input type="file" name="file" accept="image/*" class="hidden" id="filechoose" required>
                                 <button type="button" onclick="document.getElementById('filechoose').click()" class="px-4 py-2 bg-blue-500 text-white rounded text-sm">Tải ảnh lên</button>
+                                <img id="filepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
                             </div>
                         </div>
 
@@ -140,6 +141,7 @@
                                 <p class="text-sm text-gray-500">(Không bắt buộc) Ảnh bạn cầm giấy tờ định danh<br>Kích thước ảnh không vượt quá 5.0 MB</p>
                                 <input type="file" name="holding_file" accept="image/*" class="hidden" id="holdingfilechoose">
                                 <button type="button" onclick="document.getElementById('holdingfilechoose').click()" class="px-4 py-2 bg-blue-500 text-white rounded text-sm">Tải ảnh lên</button>
+                                <img id="holdingfilepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
                             </div>
                         </div>
 
@@ -167,11 +169,13 @@
     <script>
         document.getElementById('filechoose').addEventListener('change', function(e) {
             const file = e.target.files[0];
+            const preview = document.getElementById('filepreview');
             if (file) {
                 const maxSize = 5 * 1024 * 1024; // 5MB
                 if (file.size > maxSize) {
                     alert('Kích thước tệp vượt quá 5MB. Vui lòng chọn tệp nhỏ hơn.');
                     e.target.value = '';
+                    preview.style.display = 'none';
                 } else {
                     const fileName = file.name;
                     const label = document.createElement('p');
@@ -181,17 +185,27 @@
                     const existingLabel = container.querySelector('p.text-sm');
                     if (existingLabel) existingLabel.remove();
                     container.appendChild(label);
+                    // Hiển thị preview ảnh
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        preview.src = ev.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
                 }
+            } else {
+                preview.style.display = 'none';
             }
         });
-
         document.getElementById('holdingfilechoose').addEventListener('change', function(e) {
             const file = e.target.files[0];
+            const preview = document.getElementById('holdingfilepreview');
             if (file) {
                 const maxSize = 5 * 1024 * 1024; // 5MB
                 if (file.size > maxSize) {
                     alert('Kích thước tệp vượt quá 5MB. Vui lòng chọn tệp nhỏ hơn.');
                     e.target.value = '';
+                    preview.style.display = 'none';
                 } else {
                     const fileName = file.name;
                     const label = document.createElement('p');
@@ -201,7 +215,16 @@
                     const existingLabel = container.querySelector('p.text-sm');
                     if (existingLabel) existingLabel.remove();
                     container.appendChild(label);
+                    // Hiển thị preview ảnh
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        preview.src = ev.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
                 }
+            } else {
+                preview.style.display = 'none';
             }
         });
     </script>

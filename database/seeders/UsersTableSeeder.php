@@ -48,7 +48,7 @@ class UsersTableSeeder extends Seeder
                 'username' => 'customer01',
                 'fullname' => 'Lê Văn Khách',
                 'phone' => '0934567890',
-                'email' => 'customer01@duantn.com',
+                'email' => 'dauxanh008@gmail.com',
                 'password' => Hash::make('123123123'),
                 'status' => 'active',
                 'gender' => 'male',
