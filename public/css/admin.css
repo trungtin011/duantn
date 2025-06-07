@@ -13,12 +13,15 @@ body {
     box-shadow: 2px 0 12px 0 rgba(44, 62, 80, 0.06);
 }
 
-.sidebar .logo {
+.logo {
     font-size: 1.6em;
     font-weight: bold;
     letter-spacing: 1px;
-    margin-bottom: 32px;
+    background: #FFFFFF;
     color: #3b82f6;
+    padding: 18px 48px;
+    border-bottom: 1px solid #EEEEEE;
+    border-right: 1px solid #EEEEEE;
 }
 
 .sidebar .link_admin {

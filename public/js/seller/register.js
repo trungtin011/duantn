@@ -56,6 +56,8 @@ function toggleSection(sectionId, button) {
 }
 
 // Dropdown register2
+// Sửa lỗi: chỉ addEventListener nếu tồn tại phần tử
+
 document.addEventListener('DOMContentLoaded', () => {
     const toggleBtn = document.getElementById('toggle-address-dropdown');
     const dropdownPanel = document.getElementById('address-dropdown-panel');
@@ -68,9 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedAddress = document.getElementById('selected-address');
 
     // Toggle dropdown visibility
-    toggleBtn.addEventListener('click', () => {
-        dropdownPanel.classList.toggle('hidden');
-    });
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            dropdownPanel.classList.toggle('hidden');
+        });
+    }
 
     // Fetch tỉnh/thành
     fetch("https://provinces.open-api.vn/api/?depth=1")

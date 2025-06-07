@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SubCategory extends Model
 {
-    protected $table = 'sub_categories'; // Đảm bảo khớp với tên bảng trong SQL
+    protected $table = 'sub_categories';
     protected $fillable = [
         'categoryID',
         'name',
@@ -26,6 +26,6 @@ class SubCategory extends Model
     // Mối quan hệ với Category
     public function category()
     {
-        return $this->belongsTo(Category::class, 'categoryID');
+        return $this->belongsTo(Category::class, 'categoryID', 'id');
     }
 }

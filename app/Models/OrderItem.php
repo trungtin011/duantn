@@ -36,12 +36,12 @@ class OrderItem extends Model
     ];
 
     // Relationships
-    public function order(): BelongsTo
+    public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    public function product(): BelongsTo
+    public function product()
     {
         return $this->belongsTo(Product::class);
     }
@@ -61,4 +61,4 @@ class OrderItem extends Model
     {
         return $this->subtotal - $this->total_price;
     }
-} 
+}

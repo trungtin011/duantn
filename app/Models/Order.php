@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     protected $fillable = [
-        'user_id',
-        'shop_id',
+        'userID', // Cột trong migration là userID
+        'shopID',
         'order_code',
         'total_price',
         'coupon_id',
@@ -34,15 +34,15 @@ class Order extends Model
         'coupon_discount' => 'decimal:2'
     ];
 
-    // Relationships
+    // Sửa quan hệ user và shop
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'userID'); // Chỉ định rõ cột userID
     }
 
     public function shop(): BelongsTo
     {
-        return $this->belongsTo(Shop::class);
+        return $this->belongsTo(Shop::class, 'shopID'); // Chỉ định rõ cột shopID
     }
 
     public function coupon(): BelongsTo
@@ -50,9 +50,9 @@ class Order extends Model
         return $this->belongsTo(Coupon::class);
     }
 
-    public function items(): HasMany
+    public function items()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(OrderItem::class, 'order_id', 'id');
     }
 
     public function address(): HasOne
@@ -60,9 +60,9 @@ class Order extends Model
         return $this->hasOne(OrderAddress::class);
     }
 
-    public function statusHistory(): HasMany
+    public function statusHistory()
     {
-        return $this->hasMany(OrderStatusHistory::class);
+        return $this->hasMany(OrderStatusHistory::class, 'order_id', 'id');
     }
 
     // Scopes
@@ -111,4 +111,4 @@ class Order extends Model
     {
         return $this->total_price - $this->coupon_discount;
     }
-} 
+}
