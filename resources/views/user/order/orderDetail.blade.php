@@ -3,7 +3,7 @@
 @section('content')
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <div class="container mx-auto py-5">
-        <!-- breadcrumb -->
+        <!-- Breadcrumb -->
         <div class="flex flex-wrap items-center gap-2 mb-10 px-[10px] sm:px-0 md:mb-20 text-sm md:text-base">
             <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
             <span>/</span>
@@ -15,19 +15,8 @@
             <div class="bg-gray-100 shadow-sm rounded-lg p-4 flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-bold text-gray-800 mb-1">Chi tiết đơn hàng</h2>
-                    <p class="text-gray-500 text-sm">Đơn hàng #19893 | Order Created: Jan 26, 2023 10:30 AM</p>
+                    <p class="text-gray-600 text-sm">Đơn hàng {{ $order->order_code ?? 'N/A' }} | Order Created: {{ $order->created_at->format('d/m/Y H:i') }}</p>
                 </div>
-                {{-- <div class="flex items-center gap-2">
-                    <select
-                        class="border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style="width: 200px;">
-                        <option value="delivered">Change Status: Delivered</option>
-                        <option value="processing">Change Status: Processing</option>
-                        <option value="cancelled">Change Status: Cancelled</option>
-                    </select>
-                    <button type="submit"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">Lưu</button>
-                </div> --}}
             </div>
         </div>
 
@@ -44,9 +33,9 @@
                     Khách hàng
                 </h5>
                 <p class="text-gray-600 text-sm">
-                    <strong>Tên:</strong> Nguyễn Văn A<br>
-                    <strong>Email:</strong> thanhlinh1923@gmail.com<br>
-                    <strong>Số điện thoại:</strong> 0123456789
+                    <strong>Tên:</strong> {{ $order->user->fullname ?? 'Không có thông tin' }}<br>
+                    <strong>Email:</strong> {{ $order->user->email ?? 'Không có thông tin' }}<br>
+                    <strong>Số điện thoại:</strong> {{ $order->user->phone ?? 'Không có thông tin' }}
                 </p>
             </div>
             <!-- Thông tin thanh toán -->
@@ -60,9 +49,9 @@
                     Thông tin thanh toán
                 </h5>
                 <p class="text-gray-600 text-sm">
-                    <strong>Phương thức thanh toán:</strong> VNPay<br>
-                    <strong>Tên chủ tài khoản:</strong> Nguyễn Văn A<br>
-                    <strong>Số tài khoản:</strong> 1234 **** ****
+                    <strong>Phương thức thanh toán:</strong> {{ $order->payment_method ?? 'VNPay' }}<br>
+                    <strong>Tên chủ tài khoản:</strong> {{ $order->user->fullname ?? 'Không có thông tin' }}<br>
+                    <strong>Số tài khoản:</strong> Không có thông tin
                 </p>
             </div>
             <!-- Thông tin giao hàng -->
@@ -76,8 +65,8 @@
                     Thông tin giao hàng
                 </h5>
                 <p class="text-gray-600 text-sm">
-                    <strong>Phương thức vận chuyển:</strong> GHN<br>
-                    <strong>Địa chỉ:</strong> 11 Hàng Điều, Tân Lộc, BMT
+                    <strong>Phương thức vận chuyển:</strong> {{ $orderAddress->shipping_provider ?? 'GHN' }}<br>
+                    <strong>Địa chỉ:</strong> {{ $orderAddress->full_address ?? 'Không có thông tin' }}
                 </p>
             </div>
         </div>
@@ -99,42 +88,27 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                    <td class="p-3">
-                                        <div class="flex items-center">
-                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp"
-                                                alt="Puma" class="w-10 h-10 rounded mr-3 object-cover">
-                                            Puma Sneakers
-                                        </div>
-                                    </td>
-                                    <td class="p-3 text-gray-600">99,999 VND</td>
-                                    <td class="p-3 text-gray-600">3</td>
-                                    <td class="p-3 text-gray-600">299,997 VND</td>
-                                </tr>
-                                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                    <td class="p-3">
-                                        <div class="flex items-center">
-                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp"
-                                                alt="Puma" class="w-10 h-10 rounded mr-3 object-cover">
-                                            Puma Sneakers
-                                        </div>
-                                    </td>
-                                    <td class="p-3 text-gray-600">99,999 VND</td>
-                                    <td class="p-3 text-gray-600">3</td>
-                                    <td class="p-3 text-gray-600">299,997 VND</td>
-                                </tr>
-                                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                    <td class="p-3">
-                                        <div class="flex items-center">
-                                            <img src="https://down-vn.img.susercontent.com/file/sg-11134201-7rdvw-m0483czm1rcq5a.webp"
-                                                alt="Puma" class="w-10 h-10 rounded mr-3 object-cover">
-                                            Puma Sneakers
-                                        </div>
-                                    </td>
-                                    <td class="p-3 text-gray-600">99,999 VND</td>
-                                    <td class="p-3 text-gray-600">3</td>
-                                    <td class="p-3 text-gray-600">299,997 VND</td>
-                                </tr>
+                                @if(isset($orderItems) && $orderItems->isNotEmpty())
+                                    @foreach($orderItems as $item)
+                                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                            <td class="p-3">
+                                                <div class="flex items-center">
+                                                    <img src="{{ $item->product_image ?? 'https://via.placeholder.com/40' }}"
+                                                        alt="{{ $item->product_name ?? $item->variant_name ?? ($item->product->name ?? 'Sản phẩm') }}"
+                                                        class="w-10 h-10 rounded mr-3 object-cover">
+                                                    <span>{{ $item->product_name ?? $item->variant_name ?? ($item->product->name ?? 'Sản phẩm không còn tồn tại') }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="p-3 text-gray-600">{{ number_format($item->unit_price, 0, ',', '.') }} VND</td>
+                                            <td class="p-3 text-gray-600">{{ $item->quantity }}</td>
+                                            <td class="p-3 text-gray-600">{{ number_format($item->total_price, 0, ',', '.') }} VND</td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="4" class="p-3 text-gray-600 text-center">Không có sản phẩm nào trong đơn hàng này.</td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -149,19 +123,19 @@
                         <tbody>
                             <tr>
                                 <td class="py-2 text-gray-600">Tổng tiền hàng</td>
-                                <td class="py-2 text-right font-medium text-gray-800">299,997 VND</td>
+                                <td class="py-2 text-right font-medium text-gray-800">{{ number_format($order->subtotal, 0, ',', '.') }} VND</td>
                             </tr>
                             <tr>
                                 <td class="py-2 text-gray-600">Phí ship</td>
-                                <td class="py-2 text-right font-medium text-gray-800">0 VND</td>
+                                <td class="py-2 text-right font-medium text-gray-800">{{ number_format($order->shipping_fee ?? 0, 0, ',', '.') }} VND</td>
                             </tr>
                             <tr>
                                 <td class="py-2 text-gray-600">Giảm giá</td>
-                                <td class="py-2 text-right font-medium text-green-600">0 VND</td>
+                                <td class="py-2 text-right font-medium text-green-600">{{ number_format($order->coupon_discount ?? 0, 0, ',', '.') }} VND</td>
                             </tr>
                             <tr class="border-t border-gray-200 pt-2">
                                 <td class="py-2 font-bold text-gray-800">Tổng cộng</td>
-                                <td class="py-2 text-right font-bold text-blue-600">299,997 VND</td>
+                                <td class="py-2 text-right font-bold text-blue-600">{{ number_format($order->final_price, 0, ',', '.') }} VND</td>
                             </tr>
                         </tbody>
                     </table>

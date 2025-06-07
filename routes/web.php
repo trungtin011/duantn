@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\User\OrderController;
+use App\Http\Controllers\User\CartController;
+use App\Http\Controllers\User\ProductController;
+use App\Http\Controllers\User\WishlistController;
 use Illuminate\Support\Facades\Auth;
 
 // trang chủ
@@ -22,9 +26,7 @@ Route::get('/about', function () {
 })->name('about');
 
 // trang chi tiết sản phẩm
-Route::get('/user/product-detail', function () {
-    return view('user.product_detail');
-})->name('product_detail');
+Route::get('/product/{id}', [ProductController::class, 'show'])->name('productDetail');
 
 // trang wishlist
 Route::get('/client/wishlist', function () {
@@ -42,9 +44,7 @@ Route::get('/user/order/order-history', function () {
 })->name('order_history');
 
 // trang chi tiết đơn hàng
-Route::get('/user/order/order-detail', function () {
-    return view('user.order.orderDetail');
-})->name('order_detail');
+Route::get("order/{id}", [OrderController::class, 'show'])->name('orderDetail');
 
 // trang giỏ hàng
 Route::get('/user/cart', function () {
