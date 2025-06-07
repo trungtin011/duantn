@@ -12,7 +12,7 @@ class AttributeController extends Controller
     public function index()
     {
         $attributes = Attribute::all();
-        return view('admin.products.attributes.index', compact('attributes'));
+        return view('admin.attributes.index', compact('attributes'));
     }
 
     /**

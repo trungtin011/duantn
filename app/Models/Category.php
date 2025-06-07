@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $table = 'categories'; // Đảm bảo khớp với tên bảng trong SQL
+    protected $table = 'categories';
     protected $fillable = [
         'name',
         'slug',
@@ -15,7 +15,8 @@ class Category extends Model
         'meta_title',
         'meta_description',
         'meta_keywords',
-        'status'
+        'status',
+        'parent_id'
     ];
 
     protected $casts = [
@@ -23,8 +24,18 @@ class Category extends Model
     ];
 
     // Mối quan hệ với SubCategory
+    // public function subCategories()
+    // {
+    //     return $this->hasMany(SubCategory::class, 'categoryID', 'id');
+    // }
+    
     public function subCategories()
     {
-        return $this->hasMany(SubCategory::class, 'categoryID');
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    public function parentCategory()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
     }
 }
