@@ -43,8 +43,6 @@ class LoginController extends Controller
         ])->withInput($request->only('login'));
     }
 
-    // ========== ĐĂNG NHẬP / ĐĂNG KÝ BẰNG GOOGLE ==========
-
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();
@@ -53,11 +51,7 @@ class LoginController extends Controller
     public function handleGoogleCallback()
     {
         $googleUser = Socialite::driver('google')->stateless()->user();
-
-        // Tìm user theo email
         $user = User::where('email', $googleUser->getEmail())->first();
-
-        // Nếu chưa có tài khoản → TẠO MỚI
         if (!$user) {
             $user = User::create([
                 'username' => explode('@', $googleUser->getEmail())[0],
@@ -71,8 +65,6 @@ class LoginController extends Controller
                 'role' => \App\Enums\UserRole::CUSTOMER,
             ]);
         }
-
-        // Đăng nhập
         Auth::login($user);
 
         return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Google thành công!');
@@ -85,11 +77,7 @@ public function handleFacebookCallback()
     } catch (\Exception $e) {
         return redirect()->route('login')->with('error', 'Đăng nhập Facebook thất bại. Vui lòng thử lại.');
     }
-
-    // ⚠ Kiểm tra email
     $email = $facebookUser->getEmail() ?? 'fb_' . $facebookUser->getId() . '@noemail.facebook';
-
-    // Tạo user nếu chưa tồn tại
     $user = User::firstOrCreate(
         ['email' => $email],
         [

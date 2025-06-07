@@ -59,8 +59,6 @@
                         class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
                 </div>
 
-
-                <!-- Nút -->
                 <button type="submit"
                     class="w-full bg-black hover:bg-gray-800 text-white py-3 text-base md:text-lg rounded">Tạo tài
                     khoản</button>
