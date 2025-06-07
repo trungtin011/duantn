@@ -15,6 +15,12 @@
     </div>
 @endif
 
+@if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+
 <div class="table-responsive">
     <table class="table table-bordered">
         <thead class="table table-dark table-bordered">

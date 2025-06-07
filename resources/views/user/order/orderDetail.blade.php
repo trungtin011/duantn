@@ -93,7 +93,7 @@
                                         <tr class="border-b border-gray-200 hover:bg-gray-50">
                                             <td class="p-3">
                                                 <div class="flex items-center">
-                                                    <img src="{{ $item->product_image ?? 'https://via.placeholder.com/40' }}"
+                                                    <img src="{{ $item->product->images->first()->image_path ?? 'https://via.placeholder.com/40' }}"
                                                         alt="{{ $item->product_name ?? $item->variant_name ?? ($item->product->name ?? 'Sản phẩm') }}"
                                                         class="w-10 h-10 rounded mr-3 object-cover">
                                                     <span>{{ $item->product_name ?? $item->variant_name ?? ($item->product->name ?? 'Sản phẩm không còn tồn tại') }}</span>

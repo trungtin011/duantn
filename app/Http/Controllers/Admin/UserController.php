@@ -6,53 +6,84 @@ use App\Http\Controllers\Controller;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class UserController extends Controller
 {
-    // Danh sách tất cả người dùng
-    public function index()
+    /**
+     * Hiển thị danh sách người dùng.
+     */
+    public function index(): View
     {
         $users = User::all();
         return view('admin.users.index', compact('users'));
     }
 
-    // Hiển thị chi tiết 1 người dùng
-    public function show(User $user)
+    /**
+     * Hiển thị chi tiết người dùng.
+     */
+    public function show(User $user): View
     {
         return view('admin.users.show', compact('user'));
     }
 
-    // Trang chỉnh sửa thông tin người dùng
-    public function edit(User $user)
+    /**
+     * Hiển thị form chỉnh sửa người dùng.
+     */
+    public function edit(User $user): View
     {
-        
-        return view('admin.users.edit', compact('user'));
+        $roles = ['admin' => 'Admin', 'customer' => 'Customer'];
+        $statuses = ['active' => 'Active', 'inactive' => 'Inactive'];
+        $genders = ['male' => 'Male', 'female' => 'Female'];
+
+        return view('admin.users.edit', compact('user', 'roles', 'statuses', 'genders'));
     }
 
-    // Cập nhật thông tin người dùng
-    public function update(Request $request, User $user)
+    /**
+     * Cập nhật thông tin người dùng.
+     */
+    public function update(Request $request, User $user): RedirectResponse
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'fullname' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'phone' => 'required|regex:/^\+?\d{9,15}$/|unique:users,phone,' . $user->id,
-            'role' => 'required|in:admin,customer',
-            'status' => 'required|in:active,inactive',
-            'gender' => 'required|in:male,female',
-            'birthdate' => 'nullable|date|before:today',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+                'fullname' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+                'phone' => ['required', 'string', 'regex:/^\+?\d{9,15}$/', Rule::unique('users')->ignore($user->id)],
+                'role' => ['required', Rule::in(['admin', 'customer'])],
+                'status' => ['required', Rule::in(['active', 'inactive'])],
+                'gender' => ['required', Rule::in(['male', 'female'])],
+                'birthday' => ['nullable', 'date', 'before:today'],
+            ]);
 
-        $user->update($validatedData);
+            $user->update($validatedData);
 
-        return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
+            return redirect()->route('admin.users.index')->with('success', 'Cập nhật người dùng thành công!');
+        } catch (\Exception $e) {
+            Log::error('Error updating user: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Cập nhật người dùng thất bại. Vui lòng thử lại.');
+        }
     }
 
-
-    // Xóa người dùng
-    public function destroy(User $user)
+    /**
+     * Xóa người dùng, ngăn xóa nếu là quản trị viên.
+     */
+    public function destroy(User $user): RedirectResponse
     {
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'Đã xóa người dùng!');
+        try {
+            // Kiểm tra nếu người dùng là admin, sử dụng enum
+            if ($user->role === UserRole::ADMIN) {
+                return back()->with('error', 'Không thể xóa tài khoản quản trị viên!');
+            }
+
+            $user->delete();
+            return redirect()->route('admin.users.index')->with('success', 'Đã xóa người dùng!');
+        } catch (\Exception $e) {
+            Log::error('Error deleting user: ' . $e->getMessage());
+            return back()->with('error', 'Xóa người dùng thất bại. Vui lòng thử lại.');
+        }
     }
 }
