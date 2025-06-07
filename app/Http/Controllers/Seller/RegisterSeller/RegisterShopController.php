@@ -17,10 +17,22 @@ use App\Models\Notification;
 class RegisterShopController extends Controller
 {
     /**
+     * Kiểm tra nếu đã là seller thì không cho vào đăng ký lại
+     */
+    private function checkAlreadySeller()
+    {
+        if (\App\Models\Seller::where('userID', \Auth::id())->exists()) {
+            return redirect()->route('seller.home')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
+        }
+        return null;
+    }
+
+    /**
      * Hiển thị Trang 1: Thông tin shop
      */
     public function showStep1()
     {
+        if ($redirect = $this->checkAlreadySeller()) return $redirect;
         return view('seller.register.register');
     }
 
@@ -41,7 +53,7 @@ class RegisterShopController extends Controller
         ], [
             'shop_name.required' => 'Tên shop là bắt buộc.',
             'shop_name.unique' => 'Tên shop đã tồn tại.',
-            'email.required' => 'Email là bắt buộc.',
+            'email.required' => 'Email là bắt buộc.',   
             'email.unique' => 'Email đã được sử dụng.',
             'phone.required' => 'Số điện thoại là bắt buộc.',
             'phone.unique' => 'Số điện thoại đã được sử dụng.',
@@ -78,6 +90,7 @@ class RegisterShopController extends Controller
      */
     public function showStep2()
     {
+        if ($redirect = $this->checkAlreadySeller()) return $redirect;
         // Kiểm tra dữ liệu session từ Trang 1
         if (!session('register_shop.shop_name')) {
             return redirect()->route('seller.register.step1')->withErrors(['error' => 'Vui lòng hoàn thành bước 1 trước.']);
@@ -117,6 +130,7 @@ class RegisterShopController extends Controller
      */
     public function showStep3()
     {
+        if ($redirect = $this->checkAlreadySeller()) return $redirect;
         // Kiểm tra dữ liệu session từ Trang 2
         if (!session('register_shop.shipping_options')) {
             return redirect()->route('seller.register.step2')->withErrors(['error' => 'Vui lòng hoàn thành bước 2 trước.']);
@@ -174,6 +188,7 @@ class RegisterShopController extends Controller
      */
     public function showStep4()
     {
+        if ($redirect = $this->checkAlreadySeller()) return $redirect;
         // Kiểm tra dữ liệu session từ Trang 3
         if (!session('register_shop.business_type')) {
             return redirect()->route('seller.register.step3')->withErrors(['error' => 'Vui lòng hoàn thành bước 3 trước.']);
@@ -232,11 +247,29 @@ class RegisterShopController extends Controller
      */
     public function showStep5(Request $request)
     {
-        // Kiểm tra dữ liệu session
+        if ($redirect = $this->checkAlreadySeller()) return $redirect;
         $data = session('register_shop');
-        // Kiểm tra dữ liệu session đầy đủ
-        if (!$data || !isset($data['identity_card']) || !isset($data['shop_name']) || !isset($data['shop_address']) || !isset($data['shipping_options']) || !isset($data['tax_code'])) {
-            return redirect()->route('seller.register.step1')->withErrors(['error' => 'Dữ liệu đăng ký không đầy đủ. Vui lòng bắt đầu lại.']);
+        // Kiểm tra dữ liệu session từng bước và redirect về đúng bước thiếu
+        if (!$data) {
+            return redirect()->route('seller.register.step1')->withErrors(['error' => 'Vui lòng nhập thông tin shop.']);
+        }
+        if (!isset($data['shop_name'])) {
+            return redirect()->route('seller.register.step1')->withErrors(['error' => 'Vui lòng nhập thông tin shop.']);
+        }
+        if (!isset($data['shipping_options'])) {
+            return redirect()->route('seller.register.step2')->withErrors(['error' => 'Vui lòng cấu hình vận chuyển.']);
+        }
+        if (!isset($data['business_type'])) {
+            return redirect()->route('seller.register.step3')->withErrors(['error' => 'Vui lòng nhập thông tin kinh doanh.']);
+        }
+        if (!isset($data['identity_card'])) {
+            return redirect()->route('seller.register.step4')->withErrors(['error' => 'Vui lòng nhập thông tin định danh.']);
+        }
+        if (!isset($data['shop_address'])) {
+            return redirect()->route('seller.register.step1')->withErrors(['error' => 'Vui lòng nhập địa chỉ shop.']);
+        }
+        if (!isset($data['tax_code'])) {
+            return redirect()->route('seller.register.step3')->withErrors(['error' => 'Vui lòng nhập mã số thuế.']);
         }
 
         DB::beginTransaction();
@@ -303,7 +336,7 @@ class RegisterShopController extends Controller
             // 5. Lưu vào bảng sellers
             Seller::create([
                 'userID' => Auth::id(),
-                'status' => 'suspended', // Chờ duyệt, hoặc dùng 'active' nếu muốn duyệt ngay
+                'status' => 'suspended',
                 'identity_card' => $data['identity_card'],
                 'identity_card_type' => in_array($data['identity_card_type'], ['cccd','cmnd']) ? $data['identity_card_type'] : 'cccd',
                 'identity_card_date' => now(),
@@ -311,7 +344,7 @@ class RegisterShopController extends Controller
                 'identity_card_image' => $data['identity_card_image'],
                 'identity_card_holding_image' => $data['identity_card_holding_image'] ?? null,
                 'privacy_policy_agreed' => $data['privacy_policy_agreed'] ?? 0,
-                'bank_account' => '',
+                'bank_account' => null,
                 'bank_name' => '',
                 'bank_account_name' => '',
                 'business_license_id' => $businessLicense->id,
@@ -322,6 +355,19 @@ class RegisterShopController extends Controller
             // 6. Cập nhật vai trò người dùng
             User::where('id', Auth::id())->update([
                 'role' => 'seller',
+                'updated_at' => now(),
+            ]);
+
+            // 7. Gửi thông báo
+            DB::table('notification')->insert([
+                'receiver_user_id' => Auth::id(),
+                'title' => 'Đăng ký shop thành công',
+                'content' => 'Shop của bạn đã được tạo. Hệ thống sẽ xác thực thông tin trong 3-4 ngày làm việc. Vui lòng chờ kết quả xác thực!',
+                'type' => 'shop_registration',
+                'priority' => 'normal',
+                'status' => 'unread',
+                'receiver_type' => 'user',
+                'created_at' => now(),
                 'updated_at' => now(),
             ]);
 

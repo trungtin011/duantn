@@ -45,13 +45,26 @@
             <button aria-label="Book icon" class="p-1 hover:text-gray-900 transition-colors">
                 <i class="fas fa-book-open text-lg"></i>
             </button>
-            <div class="flex items-center space-x-2 cursor-pointer">
-                <img alt="User profile picture, round shape with gray background and white letter U"
-                    class="w-8 h-8 rounded-full" height="32"
+            <div class="flex items-center space-x-2 cursor-pointer relative group" id="user-menu-trigger">
+                <img alt="User profile picture" class="w-8 h-8 rounded-full" height="32"
                     src="https://storage.googleapis.com/a1aa/image/0e0e42f3-afbf-4f26-d5b2-574d3f5640d2.jpg"
                     width="32" />
                 <span class="text-xs text-gray-700 select-none">{{ Auth::user()->username ?? 'Tài khoản' }}</span>
                 <i class="fas fa-chevron-down text-xs text-gray-700"></i>
+                <!-- Dropdown menu -->
+                <div class="absolute right-0 top-10 z-50 min-w-[180px] bg-white border border-gray-200 rounded shadow-lg hidden group-hover:block group-focus-within:block"
+                    id="user-menu-dropdown">
+                    <a href="{{ route('seller.settings') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"><i
+                            class="fas fa-cog mr-2"></i>Cài đặt cửa hàng</a>
+                    <a href="{{ route('seller.profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"><i
+                            class="fas fa-user mr-2"></i>Thông tin cá nhân</a>
+                    <a href="{{ route('logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100"><i
+                            class="fas fa-sign-out-alt mr-2"></i>Đăng xuất</a>
+                    <form id="logout-form-header" action="{{ route('logout') }}" method="POST" class="hidden">@csrf
+                    </form>
+                </div>
             </div>
         </div>
     </header>
@@ -83,8 +96,10 @@
                         <i class="fas fa-chevron-down ml-auto mt-1 text-xs"></i>
                     </button>
                     <ul class="mt-2 space-y-1 pl-3 text-gray-700 font-normal">
-                        <li><a class="block hover:text-orange-500" href="{{ route('seller.products.index') }}">Tất Cả Sản Phẩm</a></li>
-                        <li><a class="block hover:text-orange-500" href="{{ route('seller.products.create') }}">Thêm Sản Phẩm</a></li>
+                        <li><a class="block hover:text-orange-500" href="{{ route('seller.products.index') }}">Tất Cả
+                                Sản Phẩm</a></li>
+                        <li><a class="block hover:text-orange-500" href="{{ route('seller.products.create') }}">Thêm Sản
+                                Phẩm</a></li>
                     </ul>
                 </li>
                 <li>
@@ -167,7 +182,8 @@
                     <form id="logout-form-footer" action="{{ route('logout') }}" method="POST" class="hidden">@csrf
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng nhập</a>
+                    <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
+                        nhập</a>
                     <a href="{{ route('register') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
                         ký</a>
                     <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
@@ -207,6 +223,33 @@
     </footer>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @stack('scripts')
+    <script>
+        // Hiển thị dropdown khi hover hoặc focus vào avatar
+        // Dropdown menu user: giữ menu khi hover hoặc rê chuột xuống menu, không bị mất khi di chuyển chuột
+        document.addEventListener('DOMContentLoaded', function() {
+            const trigger = document.getElementById('user-menu-trigger');
+            const dropdown = document.getElementById('user-menu-dropdown');
+            if (trigger && dropdown) {
+                let inside = false;
+                trigger.addEventListener('mouseenter', () => {
+                    dropdown.style.display = 'block';
+                });
+                trigger.addEventListener('mouseleave', () => {
+                    setTimeout(() => {
+                        if (!inside) dropdown.style.display = 'none';
+                    }, 100);
+                });
+                dropdown.addEventListener('mouseenter', () => {
+                    inside = true;
+                    dropdown.style.display = 'block';
+                });
+                dropdown.addEventListener('mouseleave', () => {
+                    inside = false;
+                    dropdown.style.display = 'none';
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
