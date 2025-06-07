@@ -21,6 +21,16 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="card shadow-sm">
         <div class="card-body">
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="needs-validation" novalidate>
@@ -29,69 +39,83 @@
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label for="name" class="form-label">Tên đăng nhập</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $user->username) }}" required>
-                        <div class="invalid-feedback">Vui lòng nhập tên đăng nhập.</div>
+                        <label for="username" class="form-label">Tên đăng nhập</label>
+                        <input type="text" id="username" class="form-control" value="{{ $user->username }}" disabled>
+                        <input type="hidden" name="username" value="{{ $user->username }}">
                     </div>
 
                     <div class="col-md-6">
                         <label for="fullname" class="form-label">Họ và tên</label>
-                        <input type="text" class="form-control" id="fullname" name="fullname" value="{{ old('fullname', $user->fullname) }}" required>
-                        <div class="invalid-feedback">Vui lòng nhập họ và tên.</div>
+                        <input type="text" class="form-control @error('fullname') is-invalid @enderror" id="fullname" name="fullname" value="{{ old('fullname', $user->fullname) }}" required>
+                        @error('fullname')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6">
                         <label for="phone" class="form-label">Số điện thoại</label>
-                        <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone', $user->phone) }}" pattern="^\+?\d{9,15}$" required>
-                        <div class="invalid-feedback">Vui lòng nhập số điện thoại hợp lệ.</div>
+                        <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone) }}" pattern="^\+?\d{9,15}$" required>
+                        @error('phone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $user->email) }}" required>
-                        <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
+                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6">
                         <label for="role" class="form-label">Quyền</label>
-                        <select name="role" id="role" class="form-select" required>
-                            <option value="customer" {{ old('role', $user->role) == 'customer' ? 'selected' : '' }}>Khách hàng</option>
-                            <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Quản Trị viên</option>
-                            <option value="seller" {{ old('role', $user->role) == 'seller' ? 'selected' : '' }}>Bán hàng</option>
-                            <option value="employee" {{ old('role', $user->role) == 'employee' ? 'selected' : '' }}>Nhân viên</option>
+                        <select name="role" id="role" class="form-select @error('role') is-invalid @enderror" required>
+                            @foreach ($roles as $value => $label)
+                                <option value="{{ $value }}" {{ old('role', $user->role) == $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
                         </select>
-                        {{-- <pre>{{ dd($user->role) }}</pre> --}}
-                        <div class="invalid-feedback">Vui lòng chọn quyền.</div>
+                        @error('role')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6">
                         <label for="status" class="form-label">Trạng thái</label>
-                        <select name="status" id="status" class="form-select" required>
-                            <option value="active" {{ old('status', $user->status) == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="inactive" {{ old('status', $user->status) == 'inactive' ? 'selected' : '' }}>Không hoạt động</option>
-                            <option value="banned" {{ old('status', $user->status) == 'banned' ? 'selected' : '' }}>Bị khóa</option>
+                        <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" required>
+                            @foreach ($statuses as $value => $label)
+                                <option value="{{ $value }}" {{ old('status', $user->status) == $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
                         </select>
-                        <div class="invalid-feedback">Vui lòng chọn trạng thái.</div>
+                        @error('status')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6">
                         <label for="gender" class="form-label">Giới tính</label>
-                        <select name="gender" id="gender" class="form-select" required>
-                            <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>Nam</option>
-                            <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>Nữ</option>
-                            <option value="other" {{ old('gender', $user->gender) == 'other' ? 'selected' : '' }}>Khác</option>
+                        <select name="gender" id="gender" class="form-select @error('gender') is-invalid @enderror" required>
+                            @foreach ($genders as $value => $label)
+                                <option value="{{ $value }}" {{ old('gender', $user->gender) == $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
                         </select>
-                        <div class="invalid-feedback">Vui lòng chọn giới tính.</div>
+                        @error('gender')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6">
-                        <label for="birthdate" class="form-label">Ngày sinh</label>
-                        <input type="date" class="form-control" id="birthdate" name="birthdate" value="{{ old('birthdate', $user->birthdate) }}">
+                        <label for="birthday" class="form-label">Ngày sinh</label>
+                        <input type="date" class="form-control @error('birthday') is-invalid @enderror" id="birthday" name="birthday" value="{{ old('birthday', $user->birthday) }}">
+                        @error('birthday')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary">Lưu</button>
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Hủy</a>
                 </div>
             </form>
         </div>
@@ -101,18 +125,17 @@
 <script>
 // Bootstrap 5 validation
 (() => {
-  'use strict'
-  const forms = document.querySelectorAll('.needs-validation')
-  Array.from(forms).forEach(form => {
-    form.addEventListener('submit', event => {
-      if (!form.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-      form.classList.add('was-validated')
-    }, false)
-  })
-})()
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
 </script>
-
 @endsection
