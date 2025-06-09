@@ -27,6 +27,10 @@ git commit -m "( commit )"
 git push  
 ```
 
+refresh lại seedder
+``` bash
+php artisan migrate:fresh --seed
+```
 
 
 

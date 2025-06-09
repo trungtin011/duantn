@@ -137,9 +137,14 @@ class Product extends Model
         return $this->stock_total + $this->variants->sum('stock');
     }
 
+    // public function attributes()
+    // {
+    //     return $this->hasMany(\App\Models\Attribute::class);
+    // }
+
     public function attributes()
     {
-        return $this->hasMany(\App\Models\Attribute::class);
+        return $this->belongsToMany(Attribute::class, 'product_attributes');
     }
 
     public function attributeValues()

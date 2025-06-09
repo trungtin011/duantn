@@ -100,7 +100,7 @@ class ProductController extends Controller
                 'stock_total' => $request->stock_total,
                 'meta_title' => $request->meta_title,
                 'meta_description' => $request->meta_description,
-                'meta_keywords' => $metaKeywords, // Định dạng `ao-nam`
+                'meta_keywords' => $metaKeywords,
                 'is_featured' => $request->has('is_featured') ? 1 : 0,
                 'is_variant' => $request->filled('variants') ? 1 : 0,
                 'status' => $request->save_draft ? 'draft' : 'active',
@@ -110,7 +110,7 @@ class ProductController extends Controller
             // Lưu thuộc tính vào `product_attributes`
             if ($request->filled('attributes')) {
                 foreach ($request->attributes as $attributeInput) {
-                    $attribute = Attribute::firstOrCreate(['name' => $attributeInput['name']]);
+                    $attribute = Attribute::firstOrCreate(['name' => $attributeInput['name']]); // Chỉ dùng 'name'
 
                     foreach (explode(',', $attributeInput['values']) as $value) {
                         $attributeValue = AttributeValue::firstOrCreate([
@@ -146,7 +146,7 @@ class ProductController extends Controller
                     // Lưu kích thước của biến thể vào `product_dimensions`
                     ProductDimension::create([
                         'productID' => $product->id,
-                        'variantID' => null,
+                        'variantID' => $variant->id,
                         'length' => $request->length ?? 0,
                         'width' => $request->width ?? 0,
                         'height' => $request->height ?? 0,
@@ -254,14 +254,11 @@ class ProductController extends Controller
             // Cập nhật product_type thành variant
             $product->update(['product_type' => 'variant']);
 
-            // Tạo hoặc lấy thuộc tính từ tên
+            // Tạo hoặc lấy thuộc tính từ tên, không sử dụng product_id
             $attributeMap = [];
             if ($request->has('attributes')) {
                 foreach ($request->attributes as $attributeData) {
-                    $attribute = Attribute::firstOrCreate(
-                        ['name' => $attributeData['name'], 'product_id' => $product->id],
-                        ['name' => $attributeData['name'], 'product_id' => $product->id]
-                    );
+                    $attribute = Attribute::firstOrCreate(['name' => $attributeData['name']]);
                     $attributeMap[$attributeData['name']] = $attribute->id;
                 }
             }
@@ -311,10 +308,7 @@ class ProductController extends Controller
                 // Lưu attributes của biến thể
                 if (isset($variantData['attributes'])) {
                     foreach ($variantData['attributes'] as $attrData) {
-                        $attribute = Attribute::firstOrCreate(
-                            ['name' => $attrData['attribute_name'], 'product_id' => $product->id],
-                            ['name' => $attrData['attribute_name'], 'product_id' => $product->id]
-                        );
+                        $attribute = Attribute::firstOrCreate(['name' => $attrData['attribute_name']]);
                         $attributeMap[$attrData['attribute_name']] = $attribute->id;
 
                         AttributeValue::create([
@@ -334,10 +328,7 @@ class ProductController extends Controller
                     $variantId = $variantIds[$variantIndex] ?? null;
 
                     if ($variantId) {
-                        $attribute = Attribute::firstOrCreate(
-                            ['name' => $valueData['attribute_name'], 'product_id' => $product->id],
-                            ['name' => $valueData['attribute_name'], 'product_id' => $product->id]
-                        );
+                        $attribute = Attribute::firstOrCreate(['name' => $valueData['attribute_name']]);
                         $attributeMap[$valueData['attribute_name']] = $attribute->id;
 
                         AttributeValue::create([
@@ -369,7 +360,6 @@ class ProductController extends Controller
 
         return view('admin.products.edit', compact('product', 'categories', 'brands', 'attributes'));
     }
-
 
     /**
      * Cập nhật sản phẩm
@@ -430,7 +420,7 @@ class ProductController extends Controller
             ProductAttribute::where('product_id', $product->id)->delete(); // Xóa dữ liệu cũ
             if ($request->filled('attributes')) {
                 foreach ($request->attributes as $attributeInput) {
-                    $attribute = Attribute::firstOrCreate(['name' => $attributeInput['name']]);
+                    $attribute = Attribute::firstOrCreate(['name' => $attributeInput['name']]); // Chỉ dùng 'name'
 
                     foreach (explode(',', $attributeInput['values']) as $value) {
                         $attributeValue = AttributeValue::firstOrCreate([
@@ -448,14 +438,14 @@ class ProductController extends Controller
             }
 
             // Cập nhật kích thước sản phẩm
-            ProductDimension::where('productID', $product->id)->delete();
+            ProductDimension::where('productID', $product->id)->whereNull('variantID')->delete();
             ProductDimension::create([
                 'productID' => $product->id,
                 'variantID' => null,
-                'length' => $request->length ?? 0,
-                'width' => $request->width ?? 0,
-                'height' => $request->height ?? 0,
-                'weight' => $request->weight ?? 0,
+                'length' => $request->dimensions['length'] ?? 0,
+                'width' => $request->dimensions['width'] ?? 0,
+                'height' => $request->dimensions['height'] ?? 0,
+                'weight' => $request->dimensions['weight'] ?? 0,
                 'shipping_cost' => $request->shipping_cost ?? 0,
             ]);
 
@@ -465,11 +455,11 @@ class ProductController extends Controller
                 foreach ($request->variants as $variantData) {
                     $variant = ProductVariant::create([
                         'productID' => $product->id,
-                        'variant_name' => $variantData['name'],
+                        'variant_name' => $variantData['variant_name'],
                         'price' => $variantData['price'],
                         'purchase_price' => $variantData['purchase_price'],
                         'sale_price' => $variantData['sale_price'],
-                        'stock' => $variantData['stock_total'],
+                        'stock' => $variantData['stock'],
                         'sku' => $variantData['sku'],
                         'status' => 'active',
                     ]);

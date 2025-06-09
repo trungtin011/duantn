@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
+    protected $table = 'orders';
     protected $fillable = [
         'userID', // Cột trong migration là userID
         'shopID',
@@ -110,5 +111,20 @@ class Order extends Model
     public function getFinalPriceAttribute()
     {
         return $this->total_price - $this->coupon_discount;
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'order_id');
+    }
+
+    public function orderAddress()
+    {
+        return $this->hasOne(OrderAddress::class, 'order_id');
+    }
+
+    public function orderStatusHistory()
+    {
+        return $this->hasMany(OrderStatusHistory::class, 'order_id');
     }
 }

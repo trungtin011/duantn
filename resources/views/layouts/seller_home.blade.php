@@ -9,6 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
+    <!-- Quill CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+    <!-- Quill JS -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
     <link rel="stylesheet" href="{{ asset('css/seller/seller-home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/seller/seller-products.css') }}">
     @stack('styles')
@@ -80,7 +84,8 @@
                         <i class="fas fa-chevron-down ml-auto mt-1 text-xs"></i>
                     </button>
                     <ul class="mt-2 space-y-1 pl-3 text-gray-700 font-normal">
-                        <li><a class="block hover:text-orange-500" href="#">Tất cả</a></li>
+                        <li><a class="block hover:text-orange-500" href="{{ route('seller.order.index') }}">Tất cả</a>
+                        </li>
                         <li><a class="block hover:text-orange-500" href="#">Giao Hàng Loạt</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Bàn Giao Đơn Hàng</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Đơn Trả hàng/Hoàn tiền hoặc Đơn
@@ -223,6 +228,7 @@
     </footer>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @stack('scripts')
+    <script src="{{ asset('js/seller/product.js') }}"></script>
     <script>
         // Hiển thị dropdown khi hover hoặc focus vào avatar
         // Dropdown menu user: giữ menu khi hover hoặc rê chuột xuống menu, không bị mất khi di chuyển chuột
