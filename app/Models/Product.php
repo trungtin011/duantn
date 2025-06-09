@@ -50,6 +50,14 @@ class Product extends Model
     ];
 
     // Relationships
+
+    //linh
+    public function defaultImage()
+    {
+        return $this->hasOne(ProductImage::class, 'productID')->where('is_default', true);
+    }
+    //linh
+
     public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class, 'shopID');

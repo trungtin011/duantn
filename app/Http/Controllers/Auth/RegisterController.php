@@ -26,6 +26,7 @@ class RegisterController extends Controller
             'birthday' => 'nullable|date',
             'password' => 'required|string|min:6|confirmed',
         ], [
+         'username.required' => 'Tên đăng nhập là bắt buộc.',
             'username.required' => 'Tên đăng nhập là bắt buộc.',
             
             'username.unique' => 'Tên đăng nhập đã tồn tại.',
