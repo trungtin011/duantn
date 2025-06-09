@@ -15,6 +15,7 @@
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -131,8 +132,7 @@
                     Mã giảm giá
                 </a>
                 <a href="{{ route('admin.users.index') }}" class="link_admin">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24"
-                        fill="none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none">
                         <circle opacity="0.4" cx="15" cy="6" r="3" fill="#1C274C" />
                         <ellipse opacity="0.4" cx="16" cy="17" rx="5" ry="3"
                             fill="#1C274C" />
@@ -195,7 +195,8 @@
                 </form>
                 <div class="right relative">
                     <!-- Nút thông báo -->
-                    <div class="border border-1 p-1 rounded-[4px] relative cursor-pointer" id="notification-btn">
+                    <div class="border border-1 p-1 rounded-[4px] w-[38px] h-[38px] relative cursor-pointer flex items-center justify-center"
+                        id="notification-btn">
                         <div
                             class="bg-red-500 flex items-center justify-center rounded-full w-[16px] h-[16px] absolute top-0 right-0">
                             <span class="text-white text-xs">9</span>
@@ -206,8 +207,6 @@
                                 d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
                         </svg>
                     </div>
-                    <img src="https://i.pravatar.cc/38" class="avatar" alt="avatar">
-
                     <!-- Dropdown thông báo -->
                     <div id="notification-dropdown"
                         class="absolute top-[110%] right-0 w-[250px] bg-white shadow-lg border rounded-md hidden">
@@ -217,6 +216,48 @@
                             <li class="p-2 border-b cursor-pointer hover:bg-gray-100">Cập nhật hệ thống</li>
                             <li class="p-2 cursor-pointer hover:bg-gray-100">Thời gian đăng ký sẽ hết hạn sớm!</li>
                         </ul>
+                    </div>
+                    <div class="relative">
+                        <div
+                            class="absolute top-0 right-0 w-[10px] h-[10px] bg-green-500 rounded-full border border-white">
+                        </div>
+                        <button id="dropdownInformationButton" data-dropdown-toggle="dropdownInformation"
+                            class="text-white" type="button">
+                            <img src="{{ asset('images/avatar.png') }}" class="avatar" alt="avatar">
+                        </button>
+                        <!-- Dropdown menu -->
+                        <div id="dropdownInformation" class="z-10 hidden w-[200px]">
+                            <div
+                                class="bg-white divide-y divide-gray-600 rounded-lg shadow-sm w-44 dark:bg-gray-700 dark:divide-gray-100">
+                                <div class="flex items-center px-4 py-3 text-sm text-gray-900 dark:text-black">
+                                    <div class="font-medium truncate">{{ Auth::user()->fullname }}</div>
+                                </div>
+                                <ul class="py-2 text-sm text-gray-700 dark:text-black"
+                                    aria-labelledby="dropdownInformationButton">
+                                    <li>
+                                        <a href="#"
+                                            class="block px-4 py-2 hover:bg-gray-600 dark:hover:bg-gray-100 dark:hover:text-black">Cài
+                                            đặt</a>
+                                    </li>
+                                </ul>
+                                <div class="py-2">
+                                    <a href="{{ route('logout') }}"
+                                        onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
+                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-600 dark:hover:bg-gray-100 dark:text-black dark:hover:text-black">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                                        </svg>
+                                        Đăng xuất
+                                    </a>
+                                    <form id="logout-form-header" action="{{ route('logout') }}" method="POST"
+                                        class="hidden">
+                                        @csrf
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
