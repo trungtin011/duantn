@@ -9,82 +9,82 @@
                 style="background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');">
             </div>
 
-            <!-- Form bên phải -->
-            <div class="w-full md:w-1/2 bg-white p-6 md:p-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Tạo một tài khoản</h2>
-                <p class="text-gray-600 mb-8 text-base md:text-lg">Nhập thông tin của bạn bên dưới</p>
-                <form method="POST" action="{{ route('register.post') }}">
-                    @csrf
-                    <div class="mb-6">
-                        <input type="text" name="username" placeholder="Tên đăng nhập"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
-                    </div>
+        <!-- Form bên phải -->
+        <div class="w-full md:w-1/2 bg-white p-6 md:p-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Tạo một tài khoản</h2>
+            <p class="text-gray-600 mb-8 text-base md:text-lg">Nhập thông tin của bạn bên dưới</p>
+            <form method="POST" action="{{ route('register.post') }}">
+                @csrf
+                <div class="mb-6">
+                    <input type="text" name="username" placeholder="Tên đăng nhập"
+                        class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
+                </div>
 
-                    <div class="mb-6">
-                        <input type="text" name="fullname" placeholder="Họ và tên"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
-                    </div>
+                <div class="mb-6">
+                    <input type="text" name="fullname" placeholder="Họ và tên"
+                        class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
+                </div>
 
-                    <div class="mb-6">
-                        <input type="text" name="phone" placeholder="Số điện thoại"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
-                    </div>
+                <div class="mb-6">
+                    <input type="text" name="phone" placeholder="Số điện thoại"
+                        class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
+                </div>
 
-                    <div class="mb-6">
-                        <input type="email" name="email" placeholder="Email"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
-                    </div>
+                <div class="mb-6">
+                    <input type="email" name="email" placeholder="Email"
+                        class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
+                </div>
 
-                    <div class="mb-6">
-                        <input type="date" name="birthday" placeholder="Ngày sinh"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" />
-                    </div>
+                <div class="mb-6">
+                    <input type="date" name="birthday" placeholder="Ngày sinh"
+                        class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" />
+                </div>
 
-                    <div class="mb-6">
-                        <select name="gender"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required>
-                            <option value="">Chọn giới tính</option>
-                            <option value="male">Nam</option>
-                            <option value="female">Nữ</option>
-                            <option value="other">Khác</option>
-                        </select>
-                    </div>
+                <div class="mb-6">
+                    <select name="gender"
+                        class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required>
+                        <option value="">Chọn giới tính</option>
+                        <option value="male">Nam</option>
+                        <option value="female">Nữ</option>
+                        <option value="other">Khác</option>
+                    </select>
+                </div>
 
-                    <div class="mb-6">
-                        <input type="password" name="password" placeholder="Mật khẩu"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
-                    </div>
+                <div class="mb-6">
+                    <input type="password" name="password" placeholder="Mật khẩu"
+                        class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
+                </div>
 
-                    <div class="mb-6">
-                        <input type="password" name="password_confirmation" placeholder="Nhập lại mật khẩu"
-                            class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
-                    </div>
+                <div class="mb-6">
+                    <input type="password" name="password_confirmation" placeholder="Nhập lại mật khẩu"
+                        class="text-base md:text-lg w-full border rounded px-4 py-3 placeholder-gray-400" required />
+                </div>
 
+                <!-- Nút -->
+                <button type="submit"
+                    class="w-full bg-black hover:bg-gray-800 text-white py-3 text-base md:text-lg rounded">Tạo tài
+                    khoản</button>
+                <button type="button"
+                    class="w-full flex items-center justify-center border border-gray-300 bg-white hover:bg-gray-100 text-black py-3 text-base md:text-lg rounded mt-4">
+                    <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google icon" class="h-5 w-5 mr-2">
+                    Đăng ký với Google
+                </button>
 
-                    <!-- Nút -->
-                    <button type="submit"
-                        class="w-full bg-black hover:bg-gray-800 text-white py-3 text-base md:text-lg rounded">Tạo tài
-                        khoản</button>
-                    <button type="button"
-                        class="w-full flex items-center justify-center border border-gray-300 bg-white hover:bg-gray-100 text-black py-3 text-base md:text-lg rounded mt-4">
-                        <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google icon" class="h-5 w-5 mr-2">
-                        Đăng ký với Google
-                    </button>
-
-                    <div class="flex mt-6 text-sm flex-wrap gap-2">
-                        <span href="#" class="text-gray-600">Đã có tài khoản?
-                            <a href="{{ route('login') }}" class="text-gray-600 hover:underline">Đăng nhập</a>
-                        </span>
-                    </div>
-                </form>
-            </div>
+                <div class="flex mt-6 text-sm flex-wrap gap-2">
+                    <span class="text-gray-600">Đã có tài khoản?
+                        <a href="{{ route('login') }}" class="text-gray-600 hover:underline">Đăng nhập</a>
+                    </span>
+                </div>
+            </form>
         </div>
     </div>
-    <style>
-        .bg-image {
-            background-image: url('https://images.unsplash.com/photo-1591337676887-a217a3fca0ed?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-        }
-    </style>
+</div>
+
+<style>
+    .bg-image {
+        background-image: url('https://images.unsplash.com/photo-1591337676887-a217a3fca0ed?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+        background-size: cover;
+        background-position: center;
+    }
+</style>
 @endsection

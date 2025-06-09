@@ -24,7 +24,7 @@ Push code
 ``` bash
 git add .
 git commit -m "( commit )" 
-git push  
+git push
 ```
 
 refresh lại seedder

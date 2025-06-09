@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\UserController;
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -30,9 +31,11 @@ Route::get('/contact', function () {
 Route::get('/about', function () {
     return view('user.about');
 })->name('about');
-Route::get('/user/product-detail', function () {
-    return view('user.product_detail');
+
+Route::get('/user/product/product_detail', function () {
+    return view('user.product.product_detail');
 })->name('product_detail');
+
 Route::get('/user/cart', function () {
     return view('user.cart');
 })->name('cart');
@@ -133,6 +136,15 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/settings', function () {
         return view('admin.settings.index');
     })->name('admin.settings.index');
+
+    // users
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('admin.users.index');
+        Route::get('/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/{id}', [UserController::class, 'update'])->name('admin.users.update');
+        Route::get('/{id}', [UserController::class, 'show'])->name('admin.users.show');
+        Route::delete('/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    });
 });
 
 // seller routes
