@@ -56,7 +56,7 @@
                     <th scope="col">Giới tính</th>
                     <th scope="col">Ngày sinh</th>
                     <th scope="col">Quyền</th>
-                    <th scope="col">Thao tác</th>
+                    <th scope="col" class="text-right pr-[24px]">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 text-gray-900 font-normal">
@@ -67,25 +67,62 @@
                                 type="checkbox" />
                         </td>
                         <td class="py-4 text-[13px]">{{ $user->id }}</td>
+                        <td class="py-4 text-[13px]">{{ $user->username }}</td>
                         <td class="py-4 text-[13px]">
-                            <img src="">
-                            {{ $user->username }}
+                            <div class="flex items-center">
+                                <img class="w-6 h-6 rounded-full mr-2"
+                                    src="{{ $user->avatar ? asset($user->avatar) : asset('images/avatar.png') }}"
+                                    alt="{{ $user->username }}">
+                                {{ $user->fullname }}
+                            </div>
                         </td>
-                        <td class="py-4 text-[13px]">{{ $user->fullname }}</td>
                         <td class="py-4 text-[13px]">{{ $user->phone }}</td>
                         <td class="py-4 text-[13px]">{{ $user->email }}</td>
                         <td class="py-4">
-                            <span
-                                class="inline-block {{ $user->status->value == 'active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }} text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                {{ $user->status->value == 'active' ? 'Hoạt động' : 'Không hoạt động' }}
-                            </span>
+                            @switch($user->status->value)
+                                @case('active')
+                                    <span
+                                        class="inline-block bg-green-100 text-green-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                        Hoạt động
+                                    </span>
+                                @break
+
+                                @case('inactive')
+                                    <span
+                                        class="inline-block bg-red-100 text-red-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                        Không hoạt động
+                                    </span>
+                                @case('banned')
+                                    <span
+                                        class="inline-block bg-yellow-100 text-yellow-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                        Đã bị khoá
+                                    </span>
+                                @break
+                            @endswitch
                         </td>
-                        <td class="py-4 text-[13px]">{{ $user->gender == 'male' ? 'Nam' : 'Nữ' }}</td>
+                        <td class="py-4 text-[13px]">
+                            @switch($user->gender->value)
+                                @case('male')
+                                    Nam
+                                @break
+
+                                @case('female')
+                                    Nữ
+                                @break
+
+                                @case('other')
+                                    Khác
+                                @break
+
+                                @default
+                                    -
+                            @endswitch
+                        </td>
                         <td class="py-4 text-[13px]">{{ $user->birthday ? $user->birthday->format('d/m/Y') : '-' }}</td>
                         <td class="py-4 text-[13px]">{{ $user->role == 'admin' ? 'Quản trị viên' : 'Khách hàng' }}</td>
                         <td class="py-4 pr-6 flex items-center justify-end">
                             <div
-                                class="bg-[#f2f2f6] hover:bg-[#0B8AFF] hover:text-white w-[37px] h-[35px] rounded-md flex items-center justify-center mr-2">
+                                class="bg-[#f2f2f6] hover:bg-[#E8A252] hover:text-white w-[37px] h-[35px] rounded-md flex items-center justify-center mr-2">
                                 <a href="{{ route('admin.users.edit', $user->id) }}" class="transition-all duration-300">
                                     <i class="fas fa-edit" title="Chỉnh sửa"></i>
                                 </a>
