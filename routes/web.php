@@ -13,6 +13,10 @@ use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OcrController;
+use App\Http\Controllers\Seller\OrderController as SellerOrderController;
+//user
+use App\Http\Controllers\User\CartController;
+use App\Http\Controllers\User\OrderController as UserOrderController;
 
 // trang chủ
 Route::get('/', function () {
@@ -45,6 +49,13 @@ Route::get('/user/order/order-detail', function () {
     return view('user.order.orderDetail');
 })->name('order_detail');
 
+
+// Route giỏ hàng
+Route::get('/cart', [CartController::class, 'index'])->name('cart');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::put('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+
 // trang lỗi
 Route::get('/404', function () {
     return view('error.404NotFound');
@@ -68,6 +79,8 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+
+    // products admin
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('admin.products.index');
         Route::get('/create', [ProductController::class, 'create'])->name('admin.products.create');
@@ -81,11 +94,18 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/get-sub-brands', [ProductController::class, 'getSubBrands'])->name('admin.get-sub-brands');
         Route::get('/get-sub-categories', [ProductController::class, 'getSubCategories'])->name('admin.get-sub-categories');
     });
+
+    // attributes
     Route::prefix('/attributes')->group(function () {
-        Route::get('/', [AttributeController::class, 'index'])->name('admin.products.attributes.index');
-        Route::post('/', [AttributeController::class, 'store'])->name('admin.products.attributes.store');
-        Route::delete('/{id}', [AttributeController::class, 'destroy'])->name('admin.products.attributes.destroy');
+        Route::get('/', [AttributeController::class, 'index'])->name('admin.attributes.index');
+        Route::get('/{id}/edit', [AttributeController::class, 'edit'])->name('admin.attributes.edit');
+        Route::post('', [AttributeController::class, 'store'])->name('admin.attributes.store');
+        Route::post('/list', [AttributeController::class, 'storeList'])->name('admin.attributes.storeList');
+        Route::put('/{id}', [AttributeController::class, 'update'])->name('admin.attributes.update');
+        Route::delete('/{id}', [AttributeController::class, 'destroy'])->name('admin.attributes.destroy');
     });
+
+    // products orders
     Route::prefix('orders')->group(function () {
         Route::get('/', [AdminOrderController::class, 'index'])->name('admin.orders.index');
         Route::get('/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
@@ -93,6 +113,8 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/{id}/refund', [AdminOrderController::class, 'refund'])->name('admin.orders.refund');
         Route::get('/report', [AdminOrderController::class, 'report'])->name('admin.orders.report');
     });
+
+    // products categories
     Route::prefix('categories')->group(function () {
         Route::get('/', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
         Route::post('/', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
@@ -101,9 +123,13 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('admin.categories.destroy');
         Route::post('/remove-sub/{id}', [AdminCategoryController::class, 'removeSubCategory'])->name('admin.categories.removeSubCategory');
     });
+
+    // products reviews
     Route::get('/reviews', function () {
         return view('admin.reviews.index');
     })->name('admin.reviews.index');
+
+    // products settings
     Route::get('/settings', function () {
         return view('admin.settings.index');
     })->name('admin.settings.index');
@@ -112,7 +138,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
 // seller routes
 Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/dashboard', function () {
-        return view('seller.dashboard');
+        return view('seller.home');
     })->name('seller.dashboard');
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerSeller::class, 'index'])->name('seller.products.index');
@@ -122,6 +148,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::put('/{id}', [ProductControllerSeller::class, 'update'])->name('seller.products.update');
         Route::delete('/{id}', [ProductControllerSeller::class, 'destroy'])->name('seller.products.destroy');
         Route::get('/{id}', [ProductControllerSeller::class, 'show'])->name('seller.products.show');
+        Route::get('/api/attribute-values', [ProductControllerSeller::class, 'getAttributeValues']);
     });
     Route::get('/orders', function () {
         return view('seller.orders');
@@ -165,9 +192,17 @@ Route::prefix('seller')->group(function () {
     Route::get('/profile', function () {
         return view('seller.profile');
     })->name('seller.profile');
+
+
+
+    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
+    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
 // API OCR CCCD cho frontend JS
 Route::post('/seller/ocr/scan-cccd', [OcrController::class, 'upload'])->name('seller.ocr.scancccd');
 Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
 Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
+Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
+Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');

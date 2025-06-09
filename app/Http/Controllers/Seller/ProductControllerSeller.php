@@ -586,4 +586,23 @@ class ProductControllerSeller extends Controller
             return response()->json(['error' => 'Không thể lấy danh sách danh mục phụ'], 500);
         }
     }
+
+    public function getAttributes()
+    {
+        $attributes = Attribute::all()->pluck('name');
+        return response()->json($attributes);
+    }
+
+    public function getAttributeValues(Request $request)
+    {
+        $attributeName = $request->query('attribute');
+        if ($attributeName) {
+            $values = AttributeValue::whereHas('attribute', function ($query) use ($attributeName) {
+                $query->where('name', $attributeName);
+            })->pluck('value')->toArray();
+
+            return response()->json($values);
+        }
+        return response()->json([], 200); // Trả về mảng rỗng nếu không có thuộc tính
+    }
 }

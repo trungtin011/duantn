@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderStatusHistory extends Model
 {
+
     protected $table = 'order_status_history';
     protected $fillable = [
         'order_id',
@@ -15,6 +16,7 @@ class OrderStatusHistory extends Model
         'shipping_provider',
         'note'
     ];
+    public $timestamps = true;
 
     // Relationships
     public function order(): BelongsTo

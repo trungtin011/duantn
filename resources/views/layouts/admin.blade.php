@@ -83,7 +83,7 @@
                         </li>
                         <li class="text-sm text-[#64748b] flex items-center gap-2">
                             <span class="text-sm text-[#64748b]">•</span>
-                            <a href="{{ route('admin.products.attributes.index') }}">Thuộc tính sản phẩm</a>
+                            <a href="{{ route('admin.attributes.index') }}">Thuộc tính sản phẩm</a>
                         </li>
                     </ul>
                 </div>
