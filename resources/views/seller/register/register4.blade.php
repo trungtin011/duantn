@@ -12,7 +12,11 @@
             <!-- Stepper -->
             @include('seller.register.stepper')
             <script>
-                updateStepper(4);
+                if (typeof updateStepper === 'function') {
+                    updateStepper(4);
+                } else {
+                    console.error('updateStepper function is not defined');
+                }
             </script>
             <!-- Success Card -->
             <div class="bg-white rounded-2xl p-6">
@@ -23,9 +27,8 @@
                         </span>
                     </div>
                     <h4 class="fw-bold mb-2">Đăng ký thành công</h4>
-                    <div class="mb-10" style="color:#4a5568; font-size:1rem;">Hãy đăng bán sản phẩm đầu tiên để khởi động
-                        hành trình bán hàng cùng</div>
-                    <a href="#" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Thêm sản phẩm</a>
+                    <div class="mb-10" style="color:#4a5568; font-size:1rem;">Cảm ơn bạn đã đăng ký! Quá trình xử lý sẽ hoàn tất trong vòng 3–4 ngày.</div>
+                    <a href="{{ route('seller.home') }}" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Thêm sản phẩm</a>
                 </div>
             </div>
         </div>
