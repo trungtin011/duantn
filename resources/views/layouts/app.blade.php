@@ -47,10 +47,6 @@
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
                 <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
                 <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
-
-                @guest
-                    <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
-                @endguest
                 @auth
                     @if (Auth::user()->role === 'customer')
                         <li>
@@ -106,11 +102,22 @@
                     <!-- Dropdown Menu (Desktop) -->
                     <div x-show="userDropdownOpen"
                         class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-gradient-to-b from-gray-800 to-purple-900 bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-10">
+                        @guest
+                            <a href="{{ route('signup') }}"
+                                class="flex items-center justify-between gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                Đăng ký
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
+                                </svg>
+                            </a>
+                        @endguest
                         @auth
                             <!-- Admin Links -->
                             @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
                                 <a href="{{ route('admin.dashboard') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -119,7 +126,7 @@
                                     Bảng điều khiển Admin
                                 </a>
                                 <a href="{{ route('admin.products.index') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -130,7 +137,7 @@
                                 <!-- Seller Links -->
                             @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
                                 <a href="{{ route('seller.dashboard') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -139,7 +146,7 @@
                                     Bảng điều khiển Seller
                                 </a>
                                 <a href="{{ route('seller.products.index') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -148,7 +155,7 @@
                                     Sản phẩm của tôi
                                 </a>
                                 <a href="{{ route('seller.orders') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -159,7 +166,7 @@
                                 <!-- Customer Links -->
                             @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
                                 <a href="{{ route('account.profile') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -168,7 +175,7 @@
                                     Quản lý tài khoản
                                 </a>
                                 <a href="{{ route('order_history') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -177,7 +184,7 @@
                                     Đơn hàng của tôi
                                 </a>
                                 <a href="{{ route('wishlist') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -186,7 +193,7 @@
                                     Danh sách ước
                                 </a>
                                 <a href="{{ route('seller.register') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="1.5" stroke="currentColor" class="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -198,7 +205,7 @@
                             <!-- Common Logout Link -->
                             <a href="{{ route('logout') }}"
                                 onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
-                                class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
