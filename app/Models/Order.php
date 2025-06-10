@@ -10,11 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     protected $fillable = [
-        'user_id',
-        'shop_id',
+        'userID',
+        'shopID',
         'order_code',
         'total_price',
-        'coupon_id',
+        'couponID',
         'coupon_discount',
         'payment_method',
         'payment_status',
@@ -52,7 +52,7 @@ class Order extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(ItemsOrder::class, 'orderID', 'id');
     }
 
     public function address(): HasOne

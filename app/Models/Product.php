@@ -51,7 +51,7 @@ class Product extends Model
     // Relationships
     public function shop(): BelongsTo
     {
-        return $this->belongsTo(Shop::class, 'shopID');
+        return $this->belongsTo(Shop::class, 'shopID', 'id');
     }
 
     public function variants(): HasMany

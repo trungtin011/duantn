@@ -6,30 +6,48 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Wishlist;
 use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 
 class WishlistController extends Controller
 {
+
     public function index()
     {
-        $wishlist = Wishlist::where('user_id', auth()->user()->id)->get();
-        return view('user.wishlist.index', compact('wishlist'));
+        $wishlist = Wishlist::where('userID', Auth::user()->id)->get();
+        return view('client.wishlist', compact('wishlist'));
     }
-
 
     public function store(Request $request)
     {
+        $checkWishlist = $this->checkWishlist($request->product_id);
+        if ($checkWishlist) {
+            return redirect()->back()->with('error', 'Sản phẩm đã có trong danh sách yêu thích');
+        }
         $wishlist = new Wishlist();
-        $wishlist->user_id = auth()->user()->id;
-        $wishlist->product_id = $request->product_id;
+        $wishlist->userID= Auth::user()->id;
+        $wishlist->productID = $request->product_id;
+        $wishlist->shopID = $request->shop_id;
         $wishlist->save();
-        return redirect()->route('user.wishlist.index')->with('success', 'Product added to wishlist successfully');
+
+        return redirect()->back()->with('success', 'Product added to wishlist successfully');
     }
 
-    // Remove product from wishlist
+    public function checkWishlist($product_id)
+    {
+        $wishlist = Wishlist::where('userID', Auth::user()->id)->where('productID', $product_id)->first();
+        if ($wishlist) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function destroy($id)
     {
-        // ...code to remove product from wishlist...
+        $wishlist = Wishlist::find($id);
+        $wishlist->delete();
+        return redirect()->back()->with('success', 'Product removed from wishlist successfully');
     }
 
-    // Other wishlist management methods...
+    
 }

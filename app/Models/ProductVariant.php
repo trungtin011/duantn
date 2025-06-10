@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ProductVariant extends Model
 {
+    protected $table = 'product_variants';
+    
     protected $fillable = [
         'productID',
         'color',

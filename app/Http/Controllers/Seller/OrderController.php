@@ -22,8 +22,7 @@ class OrderController extends Controller
     // Update order status (processing, shipped, delivered, etc.)
     public function updateStatus(Request $request, $id)
     {
-        // ...code to update order status...
+
     }
 
-    // Other seller order management methods...
 }
