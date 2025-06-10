@@ -19,70 +19,65 @@
                 <div class="flex gap-4">
                     <!-- Ảnh phụ bên trái -->
                     <div class="flex flex-col gap-2 w-1/4">
-                        <img src="https://gcs.tripi.vn/public-tripi/tripi-feed/img/474069QVt/hinh-anh-ban-phim-razer_033845591.jpg"
-                            class="w-full rounded cursor-pointer sub-image" alt="Thumbnail 1">
-                        <img src="https://gongangshop.vn/wp-content/uploads/2024/05/Ban-phim-RGB-1024x576.png"
-                            class="w-full rounded cursor-pointer sub-image" alt="Thumbnail 2">
-                        <img src="https://vn-test-11.slatic.net/p/6d2039790678530b6d5a9feb6925c9bb.jpg"
-                            class="w-full rounded cursor-pointer sub-image" alt="Thumbnail 3">
-                        <img src="https://gongangshop.vn/wp-content/uploads/2024/05/Ban-phim-RGB-1024x576.png"
-                            class="w-full rounded cursor-pointer sub-image" alt="Thumbnail 4">
+                        @foreach($product->images as $image)
+                            <img src="{{ asset($image->image_path) }}" alt="Ảnh phụ" class="w-full rounded cursor-pointer sub-image">
+                        @endforeach
                     </div>
                     <!-- Ảnh chính -->
                     <div class="w-3/4">
-                        <img id="mainProductImage"
-                            src="https://img.tripi.vn/cdn-cgi/image/width=700,height=700/https://gcs.tripi.vn/public-tripi/tripi-feed/img/474069zWk/anh-ban-phim-co-dep_033839277.jpg"
-                            class="w-full h-full rounded object-cover cursor-pointer" alt="Sản phẩm chính">
+                        <img src="{{ $product->images->first()->image_path ?? 'default.jpg' }}" alt="{{ $product->name }}" class="w-full rounded", style="height: 500px">
                     </div>
                 </div>
             </div>
 
             <!-- Thông tin sản phẩm -->
             <div class="rounded-lg">
-                <h2 class="text-2xl font-bold text-gray-800 mb-3">Havic HV G-92 Gamepad</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">{{ $product->name }}</h2>
                 <div class="flex items-center mb-2 text-sm text-gray-500">
                     <span class="text-yellow-400">★★★★☆</span>
                     <span class="ml-2">(150 đánh giá) | Đã bán: 3k</span>
                 </div>
                 <div class="mb-3 flex items-center">
-                    <span class="text-gray-500 line-through">₫250.000</span>
-                    <span class="text-red-600 text-2xl font-semibold ml-3">₫199.000</span>
+                    @if ($product->hasDiscount())
+                        <span class="text-gray-500 line-through">{{ number_format($product->price, 0, ',', '.') }}</span>
+                        <span class="text-red-600 text-2xl font-semibold ml-3">{{ number_format($product->sale_price, 0, ',', '.') }}</span>
+                    @else
+                        <span class="text-red-600 text-2xl font-semibold">{{ number_format($product->price, 0, ',', '.') }}</span>
+                    @endif
                 </div>
 
                 <p class="text-gray-600 mb-4">
-                    Tay cầm chơi game cho PlayStation 5, chất liệu cao cấp, thiết kế công thái học, kết nối không dây, hỗ
-                    trợ rung và cảm ứng lực.
+                    {{ $product->description }}
                 </p>
 
                 <div class="mb-3 flex gap-2">
-                    <span class="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">-10%</span>
-                    <span class="bg-yellow-400 text-gray-800 text-xs font-semibold px-2 py-1 rounded">Giảm ₫15k</span>
+                    <span class="bg-yellow-400 text-gray-800 text-xs font-semibold px-2 py-1 rounded">Giảm: {{ $product->discount_percentage }}%</span>
                     <span class="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">Flash Sale</span>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-gray-700 mb-2">Màu sắc:</label>
                     <div class="flex gap-3">
-                        <div class="w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer"
-                            style="background-color: white;"></div>
-                        <div class="w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer"
-                            style="background-color: black;"></div>
+                        @foreach($product->variants->unique('color') as $variant)
+                            <div class="flex items-center gap-1">
+                                <div class="w-5 h-5 rounded-full border" style="background-color: {{ $variant->color_code }}"></div>
+                                <span class="text-sm">{{ $variant->color }}</span>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-gray-700 mb-2">Kích cỡ:</label>
                     <div class="flex gap-2">
-                        <button class="border border-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-100">XS</button>
-                        <button class="border border-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-100">S</button>
-                        <button class="border border-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-100">M</button>
-                        <button class="border border-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-100">L</button>
-                        <button class="border border-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-100">XL</button>
+                        @foreach($product->variants->unique('size') as $variant)
+                            <span class="px-3 py-1 border rounded text-sm">{{ $variant->size }}</span>
+                        @endforeach
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">Số lượng:</label>
+                    <label class="block text-gray-700 mb-2">Số lượng</label>
                     <div class="flex items-center gap-2" style="max-width: 160px;">
                         <button class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-100"
                             id="decreaseQty">-</button>
@@ -92,7 +87,7 @@
                         <button class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-100"
                             id="increaseQty">+</button>
                     </div>
-                    <small class="text-gray-500 block mt-1">10 sản phẩm còn lại</small>
+                    <small class="text-gray-500 block mt-1">Sản phẩm còn lại: {{ $product->stock_total }}</small>
                 </div>
 
                 <div class="flex gap-3">
@@ -121,14 +116,11 @@
         <div class="mt-6 bg-white rounded-lg">
             <h3 class="text-xl font-semibold text-gray-800 mb-3">Mô tả chi tiết</h3>
             <p class="text-gray-600 mb-4">
-                Gamepad Havic HV G-92 mang đến trải nghiệm chơi game mượt mà với thiết kế công thái học, kết nối không dây
-                ổn định, cảm ứng lực và độ rung tùy biến.
-                Phù hợp với nhiều nền tảng như PC, PS5 và các thiết bị Android qua OTG.
+                {{ $product->meta_title }}
             </p>
             <img src="https://gongangshop.vn/wp-content/uploads/2024/05/Ban-phim-RGB-1024x576.png"
                 class="w-full my-3 rounded" style="height: 500px;" alt="Mô tả hình ảnh 1">
-            <p class="text-gray-600 mb-4">Sản phẩm được minh họa trong môi trường thực tế, hiển thị ánh sáng RGB khi sử
-                dụng.</p>
+            <p class="text-gray-600 mb-4">{{ $product->meta_description }}</p>
             <img src="https://gongangshop.vn/wp-content/uploads/2024/05/Ban-phim-RGB-1024x576.png"
                 class="w-full my-3 rounded" style="height: 500px;" alt="Mô tả hình ảnh 2">
         </div>
@@ -136,18 +128,17 @@
         <!-- Đánh giá -->
         <div class="mt-6 bg-white rounded-lg">
             <h3 class="text-xl font-semibold text-gray-800 mb-4">Đánh giá người dùng</h3>
-            <div class="border border-gray-200 rounded-lg p-4 mb-3">
-                <h5 class="text-gray-800 font-semibold">Nguyễn Văn A</h5>
-                <div class="text-yellow-400 mb-2">★★★★★</div>
-                <p class="text-gray-600">Sản phẩm rất tốt, chất lượng vượt mong đợi!</p>
-                <small class="text-gray-500">27/05/2025 14:30</small>
-            </div>
-            <div class="border border-gray-200 rounded-lg p-4 mb-3">
-                <h5 class="text-gray-800 font-semibold">Trần Thị B</h5>
-                <div class="text-yellow-400 mb-2">★★★★☆</div>
-                <p class="text-gray-600">Giao hàng nhanh, sản phẩm như mô tả.</p>
-                <small class="text-gray-500">26/05/2025 10:15</small>
-            </div>
+            @forelse($reviews as $review)
+                <div class="review">
+                    <strong>{{ $review->user->name }}</strong> 
+                    <span>{{ $review->rating }} sao</span>
+                    <p>{{ $review->comment }}</p>
+                    <small>{{ $review->created_at->diffForHumans() }}</small>
+                </div>
+            @empty
+                <p>Chưa có đánh giá nào.</p>
+            @endforelse
+
         </div>
     </div>
 

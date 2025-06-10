@@ -6,12 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    
+
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('userID');
+            $table->unsignedBigInteger('userID')->nullable(); // Cho phép null
             $table->unsignedBigInteger('shopID');
             $table->string('order_code', 100)->unique();
             $table->decimal('total_price', 12, 2);
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
 
-            $table->foreign('userID')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('userID')->references('id')->on('users')->onDelete('set null'); // Thay cascade thành set null
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
             $table->timestamps();
 
