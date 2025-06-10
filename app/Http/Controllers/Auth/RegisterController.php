@@ -1,10 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
-<<<<<<< HEAD
-=======
 
->>>>>>> tin
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -29,11 +26,8 @@ class RegisterController extends Controller
             'birthday' => 'nullable|date',
             'password' => 'required|string|min:6|confirmed',
         ], [
-<<<<<<< HEAD
          'username.required' => 'Tên đăng nhập là bắt buộc.',
-=======
             'username.required' => 'Tên đăng nhập là bắt buộc.',
->>>>>>> tin
             'username.unique' => 'Tên đăng nhập đã tồn tại.',
             'fullname.required' => 'Họ và tên là bắt buộc.',
             'phone.required' => 'Số điện thoại là bắt buộc.',

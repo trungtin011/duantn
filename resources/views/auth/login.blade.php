@@ -112,21 +112,18 @@
         box-sizing: border-box;
     }
 
-<<<<<<< HEAD
     body,
     html {
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
     }
-=======
         body,
         html {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
         }
->>>>>>> tin
 
     .login-container {
         min-height: 100vh;
@@ -258,10 +255,8 @@
         .login-form {
             padding: 40px;
         }
-<<<<<<< HEAD
     }
 </style>
-=======
 
         .title {
             font-size: 36px;
@@ -364,5 +359,4 @@
             }
         }
     </style>
->>>>>>> tin
 @endsection
