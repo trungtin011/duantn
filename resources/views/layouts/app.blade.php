@@ -214,7 +214,7 @@
                 </form>
                 @else
                 <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng nhập</a>
-                <a href="{{ route('register') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng ký</a>
+                <a href="{{ route('signup') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng ký</a>
                 <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
                 <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
