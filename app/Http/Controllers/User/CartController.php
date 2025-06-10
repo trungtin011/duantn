@@ -16,6 +16,5 @@ class CartController extends Controller
         ];
 
        return view('user.cart', compact('cartItems'));
-
     }
 }

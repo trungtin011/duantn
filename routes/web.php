@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
 use App\Http\Controllers\User\NotificationControllers as UserNotificationControllers;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\User\WishlistController;
+use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\User\UserAddressController;
+use App\Http\Controllers\User\SuggestedProductController;
+use App\Http\Controllers\User\CheckoutController;
+use App\Http\Controllers\VNPayController;
 
 ///////////////////////////////////////////////////////////
 // trang chủ
@@ -29,15 +35,6 @@ Route::get('/user/product-detail', function () {
     return view('user.product_detail');
 })->name('product_detail');
 
-// trang wishlist
-Route::get('/client/wishlist', function () {
-    return view('client.wishlist');
-})->name('wishlist');
-
-// trang checkout
-Route::get('/client/checkout', function () {
-    return view('client.checkout');
-})->name('checkout');
 
 // trang lịch sử đơn hàng
 Route::get('/user/order/order-history', function () {
@@ -170,12 +167,6 @@ Route::middleware('CheckRole:admin')->group(function () {
     /////////////////////////////////////////////////////////
     
 
-
-
-    /////////////////////////////////////////////////////////
-
-
-
 });
 ///////////////////////////////////////////////////////////
 
@@ -185,8 +176,26 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/mark-as-read/{id}', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::get('/suggested-products', [SuggestedProductController::class, 'index'])->name('suggested.products');
 });
+
+Route::get('/payment/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
+Route::post('/payment/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
+Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
+
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/client/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/client/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    Route::get('/success_payment/{order_code}', [CheckoutController::class, 'successPayment'])->name('success_payment');
+    Route::get('/failed_payment/{order_code}', [CheckoutController::class, 'failedPayment'])->name('failed_payment');
+
+    // Wishlist routes
+    Route::post('/wishlist/store', [WishlistController::class, 'store'])->name('wishlist.store');
+    Route::delete('/wishlist/remove/{id}', [WishlistController::class, 'destroy'])->name('wishlist.remove');
+    Route::get('client/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+
     Route::get('/account', [UserController::class, 'dashboard'])->name('account.dashboard');
     Route::get('/account/profile', [UserController::class, 'edit'])->name('account.profile');
     Route::post('/account/profile', [UserController::class, 'update'])->name('account.profile.update');

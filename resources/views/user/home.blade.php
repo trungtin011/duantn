@@ -351,7 +351,12 @@
                                             <span class="text-white px-2 py-1">-40%</span>
                                         </div>
                                         <div class="flex flex-col items-center gap-[8px]">
-                                            <button
+                                            <form action="{{ route('wishlist.store') }}" method="POST" id="wishlist">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="1">
+                                                <input type="hidden" name="shop_id" value="1">
+                                            </form>
+                                            <button type="submit" onclick="document.getElementById('wishlist').submit()"
                                                 class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none"
                                                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"

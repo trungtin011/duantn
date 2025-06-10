@@ -72,7 +72,7 @@
                 <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
                 <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
-                <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('wishlist.index') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
                 <a href="#" id="notification-bell" class="relative">
                     <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
                     <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">3</span>
@@ -158,7 +158,7 @@
                 <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
                 <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
-                <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('wishlist.index') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
                 <a href="{{ route('cart') }}"><i
                         class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
                 <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700">
@@ -206,7 +206,7 @@
                 </span>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Tài khoản của tôi</a>
                 <a href="{{ route('order_history') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đơn hàng</a>
-                <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
+                <a href="{{ route('wishlist.index') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
                 <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
                 @if(Auth::user()->role === 'customer')
                 <a href="{{ route('seller.register') }}" class="text-sm text-orange-500 font-semibold block mt-1">Bạn có muốn trở thành người bán?</a>
@@ -221,7 +221,7 @@
                 <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng nhập</a>
                 <a href="{{ route('register') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng ký</a>
                 <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
-                <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
+                <a href="{{ route('wishlist.index') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
                 @endauth
             </div>
