@@ -81,6 +81,21 @@
                     <button type="submit" class="login-button">Đăng nhập</button>
                     <a href="#" class="forgot-password">Quên mật khẩu?</a>
                 </div>
+                <a href="{{ route('auth.google.login') }}"
+                    class="w-full flex items-center justify-center border border-gray-300 bg-white hover:bg-gray-100 text-black py-3 text-base md:text-lg rounded mt-4">
+                    <img src="https://www.svgrepo.com/show/355037/google.svg" class="h-5 w-5 mr-2" alt="Google icon">
+                    Đăng nhập bằng Google
+                </a>
+                <a href="{{ route('auth.facebook.login') }}"
+                    class="w-full flex items-center justify-center border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white py-3 text-base md:text-lg rounded mt-4">
+                    <img src="https://www.svgrepo.com/show/349557/facebook.svg" class="h-5 w-5 mr-2" alt="Facebook icon">
+                    Đăng nhập bằng Facebook
+                </a>
+                @if(session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {{ session('error') }}
+                </div>
+                @endif
 
                 <div class="signup-wrap">
                     <span>Bạn chưa có tài khoản?
