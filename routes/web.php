@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserControllerAdmin;
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -18,6 +18,8 @@ use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 //user
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
+use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\User\UserAddressController;
 
 // trang chủ
 Route::get('/', function () {
@@ -67,6 +69,7 @@ Route::get('/403', function () {
     return view('error.403');
 })->name('403');
 
+
 // trang đăng ký, đăng nhập, quên mật khẩu
 Route::get('/signup', function () {
     return view('auth.register');
@@ -76,6 +79,11 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::get('/auth/google', [LoginController::class, 'redirectToGoogle'])->name('auth.google.login');
+Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallback']);
+Route::get('/auth/facebook', [LoginController::class, 'redirectToFacebook'])->name('auth.facebook.login');
+Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCallback']);
+
 
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
@@ -139,11 +147,11 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
 
     // users
     Route::prefix('users')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('admin.users.index');
-        Route::get('/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
-        Route::put('/{id}', [UserController::class, 'update'])->name('admin.users.update');
-        Route::get('/{id}', [UserController::class, 'show'])->name('admin.users.show');
-        Route::delete('/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('/', [UserControllerAdmin::class, 'index'])->name('admin.users.index');
+        Route::get('/{id}/edit', [UserControllerAdmin::class, 'edit'])->name('admin.users.edit');
+        Route::put('/{id}', [UserControllerAdmin::class, 'update'])->name('admin.users.update');
+        Route::get('/{id}', [UserControllerAdmin::class, 'show'])->name('admin.users.show');
+        Route::delete('/{id}', [UserControllerAdmin::class, 'destroy'])->name('admin.users.destroy');
     });
 });
 
@@ -178,7 +186,27 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::get('/wishlist', function () {
         return view('client.wishlist');
     })->name('wishlist');
+
     Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
+
+    // Trang thông tin người dùng
+    Route::prefix('user')->middleware('auth', 'CheckRole:customer', redirect('/account'))->group(function () {
+        Route::get('/', [UserController::class, 'dashboard'])->name('account.dashboard');
+        Route::get('/profile', [UserController::class, 'edit'])->name('account.profile');
+        Route::post('/profile', [UserController::class, 'update'])->name('account.profile.update');
+
+        Route::get('/password', [UserController::class, 'changePasswordForm'])->name('account.password');
+        Route::post('/password', [UserController::class, 'updatePassword'])->name('account.password.update');
+    });
+    // Trang địa chỉ người dùng
+    Route::prefix('user')->middleware('auth', 'CheckRole:customer', redirect('/addresses'))->group(function () {
+        Route::get('/', [UserAddressController::class, 'index'])->name('account.addresses');
+        Route::get('/create', [UserAddressController::class, 'create'])->name('account.addresses.create');
+        Route::post('/', [UserAddressController::class, 'store'])->name('account.addresses.store');
+        Route::get('/{address}/edit', [UserAddressController::class, 'edit'])->name('account.addresses.edit');
+        Route::put('/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
+        Route::delete('/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
+    });
 });
 
 // seller registration routes

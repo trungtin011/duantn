@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
-class UserController extends Controller
+class UserControllerAdmin extends Controller
 {
     /**
      * Hiển thị danh sách người dùng với phân trang và tìm kiếm.

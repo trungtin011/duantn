@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
+use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
 
 class LoginController extends Controller
@@ -32,31 +35,26 @@ class LoginController extends Controller
             'password.required' => 'Vui lòng nhập mật khẩu',
         ]);
 
-        // Rate limiting to prevent brute-force attacks
-        $key = 'login-attempts:' . $request->ip();
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
-            return back()->withErrors(['login' => "Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau $seconds giây."]);
-        }
-
-        // Determine login type (email or phone)
         $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
         $credentials = [
-            $loginType => strtolower($request->login), // Normalize email to lowercase
+            $loginType => strtolower($request->login),
             'password' => $request->password
         ];
 
-        // Attempt authentication
+        $key = 'login-attempt:' . strtolower($request->login) . ':' . $request->ip();
+
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
             RateLimiter::clear($key);
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }
 
-        RateLimiter::hit($key, 300); // Increment attempts, lock for 5 minutes
+        RateLimiter::hit($key, 300);
         return back()->withErrors([
             'login' => 'Tài khoản hoặc mật khẩu không đúng.',
-        ])->withInput($request->only('login'));
+        ])->withInput($request->only('login', 'remember'))
+            ->withInput($request->only('login'));
     }
 
     public function logout(Request $request)
@@ -65,5 +63,64 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('home')->with('success', 'Đăng xuất thành công!');
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        $googleUser = Socialite::driver('google')->stateless()->user();
+        $user = User::where('email', $googleUser->getEmail())->first();
+        if (!$user) {
+            $user = User::create([
+                'username' => explode('@', $googleUser->getEmail())[0],
+                'fullname' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'password' => bcrypt(Str::random(16)),
+                'avatar' => $googleUser->getAvatar(),
+                'phone' => null,
+                'is_verified' => true,
+                'status' => \App\Enums\UserStatus::ACTIVE,
+                'role' => \App\Enums\UserRole::CUSTOMER,
+            ]);
+        }
+        Auth::login($user);
+        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Google thành công!');
+    }
+
+    public function handleFacebookCallback()
+    {
+        try {
+            $facebookUser = Socialite::driver('facebook')->stateless()->user();
+        } catch (\Exception $e) {
+            return redirect()->route('login')->with('error', 'Đăng nhập Facebook thất bại. Vui lòng thử lại.');
+        }
+        $email = $facebookUser->getEmail() ?? 'fb_' . $facebookUser->getId() . '@noemail.facebook';
+        $user = User::firstOrCreate(
+            ['email' => $email],
+            [
+                'username' => Str::slug($facebookUser->getName()) . '-' . Str::random(4),
+                'fullname' => $facebookUser->getName(),
+                'email' => $email,
+                'password' => bcrypt(Str::random(16)),
+                'avatar' => $facebookUser->getAvatar(),
+                'phone' => null,
+                'is_verified' => true,
+                'status' => \App\Enums\UserStatus::ACTIVE,
+                'role' => \App\Enums\UserRole::CUSTOMER,
+            ]
+        );
+        Auth::login($user);
+        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Facebook thành công!');
+    }
+
+    public function redirectToFacebook()
+    {
+        return Socialite::driver('facebook')
+            ->scopes(['email'])
+            ->redirect();
     }
 }
