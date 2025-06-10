@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserAddressController;
+use Illuminate\Support\Facades\Auth;
 ///////////////////////////////////////////////////////////
 // trang chủ
 Route::get('/', function () {
@@ -144,3 +145,11 @@ Route::middleware('auth')->prefix('account')->group(function () {
     Route::put('/addresses/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
     Route::delete('/addresses/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
 });
+Route::post('/logout', function () {
+    Auth::logout(); // đăng xuất user
+    request()->session()->invalidate(); // huỷ phiên đăng nhập
+    request()->session()->regenerateToken(); // bảo vệ CSRF
+
+    return redirect()->route('login')->with('success', 'Đăng xuất thành công.');
+})->name('logout');
+// Route::get('/auth/google', [LoginController::class, 'redirectToGoogle'])->name('auth.google.login');
