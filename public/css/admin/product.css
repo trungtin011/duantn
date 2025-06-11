@@ -9,7 +9,7 @@
     padding: 12px 15px;
 }
 
-.table thead th {
+/* .table thead th {
     background-color: #f4f6fa;
     border-bottom: none;
 }
@@ -17,7 +17,7 @@
 .table tbody tr {
     background-color: #fff;
     border-bottom: 8px solid #f4f6fa;
-}
+} */
 
 .table tbody tr:last-child {
     border-bottom: none;

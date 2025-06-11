@@ -3,14 +3,14 @@
 @section('title', 'Trang chủ')
 @section('content')
     <!-- Main Banner -->
-    <section class="container mx-auto py-8 flex relative">
+    <section class="container mx-auto py-8 flex flex-col sm:flex-row relative">
         <!-- Sidebar Menu with Dropdown -->
-        <div class="w-1/4 pr-10">
+        <div class="w-full h-[100px] sm:h-full overflow-y-scroll sm:overflow-y-hidden px-2 sm:w-1/4 sm:pr-10">
             <ul class="space-y-2">
                 <li>
                     <div id="dropdownToggle">
                         <button
-                            class="text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
+                            class="focus:outline-none text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
                             Thời trang phụ nữ
                             <!-- Arrow icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -20,10 +20,10 @@
 
                         </button>
                         <div id="dropdownMenu"
-                            class="dropdown-content text-[18px] shadow-lg font-semibold absolute top-[32px] left-[384px] z-10 w-[1152px] h-[400px] bg-white">
-                            <div class="flex h-[100%]">
+                            class="dropdown-content hidden text-base shadow-lg font-emibold absolute sm:top-[32px] sm:left-[384px] z-10 sm:w-[1152px] sm:h-[400px] top-[58px] left-0 right-0 mx-auto z-10 w-max-w-4xl h-auto bg-white mt-2 sm:mt-0">
+                            <div class="sm:flex h-[100%]">
                                 <div class="flex flex-col gap-[25px] p-4">
-                                    <div class="w-1/2 flex gap-[40px]">
+                                    <div class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
                                         <a href="#"
                                             class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
                                             <img src="https://down-vn.img.susercontent.com/file/48630b7c76a7b62bc070c9e227097847@resize_w320_nl.webp"
@@ -50,7 +50,7 @@
                                             <span class="capitalize text-[16px] w-[100px] text-center">Túi ví nữ</span>
                                         </a>
                                     </div>
-                                    <div class="w-1/2 flex gap-[40px]">
+                                    <div class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
                                         <a href="#"
                                             class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
                                             <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
@@ -65,16 +65,17 @@
                                         </a>
                                     </div>
                                 </div>
-                                <div class="flex justify-center items-center">
+                                <div class="hidden sm:flex sm:justify-center sm:items-center">
                                     <img src="{{ asset('images/thoitrangnu.jpg') }}" alt="banner"
                                         class="object-cover w-[100%] h-[400px] object-cover">
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                </li>
+                <li>
                     <button id="dropdownToggleSecond"
-                        class="text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
+                        class="focus:outline-none text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
                         Thời trang nam
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-[21px] h-[21px] ml-1 arrow-icon-second">
@@ -82,10 +83,10 @@
                         </svg>
                     </button>
                     <div id="dropdownMenuSecond"
-                        class="dropdown-content text-[18px] shadow-lg font-semibold absolute top-[32px] left-[384px] z-10 w-[1152px] h-[400px] bg-white">
-                        <div class="flex h-[100%]">
+                        class="dropdown-content hidden text-base shadow-lg font-emibold absolute sm:top-[32px] sm:left-[384px] z-10 sm:w-[1152px] sm:h-[400px] top-[88px] left-0 right-0 mx-auto z-10 w-max-w-4xl h-auto bg-white mt-2 sm:mt-0">
+                        <div class="sm:flex h-[100%]">
                             <div class="flex flex-col gap-[25px] p-4">
-                                <div class="w-1/2 flex gap-[40px]">
+                                <div class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
                                     <a href="#"
                                         class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
                                         <img src="https://down-vn.img.susercontent.com/file/74ca517e1fa74dc4d974e5d03c3139de@resize_w320_nl.webp"
@@ -111,7 +112,7 @@
                                         <span class="capitalize text-[16px] w-[100px] text-center">Thể thao nam</span>
                                     </a>
                                 </div>
-                                <div class="w-1/2 flex gap-[40px]">
+                                <div class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
                                     <a href="#"
                                         class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
                                         <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
@@ -126,7 +127,7 @@
                                     </a>
                                 </div>
                             </div>
-                            <div class="flex justify-center items-center">
+                            <div class="hidden sm:flex sm:justify-center sm:items-center">
                                 <img src="{{ asset('images/thoitrangnam.jpg') }}" alt="banner"
                                     class="object-cover w-[100%] h-[400px] object-cover">
                             </div>
@@ -161,7 +162,7 @@
             </ul>
         </div>
         <!-- Banner -->
-        <div class="relative w-3/4">
+        <div class="relative w-full sm:w-3/4 hidden sm:block">
             <div class="slider-container">
                 <div class="slides" id="slides">
                     <!-- Slide 1 -->
@@ -301,32 +302,32 @@
     <!-- Khuyến mãi with Countdown Timer -->
     <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
-            <div style="background-color: #EF3248;" class="rounded h-[45px] w-[20px]"></div>
-            <span style="color: #BDBDBD;" class="font-bold">Hôm nay</span>
+            <div style="background-color: #EF3248;" class="rounded h-[35px] w-[10px] sm:h-[45px] sm:w-[20px]"></div>
+            <span style="color: #BDBDBD;" class="font-bold text-timer sm:text-[16px]">Hôm nay</span>
         </div>
         <div class="flex justify-between items-center mb-[60px]">
-            <div class="flex items-center justify-center">
-                <h2 class="text-[36px] font-bold mr-[87px]">Khuyến mãi</h2>
-                <div class="flex space-x-4 text-lg">
+            <div class="flex items-center sm:justify-start justify-between w-full">
+                <h2 class="sm:text-[36px] text-[24px] font-bold sm:mr-[87px]">Khuyến mãi</h2>
+                <div class="flex sm:space-x-4 text-lg">
                     <div class="">
                         <p class="text-timer px-2 py-1">Ngày</p>
-                        <span id="days" class="text-timer-number px-2 py-1 rounded">00</span>
+                        <span id="days" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
                     </div>
                     <div class="">
                         <p class="text-timer px-2 py-1">Giờ</p>
-                        <span id="hours" class="text-timer-number px-2 py-1 rounded">00</span>
+                        <span id="hours" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
                     </div>
                     <div class="">
                         <p class="text-timer px-2 py-1">Phút</p>
-                        <span id="minutes" class="text-timer-number px-2 py-1 rounded">00</span>
+                        <span id="minutes" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
                     </div>
                     <div class="">
                         <p class="text-timer px-2 py-1">Giây</p>
-                        <span id="seconds" class="text-timer-number px-2 py-1 rounded">00</span>
+                        <span id="seconds" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
                     </div>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="sm:flex sm:items-center sm:gap-2 sm:block hidden">
                 <button style="background-color: #F5F5F5;"
                     class="prev-slide p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center"
                     data-index="1"><i class="fa-solid fa-arrow-left text-[20px]"></i></button>
