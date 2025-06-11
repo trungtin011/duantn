@@ -34,9 +34,9 @@
 
 <body>
     <div class="d-flex">
-        <div class="">
+        <div class="w-[299px]">
             <div class="logo"><i class="fa-solid fa-bag-shopping me-2"></i>eBazer</div>
-            <div class="sidebar p-4">
+            <div class="sidebar px-[14px] py-[17px]">
                 <a href="{{ route('admin.dashboard') }}"
                     class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }} link_admin">
                     <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"

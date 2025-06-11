@@ -23,28 +23,204 @@
 <body class="font-[Inter]">
     <!-- Top Header -->
     <div class="bg-black text-white py-3">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            @auth
+                @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
+                    <div>
+                        <a href="/seller/index" class="text-[#EF3248] capitalize hover:text-orange-600">
+                            Kênh người bán
+                        </a>
+                    </div>
+                @endif
+            @endauth
             <div class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left">
                 <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
                 <button class="text-white font-bold border-b border-white hover:text-orange-500">Mua ngay</button>
             </div>
-            <div class="flex items-center gap-2">
-                <select class="bg-transparent border border-none text-white px-2 py-1 rounded text-sm">
-                    <option class="text-black">Tiếng Việt</option>
-                    <option class="text-black">English</option>
-                </select>
+            <div class="flex items-center gap-3">
+                <div class="relative dropdown-notification cursor-pointer">
+                    <div class="flex items-center gap-1 hover:text-[#EF3248] cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                        </svg>
+                        <span class="capitalize text-sm">Thông báo</span>
+                    </div>
+                    <div class="absolute dropdown-notification-content z-10 right-0 bg-white w-[300px] p-3 shadow">
+                        <!-- Thêm phần nhô lên -->
+                        <div class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle">
+                        </div>
+                        <div class="">
+                            <span class="text-sm text-gray-500">Thông báo tin nhắn mới</span>
+                        </div>
+                        <div class="border-t border-gray-200 my-2"></div>
+                        <div class="flex items-center gap-1 text-black">
+                            <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
+                                alt="phone" class="w-[50px] h-[50px] rounded-[5px]">
+                            <div class="flex flex-col gap-1 overflow-hidden">
+                                <h6 class="uppercase text-sm w-full truncate">
+                                    LIVESTREAMING: Giảm giá 50% cho tất cả đồ bơi và giao hàng nhanh miễn phí!
+                                </h6>
+                                <span class="text-xs text-gray-500">1 phút trước</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select class="bg-transparent border border-none text-white px-2 py-1 rounded text-sm">
+                        <option class="text-black">Tiếng Việt</option>
+                        <option class="text-black">English</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="relative dropdown-parent">
+                        @guest
+                            <div class="flex items-center gap-2 text-sm">
+                                <a href="{{ route('signup') }}" class="hover:text-[#EF3248]">
+                                    Đăng ký
+                                </a>
+                                |
+                                <a href="{{ route('login') }}" class="hover:text-[#EF3248]">
+                                    Đăng nhập
+                                </a>
+                            </div>
+                        @endguest
+                        @auth
+                            <div class="flex items-center gap-1 w-auto">
+                                <div class="w-6 h-6 rounded-full flex items-center justify-center">
+                                    <!-- Avatar placeholder -->
+                                    <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
+                                        alt="avatar" class="w-full h-full rounded-full">
+                                </div>
+                                @auth
+                                    <span
+                                        class="text-sm font-semibold text-white hover:text-[#EF3248] cursor-pointer">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
+                                @endauth
+                            </div>
+                        @endauth
+                        <!-- Dropdown Menu (Desktop) -->
+                        <div class="absolute dropdown-content w-[250px] shadow bg-white">
+                            @auth
+                                <div class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle-second">
+                                </div>
+                            @endauth
+                            @auth
+                                @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
+                                    <a href="{{ route('admin.dashboard') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                            class="size-6">
+                                            <path stroke="#FFFFFF" stroke-width="2"
+                                                d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5ZM14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5ZM4 16a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3ZM14 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-6Z" />
+                                        </svg>
+                                        Quản trị viên
+                                    </a>
+                                    <a href="{{ route('admin.products.index') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                        </svg>
+                                        Quản lý sản phẩm
+                                    </a>
+                                @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
+                                    <a href="{{ route('seller.dashboard') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6z" />
+                                        </svg>
+                                        Bảng điều khiển Seller
+                                    </a>
+                                    <a href="{{ route('seller.products.index') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                        </svg>
+                                        Sản phẩm của tôi
+                                    </a>
+                                    <a href="{{ route('seller.orders') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                        </svg>
+                                        Đơn hàng
+                                    </a>
+                                @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
+                                    <a href="{{ route('account.profile') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                        </svg>
+                                        Quản lý tài khoản
+                                    </a>
+                                    <a href="{{ route('order_history') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                        </svg>
+                                        Đơn hàng của tôi
+                                    </a>
+                                    <a href="{{ route('wishlist') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                        </svg>
+                                        Yêu thích
+                                    </a>
+                                    {{-- <a href="{{ route('seller.register') }}"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+                                        </svg>
+                                        Trở thành người bán
+                                    </a> --}}
+                                @endif
+                                <a href="{{ route('logout') }}"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
+                                    class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                                    </svg>
+                                    Đăng xuất
+                                </a>
+                                <form id="logout-form-header" action="{{ route('logout') }}" method="POST"
+                                    class="hidden">
+                                    @csrf
+                                </form>
+                            @endauth
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Header -->
     <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
-        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
+        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex items-center gap-[180px]">
             <!-- Logo -->
             <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
 
             <!-- Menu cho desktop -->
-            <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
+            {{-- <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
                 <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
                 <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
@@ -58,17 +234,7 @@
                         </li>
                     @endif
                 @endauth
-
-                @auth
-                    @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
-                        <li>
-                            <a href="/seller/index" class="text-orange-500 font-semibold hover:text-orange-600">
-                                Bạn có muốn trở thành người bán?
-                            </a>
-                        </li>
-                    @endif
-                @endauth
-            </ul>
+            </ul> --}}
 
 
             <!-- Icon menu mobile -->
@@ -77,148 +243,20 @@
             </button>
 
             <!-- Search & Icons -->
-            <div class="hidden md:flex items-center gap-3">
-                <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
-                    class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
-                <a href="{{ route('wishlist') }}">
-                    <i class="fa fa-heart text-gray-700 hover:text-orange-500"></i>
-                </a>
-                <a href="{{ route('cart') }}">
-                    <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
-                </a>
-
-                <div class="relative" @click="userDropdownOpen = !userDropdownOpen"
-                    @click.away="userDropdownOpen = false">
-                    <div class="flex items-center gap-2 w-auto">
-                        @auth
-                            <span
-                                class="text-sm font-semibold text-gray-700">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
-                        @endauth
-                        <div
-                            class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-200">
-                            <i class="fa fa-user"></i>
-                        </div>
-                    </div>
-                    <!-- Dropdown Menu (Desktop) -->
-                    <div x-show="userDropdownOpen"
-                        class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-gradient-to-b from-gray-800 to-purple-900 bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-10">
-                        @guest
-                            <a href="{{ route('signup') }}"
-                                class="flex items-center justify-between gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                Đăng ký
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
-                                </svg>
-                            </a>
-                        @endguest
-                        @auth
-                            <!-- Admin Links -->
-                            @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
-                                <a href="{{ route('admin.dashboard') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                        class="size-6">
-                                        <path stroke="#FFFFFF" stroke-width="2"
-                                            d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5ZM14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5ZM4 16a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3ZM14 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-6Z" />
-                                    </svg>
-                                    Quản trị viên
-                                </a>
-                                <a href="{{ route('admin.products.index') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                                    </svg>
-                                    Quản lý sản phẩm
-                                </a>
-                                <!-- Seller Links -->
-                            @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
-                                <a href="{{ route('seller.dashboard') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6z" />
-                                    </svg>
-                                    Bảng điều khiển Seller
-                                </a>
-                                <a href="{{ route('seller.products.index') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                                    </svg>
-                                    Sản phẩm của tôi
-                                </a>
-                                <a href="{{ route('seller.orders') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                                    </svg>
-                                    Đơn hàng
-                                </a>
-                                <!-- Customer Links -->
-                            @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
-                                <a href="{{ route('account.profile') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                    </svg>
-                                    Quản lý tài khoản
-                                </a>
-                                <a href="{{ route('order_history') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                                    </svg>
-                                    Đơn hàng của tôi
-                                </a>
-                                <a href="{{ route('wishlist') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                    </svg>
-                                    Danh sách ước
-                                </a>
-                                <a href="{{ route('seller.register') }}"
-                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
-                                    </svg>
-                                    Trở thành người bán
-                                </a>
-                            @endif
-                            <!-- Common Logout Link -->
-                            <a href="{{ route('logout') }}"
-                                onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
-                                class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
-                                </svg>
-                                Đăng xuất
-                            </a>
-                            <form id="logout-form-header" action="{{ route('logout') }}" method="POST" class="hidden">
-                                @csrf
-                            </form>
-                        @endauth
-                    </div>
+            <div class="hidden md:flex items-center gap-10 w-5/6">
+                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                    class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
+                    @csrf
+                    <input type="text" placeholder="Bạn muốn tìm kiếm gì ?" class="text-sm focus:outline-none" />
+                    <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                </form>
+                <div class=" flex items-center gap-3">
+                    <a href="{{ route('wishlist') }}">
+                        <i class="fa fa-heart text-gray-700 hover:text-orange-500"></i>
+                    </a>
+                    <a href="{{ route('cart') }}">
+                        <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -471,8 +509,8 @@
         </div>
     </footer>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @stack('scripts')
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 
 </html>
