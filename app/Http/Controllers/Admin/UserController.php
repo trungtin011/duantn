@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Enums\UserRole;
+use App\Enums\UserStatus;
+use App\Enums\UserGender;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -35,11 +37,12 @@ class UserController extends Controller
      */
     public function edit(User $user): View
     {
-        $roles = ['admin' => 'Admin', 'customer' => 'Customer'];
-        $statuses = ['active' => 'Active', 'inactive' => 'Inactive'];
-        $genders = ['male' => 'Male', 'female' => 'Female'];
-
-        return view('admin.users.edit', compact('user', 'roles', 'statuses', 'genders'));
+        return view('admin.users.edit', [
+            'user' => $user,
+            'roles' => UserRole::cases(),
+            'statuses' => UserStatus::cases(),
+            'genders' => UserGender::cases(),
+        ]);
     }
 
     /**
