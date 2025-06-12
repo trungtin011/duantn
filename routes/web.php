@@ -8,6 +8,7 @@ use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\WishlistController;
+use App\Http\Controllers\Admin\ReviewController;
 use Illuminate\Support\Facades\Auth;
 
 // trang chủ
@@ -142,4 +143,10 @@ Route::middleware('CheckRole:admin')->group(function () {
     Route::get('/admin/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('/admin/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+
+    //quản lý review
+    Route::get('/admin/review', [ReviewController::class, 'index'])->name('admin.reviews.index');
+    Route::get('/admin/review/create', [ReviewController::class, 'create'])->name('admin.reviews.create');
+    Route::post('/admin/review', [ReviewController::class, 'store'])->name('admin.reviews.store');
+    Route::delete('/admin/review/{review}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
 });

@@ -9,7 +9,7 @@
 @section('content')
 <div class="admin-page-header">
     <h1 class="admin-page-title">Reviews</h1>
-    <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Reviews List</div>
+    <div class="admin-breadcrumb"><a href="{{ route('admin.dashboard') }}" class="admin-breadcrumb-link">Home</a> / Reviews List</div>
 </div>
 
 <div class="admin-card mb-4">
@@ -40,6 +40,7 @@
             <thead class="admin-table-thead">
                 <tr>
                     <th style="width: 40px; padding-left: 16px;"><input type="checkbox"></th>
+                    <th>SHOP</th>
                     <th>PRODUCT</th>
                     <th>CUSTOMER</th>
                     <th>RATING</th>
@@ -48,96 +49,37 @@
                 </tr>
             </thead>
             <tbody>
-                {{-- Sample Review Data --}}
-                <tr>
-                    <td style="padding-left: 16px;"><input type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/40" alt="" class="me-3 product-img-table">
-                            <span>Whitetails Women's Open Sky</span>
-                        </div>
-                    </td>
-                    <td>Shahnewaz Sakil</td>
-                    <td class="rating-stars">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </td>
-                    <td>Jan 21, 2023 08:10 AM</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-success me-1 btn-action-icon"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                 <tr>
-                    <td style="padding-left: 16px;"><input type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/40" alt="" class="me-3 product-img-table">
-                            <span>School Bag for kids</span>
-                        </div>
-                    </td>
-                    <td>Steve Smith</td>
-                    <td class="rating-stars">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </td>
-                    <td>Jan 25, 2023 10:30 AM</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-success me-1 btn-action-icon"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                 <tr>
-                    <td style="padding-left: 16px;"><input type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/40" alt="" class="me-3 product-img-table">
-                            <span>Minimal Shoes for women</span>
-                        </div>
-                    </td>
-                    <td>Stella Thomas</td>
-                    <td class="rating-stars">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </td>
-                    <td>Feb 01, 2023 11:20 PM</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-success me-1 btn-action-icon"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                 <tr>
-                    <td style="padding-left: 16px;"><input type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/40" alt="" class="me-3 product-img-table">
-                            <span>Whitetails Women's Open Sky</span>
-                        </div>
-                    </td>
-                    <td>Salim Rana</td>
-                    <td class="rating-stars">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </td>
-                    <td>Feb 05, 2023 05:50 PM</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-success me-1 btn-action-icon"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            </tbody>
+                @foreach ($reviews as $review)
+                    <tr>
+                        <td style="padding-left: 16px;"><input type="checkbox"></td>
+                        <td>{{ $review->product->shop->shop_name ?? 'N/A' }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ $review->product->images->first()->image_path ?? asset('images/default.jpg') }}" alt="" class="me-3 product-img-table">
+                                <span>{{ $review->product->name ?? 'Unnamed product' }}</span>
+                            </div>
+                        </td>
+                        <td>{{ $review->user->fullname ?? 'Ẩn danh' }}</td>
+                        <td class="rating-stars">
+                            @for($i = 1; $i <= 5; $i++)
+                                @if($i <= $review->rating)
+                                    <i class="fa-solid fa-star"></i>
+                                @else
+                                    <i class="fa-regular fa-star"></i>
+                                @endif
+                            @endfor
+                        </td>
+                        <td>{{ $review->created_at->format('d/m/Y H:i A') }}</td>
+                        <td>
+                            <form action="{{ route('admin.reviews.destroy', $review->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?');">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
         </table>
     </div>
 

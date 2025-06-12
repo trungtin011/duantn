@@ -15,7 +15,10 @@ class ProductController extends Controller
     {
         $product = Product::find($productID);
         $productImages = ProductImage::where('productID', $productID)->get();
-        $reviews = Review::where('productID', $productID)->get();
+        $reviews = Review::where('productID', $productID)
+                        ->with('user')
+                        ->latest()
+                        ->get();
         return view('user.product.product_detail', compact('product', 'productImages', 'reviews'));
     }
 }

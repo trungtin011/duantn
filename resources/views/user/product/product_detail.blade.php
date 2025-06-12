@@ -129,16 +129,15 @@
         <div class="mt-6 bg-white rounded-lg">
             <h3 class="text-xl font-semibold text-gray-800 mb-4">Đánh giá người dùng</h3>
             @forelse($reviews as $review)
-                <div class="review">
-                    <strong>{{ $review->user->name }}</strong> 
-                    <span>{{ $review->rating }} sao</span>
+            <div class="review mb-4 border-b pb-2">
+                <strong>{{ $review->user->fullname ?? 'Người dùng ẩn danh' }}</strong>
+                    <span class="text-yellow-500">{{ $review->rating }} sao</span>
                     <p>{{ $review->comment }}</p>
-                    <small>{{ $review->created_at->diffForHumans() }}</small>
+                    <small class="text-gray-500">{{ $review->created_at->diffForHumans() }}</small>
                 </div>
             @empty
                 <p>Chưa có đánh giá nào.</p>
             @endforelse
-
         </div>
     </div>
 
