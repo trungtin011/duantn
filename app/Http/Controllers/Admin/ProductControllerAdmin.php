@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
-class ProductController extends Controller
+class ProductControllerAdmin extends Controller
 {
     /**
      * Hiển thị danh sách sản phẩm

@@ -19,13 +19,15 @@
                 <div class="flex gap-4">
                     <!-- Ảnh phụ bên trái -->
                     <div class="flex flex-col gap-2 w-1/4">
-                        @foreach($product->images as $image)
-                            <img src="{{ asset($image->image_path) }}" alt="Ảnh phụ" class="w-full rounded cursor-pointer sub-image">
+                        @foreach ($product->images as $image)
+                            <img src="{{ asset($image->image_path) }}" alt="Ảnh phụ"
+                                class="w-full rounded cursor-pointer sub-image">
                         @endforeach
                     </div>
                     <!-- Ảnh chính -->
                     <div class="w-3/4">
-                        <img src="{{ $product->images->first()->image_path ?? 'default.jpg' }}" alt="{{ $product->name }}" class="w-full rounded", style="height: 500px">
+                        <img src="{{ $product->images->first()->image_path ?? 'default.jpg' }}" alt="{{ $product->name }}"
+                            class="w-full rounded", style="height: 500px">
                     </div>
                 </div>
             </div>
@@ -34,15 +36,23 @@
             <div class="rounded-lg">
                 <h2 class="text-2xl font-bold text-gray-800 mb-3">{{ $product->name }}</h2>
                 <div class="flex items-center mb-2 text-sm text-gray-500">
-                    <span class="text-yellow-400">★★★★☆</span>
-                    <span class="ml-2">(150 đánh giá) | Đã bán: 3k</span>
+                    <span class="text-yellow-400">
+                        @for ($i = 1; $i <= 5; $i++)
+                            {{ $i <= round($product->reviews->avg('rating')) ? '★' : '☆' }}
+                        @endfor
+                    </span>
+                    <span class="ml-2">
+                        ({{ $product->reviews->count() }} đánh giá) | Đã bán: {{ $product->sold_quantity }}
+                    </span>
                 </div>
                 <div class="mb-3 flex items-center">
                     @if ($product->hasDiscount())
                         <span class="text-gray-500 line-through">{{ number_format($product->price, 0, ',', '.') }}</span>
-                        <span class="text-red-600 text-2xl font-semibold ml-3">{{ number_format($product->sale_price, 0, ',', '.') }}</span>
+                        <span
+                            class="text-red-600 text-2xl font-semibold ml-3">{{ number_format($product->sale_price, 0, ',', '.') }}</span>
                     @else
-                        <span class="text-red-600 text-2xl font-semibold">{{ number_format($product->price, 0, ',', '.') }}</span>
+                        <span
+                            class="text-red-600 text-2xl font-semibold">{{ number_format($product->price, 0, ',', '.') }}</span>
                     @endif
                 </div>
 
@@ -51,16 +61,18 @@
                 </p>
 
                 <div class="mb-3 flex gap-2">
-                    <span class="bg-yellow-400 text-gray-800 text-xs font-semibold px-2 py-1 rounded">Giảm: {{ $product->discount_percentage }}%</span>
+                    <span class="bg-yellow-400 text-gray-800 text-xs font-semibold px-2 py-1 rounded">Giảm:
+                        {{ $product->discount_percentage }}%</span>
                     <span class="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">Flash Sale</span>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-gray-700 mb-2">Màu sắc:</label>
                     <div class="flex gap-3">
-                        @foreach($product->variants->unique('color') as $variant)
+                        @foreach ($product->variants->unique('color') as $variant)
                             <div class="flex items-center gap-1">
-                                <div class="w-5 h-5 rounded-full border" style="background-color: {{ $variant->color_code }}"></div>
+                                <div class="w-5 h-5 rounded-full border"
+                                    style="background-color: {{ $variant->color_code }}"></div>
                                 <span class="text-sm">{{ $variant->color }}</span>
                             </div>
                         @endforeach
@@ -70,7 +82,7 @@
                 <div class="mb-4">
                     <label class="block text-gray-700 mb-2">Kích cỡ:</label>
                     <div class="flex gap-2">
-                        @foreach($product->variants->unique('size') as $variant)
+                        @foreach ($product->variants->unique('size') as $variant)
                             <span class="px-3 py-1 border rounded text-sm">{{ $variant->size }}</span>
                         @endforeach
                     </div>
@@ -127,18 +139,24 @@
 
         <!-- Đánh giá -->
         <div class="mt-6 bg-white rounded-lg">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Đánh giá người dùng</h3>
-            @forelse($reviews as $review)
-                <div class="review">
-                    <strong>{{ $review->user->name }}</strong> 
-                    <span>{{ $review->rating }} sao</span>
-                    <p>{{ $review->comment }}</p>
-                    <small>{{ $review->created_at->diffForHumans() }}</small>
+            <h3 class="text-xl text-gray-800 font-semibold mb-4">Đánh giá người dùng</h3>
+            @forelse($product->reviews as $review)
+                <div class="review py-4 border-b">
+                    <strong>{{ $review->user->fullname ?? 'Ẩn danh' }}</strong>
+                    <div>
+                        <span class="text-yellow-400">
+                            @for ($i = 1; $i <= 5; $i++)
+                                {{ $i <= $review->rating ? '★' : '☆' }}
+                            @endfor
+                        </span>
+                        <span class="ml-2 text-gray-600">({{ $review->rating }} sao)</span>
+                    </div>
+                    <p class="text-gray-700">{{ $review->comment ?? 'Không có bình luận' }}</p>
+                    <small class="text-gray-500">{{ $review->created_at->diffForHumans() }}</small>
                 </div>
             @empty
-                <p>Chưa có đánh giá nào.</p>
+                <p class="text-gray-600">Chưa có đánh giá nào.</p>
             @endforelse
-
         </div>
     </div>
 

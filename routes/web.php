@@ -5,7 +5,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 // admin
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProductControllerAdmin;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
@@ -16,15 +17,15 @@ use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 //user
+use App\Http\Controllers\User\HomeController;
+use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 
 // trang chủ
-Route::get('/', function () {
-    return view('user.home');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // các trang user
 Route::get('/contact', function () {
@@ -34,9 +35,7 @@ Route::get('/about', function () {
     return view('user.about');
 })->name('about');
 
-Route::get('/user/product/product_detail', function () {
-    return view('user.product.product_detail');
-})->name('product_detail');
+Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
 
 Route::get('/user/cart', function () {
     return view('user.cart');
@@ -87,23 +86,21 @@ Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCa
 
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // products admin
     Route::prefix('products')->group(function () {
-        Route::get('/', [ProductController::class, 'index'])->name('admin.products.index');
-        Route::get('/create', [ProductController::class, 'create'])->name('admin.products.create');
-        Route::post('/', [ProductController::class, 'store'])->name('admin.products.store');
-        Route::get('/{product}/variants/create', [ProductController::class, 'createVariant'])->name('admin.products.variants.create');
-        Route::post('/{product}/variants', [ProductController::class, 'storeVariant'])->name('admin.products.variants.store');
-        Route::get('/{id}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
-        Route::put('/{id}', [ProductController::class, 'update'])->name('admin.products.update');
-        Route::delete('/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
-        Route::get('/{id}', [ProductController::class, 'show'])->name('admin.products.show');
-        Route::get('/get-sub-brands', [ProductController::class, 'getSubBrands'])->name('admin.get-sub-brands');
-        Route::get('/get-sub-categories', [ProductController::class, 'getSubCategories'])->name('admin.get-sub-categories');
+        Route::get('/', [ProductControllerAdmin::class, 'index'])->name('admin.products.index');
+        Route::get('/create', [ProductControllerAdmin::class, 'create'])->name('admin.products.create');
+        Route::post('/', [ProductControllerAdmin::class, 'store'])->name('admin.products.store');
+        Route::get('/{product}/variants/create', [ProductControllerAdmin::class, 'createVariant'])->name('admin.products.variants.create');
+        Route::post('/{product}/variants', [ProductControllerAdmin::class, 'storeVariant'])->name('admin.products.variants.store');
+        Route::get('/{id}/edit', [ProductControllerAdmin::class, 'edit'])->name('admin.products.edit');
+        Route::put('/{id}', [ProductControllerAdmin::class, 'update'])->name('admin.products.update');
+        Route::delete('/{id}', [ProductControllerAdmin::class, 'destroy'])->name('admin.products.destroy');
+        Route::get('/{id}', [ProductControllerAdmin::class, 'show'])->name('admin.products.show');
+        Route::get('/get-sub-brands', [ProductControllerAdmin::class, 'getSubBrands'])->name('admin.get-sub-brands');
+        Route::get('/get-sub-categories', [ProductControllerAdmin::class, 'getSubCategories'])->name('admin.get-sub-categories');
     });
 
     // attributes
@@ -180,9 +177,11 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::get('/account/profile', function () {
         return view('user.profile');
     })->name('account.profile');
+
     Route::get('/order-history', function () {
         return view('user.order.order_history');
     })->name('order_history');
+    
     Route::get('/wishlist', function () {
         return view('client.wishlist');
     })->name('wishlist');
@@ -190,8 +189,8 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
 
     // Trang thông tin người dùng
-    Route::prefix('user')->middleware('auth', 'CheckRole:customer', redirect('/account'))->group(function () {
-        Route::get('/', [UserController::class, 'dashboard'])->name('account.dashboard');
+    Route::prefix('user/account')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('account.profile');
         Route::get('/profile', [UserController::class, 'edit'])->name('account.profile');
         Route::post('/profile', [UserController::class, 'update'])->name('account.profile.update');
 
@@ -199,7 +198,7 @@ Route::middleware('CheckRole:customer')->group(function () {
         Route::post('/password', [UserController::class, 'updatePassword'])->name('account.password.update');
     });
     // Trang địa chỉ người dùng
-    Route::prefix('user')->middleware('auth', 'CheckRole:customer', redirect('/addresses'))->group(function () {
+    Route::prefix('user/addresses')->group(function () {
         Route::get('/', [UserAddressController::class, 'index'])->name('account.addresses');
         Route::get('/create', [UserAddressController::class, 'create'])->name('account.addresses.create');
         Route::post('/', [UserAddressController::class, 'store'])->name('account.addresses.store');

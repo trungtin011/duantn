@@ -11,9 +11,16 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+
+    public function index()
+    {
+        $user = Auth::user();
+        return view('user.account.profile', compact('user'));
+    }
+
     public function edit()
     {
-        return view('account.edit', ['user' => Auth::user()]);
+        return view('user.account.profile', ['user' => Auth::user()]);
     }
 
     public function update(Request $request)
@@ -21,20 +28,19 @@ class UserController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'username' => 'required|string|max:50|unique:users,username,' . $user->id,
-            'fullname' => 'required|string|max:100',
+            'username' => 'nullable|string|max:50|unique:users,username,' . $user->id,
+            'fullname' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:11',
-            'birthday' => 'nullable|date',
+            'day' => 'nullable|integer|between:1,31',
+            'month' => 'nullable|integer|between:1,12',
+            'year' => 'nullable|integer|between:1900,' . date('Y'),
             'gender' => 'nullable|in:male,female,other',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-
-            'current_password' => 'nullable|required_with:new_password|string',
+            'current_password' => 'nullable|string',
             'new_password' => 'nullable|string|min:6|confirmed',
         ]);
 
-
         // Kiểm tra và xử lý ảnh đại diện
-
         if ($request->hasFile('avatar')) {
             // Xoá ảnh cũ nếu có
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
@@ -46,16 +52,22 @@ class UserController extends Controller
         }
 
         // Cập nhật thông tin
-        $user->username = $request->username;
-        $user->fullname = $request->fullname;
-        $user->phone = $request->phone;
-        $user->birthday = $request->birthday;
-        $user->gender = $request->gender;
+        $user->username = $request->input('username', $user->username); // Sử dụng giá trị cũ nếu không có thay đổi
+        $user->fullname = $request->input('fullname', $user->fullname);
+        $user->phone = $request->input('phone', $user->phone);
+
+        // Kết hợp ngày, tháng, năm thành birthday nếu có
+        if ($request->filled(['day', 'month', 'year'])) {
+            $birthday = sprintf('%04d-%02d-%02d', $request->year, $request->month, $request->day);
+            $user->birthday = \Carbon\Carbon::createFromFormat('Y-m-d', $birthday)->toDateString();
+        }
+
+        $user->gender = $request->input('gender', $user->gender);
 
         // Nếu có yêu cầu đổi mật khẩu
         if ($request->filled('new_password')) {
-            if (!Hash::check($request->current_password, $user->password)) {
-                return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
+            if (!$request->filled('current_password') || !Hash::check($request->current_password, $user->password)) {
+                return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng hoặc không được cung cấp.']);
             }
 
             $user->password = bcrypt($request->new_password);
@@ -65,14 +77,10 @@ class UserController extends Controller
 
         return redirect()->back()->with('success', 'Cập nhật thông tin thành công!');
     }
-    public function dashboard()
-    {
-        return view('account.dashboard', ['user' => auth()->user()]);
-    }
 
     public function changePasswordForm()
     {
-        return view('account.change_password');
+        return view('user.account.changePassword');
     }
 
     public function updatePassword(Request $request)
