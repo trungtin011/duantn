@@ -20,10 +20,8 @@ return new class extends Migration
             $table->string('product_name')->nullable();
             $table->string('brand')->nullable();
             $table->string('category')->nullable();
-            $table->string('sub_category')->nullable();
-            $table->string('color')->nullable();
-            $table->string('size')->nullable();
-            $table->string('variant_name')->nullable();
+            $table->string('attribute_value')->nullable();
+            $table->string('attribute_name')->nullable();
             $table->text('product_image')->nullable();
             $table->integer('quantity')->nullable();
             $table->decimal('unit_price', 12, 2)->nullable();

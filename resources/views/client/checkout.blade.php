@@ -20,7 +20,7 @@
         <div class="mb-6">
             <h1 class="text-[36px] font-bold text-gray-800">Chi tiết hóa đơn</h1>
         </div>
-
+        
         <!-- Main Container -->
         <div class="flex flex-col lg:flex-row gap-[100px]">
 
@@ -130,7 +130,7 @@
                             <h2 class="text-lg font-semibold mb-2">Chọn địa chỉ</h2>
                             @if (isset($user_addresses) && $user_addresses->count() > 0)
                                 @foreach ($user_addresses as $address)
-                            <select name="address"
+                            <select name="address" id="address"
                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="{{ $address->id }}">{{ $address->receiver_name }} - {{ $address->address }} - {{ $address->province }} - {{ $address->district }} - {{ $address->ward }} - {{ $address->zip_code }}</option>
                             </select>
@@ -145,7 +145,11 @@
                                 <i class="fa fa-plus"></i> Thêm địa chỉ
                             </button>
                         </div>
-
+                        <!-- Lời nhắn cho người bán -->
+                        <div class="mb-10">
+                            <input type="hidden" name="shop_notes" id="shop_notes" value="">
+                        </div>
+                        <!-- Phương thức thanh toán -->
                         <div class="space-y-4 mb-6">
                             <label class="flex items-center space-x-3">
                                 <input type="radio" name="payment" value="MOMO"
@@ -177,21 +181,47 @@
                 <div class="w-full lg:w-1/2">
                     <!-- Danh sách sản phẩm -->
                     <div class="space-y-4 mb-6">
-                        @foreach ($products as $product)
-                        <div class="flex items-center space-x-4">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGh5WFH8TOIfRKxUrIgJZoDCs1yvQ4hIcppw&s" alt="Product Image" class="w-16 h-16 object-cover rounded-md" />
-                            <div class="flex-1">
-                                <span class="block text-sm font-medium">{{ $product->name }}</span>
-                                @foreach ($items as $item)
-                                    @if ($item['product']->id == $product->id)
-                                        <span class="text-sm text-gray-500">x{{ $item['quantity'] }}</span>
-                                    @endif
-                                @endforeach
-                            </div>
-                            <span class="text-sm font-semibold">{{ number_format($product->price) }} VND</span>
+                    <!-- Nhóm sản phẩm theo shop -->
+                    @php
+                        // Nhóm items theo shopID
+                        $itemsByShop = collect($items)->groupBy('product.shopID')->sortKeys();
+                    @endphp
+
+                    @foreach ($itemsByShop as $shopId => $shopItems)
+                        <!-- Tiêu đề shop -->
+                        <div class="border-b pb-2 mb-4">
+                            <h3 class="text-lg font-semibold">
+                                Shop: {{ \App\Models\Shop::find($shopId)->name ?? 'Shop ' . $shopId }}
+                            </h3>
                         </div>
-                        @endforeach
-                    </div>
+
+                        <!-- Danh sách sản phẩm trong shop -->
+                        <div class="space-y-4">
+                            @foreach ($shopItems as $item)
+                                <div class="flex items-center space-x-4">
+                                    <img 
+                                        src="{{ $item['product']->image ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGh5WFH8TOIfRKxUrIgJZoDCs1yvQ4hIcppw&s' }}" 
+                                        alt="Product Image" 
+                                        class="w-16 h-16 object-cover rounded-md" 
+                                    />
+                                    <div class="flex-1">
+                                        <span class="block text-sm font-medium">{{ $item['product']->name }}</span>
+                                        <span class="text-sm text-gray-500">x{{ $item['quantity'] }}</span>
+                                        <span class="text-sm text-gray-500">Loại: {{ $item['product']->variants->first()->variant_name ?? 'N/A' }}</span>
+                                    </div>
+                                    <span class="text-sm font-semibold">{{ number_format($item['product']->price) }} VND</span>
+                                </div>
+                            @endforeach
+                            <textarea 
+                                            name="note_for_shop[{{ $shopId }}][{{ $item['product']->id }}]" 
+                                            id="note-{{ $shopId }}-{{ $item['product']->id }}" 
+                                            class="w-full h-[40px] border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                            placeholder="Lời nhắn cho người bán"
+                                            data-shop-id="{{ $shopId }}"
+                                        ></textarea>
+                        </div>
+                    @endforeach
+                </div>
 
                     <!-- Tóm tắt đơn hàng -->
                     <div class="border-t pt-4 mb-6">
@@ -204,12 +234,16 @@
                         <div class="border-t my-2"></div>
                         <div class="flex justify-between text-sm">
                             <span>Phí vận chuyển:</span>
-                            <span class="font-semibold">Miễn phí</span>
+                            <span class="font-semibold" id="shipping-fee">Đang tính...</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>Thời gian giao hàng dự kiến:</span>
+                            <span class="font-semibold" id="expected-delivery-time"></span>
                         </div>
                         <div class="border-t my-2"></div>
                         <div class="flex justify-between text-lg font-bold">
                             <span>Tổng đơn:</span>
-                            <span>{{ number_format($subtotal) }} VND</span>
+                            <span id="total-amount">{{ number_format($subtotal) }} VND</span>
                         </div>
                     </div>
                 </div>
@@ -341,6 +375,91 @@
             });
 
             fetchCities();
+        });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addressSelect = document.querySelector('select[name="address"]');
+        if (addressSelect) {
+            calculateShippingFee(addressSelect.value);
+            
+            addressSelect.addEventListener('change', function() {
+                calculateShippingFee(this.value);
+            });
+        }
+        
+        function calculateShippingFee(addressId) {
+            if (!addressId) return;
+ 
+            document.getElementById('shipping-fee').textContent = '0 VND';
+            fetch('/calculate-shipping-fee', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    address_id: addressId,
+                    _token: 'FpYtldvhaUaI3hTM56f4RgPCPpBjR5Y8WCNv05XO'
+                })
+            })
+            .then(response => {
+                console.log('HTTP Status:', response.status); // Log trạng thái HTTP
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json(); // Parse JSON
+            })
+            .then(data => {
+                if (data.shipping_fee && typeof data.shipping_fee === 'number') {
+                    const shippingFee = data.shipping_fee;
+                    const subtotal = {{ $subtotal ?? 0 }};
+                    const total = subtotal + shippingFee;
+                    
+                    document.getElementById('shipping-fee').textContent = 
+                        new Intl.NumberFormat('vi-VN').format(shippingFee) + ' VND';
+                    document.getElementById('expected-delivery-time').textContent = data.expected_delivery_time;
+                    document.getElementById('total-amount').textContent = 
+                        new Intl.NumberFormat('vi-VN').format(total) + ' VND';
+                } else {
+                    document.getElementById('shipping-fee').textContent = data.error || 'Không thể tính phí vận chuyển';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('shipping-fee').textContent = 'Không thể tính phí vận chuyển';
+            });
+        }
+    });
+    </script>
+    <script>
+         document.addEventListener('DOMContentLoaded', function() {
+            event.preventDefault();
+            const checkoutForm = document.getElementById('checkout-form');
+            const shopNotesInput = document.getElementById('shop_notes');
+
+            function collectShopNotes() {
+                const notes = {};
+                document.querySelectorAll('textarea[name^="note_for_shop"]').forEach(textarea => {
+                    const shopId = textarea.getAttribute('data-shop-id');
+                    const note = textarea.value.trim();
+
+                    if (note) {
+                        if (!notes[shopId]) {
+                            notes[shopId] = {};
+                        }
+                        notes[shopId] = note;
+                    }
+                });
+                return notes;
+            }
+
+            // Cập nhật shop_notes khi submit form
+            checkoutForm.addEventListener('submit', function(event) {
+                const notes = collectShopNotes();
+                shopNotesInput.value = JSON.stringify(notes);
+                console.log('Shop notes:', shopNotesInput.value); // Debug
+            });
         });
     </script>
 @endpush

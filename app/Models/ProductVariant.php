@@ -12,16 +12,17 @@ class ProductVariant extends Model
     
     protected $fillable = [
         'productID',
-        'color',
-        'color_code',
-        'size',
         'variant_name',
         'price',
         'purchase_price',
         'sale_price',
         'stock',
         'sku',
-        'status'
+        'status',
+        'vat_amount',
+        'discount_type',
+        'size',
+        'color',
     ];
 
     protected $casts = [
@@ -45,6 +46,11 @@ class ProductVariant extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class, 'variantID');
+    }
+
+    public function attributeValues()
+    {
+        return $this->hasMany(AttributeValue::class);
     }
 
     // Scopes
@@ -83,4 +89,4 @@ class ProductVariant extends Model
     {
         return $this->stock <= 0 || $this->status === 'out_of_stock';
     }
-} 
+}
