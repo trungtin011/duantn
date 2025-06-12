@@ -1,4 +1,4 @@
-@extends('account.layout')
+@extends('account.index')
 
 @section('account-content')
 <h2 class="text-2xl font-bold mb-4">Chỉnh sửa địa chỉ</h2>

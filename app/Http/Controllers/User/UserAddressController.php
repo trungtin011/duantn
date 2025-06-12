@@ -14,12 +14,18 @@ class UserAddressController extends Controller
     public function index()
     {
         $addresses = Auth::user()->addresses;
-        return view('account.addresses.index', compact('addresses'));
+        $user = Auth::user();
+        if ($addresses->isEmpty()) {
+            return view('user.account.addresses.index', ['addresses' => $addresses])
+                ->with('message', 'Bạn chưa có địa chỉ nào. Hãy thêm địa chỉ mới.');
+        }
+        return view('user.account.addresses.index', compact('addresses', 'user'));
     }
 
     public function create()
     {
-        return view('account.addresses.create');
+        $user = Auth::user();
+        return view('user.account.addresses.create' , compact('user'));
     }
 
     public function store(Request $request)
@@ -51,7 +57,7 @@ class UserAddressController extends Controller
     public function edit(UserAddress $address)
     {
         $this->authorize('view', $address);
-        return view('account.addresses.edit', compact('address'));
+        return view('user.account.addresses.edit', compact('address'));
     }
 
     public function update(Request $request, UserAddress $address)

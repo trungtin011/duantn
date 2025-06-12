@@ -6,16 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
-Use App\Models\Review;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function show($productID)
+    public function show($slug)
     {
-        $product = Product::find($productID);
-        $productImages = ProductImage::where('productID', $productID)->get();
-        $reviews = Review::where('productID', $productID)->get();
-        return view('user.product.product_detail', compact('product', 'productImages', 'reviews'));
+        $product = Product::with(['images', 'reviews', 'variants'])->where('slug', $slug)->firstOrFail();
+        return view('user.product.product_detail', compact('product'));
     }
 }

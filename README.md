@@ -12,7 +12,7 @@ Make another env. file clone env.example
 php artisan key:generate --ansi  
 ```
 ``` bash
-php artisan migrate  
+php artisan migrate
 ```
 composer require laravel/socialite
 
