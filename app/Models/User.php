@@ -7,11 +7,12 @@ use App\Enums\UserGender;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -114,13 +115,12 @@ class User extends Authenticatable
         return $this->addresses()->where('is_default', true)->first();
     }
     public function getGenderLabel(): string
-{
-    return match ($this->gender->value ?? null) {
-        'male' => 'Nam',
-        'female' => 'Nữ',
-        'other' => 'Khác',
-        default => 'Không xác định',
-    };
-}
-    
+    {
+        return match ($this->gender->value ?? null) {
+            'male' => 'Nam',
+            'female' => 'Nữ',
+            'other' => 'Khác',
+            default => 'Không xác định',
+        };
+    }
 }

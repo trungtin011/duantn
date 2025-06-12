@@ -301,7 +301,7 @@
     <!-- Khuyến mãi with Countdown Timer -->
     <section class="container mx-auto py-8">
         <div class="flex gap-3 items-center mb-3">
-            <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
+            <div style="background-color: #EF3248;" class="rounded h-[45px] w-[20px]"></div>
             <span style="color: #BDBDBD;" class="font-bold">Hôm nay</span>
         </div>
         <div class="flex justify-between items-center mb-[60px]">

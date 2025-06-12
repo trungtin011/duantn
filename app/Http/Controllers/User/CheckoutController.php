@@ -12,14 +12,13 @@ use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\Order;
 use App\Models\OrderAddress;
-use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
 use App\Models\ShopOrder;
 use App\Models\ItemsOrder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\VNPayController;
-
+use App\Models\ShopAddress;
 
 class CheckoutController extends Controller
 {
@@ -72,7 +71,12 @@ class CheckoutController extends Controller
         }
         $products = Product::whereIn('id', $products)->with('variants')->get();
         $user_addresses = UserAddress::where('userID', Auth::user()->id)->get();
-        return view('client.checkout', compact('user_addresses','items','products'));
+        $shop_addresses = ShopAddress::whereIn('shopID', $products->pluck('shopID'))
+            ->where('is_default', 1)
+            ->get();
+        $shops = Shop::whereIn('id', $products->pluck('shopID'))->get();
+        $default_address = $shop_addresses->last();
+        return view('client.checkout', compact('user_addresses','items','products','default_address','shops'));
     }
 
     public function store(Request $request)
@@ -88,7 +92,6 @@ class CheckoutController extends Controller
             $products[] = $item['product']->id;
         }
         $products = Product::whereIn('id', $products)->with('variants')->get();
-
         $user_address = UserAddress::where('id', $request->address)
             ->where('userID', $user->id)
             ->first();
@@ -124,6 +127,7 @@ class CheckoutController extends Controller
     {
         $total_price = $this->getTotalPrice($items);
         $order_Items = [];
+        $shop_notes = json_decode($request->shop_notes, true);
 
         $order = Order::create([
             'userID' => Auth::id(),
@@ -137,11 +141,12 @@ class CheckoutController extends Controller
         ]);
         
         foreach($products as $product){
-
             $shop_order = ShopOrder::create([
                 'shopID' => $product->shopID,
                 'orderID' => $order->id,
+                'note' => $shop_notes[$product->shopID]
             ]);
+            Log::info($shop_order);
             foreach($items as $item){
                 if($item['product']->id == $product->id){
                     $quantity = $item['quantity'];
@@ -186,7 +191,8 @@ class CheckoutController extends Controller
         return $order;
     }
     
-    private function CodPayment(){}
+    private function CodPayment(){
+    }
 
     private function MomoPayment($order){
         try {
@@ -311,9 +317,9 @@ class CheckoutController extends Controller
                 return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
             }
             if ($resultCode == 0) {
-                return redirect()->route('success_payment', ['order_code' => $orderCode]);
+                return redirect()->route('checkout.success', ['order_code' => $orderCode]);
             } else {
-                return redirect()->route('failed_payment', ['order_code' => $orderCode]);
+                return redirect()->route('checkout.failed', ['order_code' => $orderCode])->with('error', 'Thanh toán thất bại');
             }
 
         } catch (\Exception $e) {
@@ -395,8 +401,18 @@ class CheckoutController extends Controller
         $order = Order::where('order_code', $order_code)->with('address','items')->first();
         if (!$order) {
             return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
-        }   
-        return view('user.checkout_status.success_payment', compact('order'));
+        }
+
+        $product = Product::where('id', $order->items->first()->productID)->with('variants')->first();
+        $stock = $product->variants->first()->stock - $order->items->first()->quantity;
+        $product->variants->first()->update([
+            'stock' => $stock
+        ]);
+
+        Cart::where('userID', Auth::user()->id)->delete();
+        session()->forget('checkout_items');
+
+        return view('user.checkout_status.success_payment', compact('order','product'));
     }
 
     public function failedPayment($order_code){
@@ -422,8 +438,6 @@ class CheckoutController extends Controller
 
         session(['checkout_items' => $items]);
         return redirect()->route('checkout')->with('error', 'Thanh toán thất bại. Vui lòng thử lại.');
-    }
-
-    
+    }    
         
 }

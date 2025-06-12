@@ -13,9 +13,6 @@ class ProductVariantsTableSeeder extends Seeder
             [
                 'id' => 1,
                 'productID' => 1,
-                'color' => 'Đen',
-                'color_code' => '#000000',
-                'size' => '42',
                 'variant_name' => 'Nike Air Max Đen 42',
                 'price' => 2000000,
                 'purchase_price' => 1500000,
@@ -29,9 +26,6 @@ class ProductVariantsTableSeeder extends Seeder
             [
                 'id' => 2,
                 'productID' => 2,
-                'color' => 'Bạc',
-                'color_code' => '#C0C0C0',
-                'size' => 'N/A',
                 'variant_name' => 'Samsung Galaxy Bạc',
                 'price' => 10000000,
                 'purchase_price' => 8000000,
