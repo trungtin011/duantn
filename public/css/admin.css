@@ -9,7 +9,6 @@ body {
     min-height: 100vh;
     background: #fff;
     color: #232946;
-    width: 348px;
     box-shadow: 2px 0 12px 0 rgba(44, 62, 80, 0.06);
 }
 
@@ -22,6 +21,7 @@ body {
     padding: 18px 48px;
     border-bottom: 1px solid #EEEEEE;
     border-right: 1px solid #EEEEEE;
+    height: 81px;
 }
 
 .sidebar .link_admin {
@@ -124,35 +124,6 @@ main {
 .admin-table-container {
     border-collapse: separate;
     border-spacing: 0 8px;
-}
-
-.admin-table th,
-.admin-table td {
-    padding: 12px 15px;
-}
-
-.admin-table thead th {
-    background-color: #f4f6fa;
-    border-bottom: none;
-}
-
-.admin-table tbody tr {
-    background-color: #fff;
-    border-bottom: 8px solid #f4f6fa;
-}
-
-.admin-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.admin-table tbody td:first-child {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-}
-
-.admin-table tbody td:last-child {
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
 }
 
 /* Badge Styles */
