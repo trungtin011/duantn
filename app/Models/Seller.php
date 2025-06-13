@@ -20,7 +20,8 @@ class Seller extends Model
         'bank_account',
         'bank_name',
         'bank_account_name',
-        'business_license_id'
+        'business_license_id',
+        'auto_reply_enabled'
     ];
 
     protected $casts = [
@@ -84,4 +85,4 @@ class Seller extends Model
     {
         $this->update(['status' => 'active']);
     }
-} 
+}
