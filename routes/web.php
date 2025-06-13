@@ -15,11 +15,17 @@ use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
+use App\Http\Controllers\Seller\ChatSettingsController;
+use App\Http\Controllers\Seller\Chat\AutoChatSettingController;
+use App\Http\Controllers\Seller\Chat\QaChatController;
+use App\Http\Controllers\Seller\SellerSettingsController;
 //user
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Seller\Chat\ReplyChatController;
 
 // trang chủ
 Route::get('/', function () {
@@ -187,6 +193,9 @@ Route::middleware('CheckRole:customer')->group(function () {
         return view('client.wishlist');
     })->name('wishlist');
 
+
+    
+
     Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
 
     // Trang thông tin người dùng
@@ -227,8 +236,8 @@ Route::prefix('seller')->group(function () {
     Route::post('/register3', [RegisterShopController::class, 'step4'])->name('seller.register.step4.post');
     Route::get('/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
     Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
-    Route::get('/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'index'])->name('seller.settings');
-    Route::post('/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'update'])->name('seller.settings');
+    Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
+    Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
     Route::get('/profile', function () {
         return view('seller.profile');
     })->name('seller.profile');
@@ -240,9 +249,25 @@ Route::prefix('seller')->group(function () {
     Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
-// API OCR CCCD cho frontend JS
-Route::post('/seller/ocr/scan-cccd', [OcrController::class, 'upload'])->name('seller.ocr.scancccd');
-Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
-Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
-Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
-Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+// seller chat routes
+Route::prefix('seller/chat')->middleware('CheckRole:seller')->group(function () {
+    Route::get('/chatautomatically', function () {
+        return view('seller.chat.chatautomatically');
+    })->name('seller.chat.chatautomatically');
+    Route::get('/QA', function () {
+        return view('seller.chat.QA');
+    })->name('seller.chat.QA');
+    Route::get('/A', function () {
+        return view('seller.chat.A');
+    })->name('seller.chat.A');
+
+    // seller chat settings (auto reply)
+    Route::post('/auto-reply-toggle', [ChatSettingsController::class, 'toggleAutoReply'])
+        ->middleware('CheckRole:seller')
+        ->name('seller.chat.auto_reply_toggle');
+});
+
+Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);
+Route::get('/api/chat/messages/{shopId}', [ChatController::class, 'getMessagesByShopId']);
+Route::post('/api/chat/send-message', [ChatController::class, 'sendMessage']);
+

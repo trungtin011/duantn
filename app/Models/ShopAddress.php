@@ -12,11 +12,13 @@ class ShopAddress extends Model
     protected $fillable = [
         'shopID',
         'shop_address',
-        'shop_city',
-        'shop_state',
-        'shop_zip_code',
-        'shop_country',
+        'shop_province',
+        'shop_district',
+        'shop_ward',
+        'note',
         'is_default',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
@@ -27,4 +29,4 @@ class ShopAddress extends Model
     {
         return $this->belongsTo(Shop::class, 'shopID');
     }
-} 
+}

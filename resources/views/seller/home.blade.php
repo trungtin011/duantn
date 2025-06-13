@@ -1,5 +1,4 @@
 @extends('layouts.seller_home')
-
 @section('content')
 <div class="flex min-h-[calc(100vh-40px)]">
   <main class="flex-1 p-4 space-y-6 overflow-y-auto">

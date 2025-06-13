@@ -292,6 +292,10 @@ class RegisterShopController extends Controller
             ShopAddress::create([
                 'shopID' => $shop->id,
                 'shop_address' => $data['shop_address'],
+                'shop_province' => $data['business_province'],
+                'shop_district' => $data['business_district'],
+                'shop_ward' => $data['business_ward'],
+                'note' => null,
                 'is_default' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),

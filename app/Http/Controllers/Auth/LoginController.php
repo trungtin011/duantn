@@ -47,6 +47,18 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
             RateLimiter::clear($key);
+
+            $user = Auth::user();
+
+            if ($user->role === \App\Enums\UserRole::SELLER) {
+                return redirect()->route('seller.dashboard')->with('success', 'Đăng nhập thành công với vai trò người bán!');
+            } elseif ($user->role === \App\Enums\UserRole::CUSTOMER) {
+                return redirect()->route('account.dashboard')->with('success', 'Đăng nhập thành công với vai trò khách hàng!');
+            } elseif ($user->role === \App\Enums\UserRole::ADMIN) {
+                return redirect()->route('admin.dashboard')->with('success', 'Đăng nhập thành công với vai trò quản trị viên!');
+            }
+
+            // Fallback for other roles or if role is not explicitly handled
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }
 
