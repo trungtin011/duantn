@@ -121,6 +121,12 @@
                     </svg>
                     Đánh giá
                 </a>
+                <a href="{{ route('admin.reports.index') }}" class="link_admin">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none">
+                        <path fill="currentColor" d="M22 6H2V2h20v4zM22 8H2v4h20V8zM22 14H2v4h20v-4zM22 20H2v2h20v-2z"/>
+                    </svg>
+                    Báo cáo
+                </a>
                 <a href="#" class="link_admin">
                     <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"
                         height="16">

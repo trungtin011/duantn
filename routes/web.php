@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\UserControllerAdmin;
+use App\Http\Controllers\Admin\AdminReportController;
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -150,6 +151,13 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/{id}', [UserControllerAdmin::class, 'show'])->name('admin.users.show');
         Route::delete('/{id}', [UserControllerAdmin::class, 'destroy'])->name('admin.users.destroy');
     });
+
+    // reports
+    Route::prefix('reports')->group(function () {
+        Route::get('/', [AdminReportController::class, 'index'])->name('admin.reports.index');
+        Route::get('/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
+        Route::put('/{report}/update-status', [AdminReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
+    });
 });
 
 // seller routes
@@ -212,6 +220,8 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::prefix('user/account/points')->group(function () {
         Route::get('/', [UserController::class, 'points'])->name('account.points');
     });
+    // Route báo cáo sản phẩ
+    Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
 });
 
 // seller registration routes
