@@ -181,7 +181,7 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::get('/order-history', function () {
         return view('user.order.order_history');
     })->name('order_history');
-    
+
     Route::get('/wishlist', function () {
         return view('client.wishlist');
     })->name('wishlist');
@@ -198,13 +198,19 @@ Route::middleware('CheckRole:customer')->group(function () {
         Route::post('/password', [UserController::class, 'updatePassword'])->name('account.password.update');
     });
     // Trang địa chỉ người dùng
-    Route::prefix('user/addresses')->group(function () {
+    Route::prefix('user/account/addresses')->group(function () {
         Route::get('/', [UserAddressController::class, 'index'])->name('account.addresses');
         Route::get('/create', [UserAddressController::class, 'create'])->name('account.addresses.create');
         Route::post('/', [UserAddressController::class, 'store'])->name('account.addresses.store');
         Route::get('/{address}/edit', [UserAddressController::class, 'edit'])->name('account.addresses.edit');
         Route::put('/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
         Route::delete('/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
+        Route::get('/{address}/set-default', [UserAddressController::class, 'setDefault'])->name('account.addresses.set-default');
+    });
+
+    // Trang tích điểm
+    Route::prefix('user/account/points')->group(function () {
+        Route::get('/', [UserController::class, 'points'])->name('account.points');
     });
 });
 
