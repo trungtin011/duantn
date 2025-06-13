@@ -45,6 +45,19 @@ class LoginController extends Controller
         $key = 'login-attempt:' . strtolower($request->login) . ':' . $request->ip();
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            // Kiểm tra trạng thái của người dùng
+            if ($user->isBanned()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('login')->withErrors([
+                    'login' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
+                ]);
+            }
+
             $request->session()->regenerate();
             RateLimiter::clear($key);
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
@@ -72,7 +85,9 @@ class LoginController extends Controller
 
     public function handleGoogleCallback()
     {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+        /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
+        $socialiteProvider = Socialite::driver('google');
+        $googleUser = $socialiteProvider->stateless()->user();
         $user = User::where('email', $googleUser->getEmail())->first();
         if (!$user) {
             $user = User::create([
@@ -94,7 +109,9 @@ class LoginController extends Controller
     public function handleFacebookCallback()
     {
         try {
-            $facebookUser = Socialite::driver('facebook')->stateless()->user();
+            /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
+            $socialiteProvider = Socialite::driver('facebook');
+            $facebookUser = $socialiteProvider->stateless()->user();
         } catch (\Exception $e) {
             return redirect()->route('login')->with('error', 'Đăng nhập Facebook thất bại. Vui lòng thử lại.');
         }
@@ -119,7 +136,9 @@ class LoginController extends Controller
 
     public function redirectToFacebook()
     {
-        return Socialite::driver('facebook')
+        /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
+        $socialiteProvider = Socialite::driver('facebook');
+        return $socialiteProvider
             ->scopes(['email'])
             ->redirect();
     }

@@ -107,7 +107,7 @@ class User extends Authenticatable
 
     public function isBanned()
     {
-        return $this->status === 'banned';
+        return $this->status === UserStatus::BANNED;
     }
 
     public function getDefaultAddress()
