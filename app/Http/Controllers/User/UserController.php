@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\PointTransaction;
 
 class UserController extends Controller
 {
@@ -100,5 +101,40 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route('account.password')->with('success', 'Đổi mật khẩu thành công!');
+    }
+
+
+
+
+
+    // Hàm xử lý hiển thị lịch sử điểm thưởng
+    public function points()
+    {
+        $user = Auth::user();
+        $tab = request()->query('tab', 'all'); // Lấy tab từ query string, mặc định là 'all'
+
+        $query = PointTransaction::where('userID', $user->id);
+
+        // Lọc theo tab
+        switch ($tab) {
+            case 'received':
+                $query->where('points', '>', 0);
+                break;
+            case 'used':
+                $query->where('points', '<', 0);
+                break;
+            default:
+                // Không lọc cho tab 'all'
+                break;
+        }
+
+        $points = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        // Tính tổng điểm
+        $totalPoints = PointTransaction::where('userID', $user->id)->sum('points');
+        $totalReceived = PointTransaction::where('userID', $user->id)->where('points', '>', 0)->sum('points');
+        $totalUsed = abs(PointTransaction::where('userID', $user->id)->where('points', '<', 0)->sum('points'));
+
+        return view('user.account.points.index', compact('user', 'points', 'totalPoints', 'totalReceived', 'totalUsed'));
     }
 }

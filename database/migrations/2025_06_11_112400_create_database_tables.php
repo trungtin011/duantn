@@ -349,10 +349,7 @@ return new class extends Migration
             $table->unsignedBigInteger('product_variant_id');
             $table->unsignedBigInteger('attribute_value_id');
             $table->timestamps();
-
-            // Sửa tên chỉ mục unique
             $table->unique(['product_variant_id', 'attribute_value_id'], 'pv_attr_val_unique');
-
             $table->foreign('product_variant_id')->references('id')->on('product_variants')->onDelete('cascade');
             $table->foreign('attribute_value_id')->references('id')->on('attribute_values')->onDelete('cascade');
         });
@@ -413,7 +410,6 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
-
         Schema::create('shop_order', function (Blueprint $table) {
             $table->id();
             $table->foreignId('shopID')->constrained('shops');
@@ -445,7 +441,6 @@ return new class extends Migration
             $table->decimal('total_price', 12, 2)->nullable();
             $table->decimal('discount_amount', 12, 2)->default(0)->nullable();
             $table->timestamps();
-
             $table->index('orderID');
             $table->index('shop_orderID');
             $table->index('productID');
@@ -578,18 +573,14 @@ return new class extends Migration
             $table->timestamp('read_at')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->timestamps();
-
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('receiver_user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('receiver_shop_id')->references('id')->on('shops')->onDelete('cascade');
-
-            // Sử dụng tên ngắn hơn cho chỉ mục
             $table->index(['type', 'status', 'priority', 'receiver_type', 'created_at'], 'notif_type_status_idx');
             $table->index(['receiver_user_id', 'status'], 'notif_user_status_idx');
             $table->index(['receiver_shop_id', 'status'], 'notif_shop_status_idx');
         });
-
 
         // Bảng report
         Schema::create('report', function (Blueprint $table) {
@@ -620,6 +611,19 @@ return new class extends Migration
             $table->foreign('assigned_to')->references('id')->on('users')->onDelete('set null');
             $table->foreign('resolved_by')->references('id')->on('users')->onDelete('set null');
             $table->index(['report_type', 'status', 'priority', 'created_at']);
+        });
+
+        // Bảng point_transactions (THÊM MỚI)
+        Schema::create('point_transactions', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('userID');
+            $table->integer('points');
+            $table->enum('type', ['checkin', 'order', 'bonus', 'redeem']);
+            $table->string('description', 255)->nullable();
+            $table->unsignedBigInteger('orderID')->nullable();
+            $table->timestamps();
+            $table->foreign('userID')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('orderID')->references('id')->on('orders')->onDelete('set null');
         });
 
         // Bảng cache
@@ -704,6 +708,7 @@ return new class extends Migration
         Schema::dropIfExists('failed_jobs');
         Schema::dropIfExists('cache_locks');
         Schema::dropIfExists('cache');
+        Schema::dropIfExists('point_transactions'); // THÊM MỚI
         Schema::dropIfExists('report');
         Schema::dropIfExists('notifications');
         Schema::dropIfExists('view_history');
@@ -713,7 +718,7 @@ return new class extends Migration
         Schema::dropIfExists('coupon_user');
         Schema::dropIfExists('coupon');
         Schema::dropIfExists('order_status_history');
-        Schema::dropIfExists('items_order'); // Sửa từ 'order_items'
+        Schema::dropIfExists('items_order');
         Schema::dropIfExists('order_addresses');
         Schema::dropIfExists('orders');
         Schema::dropIfExists('cart');
