@@ -9,6 +9,8 @@ use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\WishlistController;
 use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\User\ReportController;
+use App\Http\Controllers\Admin\AdminReportController;
 use Illuminate\Support\Facades\Auth;
 
 // trang chủ
@@ -77,6 +79,10 @@ Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->na
 
 // Route logout
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+//Report
+    Route::get('/report/create', [ReportController::class, 'create'])->name('report.create');
+    Route::post('/report', [ReportController::class, 'store'])->name('report.store');
 
 // trang đăng ký seller
 Route::middleware('CheckRole:seller')->group(function () {
@@ -149,4 +155,8 @@ Route::middleware('CheckRole:admin')->group(function () {
     Route::get('/admin/review/create', [ReviewController::class, 'create'])->name('admin.reviews.create');
     Route::post('/admin/review', [ReviewController::class, 'store'])->name('admin.reviews.store');
     Route::delete('/admin/review/{review}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+
+    //quản lý review
+    Route::get('/admin/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
+    Route::delete('/admin/report/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
 });
