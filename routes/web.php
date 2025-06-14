@@ -4,6 +4,15 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
+use App\Http\Controllers\User\NotificationControllers as UserNotificationControllers;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\User\WishlistController;
+use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\User\UserAddressController;
+use App\Http\Controllers\User\SuggestedProductController;
+use App\Http\Controllers\User\CheckoutController;
+use App\Http\Controllers\VNPayController;
 // admin
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AttributeController;
@@ -18,8 +27,6 @@ use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 //user
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\User\UserAddressController;
 
 // trang chủ
 Route::get('/', function () {
@@ -83,6 +90,7 @@ Route::get('/auth/google', [LoginController::class, 'redirectToGoogle'])->name('
 Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallback']);
 Route::get('/auth/facebook', [LoginController::class, 'redirectToFacebook'])->name('auth.facebook.login');
 Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCallback']);
+
 
 
 // admin routes
@@ -183,9 +191,10 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::get('/order-history', function () {
         return view('user.order.order_history');
     })->name('order_history');
-    Route::get('/wishlist', function () {
-        return view('client.wishlist');
-    })->name('wishlist');
+
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/store', [WishlistController::class, 'store'])->name('wishlist.store');
+    Route::post('/wishlist/destroy', [WishlistController::class, 'destroy'])->name('wishlist.remove');
 
     Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
 
@@ -207,6 +216,17 @@ Route::middleware('CheckRole:customer')->group(function () {
         Route::put('/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
         Route::delete('/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
     });
+
+    //checkout
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+    Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
+    Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
+    Route::get('/checkout/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
+    Route::post('/checkout/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
+
 });
 
 // seller registration routes
@@ -233,10 +253,9 @@ Route::prefix('seller')->group(function () {
         return view('seller.profile');
     })->name('seller.profile');
 
-
-
     Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
     Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+    Route::post('/order/{id}/shipping', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
     Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
@@ -246,3 +265,6 @@ Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
 Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
 Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+
+// Shipping fee calculation
+Route::post('/calculate-shipping-fee', [App\Http\Controllers\User\ShippingFeeController::class, 'calculateShippingFee'])->name('calculate.shipping.fee');
