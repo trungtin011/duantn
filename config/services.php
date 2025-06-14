@@ -12,7 +12,17 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+    'ghn' => [
+        'token' => env('GHN_GHN_API_TOKEN'),
+        'url' => env('GHN_API_URL'),
+        'shop_id' => env('GHN_SHOP_ID'),
+        'estimate_delivery_time' => env('GHN_ESTIMATE_DELIVERY_TIME'),
+        'create_order' => env('GHN_CREATE_ORDER'),
+        'get_province' => env('GHN_GET_PROVINCE'),
+        'get_district' => env('GHN_GET_DISTRICT'),
+        'get_ward' => env('GHN_GET_WARD'),
+        'tracking' => env('GHN_TRACKING'),
+    ],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
