@@ -194,7 +194,7 @@
                                         class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-black hover:text-white">Liên
                                         hệ người bán</button>
                                 @endif
-                                <a href="{{ route('user.orders.show', $order->id) }}"
+                                <a href="{{ route('user.order.show', $order->id) }}"
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">Xem
                                     chi tiết</a>
                             </div>
@@ -272,7 +272,7 @@
                                 <button
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-black hover:text-white">Liên
                                     hệ người bán</button>
-                                <a href="{{ route('user.orders.show', $order->id) }}"
+                                <a href="{{ route('user.order.show', $order->id) }}"
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">Xem
                                     chi tiết</a>
                             </div>
@@ -349,7 +349,7 @@
                                 <button
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-black hover:text-white">Liên
                                     hệ người bán</button>
-                                <a href="{{ route('user.orders.show', $order->id) }}"
+                                <a href="{{ route('user.order.show', $order->id) }}"
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">Xem
                                     chi tiết</a>
                             </div>
@@ -426,7 +426,7 @@
                                 <button
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-black hover:text-white">Liên
                                     hệ người bán</button>
-                                <a href="{{ route('user.orders.show', $order->id) }}"
+                                <a href="{{ route('user.order.show', $order->id) }}"
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">Xem
                                     chi tiết</a>
                             </div>
@@ -507,7 +507,7 @@
                                 <button
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-black hover:text-white">Liên
                                     hệ người bán</button>
-                                <a href="{{ route('user.orders.show', $order->id) }}"
+                                <a href="{{ route('user.order.show', $order->id) }}"
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">Xem
                                     chi tiết</a>
                             </div>
@@ -582,7 +582,7 @@
                             <div class="order-footer bg-gray-50 py-3 px-4 sm:px-6 flex justify-end items-center">
                                 <span class="font-bold text-sm sm:text-base mr-4">Thành tiền: <span
                                         class="text-red-500">{{ number_format($order->total_price, 0, ',', '.') }}đ</span></span>
-                                <a href="{{ route('user.orders.show', $order->id) }}"
+                                <a href="{{ route('user.order.show', $order->id) }}"
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">Xem
                                     chi tiết</a>
                             </div>
@@ -656,7 +656,7 @@
                             <div class="order-footer bg-gray-50 py-3 px-4 sm:px-6 flex justify-end items-center">
                                 <span class="font-bold text-sm sm:text-base mr-4">Thành tiền: <span
                                         class="text-red-500">{{ number_format($order->total_price, 0, ',', '.') }}đ</span></span>
-                                <a href="{{ route('user.orders.show', $order->id) }}"
+                                <a href="{{ route('user.order.show', $order->id) }}"
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">Xem
                                     chi tiết</a>
                             </div>

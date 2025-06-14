@@ -7,48 +7,50 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
+    protected $table = 'items_order';
+    protected $primaryKey = 'id';
     protected $fillable = [
-        'order_id',
-        'product_id',
-        'variant_id',
+        'orderID',
+        'shop_orderID',
+        'productID',
+        'variantID',
+        'product_name',
+        'brand',
+        'category',
+        'attribute_value',
+        'attribute_name',
+        'product_image',
         'quantity',
         'unit_price',
         'total_price',
         'discount_amount',
-        'sku',
-        'product_name',
-        'brand',
-        'category',
-        'sub_category',
-        'color',
-        'size',
-        'variant_name',
-        'product_image',
-        'note',
-        'is_reviewed'
     ];
 
     protected $casts = [
         'unit_price' => 'decimal:2',
         'total_price' => 'decimal:2',
         'discount_amount' => 'decimal:2',
-        'is_reviewed' => 'boolean'
     ];
 
     // Relationships
-    public function order()
+    public function order(): BelongsTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Order::class, 'orderID', 'id');
     }
 
-    public function product()
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'productID');
+        return $this->belongsTo(Product::class, 'productID', 'id');
     }
 
     public function variant(): BelongsTo
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(ProductVariant::class, 'variantID', 'id');
+    }
+
+    public function shopOrder(): BelongsTo
+    {
+        return $this->belongsTo(ShopOrder::class, 'shop_orderID', 'id');
     }
 
     // Methods
@@ -59,6 +61,6 @@ class OrderItem extends Model
 
     public function getDiscountAmountAttribute()
     {
-        return $this->subtotal - $this->total_price;
+        return $this->discount_amount ?? ($this->subtotal - $this->total_price);
     }
 }
