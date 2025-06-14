@@ -23,42 +23,10 @@ use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
+use App\Http\Controllers\User\WishlistController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
-// các trang user
-Route::get('/contact', function () {
-    return view('user.contact');
-})->name('contact');
-Route::get('/about', function () {
-    return view('user.about');
-})->name('about');
-
-Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
-
-Route::get('/user/cart', function () {
-    return view('user.cart');
-})->name('cart');
-Route::get('/client/wishlist', function () {
-    return view('client.wishlist');
-})->name('wishlist');
-Route::get('/client/checkout', function () {
-    return view('client.checkout');
-})->name('checkout');
-Route::get('/user/order/order-history', function () {
-    return view('user.order.order_history');
-})->name('order_history');
-Route::get('/user/order/order-detail', function () {
-    return view('user.order.orderDetail');
-})->name('order_detail');
-
-
-// Route giỏ hàng
-Route::get('/cart', [CartController::class, 'index'])->name('cart');
-Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-Route::put('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
 
 // trang lỗi
 Route::get('/404', function () {
@@ -174,19 +142,9 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 
 // customer routes
 Route::middleware('CheckRole:customer')->group(function () {
-    Route::get('/account/profile', function () {
-        return view('user.profile');
-    })->name('account.profile');
-
-    Route::get('/order-history', function () {
-        return view('user.order.order_history');
-    })->name('order_history');
-
-    Route::get('/wishlist', function () {
-        return view('client.wishlist');
-    })->name('wishlist');
-
     Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
+
+    Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
 
     // Trang thông tin người dùng
     Route::prefix('user/account')->group(function () {
@@ -212,6 +170,42 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::prefix('user/account/points')->group(function () {
         Route::get('/', [UserController::class, 'points'])->name('account.points');
     });
+
+    // Trang yêu thích
+    Route::get('/user/account/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+
+    // Trang giỏ hàng
+    Route::prefix('cart')->group(function () {
+        Route::get('/', [CartController::class, 'index'])->name('cart');
+        Route::post('/add', [CartController::class, 'add'])->name('cart.add');
+        Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+        Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    });
+
+    // Trang liên hệ
+    Route::get('/contact', function () {
+        return view('user.contact');
+    })->name('contact');
+
+    // Trang giới thiệu
+    Route::get('/about', function () {
+        return view('user.about');
+    })->name('about');
+
+    // Trang thanh toán
+    Route::get('/client/checkout', function () {
+        return view('client.checkout');
+    })->name('checkout');
+
+    // Trang lịch sử đơn hàng
+    Route::get('/user/order/order-history', function () {
+        return view('user.order.order_history');
+    })->name('order_history');
+
+    // Trang chi tiết đơn hàng
+    Route::get('/user/order/order-detail', function () {
+        return view('user.order.orderDetail');
+    })->name('order_detail');
 });
 
 // seller registration routes

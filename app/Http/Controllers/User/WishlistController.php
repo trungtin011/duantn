@@ -3,27 +3,27 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Wishlist;
 
 class WishlistController extends Controller
 {
-    // List user's wishlist items
     public function index()
     {
-        // ...code to list wishlist items...
-    }
+        $user = Auth::user();
 
-    // Add product to wishlist
-    public function store(Request $request)
-    {
-        // ...code to add product to wishlist...
-    }
+        // Lấy danh sách sản phẩm yêu thích của người dùng
+        $wishlistItems = Wishlist::where('userID', $user->id)
+            ->with([
+                'product' => function ($query) {
+                    $query->with(['images' => function ($q) {
+                        $q->where('is_default', 1); // Lấy ảnh mặc định
+                    }]);
+                },
+                'shop'
+            ])
+            ->get();
 
-    // Remove product from wishlist
-    public function destroy($id)
-    {
-        // ...code to remove product from wishlist...
+        return view('user.account.wishlist.wishlist', compact('user', 'wishlistItems'));
     }
-
-    // Other wishlist management methods...
 }
