@@ -404,11 +404,10 @@
                 })
             })
             .then(response => {
-                console.log('HTTP Status:', response.status); // Log trạng thái HTTP
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return response.json(); // Parse JSON
+                return response.json();
             })
             .then(data => {
                 if (data.shipping_fee && typeof data.shipping_fee === 'number') {
@@ -458,7 +457,6 @@
             checkoutForm.addEventListener('submit', function(event) {
                 const notes = collectShopNotes();
                 shopNotesInput.value = JSON.stringify(notes);
-                console.log('Shop notes:', shopNotesInput.value); // Debug
             });
         });
     </script>
