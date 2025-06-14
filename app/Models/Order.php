@@ -10,8 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     protected $table = 'orders';
+    
     protected $fillable = [
-        'userID', // Cột trong migration là userID
+        'userID', 
         'shopID',
         'order_code',
         'total_price',
@@ -51,10 +52,10 @@ class Order extends Model
         return $this->belongsTo(Coupon::class);
     }
 
-    public function items()
-    {
-        return $this->hasMany(OrderItem::class, 'order_id', 'id');
-    }
+  public function items()
+{
+    return $this->hasMany(OrderItem::class, 'orderID', 'id');
+}
 
     public function address(): HasOne
     {
@@ -126,5 +127,9 @@ class Order extends Model
     public function orderStatusHistory()
     {
         return $this->hasMany(OrderStatusHistory::class, 'order_id');
+    }
+ public function shopOrders()
+    {
+        return $this->hasMany(ShopOrder::class, 'orderID', 'id');
     }
 }
