@@ -153,6 +153,32 @@
                     </div>
                 </div>
 
+                <!-- Delete Confirmation Modal -->
+                <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden items-center justify-center z-50">
+                    <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div class="mt-3 text-center">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Xác nhận xóa</h3>
+                            <div class="mt-2 px-7 py-3">
+                                <p class="text-sm text-gray-500">
+                                    Bạn có chắc chắn muốn xóa thông báo này không?
+                                </p>
+                            </div>
+                            <div class="flex justify-center gap-4 mt-4">
+                                <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                                    Hủy
+                                </button>
+                                <form id="deleteNotificationForm" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ route('cart') }}">
                     <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
                 </a>
@@ -550,6 +576,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="{{ asset('js/app.js') }}" type="module"></script>
     @stack('scripts')
+
+   
 </body>
 
 </html>

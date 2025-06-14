@@ -181,9 +181,10 @@ class NotificationsControllers extends Controller
     public function destroy($id){
         $notification = Notification::find($id);
         if($notification){
-            $notification->delete();
+            Notification::where('title', $notification->title)->delete();
+            return redirect()->route('admin.notifications.index')->with('success', 'Notification deleted successfully');
         }
-        return redirect()->route('admin.notifications.index')->with('success', 'Notification deleted successfully');
+        return redirect()->route('admin.notifications.index')->with('error', 'Notification deleted failed');
     }
 
 

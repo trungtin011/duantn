@@ -81,11 +81,12 @@
                     <td>{{ $notification['updated_at'] }}</td>
                     <td>
                         <a href="{{ route('admin.notifications.edit', $notification['id']) }}" class="btn btn-admin-primary">Edit</a>
-                        <a href="{ route('admin.notifications.destroy', $notification['id']) }}" class="btn btn-admin-danger" onclick="return confirm('Are you sure you want to delete this notification?')">Delete</a>
+                        <button type="submit" class="btn btn-admin-danger" form="delete-form" onclick="return confirm('Are you sure you want to delete this notification?')">Delete</button>
+                        <form id="delete-form" action="{{ route('admin.notifications.destroy', $notification['id']) }}" method="POST" style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
                     </td>
-                </tr>
-                <tr>
-                    
                 </tr>
             @endforeach
         </tbody>
