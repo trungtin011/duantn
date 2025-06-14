@@ -114,6 +114,15 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/get-sub-categories', [ProductController::class, 'getSubCategories'])->name('admin.get-sub-categories');
     });
 
+    // notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
+        Route::post('/', [AdminNotificationsControllers::class, 'store'])->name('admin.notifications.store');
+        Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
+        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');        Route::get('/create', [AdminNotificationsControllers::class, 'create'])->name('admin.notifications.create');
+        Route::get('/{id}/edit', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
+    });
+
     // attributes
     Route::prefix('/attributes')->group(function () {
         Route::get('/', [AttributeController::class, 'index'])->name('admin.attributes.index');
@@ -214,7 +223,9 @@ Route::middleware('CheckRole:customer')->group(function () {
         Route::post('/', [UserAddressController::class, 'store'])->name('account.addresses.store');
         Route::get('/{address}/edit', [UserAddressController::class, 'edit'])->name('account.addresses.edit');
         Route::put('/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
+
         Route::delete('/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
+
     });
 
     //checkout
@@ -265,6 +276,7 @@ Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
 Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
 Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+Route::put('/cancel-order/{id}', [UserOrderController::class, 'cancelOrder'])->name('cancel_order');
 
 // Shipping fee calculation
 Route::post('/calculate-shipping-fee', [App\Http\Controllers\User\ShippingFeeController::class, 'calculateShippingFee'])->name('calculate.shipping.fee');
