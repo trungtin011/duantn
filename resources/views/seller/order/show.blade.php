@@ -77,9 +77,8 @@
          @if($order->order_status == 'processing')
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
             <h2 class="text-lg font-semibold mb-4">Gửi đơn hàng vận chuyển</h2>
-            <form id="update-status-form" action="{{ route('seller.order.update-status', $order->id) }}" method="POST">
+            <form id="update-status-form" action="{{ route('seller.order.shipping', $order->id) }}" method="POST">
                 @csrf
-                @method('PUT')
 
                 <div class="mb-4 flex items-center gap-4">
                     <div class="flex-1">

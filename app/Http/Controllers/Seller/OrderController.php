@@ -48,8 +48,6 @@ class OrderController extends Controller
     public function shippingOrder(Request $request, $id)
     {
             $request->validate([
-                'status' => 'required|in:pending,processing,shipped,delivered,cancelled,refunded',
-                'description' => 'nullable|string',
                 'shipping_provider' => 'nullable|string|in:GHN',
                 'note' => 'nullable|string',
                 'required_note' => 'nullable|string|in:CHOXEMHANGKHONGTHU,CHOTHUHANG,KHONGCHOXEMHANG',
@@ -58,11 +56,10 @@ class OrderController extends Controller
 
             $permission_check = $this->permissionCheck();
 
-            $order = Order::findOrFail($id);
+            $order = Order::where('id', $id)->with('shop_order')->first();
 
             $id_shop_address = $request->shop_address;
             $shipping_provider = $request->shipping_provider;
-
 
             if($shipping_provider === 'GHN'){
                 $shipping_controller = new ShippingController();
@@ -70,7 +67,7 @@ class OrderController extends Controller
             }
     }
 
-    public function permissionCheck(){
+    private function permissionCheck(){
         $permission_check = false;
         
         $user = Auth::user();
@@ -103,7 +100,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $order = Order::findOrFail($id);
-        $order->update(['order_status' => $request->status]);   
+        $order->update(['order_status' => 'processing']);   
         return redirect()->back()->with('success', 'Đã nhận đơn hàng #'. $order->order_code);
     }
 }

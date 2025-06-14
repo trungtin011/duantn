@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
         // Share notifications to all views
         view()->composer('*', function ($view) {
             if (Auth::check()) {
-                $notifications = \App\Models\Notification::where('receiver_user_id', Auth::id())
+                $notifications = Notification::where('receiver_user_id', Auth::id())
                     ->orWhere('receiver_type', 'all')
                     ->orderBy('created_at', 'desc')
                     ->take(10)

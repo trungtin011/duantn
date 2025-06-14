@@ -70,6 +70,7 @@
             }
         });
     </script>
+
 @endpush
 
 @section('content')
@@ -146,6 +147,23 @@
                                         </svg>
                                         Xem Shop
                                     </button>
+                                    <div class="flex items-center">
+                                        <p class="text-xs sm:text-sm ml-2">
+                                            @if ($order->order_status === 'pending')
+                                                <span class="bg-red-200 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm">Chờ xác nhận</span>
+                                            @elseif ($order->order_status === 'processing')
+                                                <span class="bg-yellow-500 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm">Đang xử lý</span>
+                                            @elseif ($order->order_status === 'shipped')
+                                                <span class="bg-blue-500 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm">Đang giao hàng</span>
+                                            @elseif ($order->order_status === 'delivered')
+                                                <span class="bg-green-500 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm">Đã giao hàng</span>
+                                            @elseif ($order->order_status === 'cancelled')
+                                                <span class="bg-red-500 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm">Đã hủy</span>
+                                            @elseif ($order->order_status === 'refunded')
+                                                <span class="bg-gray-500 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm">Đã hoàn tiền</span>
+                                            @endif
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                             <div class="order-body px-4 sm:px-6 py-4">
@@ -197,6 +215,15 @@
                                 <a href="{{ route('user.orders.show', $order->id) }}"
                                     class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">Xem
                                     chi tiết</a>
+                                @if ($order->order_status === 'pending' || $order->order_status === 'processing')
+                                    <form action="{{ route('cancel_order', $order->id) }}" method="post">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit"
+                                            class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white ml-2">Hủy
+                                            đơn hàng</button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     @empty

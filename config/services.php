@@ -22,6 +22,7 @@ return [
         'get_district' => env('GHN_GET_DISTRICT'),
         'get_ward' => env('GHN_GET_WARD'),
         'tracking' => env('GHN_TRACKING'),
+        'cancel' => env('GHN_CANCEL'),
     ],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),

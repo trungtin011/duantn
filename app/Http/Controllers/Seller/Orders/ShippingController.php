@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\ShopAddress;
+use Illuminate\Support\Facades\Log;
 
 class ShippingController extends Controller
 {
@@ -15,6 +16,7 @@ class ShippingController extends Controller
     protected $ghnApiUrl;
     protected $contentType;
     protected $trackingEndpoint;
+    protected $cancelEndpoint;
 
     public function __construct(){
         $this->token = config('services.ghn.token');
@@ -23,6 +25,7 @@ class ShippingController extends Controller
         $this->ghnApiUrl = config('services.ghn.url');
         $this->contentType = 'application/json';
         $this->trackingEndpoint = config('services.ghn.tracking');
+        $this->cancelEndpoint = config('services.ghn.cancel');
     }
 
     public function createShippingOrder($orders, $id_shop_address, $payment_type_id, $note, $required_note){
@@ -87,13 +90,24 @@ class ShippingController extends Controller
             ],      
         ]);
         $responseData = $response->json();
+
         if ($response->status() == 200) {
-            $orders->order_status = 'shipping';
-            $orders->save();
-            return redirect()->route('seller.order.show', $orders->id)->with('success', 'Tạo đơn hàng vận chuyển thành công');
-        }
-        else{
-            return redirect()->back()->with('error', 'Tạo đơn hàng vận chuyển thất bại');
+            $orders->shop_order->first()->update(['status' => 'shipping']);
+
+            $data = [
+                'tracking_code' => $responseData['data']['order_code'],
+                'expected_delivery_date' => $responseData['data']['expected_delivery_date'],
+                'actual_delivery_date' => $responseData['data']['actual_delivery_date'],
+            ];
+
+            $orders->shop_order->first()->update($data);
+
+            return redirect()->route('seller.order.show', $orders->id)
+                ->with('success', 'Tạo đơn hàng vận chuyển thành công');
+        } else {
+
+            return redirect()->back()
+                ->with('error', 'Tạo đơn hàng vận chuyển thất bại');
         }
     }
 
@@ -103,5 +117,25 @@ class ShippingController extends Controller
         }
 
         return view('seller.orders.shipping.create', compact('orders'));
+    }
+
+    public function cancelOrderGHN($orders){
+        $url = $this->ghnApiUrl . $this->cancelEndpoint;
+
+        $response = Http::withHeaders([
+            'Token' => $this->token,
+            'Content-Type' => $this->contentType,
+            'shopId' => $this->shopId,
+        ])
+        ->post($url, [
+            'order_code' => $orders->shop_order->first()->tracking_code,
+        ]);
+
+        if($response->status() == 200){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 }

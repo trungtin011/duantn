@@ -62,6 +62,12 @@ class NotificationsControllers extends Controller
         return view('admin.notifications.index', compact('notifications'));
     }
 
+    public function create(){
+        $users = User::where('role', 'customer')->get();
+        $shops = Shop::where('shop_status', 'active')->get();
+        return view('admin.notifications.create', compact('users', 'shops'));
+    }
+
     public function store(NotificationsRequest $request){  
         $receiverType = $request->receiver_type;
         $directTo = $request->direct_to ?? null;
@@ -179,5 +185,6 @@ class NotificationsControllers extends Controller
         }
         return redirect()->route('admin.notifications.index')->with('success', 'Notification deleted successfully');
     }
+
 
 }
