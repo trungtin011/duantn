@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\UserControllerAdmin;
+use App\Http\Controllers\Admin\AdminReportController;
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -118,6 +119,13 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/{id}', [UserControllerAdmin::class, 'show'])->name('admin.users.show');
         Route::delete('/{id}', [UserControllerAdmin::class, 'destroy'])->name('admin.users.destroy');
     });
+
+    // reports
+    Route::prefix('reports')->group(function () {
+        Route::get('/', [AdminReportController::class, 'index'])->name('admin.reports.index');
+        Route::get('/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
+        Route::put('/{report}/update-status', [AdminReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
+    });
 });
 
 // seller routes
@@ -177,7 +185,7 @@ Route::middleware('CheckRole:customer')->group(function () {
     // Trang giỏ hàng
     Route::prefix('cart')->group(function () {
         Route::get('/', [CartController::class, 'index'])->name('cart');
-        Route::post('/add', [CartController::class, 'add'])->name('cart.add');
+        Route::post('/add', [CartController::class, 'addToCart'])->name('cart.add');
         Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
         Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
     });
@@ -206,6 +214,9 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::get('/user/order/order-detail', function () {
         return view('user.order.orderDetail');
     })->name('order_detail');
+
+    // Route báo cáo sản phẩm
+    Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
 });
 
 // seller registration routes

@@ -72,7 +72,7 @@
                         @foreach ($product->variants->unique('color') as $variant)
                             <div class="flex items-center gap-1">
                                 <div class="w-5 h-5 rounded-full border"
-                                    style="background-color: {{ $variant->color_code }}"></div>
+                                    style="background-color: '{{ $variant->color }}'"></div>
                                 <span class="text-sm">{{ $variant->color }}</span>
                             </div>
                         @endforeach
@@ -119,6 +119,15 @@
                                 d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 1.883 1.195 3.292 2.741 4.085C7.287 13.128 9.225 13.5 12 13.5s4.713-.372 6.259-1.165C19.805 11.542 21 10.133 21 8.25Z" />
                         </svg>
                         Yêu thích
+                    </button>
+                    <button id="reportProductBtn"
+                        class="border border-gray-300 text-gray-700 px-6 py-3 rounded hover:bg-gray-100 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 3v1.5h15A2.25 2.25 0 0 1 20.25 6v1.5m-8.25 0V9m0 0v-1.5M9.75 8.25H21A2.25 2.25 0 0 1 23.25 10.5v7.5A2.25 2.25 0 0 1 21 20.25H3.75a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-2.25M9 12.75h6" />
+                        </svg>
+                        Báo cáo
                     </button>
                 </div>
             </div>
@@ -173,6 +182,90 @@
             });
 
             // Tăng/giảm số lượng
+            const decreaseBtn = document.getElementById('decreaseQty');
+            const increaseBtn = document.getElementById('increaseQty');
+            const quantityInput = document.getElementById('quantity');
+
+            decreaseBtn.addEventListener('click', function() {
+                let value = parseInt(quantityInput.value);
+                if (value > 1) {
+                    quantityInput.value = value - 1;
+                }
+            });
+
+            increaseBtn.addEventListener('click', function() {
+                let value = parseInt(quantityInput.value);
+                quantityInput.value = value + 1;
+            });
+        });
+    </script>
+
+    <!-- Report Product Modal -->
+    <div id="reportProductModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <h3 class="text-lg font-semibold mb-4">Báo cáo sản phẩm</h3>
+            <form action="{{ route('product.report', $product->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <input type="hidden" name="shop_id" value="{{ $product->shopID }}">
+
+                <div class="mb-4">
+                    <label for="report_type" class="block text-sm font-medium text-gray-700">Loại vi phạm</label>
+                    <select name="report_type" id="report_type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                        <option value="fake_product">Sản phẩm giả nhái</option>
+                        <option value="product_violation">Vi phạm chính sách sản phẩm</option>
+                        <option value="copyright">Vi phạm bản quyền</option>
+                        <option value="other">Khác</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="report_content" class="block text-sm font-medium text-gray-700">Nội dung báo cáo</label>
+                    <textarea name="report_content" id="report_content" rows="4" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Mô tả chi tiết vi phạm"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="evidence" class="block text-sm font-medium text-gray-700">Bằng chứng (Hình ảnh/Video)</label>
+                    <input type="file" name="evidence[]" id="evidence" multiple class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" name="is_anonymous" id="is_anonymous" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="is_anonymous" class="ml-2 block text-sm text-gray-900">Báo cáo ẩn danh</label>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="cancelReportBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Gửi báo cáo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const reportButton = document.getElementById('reportProductBtn');
+            const reportModal = document.getElementById('reportProductModal');
+            const cancelReportBtn = document.getElementById('cancelReportBtn');
+
+            // Open modal
+            reportButton.addEventListener('click', function() {
+                reportModal.classList.remove('hidden');
+            });
+
+            // Close modal
+            cancelReportBtn.addEventListener('click', function() {
+                reportModal.classList.add('hidden');
+            });
+
+            // Close modal when clicking outside
+            reportModal.addEventListener('click', function(event) {
+                if (event.target === reportModal) {
+                    reportModal.classList.add('hidden');
+                }
+            });
+
+            // Tăng/giảm số lượng (existing code)
             const decreaseBtn = document.getElementById('decreaseQty');
             const increaseBtn = document.getElementById('increaseQty');
             const quantityInput = document.getElementById('quantity');

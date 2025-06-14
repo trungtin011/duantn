@@ -410,42 +410,46 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
+        // Bảng shop_order
         Schema::create('shop_order', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('shopID')->constrained('shops');
-            $table->foreignId('orderID')->constrained('orders');
-            $table->string('shipping_provider')->nullable();
-            $table->string('shipping_fee')->nullable();
-            $table->string('tracking_code')->nullable();
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('shopID');
+            $table->unsignedBigInteger('orderID');
+            $table->string('shipping_provider', 255)->nullable();
+            $table->string('shipping_fee', 255)->nullable();
+            $table->string('tracking_code', 255)->nullable();
             $table->dateTime('expected_delivery_date')->nullable();
             $table->dateTime('actual_delivery_date')->nullable();
             $table->enum('status', ['pending', 'confirmed', 'preparing', 'shipping', 'delivered', 'cancelled_by_shop', 'cancelled_by_customer', 'cancelled_by_admin', 'shipping_failed', 'returned'])->default('pending');
             $table->text('note')->nullable();
             $table->timestamps();
+            $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
+            $table->foreign('orderID')->references('id')->on('orders')->onDelete('cascade');
         });
 
+        // Bảng items_order
         Schema::create('items_order', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('orderID')->constrained('orders');
-            $table->foreignId('shop_orderID')->constrained('shop_order');
-            $table->foreignId('productID')->constrained('products');
-            $table->foreignId('variantID')->constrained('product_variants');
-            $table->string('product_name')->nullable();
-            $table->string('brand')->nullable();
-            $table->string('category')->nullable();
-            $table->string('attribute_value')->nullable();
-            $table->string('attribute_name')->nullable();
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('orderID');
+            $table->unsignedBigInteger('shop_orderID');
+            $table->unsignedBigInteger('productID');
+            $table->unsignedBigInteger('variantID');
+            $table->string('product_name', 255)->nullable();
+            $table->string('brand', 255)->nullable();
+            $table->string('category', 255)->nullable();
+            $table->string('attribute_value', 255)->nullable();
+            $table->string('attribute_name', 255)->nullable();
             $table->text('product_image')->nullable();
             $table->integer('quantity')->nullable();
             $table->decimal('unit_price', 12, 2)->nullable();
             $table->decimal('total_price', 12, 2)->nullable();
-            $table->decimal('discount_amount', 12, 2)->default(0)->nullable();
+            $table->decimal('discount_amount', 12, 2)->default(0.00)->nullable();
             $table->timestamps();
-            $table->index('orderID');
-            $table->index('shop_orderID');
-            $table->index('productID');
-            $table->index('variantID');
-            $table->index('created_at');
+            $table->foreign('orderID')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreign('shop_orderID')->references('id')->on('shop_order')->onDelete('cascade');
+            $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
+            $table->index(['orderID', 'shop_orderID', 'productID', 'variantID', 'created_at'], 'items_order_idx');
         });
 
         // Bảng order_status_history
@@ -736,6 +740,7 @@ return new class extends Migration
         Schema::dropIfExists('brand');
         Schema::dropIfExists('shop_shipping_options');
         Schema::dropIfExists('shop_followers');
+        Schema::dropIfExists('shop_order');
         Schema::dropIfExists('shop_addresses');
         Schema::dropIfExists('shops');
         Schema::dropIfExists('seller_registrations');

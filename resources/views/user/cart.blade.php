@@ -21,11 +21,16 @@
                             <th class="py-3 text-sm font-semibold text-gray-700">Giá</th>
                             <th class="py-3 text-sm font-semibold text-gray-700">Số lượng</th>
                             <th class="py-3 text-sm font-semibold text-gray-700">Tổng</th>
+                            <th class="py-3 text-sm font-semibold text-gray-700">Xóa</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php $total = 0; @endphp
                         @if ($cartItems->isEmpty())
-                            @php $total = 0; @endphp
+                            <tr>
+                                <td colspan="5" class="py-4 text-center text-gray-500">Giỏ hàng của bạn đang trống.</td>
+                            </tr>
+                        @else
                             @foreach ($cartItems as $item)
                                 @php
                                     $subtotal = $item->price * $item->quantity;
@@ -57,12 +62,14 @@
                                     </td>
                                     <td class="py-4 text-center text-gray-700">{{ number_format($subtotal, 0, ',', '.') }}đ
                                     </td>
+                                    <td class="py-4 text-center">
+                                        <button class="remove-cart-item text-red-500 hover:text-red-700"
+                                            data-id="{{ $item->id }}">
+                                            X
+                                        </button>
+                                    </td>
                                 </tr>
                             @endforeach
-                        @else
-                            <tr>
-                                <td colspan="4" class="py-4 text-center text-gray-500">Giỏ hàng của bạn đang trống.</td>
-                            </tr>
                         @endif
                     </tbody>
                 </table>
@@ -111,4 +118,47 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const buttons = document.querySelectorAll('.remove-cart-item');
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                if (!token) {
+                    console.error('CSRF token not found!');
+                    alert('Không tìm thấy CSRF token! Vui lòng tải lại trang.');
+                    return;
+                }
+
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const cartItemId = button.getAttribute('data-id');
+
+                        fetch(`/cart/remove/${cartItemId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': token,
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                },
+                            })
+                            .then(response => {
+                                if (!response.ok) throw new Error(
+                                    `HTTP error! Status: ${response.status}`);
+                                return response.json();
+                            })
+                            .then(data => {
+                                alert(data.message);
+                                window.location.reload();
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Đã có lỗi xảy ra khi xóa sản phẩm! Vui lòng thử lại.');
+                            });
+                    });
+                });
+            });
+        </script>
+    @endpush
 @endsection
