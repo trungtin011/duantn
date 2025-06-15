@@ -12,6 +12,8 @@
         <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Product List</div>
     </div>
 
+    @include('layouts.notification')
+
     <section class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4 h-[72px]">
             <form class="w-full md:w-[223px] relative" method="GET" action="{{ route('seller.products.index') }}">

@@ -1,5 +1,6 @@
 @extends('layouts.seller_home')
 
+@section('title', 'Thêm Sản Phẩm Mới')
 @section('content')
     <div class="">
         <!-- Header -->
@@ -30,7 +31,7 @@
         @endif
 
         <!-- Main Content -->
-        <form id="product-form" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="product-form" action="{{ route('seller.products.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="grid grid-cols-12 gap-6">
                 <div class="col-span-12 lg:col-span-12">
@@ -53,32 +54,8 @@
                                 </div>
                                 <div>
                                     <label class="block text-gray-700 font-medium mb-1">Mô tả</label>
-                                    <div id="quill-editor">
-                                        <div class="ql-toolbar ql-snow">
-                                            <span class="ql-formats">
-                                                <select class="ql-header">
-                                                    <option value="normal">Bình thường</option>
-                                                    <option value="1">Tiêu đề 1</option>
-                                                    <option value="2">Tiêu đề 2</option>
-                                                </select>
-                                            </span>
-                                            <span class="ql-formats">
-                                                <button class="ql-bold"></button>
-                                                <button class="ql-italic"></button>
-                                                <button class="ql-underline"></button>
-                                            </span>
-                                            <span class="ql-formats">
-                                                <button class="ql-image"></button>
-                                                <button class="ql-code-block"></button>
-                                            </span>
-                                        </div>
-                                        <div class="ql-container">
-                                            <div class="ql-editor" data-placeholder="Viết mô tả chi tiết...">
-                                                {!! old('description') !!}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" name="description" id="description">
+                                    <textarea id="description" name="description"
+                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">{!! old('description') !!}</textarea>
                                     @error('description')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror

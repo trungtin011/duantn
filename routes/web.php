@@ -133,6 +133,15 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/dashboard', function () {
         return view('seller.home');
     })->name('seller.dashboard');
+
+    Route::get('/profile', function () {
+        return view('seller.profile');
+    })->name('seller.profile');
+
+    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
+    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
+
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerSeller::class, 'index'])->name('seller.products.index');
         Route::get('/create', [ProductControllerSeller::class, 'create'])->name('seller.products.create');
@@ -142,10 +151,8 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::delete('/{id}', [ProductControllerSeller::class, 'destroy'])->name('seller.products.destroy');
         Route::get('/{id}', [ProductControllerSeller::class, 'show'])->name('seller.products.show');
         Route::get('/api/attribute-values', [ProductControllerSeller::class, 'getAttributeValues']);
+        Route::post('/upload', [ProductControllerSeller::class, 'uploadImage'])->name('seller.upload.image');
     });
-    Route::get('/orders', function () {
-        return view('seller.orders');
-    })->name('seller.orders');
 });
 
 // customer routes
@@ -221,12 +228,6 @@ Route::middleware('CheckRole:customer')->group(function () {
 
 // seller registration routes
 Route::prefix('seller')->group(function () {
-    Route::get('/home', function () {
-        return view('seller.home');
-    })->name('seller.home');
-    Route::get('/index', function () {
-        return view('seller.register.index');
-    })->name('seller.index');
     Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
     Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
     Route::get('/register1', [RegisterShopController::class, 'showStep2'])->name('seller.register.step2');
@@ -239,15 +240,6 @@ Route::prefix('seller')->group(function () {
     Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
     Route::get('/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'index'])->name('seller.settings');
     Route::post('/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'update'])->name('seller.settings');
-    Route::get('/profile', function () {
-        return view('seller.profile');
-    })->name('seller.profile');
-
-
-
-    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
-    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
 // API OCR CCCD cho frontend JS

@@ -264,7 +264,7 @@ return new class extends Migration
             $table->unsignedBigInteger('shopID')->nullable();
             $table->string('name', 100);
             $table->string('slug', 100);
-            $table->text('description');
+            $table->longText('description');
             $table->decimal('price', 12, 0);
             $table->decimal('purchase_price', 12, 0);
             $table->decimal('sale_price', 12, 0);
@@ -586,6 +586,21 @@ return new class extends Migration
             $table->index(['receiver_shop_id', 'status'], 'notif_shop_status_idx');
         });
 
+        // Bảng stock_transactions (THÊM MỚI)
+        Schema::create('stock_transactions', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('shopID');
+            $table->unsignedBigInteger('productID');
+            $table->unsignedBigInteger('variantID')->nullable();
+            $table->integer('quantity');
+            $table->enum('type', ['import', 'export', 'adjustment']);
+            $table->text('note')->nullable();
+            $table->timestamps();
+            $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
+            $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
+        });
+
         // Bảng report
         Schema::create('report', function (Blueprint $table) {
             $table->bigIncrements('id');
@@ -617,7 +632,7 @@ return new class extends Migration
             $table->index(['report_type', 'status', 'priority', 'created_at']);
         });
 
-        // Bảng point_transactions (THÊM MỚI)
+        // Bảng point_transactions
         Schema::create('point_transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('userID');
@@ -699,7 +714,7 @@ return new class extends Migration
             $table->index(['user_id', 'last_activity']);
         });
 
-        // Cập nhật dữ liệu cho bảng sellers (chuyển '' thành NULL cho bank_account)
+        // Cập nhật dữ liệu cho bảng sellers
         DB::table('sellers')->where('bank_account', '')->update(['bank_account' => null]);
     }
 
@@ -712,8 +727,9 @@ return new class extends Migration
         Schema::dropIfExists('failed_jobs');
         Schema::dropIfExists('cache_locks');
         Schema::dropIfExists('cache');
-        Schema::dropIfExists('point_transactions'); // THÊM MỚI
+        Schema::dropIfExists('point_transactions');
         Schema::dropIfExists('report');
+        Schema::dropIfExists('stock_transactions'); // THÊM MỚI
         Schema::dropIfExists('notifications');
         Schema::dropIfExists('view_history');
         Schema::dropIfExists('wishlist');
@@ -724,6 +740,7 @@ return new class extends Migration
         Schema::dropIfExists('order_status_history');
         Schema::dropIfExists('items_order');
         Schema::dropIfExists('order_addresses');
+        Schema::dropIfExists('shop_order');
         Schema::dropIfExists('orders');
         Schema::dropIfExists('cart');
         Schema::dropIfExists('product_variant_attribute_values');
@@ -740,7 +757,6 @@ return new class extends Migration
         Schema::dropIfExists('brand');
         Schema::dropIfExists('shop_shipping_options');
         Schema::dropIfExists('shop_followers');
-        Schema::dropIfExists('shop_order');
         Schema::dropIfExists('shop_addresses');
         Schema::dropIfExists('shops');
         Schema::dropIfExists('seller_registrations');

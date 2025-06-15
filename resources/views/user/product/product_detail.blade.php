@@ -56,10 +56,6 @@
                     @endif
                 </div>
 
-                <p class="text-gray-600 mb-4">
-                    {{ $product->description }}
-                </p>
-
                 <div class="mb-3 flex gap-2">
                     <span class="bg-yellow-400 text-gray-800 text-xs font-semibold px-2 py-1 rounded">Giảm:
                         {{ $product->discount_percentage }}%</span>
@@ -71,8 +67,8 @@
                     <div class="flex gap-3">
                         @foreach ($product->variants->unique('color') as $variant)
                             <div class="flex items-center gap-1">
-                                <div class="w-5 h-5 rounded-full border"
-                                    style="background-color: '{{ $variant->color }}'"></div>
+                                <div class="w-5 h-5 rounded-full border" style="background-color: '{{ $variant->color }}'">
+                                </div>
                                 <span class="text-sm">{{ $variant->color }}</span>
                             </div>
                         @endforeach
@@ -136,14 +132,9 @@
         <!-- Mô tả chi tiết -->
         <div class="mt-6 bg-white rounded-lg">
             <h3 class="text-xl font-semibold text-gray-800 mb-3">Mô tả chi tiết</h3>
-            <p class="text-gray-600 mb-4">
-                {{ $product->meta_title }}
-            </p>
-            <img src="https://gongangshop.vn/wp-content/uploads/2024/05/Ban-phim-RGB-1024x576.png"
-                class="w-full my-3 rounded" style="height: 500px;" alt="Mô tả hình ảnh 1">
-            <p class="text-gray-600 mb-4">{{ $product->meta_description }}</p>
-            <img src="https://gongangshop.vn/wp-content/uploads/2024/05/Ban-phim-RGB-1024x576.png"
-                class="w-full my-3 rounded" style="height: 500px;" alt="Mô tả hình ảnh 2">
+            <div class="text-gray-600 mb-4">
+                {!! $product->description !!}
+            </div>
         </div>
 
         <!-- Đánh giá -->
@@ -211,7 +202,8 @@
 
                 <div class="mb-4">
                     <label for="report_type" class="block text-sm font-medium text-gray-700">Loại vi phạm</label>
-                    <select name="report_type" id="report_type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <select name="report_type" id="report_type"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                         <option value="fake_product">Sản phẩm giả nhái</option>
                         <option value="product_violation">Vi phạm chính sách sản phẩm</option>
                         <option value="copyright">Vi phạm bản quyền</option>
@@ -221,22 +213,29 @@
 
                 <div class="mb-4">
                     <label for="report_content" class="block text-sm font-medium text-gray-700">Nội dung báo cáo</label>
-                    <textarea name="report_content" id="report_content" rows="4" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Mô tả chi tiết vi phạm"></textarea>
+                    <textarea name="report_content" id="report_content" rows="4"
+                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        placeholder="Mô tả chi tiết vi phạm"></textarea>
                 </div>
 
                 <div class="mb-4">
-                    <label for="evidence" class="block text-sm font-medium text-gray-700">Bằng chứng (Hình ảnh/Video)</label>
-                    <input type="file" name="evidence[]" id="evidence" multiple class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <label for="evidence" class="block text-sm font-medium text-gray-700">Bằng chứng (Hình
+                        ảnh/Video)</label>
+                    <input type="file" name="evidence[]" id="evidence" multiple
+                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 </div>
 
                 <div class="mb-4 flex items-center">
-                    <input type="checkbox" name="is_anonymous" id="is_anonymous" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <input type="checkbox" name="is_anonymous" id="is_anonymous"
+                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
                     <label for="is_anonymous" class="ml-2 block text-sm text-gray-900">Báo cáo ẩn danh</label>
                 </div>
 
                 <div class="flex justify-end gap-3">
-                    <button type="button" id="cancelReportBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Gửi báo cáo</button>
+                    <button type="button" id="cancelReportBtn"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Gửi báo
+                        cáo</button>
                 </div>
             </form>
         </div>
