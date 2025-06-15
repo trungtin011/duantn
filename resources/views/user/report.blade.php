@@ -13,9 +13,20 @@
                         <div class="alert alert-success">{{ session('success') }}</div>
                     @endif
 
-                    <form action="{{ route('report.store') }}" method="POST">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('report.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
+                        <!-- Loại báo cáo -->
                         <div class="mb-3">
                             <label for="report_type" class="form-label fw-semibold">🎯 Loại báo cáo</label>
                             <select name="report_type" id="report_type" class="form-select" required>
@@ -29,26 +40,37 @@
                             </select>
                         </div>
 
+                        <!-- Nội dung báo cáo -->
                         <div class="mb-3">
                             <label for="report_content" class="form-label fw-semibold">📝 Nội dung báo cáo</label>
-                            <textarea name="report_content" id="report_content" rows="4" class="form-control" placeholder="Mô tả chi tiết về vấn đề bạn gặp..." required></textarea>
+                            <textarea name="report_content" id="report_content" rows="4" class="form-control" placeholder="Mô tả chi tiết..." required></textarea>
                         </div>
 
+                        <!-- Mức độ ưu tiên -->
                         <div class="mb-3">
                             <label for="priority" class="form-label fw-semibold">🚨 Mức độ ưu tiên</label>
                             <select name="priority" class="form-select" id="priority">
-                                <option value="medium">Trung bình</option>
+                                <option value="medium" selected>Trung bình</option>
                                 <option value="low">Thấp</option>
                                 <option value="high">Cao</option>
                                 <option value="urgent">Khẩn cấp</option>
                             </select>
                         </div>
 
+                        <!-- Chứng cứ -->
+                        <div class="mb-3">
+                            <label for="evidence" class="form-label fw-semibold">📎 Chứng cứ (nhiều file)</label>
+                            <input type="file" name="evidence[]" class="form-control" multiple>
+                            <small class="text-muted">Tệp được hỗ trợ: .jpg, .jpeg, .png, .pdf, .doc, .docx (tối đa 2MB mỗi file)</small>
+                        </div>
+
+                        <!-- Báo cáo ẩn danh -->
                         <div class="form-check mb-3">
                             <input type="checkbox" name="is_anonymous" class="form-check-input" id="anonymous">
                             <label class="form-check-label" for="anonymous">Gửi báo cáo ẩn danh</label>
                         </div>
 
+                        <!-- Gửi -->
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg rounded-pill">
                                 📤 Gửi báo cáo

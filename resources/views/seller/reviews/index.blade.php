@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.seller')
 
 @section('head')
 @push('styles')
@@ -8,11 +8,10 @@
 
 @section('content')
 <div class="admin-page-header">
-    <h1 class="admin-page-title">Reviews</h1>
-    <div class="admin-breadcrumb"><a href="{{ route('admin.dashboard') }}" class="admin-breadcrumb-link">Home</a> / Reviews List</div>
+    <div class="admin-breadcrumb mt-3"><a href="{{ route('admin.dashboard') }}" class="admin-breadcrumb-link">Home</a> / Reviews List</div>
 </div>
 
-<div class="admin-card mb-4">
+<div class="admin-card mb-4 mt-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-3">
             <div class="input-group search-input-group" style="width: 280px;">
