@@ -145,7 +145,7 @@
                                         </svg>
                                         Sản phẩm của tôi
                                     </a>
-                                    <a href="{{ route('seller.orders') }}"
+                                    <a href="{{ route('seller.order.index') }}"
                                         class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -341,7 +341,7 @@
                                         </svg>
                                         Sản phẩm của tôi
                                     </a>
-                                    <a href="{{ route('seller.orders') }}"
+                                    <a href="{{ route('seller.order.index') }}"
                                         class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">

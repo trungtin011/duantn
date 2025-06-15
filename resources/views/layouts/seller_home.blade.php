@@ -4,16 +4,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Shopee Kênh Người Bán')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
-    <!-- Quill CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
-    <!-- Quill JS -->
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-    <link rel="stylesheet" href="{{ asset('css/seller/seller-home.css') }}">
+
+    <script src="https://cdn.tiny.cloud/1/bwf2fyyh0knkijbdmdtqiak2d3uzu8b0rxcg0zuwqwdsddde/tinymce/7/tinymce.min.js"
+        referrerpolicy="origin"></script>
+
     <link rel="stylesheet" href="{{ asset('css/seller/seller-products.css') }}">
     @stack('styles')
     <style>
@@ -58,10 +58,12 @@
                 <!-- Dropdown menu -->
                 <div class="absolute right-0 top-10 z-50 min-w-[200px] bg-white border border-gray-200 rounded shadow-lg hidden group-hover:block group-focus-within:block"
                     id="user-menu-dropdown">
-                    <a href="{{ route('seller.settings') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
+                    <a href="{{ route('seller.settings') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
                             class="fas fa-cog mr-2"></i>Cài đặt cửa hàng
                     </a>
-                    <a href="{{ route('seller.profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
+                    <a href="{{ route('seller.profile') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
                             class="fas fa-user mr-2"></i>Thông tin cá nhân
                     </a>
                     <a href="{{ route('logout') }}"
