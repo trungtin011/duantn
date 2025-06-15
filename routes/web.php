@@ -8,7 +8,7 @@ use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\WishlistController;
-use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Seller\ReviewController;
 use App\Http\Controllers\User\ReportController;
 use App\Http\Controllers\Admin\AdminReportController;
 use Illuminate\Support\Facades\Auth;
@@ -81,8 +81,10 @@ Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->na
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 //Report
-    Route::get('/report/create', [ReportController::class, 'create'])->name('report.create');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/report', [ReportController::class, 'create'])->name('user.report');
     Route::post('/report', [ReportController::class, 'store'])->name('report.store');
+});
 
 // trang đăng ký seller
 Route::middleware('CheckRole:seller')->group(function () {
@@ -151,12 +153,14 @@ Route::middleware('CheckRole:admin')->group(function () {
     Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
     //quản lý review
-    Route::get('/admin/review', [ReviewController::class, 'index'])->name('admin.reviews.index');
-    Route::get('/admin/review/create', [ReviewController::class, 'create'])->name('admin.reviews.create');
-    Route::post('/admin/review', [ReviewController::class, 'store'])->name('admin.reviews.store');
-    Route::delete('/admin/review/{review}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+    Route::get('/seller/review', [ReviewController::class, 'index'])->name('admin.reviews.index');
+    Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('admin.reviews.create');
+    Route::post('/seller/review', [ReviewController::class, 'store'])->name('admin.reviews.store');
+    Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
 
     //quản lý review
     Route::get('/admin/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/admin/report/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
+    Route::put('/reports/{id}/status', [AdminReportController::class, 'updateStatus'])->name('report.updateStatus');
     Route::delete('/admin/report/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
 });

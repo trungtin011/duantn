@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Report;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
 {
-        public function create()
+    public function create()
     {
         return view('user.report');
     }
@@ -20,7 +21,17 @@ class ReportController extends Controller
             'report_type' => 'required',
             'report_content' => 'required|string',
             'priority' => 'in:low,medium,high,urgent',
+            'evidence.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
         ]);
+
+        $evidences = [];
+
+        if ($request->hasFile('evidence')) {
+            foreach ($request->file('evidence') as $file) {
+                $path = $file->store('evidence', 'public');
+                $evidences[] = $path;
+            }
+        }
 
         Report::create([
             'reporter_id' => Auth::id(),
@@ -32,7 +43,7 @@ class ReportController extends Controller
             'report_content' => $request->report_content,
             'priority' => $request->priority ?? 'medium',
             'is_anonymous' => $request->has('is_anonymous'),
-            'evidence' => $request->evidence ? json_decode($request->evidence, true) : null,
+            'evidence' => json_encode($evidences),
         ]);
 
         return redirect()->route('user.report')->with('success', 'Báo cáo đã được gửi.');
