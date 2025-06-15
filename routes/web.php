@@ -153,10 +153,11 @@ Route::middleware('CheckRole:admin')->group(function () {
     Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
     //quản lý review
-    Route::get('/seller/review', [ReviewController::class, 'index'])->name('admin.reviews.index');
-    Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('admin.reviews.create');
-    Route::post('/seller/review', [ReviewController::class, 'store'])->name('admin.reviews.store');
-    Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+    Route::get('/seller/review', [ReviewController::class, 'index'])->name('seller.reviews.index');
+    Route::get('/seller/review/{review}', [ReviewController::class, 'show'])->name('seller.reviews.show');
+    Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('seller.reviews.create');
+    Route::post('/seller/review', [ReviewController::class, 'store'])->name('seller.reviews.store');
+    Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('seller.reviews.destroy');
 
     //quản lý review
     Route::get('/admin/report', [AdminReportController::class, 'index'])->name('admin.reports.index');

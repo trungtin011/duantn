@@ -70,11 +70,22 @@
                         </td>
                         <td>{{ $review->created_at->format('d/m/Y H:i A') }}</td>
                         <td>
-                            <form action="{{ route('admin.reviews.destroy', $review->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?');">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                            </form>
+                            <div class="d-flex align-items-center gap-2">
+                                <a href="{{ route('productDetail', ['id'=> $review->productID]) }}#review-{{ $review->id }}"
+                                class="btn btn-sm btn-outline-primary btn-action-icon">
+                                    Xem
+                                </a>
+                                <form action="{{ route('seller.reviews.destroy', $review->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger btn-action-icon">
+                                        {{-- <i class="fa-solid fa-trash"></i> --}}
+                                        Xóa
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @endforeach
