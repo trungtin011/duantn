@@ -144,7 +144,7 @@ class CheckoutController extends Controller
             $shop_order = ShopOrder::create([
                 'shopID' => $product->shopID,
                 'orderID' => $order->id,
-                'note' => $shop_notes[$product->shopID]
+                'note' => $shop_notes[$product->shopID] ?? ''
             ]);
             Log::info($shop_order);
             foreach($items as $item){
