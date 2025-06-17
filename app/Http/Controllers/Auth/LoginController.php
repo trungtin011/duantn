@@ -46,12 +46,8 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-<<<<<<< HEAD
-            return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
-=======
             RateLimiter::clear($key);
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
->>>>>>> khoa
         }
 
         RateLimiter::hit($key, 300);
@@ -60,8 +56,6 @@ class LoginController extends Controller
         ])->withInput($request->only('login', 'remember'))
             ->withInput($request->only('login'));
     }
-<<<<<<< HEAD
-=======
 
     public function logout(Request $request)
     {
@@ -70,7 +64,6 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('home')->with('success', 'Đăng xuất thành công!');
     }
->>>>>>> khoa
 
     public function redirectToGoogle()
     {
@@ -95,7 +88,7 @@ class LoginController extends Controller
             ]);
         }
         Auth::login($user);
-        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Google thành công!');
+        return redirect()->route('home')->with('success', 'Đăng nhập bằng Google thành công!');
     }
 
     public function handleFacebookCallback()
@@ -124,20 +117,6 @@ class LoginController extends Controller
         return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Facebook thành công!');
     }
 
-<<<<<<< HEAD
-    Auth::login($user);
-
-    return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Facebook thành công!');
-}
-public function redirectToFacebook()
-{
-    return Socialite::driver('facebook')
-        ->scopes(['email'])
-        ->redirect();
-}
-
-}
-=======
     public function redirectToFacebook()
     {
         return Socialite::driver('facebook')
@@ -145,4 +124,3 @@ public function redirectToFacebook()
             ->redirect();
     }
 }
->>>>>>> khoa

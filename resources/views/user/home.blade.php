@@ -23,7 +23,8 @@
                             class="dropdown-content hidden text-base shadow-lg font-emibold absolute sm:top-[32px] sm:left-[384px] z-10 sm:w-[1152px] sm:h-[400px] top-[58px] left-0 right-0 mx-auto z-10 w-max-w-4xl h-auto bg-white mt-2 sm:mt-0">
                             <div class="sm:flex h-[100%]">
                                 <div class="flex flex-col gap-[25px] p-4">
-                                    <div class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
+                                    <div
+                                        class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
                                         <a href="#"
                                             class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
                                             <img src="https://down-vn.img.susercontent.com/file/48630b7c76a7b62bc070c9e227097847@resize_w320_nl.webp"
@@ -50,7 +51,8 @@
                                             <span class="capitalize text-[16px] w-[100px] text-center">Túi ví nữ</span>
                                         </a>
                                     </div>
-                                    <div class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
+                                    <div
+                                        class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
                                         <a href="#"
                                             class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
                                             <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
@@ -86,7 +88,8 @@
                         class="dropdown-content hidden text-base shadow-lg font-emibold absolute sm:top-[32px] sm:left-[384px] z-10 sm:w-[1152px] sm:h-[400px] top-[88px] left-0 right-0 mx-auto z-10 w-max-w-4xl h-auto bg-white mt-2 sm:mt-0">
                         <div class="sm:flex h-[100%]">
                             <div class="flex flex-col gap-[25px] p-4">
-                                <div class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
+                                <div
+                                    class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
                                     <a href="#"
                                         class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
                                         <img src="https://down-vn.img.susercontent.com/file/74ca517e1fa74dc4d974e5d03c3139de@resize_w320_nl.webp"
@@ -112,7 +115,8 @@
                                         <span class="capitalize text-[16px] w-[100px] text-center">Thể thao nam</span>
                                     </a>
                                 </div>
-                                <div class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
+                                <div
+                                    class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
                                     <a href="#"
                                         class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
                                         <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
@@ -311,19 +315,23 @@
                 <div class="flex sm:space-x-4 text-lg">
                     <div class="">
                         <p class="text-timer px-2 py-1">Ngày</p>
-                        <span id="days" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
+                        <span id="days"
+                            class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
                     </div>
                     <div class="">
                         <p class="text-timer px-2 py-1">Giờ</p>
-                        <span id="hours" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
+                        <span id="hours"
+                            class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
                     </div>
                     <div class="">
                         <p class="text-timer px-2 py-1">Phút</p>
-                        <span id="minutes" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
+                        <span id="minutes"
+                            class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
                     </div>
                     <div class="">
                         <p class="text-timer px-2 py-1">Giây</p>
-                        <span id="seconds" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
+                        <span id="seconds"
+                            class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
                     </div>
                 </div>
             </div>
@@ -341,371 +349,68 @@
             <div class="swiper-container">
                 <div class="swiper-wrapper">
                     <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide slide-promotion w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-between p-3">
-                                        <div
-                                            class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
-                                            <span class="text-white px-2 py-1">-40%</span>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide slide-promotion w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-between p-3">
-                                        <div
-                                            class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
-                                            <span class="text-white px-2 py-1">-40%</span>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
+                    @foreach ($products as $product)
+                        <div class="swiper-slide slide-promotion w-1/4">
+                            <div class="card_product flex flex-col gap-[8px] object-cover">
+                                <div class="background-card bg-[#F5F5F5] h-[210px] relative">
+                                    <div class="absolute top-0 right-0 w-full">
+                                        <div class="flex justify-between p-3">
+                                            <div
+                                                class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
+                                                <span class="text-white px-2 py-1">
+                                                    -{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%
+                                                </span>
+                                            </div>
+                                            <div class="flex flex-col items-center gap-[8px]">
+                                                <button
+                                                    class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                        class="w-[22px] h-[20px]">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                                    </svg>
+                                                </button>
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                        class="w-[22px] h-[20px]">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                    </svg>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide slide-promotion w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-between p-3">
-                                        <div
-                                            class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
-                                            <span class="text-white px-2 py-1">-40%</span>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
+                                    <div class="flex justify-center items-center h-full">
+                                        <img src="{{ asset($product->images->first()->image_path ?? 'images/default.png') }}"
+                                            class="w-[172px] h-[152px] object-cover" alt="{{ $product->name }}">
+                                    </div>
+                                    <div
+                                        class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
+                                        <button class="text-white">Thêm vào giỏ hàng</button>
                                     </div>
                                 </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
+                                <h3 class="text-[20px] mt-2">{{ $product->name }}</h3>
+                                <div class="flex items-center gap-[12px]">
+                                    <p class="text-[#7F7F7F]">${{ number_format($product->sale_price / 23000, 2) }}</p>
+                                    <p class="text-[#BDBDBD] line-through">
+                                        ${{ number_format($product->price / 23000, 2) }}</p>
                                 </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide slide-promotion w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-between p-3">
-                                        <div
-                                            class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
-                                            <span class="text-white px-2 py-1">-40%</span>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
+                                <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
+                                    <div>
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <i class="fa-solid fa-star"></i>
+                                        @endfor
                                     </div>
+                                    <div class="text-[#7F7F7F] font-bold">({{ $product->reviews->count() }})</div>
                                 </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide slide-promotion w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-between p-3">
-                                        <div
-                                            class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
-                                            <span class="text-white px-2 py-1">-40%</span>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide slide-promotion w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-between p-3">
-                                        <div
-                                            class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
-                                            <span class="text-white px-2 py-1">-40%</span>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -1334,25 +1039,7 @@
         </div>
         <div class="container-fluid p-0 h-[700px] overflow-hidden">
             <div class="swiper-container-explore">
-                <div class="swiper-wrapper flex gap-[40px]">
-                    <?php
-                    // Dữ liệu mẫu (có thể thay bằng kết quả từ cơ sở dữ liệu)
-                    $products = [
-                        ['id' => 1, 'name' => 'HAVIT HV-G92 Gamepad', 'price' => 60, 'old_price' => 100, 'image' => 'gamepad.png', 'rating' => 5, 'reviews' => 86],
-                        ['id' => 2, 'name' => 'Canon EOS DSLR Camera', 'price' => 500, 'old_price' => 600, 'image' => 'camera.png', 'rating' => 4, 'reviews' => 120],
-                        ['id' => 3, 'name' => 'ASUS FHD Gaming Laptop', 'price' => 700, 'old_price' => 800, 'image' => 'laptop.png', 'rating' => 5, 'reviews' => 95],
-                        ['id' => 4, 'name' => 'Curelology Product Set', 'price' => 50, 'old_price' => 70, 'image' => 'skincare.png', 'rating' => 4, 'reviews' => 75],
-                        ['id' => 5, 'name' => 'Kids Electric Car', 'price' => 200, 'old_price' => 250, 'image' => 'car.png', 'rating' => 4, 'reviews' => 60],
-                        ['id' => 6, 'name' => 'Jr. Zoom Soccer Cleats', 'price' => 80, 'old_price' => 100, 'image' => 'cleats.png', 'rating' => 5, 'reviews' => 45],
-                        ['id' => 7, 'name' => 'GPI Shooter USB Gamepad', 'price' => 40, 'old_price' => 60, 'image' => 'gamepad2.png', 'rating' => 4, 'reviews' => 30],
-                        ['id' => 8, 'name' => 'Quilted Satin Jacket', 'price' => 120, 'old_price' => 150, 'image' => 'jacket.png', 'rating' => 5, 'reviews' => 90],
-                        // Thêm các sản phẩm khác nếu cần
-                    ];
-                    
-                    // Chia dữ liệu thành các hàng (mỗi hàng 4 sản phẩm)
-                    $rows = array_chunk($products, 4);
-                    $rows = array_merge($rows, $rows); // Tạo 4 slide
-                    ?>
+                {{-- <div class="swiper-wrapper flex gap-[40px]">
                     <?php foreach ($rows as $row): ?>
                     <div class="swiper-slide slide-explore">
                         <div class="flex gap-[5px]">
@@ -1366,8 +1053,7 @@
                                                     <button
                                                         class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                            viewBox="0 0 24 24" stroke-width="1.5"
-                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                                             class="w-[22px] h-[20px] text-center items-center justify-center flex">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
@@ -1376,8 +1062,7 @@
                                                     <a href="#"
                                                         class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                            viewBox="0 0 24 24" stroke-width="1.5"
-                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                                             class="w-[22px] h-[20px] text-center items-center justify-center flex">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -1420,7 +1105,7 @@
                         </div>
                     </div>
                     <?php endforeach; ?>
-                </div>
+                </div> --}}
             </div>
         </div>
         <div class="flex justify-center items-center mt-5">
@@ -1444,8 +1129,7 @@
         </div>
         <div class="flex gap-[30px]">
             <div class="relative w-[744px] h-[600px] bg-[#0D0D0D] flex items-end justify-center rounded-[4px]">
-                <img src="{{ asset('images/ps5_slim.png') }}" alt="banner"
-                    class="object-cover w-[511px] h-[511px]">
+                <img src="{{ asset('images/ps5_slim.png') }}" alt="banner" class="object-cover w-[511px] h-[511px]">
                 <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[16px] w-[400px]">
                     <h2 class="text-[28px] font-bold">PlayStation 5 Slim</h2>
                     <p class="text-[18px]">PlayStation 5 Slim là bản nâng cấp của PlayStation 5, với thiết kế nhỏ gọn và

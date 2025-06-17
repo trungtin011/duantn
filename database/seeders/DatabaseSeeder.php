@@ -297,6 +297,20 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
+        // Bảng employees
+        DB::table('employees')->insert([
+            [
+                'shopID' => 1,
+                'userID' => 2,
+                'position' => 'Manager',
+                'salary' => 10000000,
+                'hire_date' => '2023-01-01',
+                'status' => 'active',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
         // Bảng products
         DB::table('products')->insert([
             [
@@ -384,20 +398,19 @@ class DatabaseSeeder extends Seeder
         // Bảng attribute_values
         DB::table('attribute_values')->insert([
             [
+                'id' => 1,
                 'attribute_id' => 1,
                 'value' => 'Black',
-                'product_id' => 1,
-                'product_variant_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
         ]);
 
-        // Bảng product_attributes
-        DB::table('product_attributes')->insert([
+        // Bảng product_variant_attribute_values
+        DB::table('product_variant_attribute_values')->insert([
             [
-                'product_id' => 1,
-                'attribute_id' => 1,
+                'product_variant_id' => 1,
+                'attribute_value_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -413,6 +426,7 @@ class DatabaseSeeder extends Seeder
                 'price' => 8500000,
                 'total_price' => 8500000,
                 'session_id' => 'session123',
+                'buying_flag' => false,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -423,7 +437,6 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'userID' => 3,
-                'shopID' => 1,
                 'order_code' => 'ORD001',
                 'total_price' => 8500000,
                 'coupon_id' => null,
@@ -460,27 +473,53 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Bảng order_items
-        DB::table('order_items')->insert([
+        // Bảng shop_order
+        DB::table('shop_order')->insert([
             [
-                'order_id' => 1,
+                'shopID' => 1,
+                'orderID' => 1,
+                'shipping_provider' => null,
+                'shipping_fee' => null,
+                'tracking_code' => null,
+                'expected_delivery_date' => null,
+                'actual_delivery_date' => null,
+                'status' => 'pending',
+                'note' => null,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng items_order
+        DB::table('items_order')->insert([
+            [
+                'orderID' => 1,
+                'shop_orderID' => 1,
                 'productID' => 1,
                 'variantID' => 1,
+                'product_name' => 'Smartphone X',
+                'brand' => 'Brand A',
+                'category' => 'Electronics',
+                'attribute_value' => 'Black',
+                'attribute_name' => 'Color',
+                'product_image' => '/products/smartphone-x-black.png',
                 'quantity' => 1,
                 'unit_price' => 8500000,
                 'total_price' => 8500000,
                 'discount_amount' => 0,
-                'sku' => 'SPX001-BLACK',
-                'product_name' => 'Smartphone X',
-                'brand' => 'Brand A',
-                'category' => 'Electronics',
-                'sub_category' => 'Smartphones',
-                'color' => 'Black',
-                'size' => null,
-                'variant_name' => 'Black 128GB',
-                'product_image' => '/products/smartphone-x-black.png',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng order_status_history
+        DB::table('order_status_history')->insert([
+            [
+                'order_id' => 1,
+                'status' => 'processing',
+                'description' => 'Order is being processed',
+                'shipping_provider' => null,
                 'note' => null,
-                'is_reviewed' => 0,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -540,8 +579,42 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Bảng notification
-        DB::table('notification')->insert([
+        // Bảng review_images
+        DB::table('review_images')->insert([
+            [
+                'reviewID' => 1,
+                'image_path' => '/reviews/review1.png',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng wishlist
+        DB::table('wishlist')->insert([
+            [
+                'userID' => 3,
+                'productID' => 1,
+                'shopID' => 1,
+                'note' => null,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng view_history
+        DB::table('view_history')->insert([
+            [
+                'userID' => 3,
+                'productID' => 1,
+                'shopID' => 1,
+                'view_count' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng notifications
+        DB::table('notifications')->insert([
             [
                 'shop_id' => 1,
                 'sender_id' => 1,
@@ -551,10 +624,11 @@ class DatabaseSeeder extends Seeder
                 'content' => 'Your order ORD001 has been confirmed.',
                 'type' => 'order',
                 'reference_id' => 1,
-                'reference_type' => 'order',
-                'priority' => 'normal',
-                'status' => 'unread',
+                'receiver_type' => 'order',
                 'receiver_type' => 'user',
+                'priority' => 'normal',
+                'status' => 'pending',
+                'is_read' => false,
                 'read_at' => null,
                 'expired_at' => null,
                 'created_at' => Carbon::now(),

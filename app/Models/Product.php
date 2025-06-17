@@ -88,6 +88,12 @@ class Product extends Model
         return $this->hasOne(ProductDimension::class, 'productID');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\ProductReview::class)->with('user');
+    }
+
+
     // Scopes
     public function scopeActive($query)
     {
@@ -116,6 +122,7 @@ class Product extends Model
     }
 
     // Methods
+
     public function getCurrentPriceAttribute()
     {
         return $this->sale_price ?? $this->price;
@@ -128,11 +135,10 @@ class Product extends Model
 
     public function getDiscountPercentageAttribute()
     {
-        if (!$this->hasDiscount()) {
-            return 0;
+        if ($this->hasDiscount()) {
+            return round((($this->price - $this->sale_price) / $this->price) * 100);
         }
-
-        return round((($this->price - $this->sale_price) / $this->price) * 100);
+        return 0;
     }
 
     public function isOutOfStock()
@@ -169,4 +175,11 @@ class Product extends Model
         }
         return Storage::url('product_images/default.png'); // Ảnh mặc định nếu không có
     }
+// App\Models\Product.php
+public function seller()
+{
+    return $this->belongsTo(Seller::class, 'shopID', 'id'); // nếu shopID là seller_id
+}
+
+
 }

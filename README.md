@@ -12,7 +12,7 @@ Make another env. file clone env.example
 php artisan key:generate --ansi  
 ```
 ``` bash
-php artisan migrate  
+php artisan migrate
 ```
 composer require laravel/socialite
 
@@ -21,7 +21,7 @@ Chuyển sang nhánh của mình
 ``` bash
 git switch (Tên nhánh của mình).
 ```
-Push code 
+Push code php artisan serve
 ``` bash
 git add .
 git commit -m "( commit )" 
@@ -32,6 +32,6 @@ refresh lại seedder
 ``` bash
 php artisan migrate:fresh --seed
 ```
-
+php artisan serve
 
 

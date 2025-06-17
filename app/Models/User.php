@@ -123,4 +123,13 @@ class User extends Authenticatable
             default => 'Không xác định',
         };
     }
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+    public function followedShops()
+    {
+        return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
+            ->withTimestamps();
+    }
 }
