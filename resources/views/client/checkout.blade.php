@@ -400,7 +400,7 @@
                 },
                 body: JSON.stringify({
                     address_id: addressId,
-                    _token: 'FpYtldvhaUaI3hTM56f4RgPCPpBjR5Y8WCNv05XO'
+                    _token: '{{ csrf_token() }}'
                 })
             })
             .then(response => {

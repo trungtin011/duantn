@@ -64,6 +64,14 @@ class OrderController extends Controller
             if($shipping_provider === 'GHN'){
                 $shipping_controller = new ShippingController();
                 $shipping_controller->createShippingOrder($order, $id_shop_address, $request->payment_type, $request->note, $request->required_note);
+                if($shipping_controller){
+                    return redirect()->route('seller.order.show', $id)
+                        ->with('success', 'Tạo đơn hàng vận chuyển thành công');
+                }
+                else{
+                    return redirect()->route('seller.order.show', $id)
+                        ->with('error', 'Tạo đơn hàng vận chuyển thất bại');
+                }
             }
     }
 

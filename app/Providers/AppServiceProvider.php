@@ -25,12 +25,22 @@ class AppServiceProvider extends ServiceProvider
         // Share notifications to all views
         view()->composer('*', function ($view) {
             if (Auth::check()) {
-                $notifications = Notification::where('receiver_user_id', Auth::id())
-                    ->orWhere('receiver_type', 'all')
-                    ->orderBy('created_at', 'desc')
-                    ->take(10)
-                    ->get()
-                    ->groupBy('type');
+                $notifications = Notification::where(function($query) {
+                    $query->where('receiver_user_id', Auth::id())
+                        ->orWhere(function($q) {
+                            $q->where('receiver_type', 'all')
+                                ->orWhere('receiver_type', 'users');
+                        });
+                })
+                ->whereIn('id', function($query) {
+                    $query->selectRaw('MIN(id)')
+                        ->from('notification')
+                        ->groupBy('title', 'type', 'receiver_type');
+                })
+                ->orderBy('created_at', 'desc')
+                ->take(10)
+                ->get()
+                ->groupBy('type');
 
                 $view->with('groupedNotifications', $notifications);
             } else {

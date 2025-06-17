@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\ShopAddress;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class ShippingController extends Controller
 {
@@ -33,7 +34,6 @@ class ShippingController extends Controller
         if(!$orders){
            return redirect()->back()->with('error', 'Không tìm thấy đơn hàng');
         }
-
         $shop_address = ShopAddress::find($id_shop_address);
 
         $shop_province_name = $shop_address->shop_province;
@@ -90,24 +90,20 @@ class ShippingController extends Controller
             ],      
         ]);
         $responseData = $response->json();
-
         if ($response->status() == 200) {
             $orders->shop_order->first()->update(['status' => 'shipping']);
-
+            $expectedDateTime = $responseData['data']['expected_delivery_time']; // "2025-06-17T16:59:59Z"
+            $expectedDate = Carbon::parse($expectedDateTime)->format('Y-m-d H:i');
             $data = [
                 'tracking_code' => $responseData['data']['order_code'],
-                'expected_delivery_date' => $responseData['data']['expected_delivery_date'],
-                'actual_delivery_date' => $responseData['data']['actual_delivery_date'],
+                'expected_delivery_date' => $expectedDate,
             ];
-
             $orders->shop_order->first()->update($data);
-
-            return redirect()->route('seller.order.show', $orders->id)
-                ->with('success', 'Tạo đơn hàng vận chuyển thành công');
+            $orders->update(['order_status' => 'shipped']);
+            Log::info('status: ' . $orders->order_status);
+            return true;
         } else {
-
-            return redirect()->back()
-                ->with('error', 'Tạo đơn hàng vận chuyển thất bại');
+            return false;
         }
     }
 
