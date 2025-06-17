@@ -31,19 +31,27 @@ class Shop extends Model
     {
         return $this->belongsTo(User::class, 'ownerID');
     }
-
-    public function addresses()
+    public function address()
     {
-        return $this->hasMany(ShopAddress::class, 'shopID');
+        return $this->belongsTo(\App\Models\ShopAddress::class, 'shop_address_id');
     }
+
 
     public function followers()
     {
-        return $this->hasMany(ShopFollower::class, 'shopID');
+        return $this->belongsToMany(User::class, 'shop_followers', 'shopID', 'followerID')
+            ->withTimestamps();
     }
-
     public function employees()
     {
         return $this->hasMany(Employee::class, 'shopID');
     }
-} 
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'shopID');
+    }
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+}
