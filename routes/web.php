@@ -155,75 +155,78 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     });
 });
 
-// customer routes
-Route::middleware('CheckRole:customer')->group(function () {
-    Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
-
+Route::prefix('customer')->group(function () {
+    // customer routes
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
 
-    // Trang thông tin người dùng
-    Route::prefix('user/account')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('account.profile');
-        Route::get('/profile', [UserController::class, 'edit'])->name('account.profile');
-        Route::post('/profile', [UserController::class, 'update'])->name('account.profile.update');
+    Route::middleware('CheckRole:customer')->group(function () {
+        Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
 
-        Route::get('/password', [UserController::class, 'changePasswordForm'])->name('account.password');
-        Route::post('/password', [UserController::class, 'updatePassword'])->name('account.password.update');
+        // Trang thông tin người dùng
+        Route::prefix('user/account')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->name('account.profile');
+            Route::get('/profile', [UserController::class, 'edit'])->name('account.profile');
+            Route::post('/profile', [UserController::class, 'update'])->name('account.profile.update');
+
+            Route::get('/password', [UserController::class, 'changePasswordForm'])->name('account.password');
+            Route::post('/password', [UserController::class, 'updatePassword'])->name('account.password.update');
+        });
+
+        // Trang địa chỉ người dùng
+        Route::prefix('user/account/addresses')->group(function () {
+            Route::get('/', [UserAddressController::class, 'index'])->name('account.addresses');
+            Route::get('/create', [UserAddressController::class, 'create'])->name('account.addresses.create');
+            Route::post('/', [UserAddressController::class, 'store'])->name('account.addresses.store');
+            Route::get('/{address}/edit', [UserAddressController::class, 'edit'])->name('account.addresses.edit');
+            Route::put('/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
+            Route::delete('/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
+            Route::get('/{address}/set-default', [UserAddressController::class, 'setDefault'])->name('account.addresses.set-default');
+        });
+
+        // Trang tích điểm
+        Route::prefix('user/account/points')->group(function () {
+            Route::get('/', [UserController::class, 'points'])->name('account.points');
+        });
+
+        // Trang yêu thích
+        Route::get('/user/account/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+
+        // Trang giỏ hàng
+        Route::prefix('cart')->group(function () {
+            Route::get('/', [CartController::class, 'index'])->name('cart');
+            Route::post('/add', [CartController::class, 'addToCart'])->name('cart.add');
+            Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+            Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
+        });
+
+        // Trang liên hệ
+        Route::get('/contact', function () {
+            return view('user.contact');
+        })->name('contact');
+
+        // Trang giới thiệu
+        Route::get('/about', function () {
+            return view('user.about');
+        })->name('about');
+
+        // Trang thanh toán
+        Route::get('/client/checkout', function () {
+            return view('client.checkout');
+        })->name('checkout');
+
+        // Trang lịch sử đơn hàng
+        Route::get('/user/order/order-history', function () {
+            return view('user.order.order_history');
+        })->name('order_history');
+
+        // Trang chi tiết đơn hàng
+        Route::get('/user/order/order-detail', function () {
+            return view('user.order.orderDetail');
+        })->name('order_detail');
+
+        // Route báo cáo sản phẩm
+        Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
     });
-    // Trang địa chỉ người dùng
-    Route::prefix('user/account/addresses')->group(function () {
-        Route::get('/', [UserAddressController::class, 'index'])->name('account.addresses');
-        Route::get('/create', [UserAddressController::class, 'create'])->name('account.addresses.create');
-        Route::post('/', [UserAddressController::class, 'store'])->name('account.addresses.store');
-        Route::get('/{address}/edit', [UserAddressController::class, 'edit'])->name('account.addresses.edit');
-        Route::put('/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
-        Route::delete('/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
-        Route::get('/{address}/set-default', [UserAddressController::class, 'setDefault'])->name('account.addresses.set-default');
-    });
-
-    // Trang tích điểm
-    Route::prefix('user/account/points')->group(function () {
-        Route::get('/', [UserController::class, 'points'])->name('account.points');
-    });
-
-    // Trang yêu thích
-    Route::get('/user/account/wishlist', [WishlistController::class, 'index'])->name('wishlist');
-
-    // Trang giỏ hàng
-    Route::prefix('cart')->group(function () {
-        Route::get('/', [CartController::class, 'index'])->name('cart');
-        Route::post('/add', [CartController::class, 'addToCart'])->name('cart.add');
-        Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-        Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
-    });
-
-    // Trang liên hệ
-    Route::get('/contact', function () {
-        return view('user.contact');
-    })->name('contact');
-
-    // Trang giới thiệu
-    Route::get('/about', function () {
-        return view('user.about');
-    })->name('about');
-
-    // Trang thanh toán
-    Route::get('/client/checkout', function () {
-        return view('client.checkout');
-    })->name('checkout');
-
-    // Trang lịch sử đơn hàng
-    Route::get('/user/order/order-history', function () {
-        return view('user.order.order_history');
-    })->name('order_history');
-
-    // Trang chi tiết đơn hàng
-    Route::get('/user/order/order-detail', function () {
-        return view('user.order.orderDetail');
-    })->name('order_detail');
-
-    // Route báo cáo sản phẩm
-    Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
 });
 
 // seller registration routes
