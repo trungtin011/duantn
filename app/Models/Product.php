@@ -46,7 +46,7 @@ class Product extends Model
     ];
 
     // Relationships
-    public function shop(): BelongsTo
+    public function shop()
     {
         return $this->belongsTo(Shop::class, 'shopID');
     }
@@ -56,7 +56,7 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class, 'productID');
     }
 
-    public function images(): HasMany
+    public function images()
     {
         return $this->hasMany(ProductImage::class, 'productID');
     }

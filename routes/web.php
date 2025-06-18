@@ -251,3 +251,6 @@ Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
 Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
 Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+
+
+Route::post('/update-session', [App\Http\Controllers\SessionController::class, 'updateSession'])->name('update-session');

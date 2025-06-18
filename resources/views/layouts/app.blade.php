@@ -21,6 +21,16 @@
     @stack('styles')
 </head>
 
+@auth
+    <script>
+        window.addEventListener('beforeunload', function() {
+            navigator.sendBeacon('/update-session', JSON.stringify({
+                user_id: {{ auth()->id() }}
+            }));
+        });
+    </script>
+@endauth
+
 <body class="font-[Inter]">
     <!-- Top Header -->
     <div class="bg-black text-white py-3">

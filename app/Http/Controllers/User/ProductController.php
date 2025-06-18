@@ -4,6 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\Shop;
+use App\Models\Category;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\Review;
@@ -17,7 +19,13 @@ class ProductController extends Controller
 {
     public function show($slug)
     {
-        $product = Product::with(['images', 'reviews', 'variants'])->where('slug', $slug)->firstOrFail();
+        $product = Product::with(['images', 'reviews', 'variants', 'shop'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $logoPath = $product->shop ? Storage::url($product->shop->logo) : asset('images/default_shop_logo.png');
+        Log::info('Logo URL: ' . $logoPath);
+
         return view('user.product.product_detail', compact('product'));
     }
 
