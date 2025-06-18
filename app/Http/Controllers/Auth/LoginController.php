@@ -9,6 +9,7 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\DB; // Thêm để truy vấn bảng sessions
 
 class LoginController extends Controller
 {
@@ -72,6 +73,13 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        // Cập nhật last_activity trong bảng sessions trước khi đăng xuất
+        if (Auth::check()) {
+            DB::table('sessions')
+                ->where('user_id', Auth::id())
+                ->update(['last_activity' => time()]);
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

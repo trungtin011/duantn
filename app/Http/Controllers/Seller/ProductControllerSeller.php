@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 
 class ProductControllerSeller extends Controller
 {
@@ -293,18 +294,18 @@ class ProductControllerSeller extends Controller
                         'created_at' => now(),
                     ]);
                 }
-                
+
                 if (isset($variantData['attributes'])) {
                     foreach ($variantData['attributes'] as $attrData) {
                         $attribute = Attribute::firstOrCreate(['name' => $attrData['attribute_name']]);
                         Log::info('Created/Found Attribute: ' . json_encode($attribute));
-                
+
                         $attributeValue = AttributeValue::firstOrCreate([
                             'attribute_id' => $attribute->id,
                             'value' => $attrData['value'],
                         ]);
                         Log::info('Created/Found AttributeValue: ' . json_encode($attributeValue));
-                
+
                         ProductVariantAttributeValue::create([
                             'product_variant_id' => $variant->id,
                             'attribute_value_id' => $attributeValue->id,
@@ -326,10 +327,8 @@ class ProductControllerSeller extends Controller
         try {
             if ($request->hasFile('file')) {
                 $image = $request->file('file');
-                $path = $image->store('destination_images', 'public'); // Lưu vào thư mục public/product_images
-
-                // Trả về URL của hình ảnh
-                $url = Storage::disk('public')->url($path);
+                $path = $image->store('destination_images', 'public');
+                $url = Storage::url($path); // Sửa tại đây
                 return response()->json([
                     'location' => $url
                 ]);
