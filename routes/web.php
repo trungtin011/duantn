@@ -114,6 +114,15 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/get-sub-categories', [ProductController::class, 'getSubCategories'])->name('admin.get-sub-categories');
     });
 
+    // notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
+        Route::post('/', [AdminNotificationsControllers::class, 'store'])->name('admin.notifications.store');
+        Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
+        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');        Route::get('/create', [AdminNotificationsControllers::class, 'create'])->name('admin.notifications.create');
+        Route::get('/{id}/edit', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
+    });
+
     // attributes
     Route::prefix('/attributes')->group(function () {
         Route::get('/', [AttributeController::class, 'index'])->name('admin.attributes.index');
@@ -214,7 +223,9 @@ Route::middleware('CheckRole:customer')->group(function () {
         Route::post('/', [UserAddressController::class, 'store'])->name('account.addresses.store');
         Route::get('/{address}/edit', [UserAddressController::class, 'edit'])->name('account.addresses.edit');
         Route::put('/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
+
         Route::delete('/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
+
     });
 
     //checkout
@@ -226,7 +237,6 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
     Route::get('/checkout/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
     Route::post('/checkout/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
-
 });
 
 // seller registration routes
@@ -255,7 +265,7 @@ Route::prefix('seller')->group(function () {
 
     Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
     Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-    Route::post('/order/{id}/shipping', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
+    Route::post('/order/shipping/{id}', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
     Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
@@ -265,6 +275,11 @@ Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
 Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
 Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
+Route::put('/cancel-order/{id}', [UserOrderController::class, 'cancelOrder'])->name('cancel_order');
 
 // Shipping fee calculation
 Route::post('/calculate-shipping-fee', [App\Http\Controllers\User\ShippingFeeController::class, 'calculateShippingFee'])->name('calculate.shipping.fee');
+
+// API - VNPAY   
+Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');  
+Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');

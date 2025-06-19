@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-
+    @vite('resources/js/echo.js')
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
@@ -82,10 +82,147 @@
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
                 <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
                 <a href="{{ route('wishlist.index') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
-                <a href="#" id="notification-bell" class="relative">
-                    <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
-                    <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">3</span>
-                </a>
+
+
+                @auth
+                    <!-- Notification Bell -->
+                    <a href="#" id="notification-bell" class="relative" @click="notificationDropdownOpen = !notificationDropdownOpen" @click.away="notificationDropdownOpen = false">
+                        <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
+                        <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                            {{ $groupedNotifications->flatten()->count() }}
+                        </span>
+                    </a>
+
+                    <!-- Notification Dropdown -->
+                    <div x-show="notificationDropdownOpen" 
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute top-20 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
+                        <div class="py-2">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <h3 class="text-sm font-semibold text-gray-900">Thông báo</h3>
+                            </div>
+                            
+                            <div class="max-h-96 overflow-y-auto" id="notification-list">
+                                @forelse($groupedNotifications as $type => $notifications)
+                                    <!-- Notification Group -->
+                                    <div class="notification-type" data-type="{{ $type }}">
+                                        <div class="px-4 py-2 bg-gray-50">
+                                            <h4 class="text-xs font-medium text-gray-500 uppercase">
+                                                @switch($type)
+                                                    @case('order')
+                                                        Đơn hàng
+                                                        @break
+                                                    @case('promotion')
+                                                        Khuyến mãi
+                                                        @break
+                                                    @case('system')
+                                                        Hệ thống
+                                                        @break
+                                                    @default
+                                                        {{ $type }}
+                                                @endswitch
+                                            </h4>
+                                        </div>
+                                        <div class="notification-items">
+                                            @foreach($notifications as $notification)
+                                                <a href="{{ $notification->link ?? '#' }}" 
+                                                class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
+                                                data-notification-id="{{ $notification->id }}"
+                                                data-notification-title="{{ $notification->title }}"
+                                                data-notification-type="{{ $notification->type }}"
+                                                data-notification-receiver-type="{{ $notification->receiver_type }}">
+                                                    <div class="flex items-start">
+                                                        <div class="flex-shrink-0">
+                                                            <span class="inline-block h-2 w-2 rounded-full {{ $notification->read_at ? 'bg-gray-300' : 'bg-red-500' }}"></span>
+                                                        </div>
+                                                        <div class="ml-3 w-0 flex-1">
+                                                            <p class="text-sm font-medium text-gray-900">{{ $notification->title }}</p>
+                                                            <p class="text-sm text-gray-500">{{ $notification->content }}</p>
+                                                            <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="px-4 py-3 text-center text-gray-500">
+                                        <p>Không có thông báo mới</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                            
+                            <!-- View All Link -->
+                            <div class="px-4 py-2 bg-gray-50">
+                                <a href="#" class="text-sm font-medium text-orange-500 hover:text-orange-600">Xem tất cả thông báo</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        window.userId = "{{ session('user_id') }}";
+                    </script>
+                @endauth
+                @guest
+                    <!-- Notification Bell -->
+                    <a href="#" id="notification-bell" class="relative">
+                        <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
+                        <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">0</span>
+                    </a>
+
+                    <!-- Notification Dropdown -->
+                    <div x-show="notificationDropdownOpen" 
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute top-20 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
+                        <div class="py-2">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <h3 class="text-sm font-semibold text-gray-900">Thông báo</h3>
+                            </div>
+                            <div class="max-h-96 overflow-y-auto" id="notification-list">
+                                <div class="px-4 py-3 text-center text-gray-500">
+                                    <p>Không có thông báo mới</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endguest
+
+                <!-- Delete Confirmation Modal -->
+                <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden items-center justify-center z-50">
+                    <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div class="mt-3 text-center">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Xác nhận xóa</h3>
+                            <div class="mt-2 px-7 py-3">
+                                <p class="text-sm text-gray-500">
+                                    Bạn có chắc chắn muốn xóa thông báo này không?
+                                </p>
+                            </div>
+                            <div class="flex justify-center gap-4 mt-4">
+                                <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                                    Hủy
+                                </button>
+                                <form id="deleteNotificationForm" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ route('cart') }}">
                     <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
                 </a>
@@ -109,6 +246,15 @@
                             <a href="{{ route('signup') }}"
                                 class="flex items-center justify-between gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
                                 Đăng ký
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
+                                </svg>
+                            </a>
+                            <a href="{{ route('login') }}"
+                                class="flex items-center justify-between gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                Đăng nhập
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="size-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -233,6 +379,7 @@
                 <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
                 @guest
                     <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
+                    <li><a href="{{ route('login') }}" class="hover:text-orange-500">Đăng nhập</a></li>
                 @endguest
                 @auth
                     @if (Auth::user()->role === 'customer')
@@ -426,22 +573,11 @@
                         @csrf
                     </form>
                 @else
-<<<<<<< HEAD
                 <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng nhập</a>
                 <a href="{{ route('signup') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng ký</a>
                 <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
-                <a href="{{ route('wishlist.index') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
+                <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
-=======
-                    <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
-                        nhập</a>
-                    <a href="{{ route('register') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
-                        ký</a>
-                    <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
-                    <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách
-                        ước</a>
-                    <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
->>>>>>> khoa
                 @endauth
             </div>
 
@@ -482,8 +618,14 @@
     </footer>
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="{{ asset('js/app.js') }}" type="module"></script>
+    <script>
+    window.Laravel = {
+        user: JSON.parse('{!! json_encode(Auth::user()) !!}')
+    };
+    </script>
     @stack('scripts')
+
+   
 </body>
 
 </html>

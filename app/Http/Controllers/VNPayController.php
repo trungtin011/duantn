@@ -81,7 +81,7 @@ class VNPayController extends Controller
 
     public function vnpayReturn(Request $request){
         try {
-            $vnp_HashSecret = "C4Q3LIILB0NC7ZMK5DK9MASI28BN4RI7"; //Chuỗi bí mật
+            $vnp_HashSecret = "C4Q3LIILB0NC7ZMK5DK9MASI28BN4RI7"; 
             $vnp_SecureHash = $request->vnp_SecureHash;
             $inputData = array();
             foreach ($request->all() as $key => $value) {
@@ -111,9 +111,9 @@ class VNPayController extends Controller
                         $order->update([
                             'payment_status' => 'paid',
                             'paid_at' => now(),
-                            'order_status' => 'processing'
+                            'order_status' => 'pending'
                         ]);
-                        return redirect()->route('success_payment', ['order_code' => $order->order_code]);
+                        return redirect()->route('checkout.success', ['order_code' => $order->order_code]);
                     }
                 } else {
                     $order = Order::where('order_code', $request->vnp_TxnRef)->first();
@@ -124,7 +124,7 @@ class VNPayController extends Controller
                             'note' => 'Thanh toán thất bại qua VNPay',
                             'cancel_reason' => 'Huỷ Thanh Toán'
                         ]);
-                        return redirect()->route('failed_payment', ['order_code' => $order->order_code]);
+                        return redirect()->route('checkout.failed', ['order_code' => $order->order_code]);
                     }
                 }
             }

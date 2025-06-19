@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Shop;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Events\NotificationEvent;   
 
 class NotificationsControllers extends Controller
 {
@@ -60,6 +61,12 @@ class NotificationsControllers extends Controller
         );
 
         return view('admin.notifications.index', compact('notifications'));
+    }
+
+    public function create(){
+        $users = User::where('role', 'customer')->get();
+        $shops = Shop::where('shop_status', 'active')->get();
+        return view('admin.notifications.create', compact('users', 'shops'));
     }
 
     public function store(NotificationsRequest $request){  
@@ -142,7 +149,9 @@ class NotificationsControllers extends Controller
             $notificationData['receiver_user_id'] = $receiverId;
         }
     
-        return Notification::create($notificationData);
+        $notification = Notification::create($notificationData);
+        event(new NotificationEvent($notification));
+        return $notification;
     }
     
     public function storeNotification($receiver_type, $title, $content, $priority, $expireDate, $getGroupType, $type){
@@ -167,17 +176,22 @@ class NotificationsControllers extends Controller
             } elseif ($receiver_type == 'employee') {
                 $notificationData['receiver_user_id'] = $group;
             }
-            $notifications[] = Notification::create($notificationData);
-        }
+            
+                $notification = Notification::create($notificationData);
+                $notifications[] = $notification;
+                event(new NotificationEvent($notification));
+            }
         return $notifications;
     }
 
     public function destroy($id){
         $notification = Notification::find($id);
         if($notification){
-            $notification->delete();
+            Notification::where('title', $notification->title)->delete();
+            return redirect()->route('admin.notifications.index')->with('success', 'Notification deleted successfully');
         }
-        return redirect()->route('admin.notifications.index')->with('success', 'Notification deleted successfully');
+        return redirect()->route('admin.notifications.index')->with('error', 'Notification deleted failed');
     }
+
 
 }

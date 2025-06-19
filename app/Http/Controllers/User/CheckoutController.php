@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\VNPayController;
 use App\Models\ShopAddress;
+use App\Events\CreateOrderEvent;
+use Illuminate\Support\Facades\Event;
 
 class CheckoutController extends Controller
 {
@@ -102,8 +104,8 @@ class CheckoutController extends Controller
        
         switch ($request->payment) {
             case 'COD':
-                $order = $this->CodPayment($order);
-                break;
+               return $this->CodPayment($order);
+               break;
             case 'MOMO':
                 return $this->MomoPayment($order);
                 break;
@@ -144,7 +146,7 @@ class CheckoutController extends Controller
             $shop_order = ShopOrder::create([
                 'shopID' => $product->shopID,
                 'orderID' => $order->id,
-                'note' => $shop_notes[$product->shopID]
+                'note' => $shop_notes[$product->shopID] ?? ''
             ]);
             Log::info($shop_order);
             foreach($items as $item){
@@ -189,9 +191,10 @@ class CheckoutController extends Controller
             'address_type' => $user_address->address_type,
         ]);
         return $order;
-    }
-    
-    private function CodPayment(){
+    } 
+
+    private function CodPayment($order){
+        return redirect()->route('checkout.success' , ['order_code' => $order->order_code]);
     }
 
     private function MomoPayment($order){
@@ -408,9 +411,15 @@ class CheckoutController extends Controller
         $product->variants->first()->update([
             'stock' => $stock
         ]);
-
-        Cart::where('userID', Auth::user()->id)->delete();
         session()->forget('checkout_items');
+
+        foreach($order->shop_order as $shop_order){
+            Log::info(' /////////////// Create Order Event /////////////// ', [
+                'shop_id' => $shop_order->shopID,
+                'order_id' => $order->id
+            ]);
+            event(new CreateOrderEvent($shop_order->shopID ,$order));
+        }
 
         return view('user.checkout_status.success_payment', compact('order','product'));
     }
