@@ -29,8 +29,21 @@ class NotificationEvent implements ShouldBroadcast
 
     public function broadcastAs()
     {
+        if ($this->notification->receiver_type === 'shop') {
+            return 'seller-notification.event';
+        }
+    
+        if ($this->notification->receiver_type === 'user') {
+            return 'customer-notification.event';
+        }
+
+        if ($this->notification->receiver_type === 'admin') {
+            return 'admin-notification.event';
+        }
+
         return 'new-notification.event';
     }
+    
     public function broadcastWith()
     {
         return [

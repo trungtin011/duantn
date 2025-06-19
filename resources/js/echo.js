@@ -10,9 +10,26 @@ window.Echo = new Echo({
     forceTLS: false
 });
 
-if (window.Laravel.user) {
-  window.Echo.private(`user.${window.Laravel.user.id}`)
-      .listen('App\\Events\\NotificationEvent', (e) => {
+if(window.Laravel.user.role === 'seller') {
+    console.log(window.Laravel.shop);
+
+    window.Echo.private(`order.created.${window.Laravel.shop}`)
+    .listen('.create-order.event', (e) => {
+        console.log('Order created:', e);
+        addNotificationToList(e);
+    });
+    
+    window.Echo.channel('notifications.all')
+        .listen('.new-notification.event', (e) => { 
+            console.log('Global notification:', e);
+            addNotificationToList(e);
+        });
+}
+
+if (window.Laravel.user.role === 'customer') {
+    console.log('Customer notification:', window.Laravel.user.id);
+    window.Echo.private(`user.${window.Laravel.user.id}`)
+      .listen('.customer-notification.event', (e) => {
           console.log('User notification:', e);
           addNotificationToList(e);
       });
@@ -22,7 +39,6 @@ if (window.Laravel.user) {
             console.log('Global notification:', e);
             addNotificationToList(e);
         });
-    
 }
 
 
