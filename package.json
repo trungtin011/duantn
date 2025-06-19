@@ -2,14 +2,15 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "dev:artisan": "concurrently -n SERVER,VITE -c green,cyan \"php artisan serve\" \"npm run dev\"",
+        "dev:all": "concurrently -n SERVER,VITE,ECHO,QUEUE -c green,cyan,yellow,red \"php artisan serve\" \"npm run dev\" \"laravel-echo-server start\" \"php artisan queue:listen\""
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
         "alpinejs": "^3.14.9",
         "axios": "^1.8.2",
-        "concurrently": "^9.0.1",
+        "concurrently": "^9.1.2",
         "laravel-echo": "^2.1.5",
         "laravel-vite-plugin": "^1.2.0",
         "pusher-js": "^8.4.0",

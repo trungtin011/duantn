@@ -19,7 +19,7 @@ dropdownToggleSecond.addEventListener('click', () => {
 // Countdown Timer
 const countdown = () => {
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 4); // Đặt thời gian kết thúc sau 4 ngày
+    endDate.setDate(endDate.getDate() + 4);
     const daysEl = document.getElementById('days');
     const hoursEl = document.getElementById('hours');
     const minutesEl = document.getElementById('minutes');
@@ -138,3 +138,4 @@ prevButton.addEventListener('click', () => {
         slider.style.transform = `translateX(-${(currentIndex * (223 + 30)) / itemsPerPage}px)`;
     }
 });
+
