@@ -466,32 +466,33 @@ return new class extends Migration
         });
 
         // Bảng coupon
-        Schema::create('coupon', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('code', 100)->unique();
-            $table->string('name', 100);
-            $table->text('description')->nullable();
-            $table->decimal('discount_value', 12, 2);
-            $table->enum('discount_type', ['percentage', 'fixed']);
-            $table->decimal('max_discount_amount', 12, 2)->nullable();
-            $table->decimal('min_order_amount', 12, 2)->nullable();
-            $table->integer('quantity')->default(0);
-            $table->integer('max_uses_per_user')->nullable();
-            $table->integer('max_uses_total')->nullable();
-            $table->integer('used_count')->default(0);
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->enum('rank_limit', ['gold', 'silver', 'bronze', 'diamond', 'all'])->default('all');
-            $table->boolean('is_active')->default(1);
-            $table->boolean('is_public')->default(1);
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('shop_id')->nullable();
-            $table->enum('status', ['active', 'inactive', 'expired', 'deleted'])->default('active');
-            $table->timestamps();
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
-            $table->index(['code', 'status', 'start_date', 'end_date']);
-        });
+Schema::create('coupon', function (Blueprint $table) {
+    $table->bigIncrements('id');
+    $table->string('code', 100)->unique();
+    $table->string('name', 100);
+    $table->text('description')->nullable();
+    $table->decimal('discount_value', 12, 2);
+    $table->enum('discount_type', ['percentage', 'fixed']);
+    $table->decimal('max_discount_amount', 12, 2)->nullable();
+    $table->decimal('min_order_amount', 12, 2)->nullable();
+    $table->integer('quantity')->default(0);
+    $table->integer('max_uses_per_user')->nullable();
+    $table->integer('max_uses_total')->nullable();
+    $table->integer('used_count')->default(0);
+    $table->date('start_date');
+    $table->date('end_date');
+    $table->enum('rank_limit', ['gold', 'silver', 'bronze', 'diamond', 'all'])->default('all');
+    $table->boolean('is_active')->default(1);
+    $table->boolean('is_public')->default(1);
+    $table->unsignedBigInteger('created_by')->nullable();
+    $table->unsignedBigInteger('shop_id')->nullable();
+    $table->enum('status', ['active', 'inactive', 'expired', 'deleted'])->default('active');
+    $table->string('image')->nullable()->after('status'); // Added image column
+    $table->timestamps();
+    $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+    $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
+    $table->index(['code', 'status', 'start_date', 'end_date']);
+});
 
         // Bảng coupon_user
         Schema::create('coupon_user', function (Blueprint $table) {

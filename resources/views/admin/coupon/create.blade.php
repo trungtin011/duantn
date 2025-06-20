@@ -19,7 +19,7 @@
     <div class="row g-3">
         <div class="col-md-12">
             <div class="admin-card">
-                <form action="{{ route('admin.coupon.index') }}" method="POST">
+                <form action="{{ route('admin.coupon.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
                         <label for="code" class="form-label">Mã</label>
@@ -41,6 +41,14 @@
                         <label for="description" class="form-label">Mô tả</label>
                         <textarea class="form-control" id="description" name="description" rows="3">{{ old('description') }}</textarea>
                         @error('description')
+                            <div class="text-danger text-sm">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Ảnh mã giảm giá</label>
+                        <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
+                        @error('image')
                             <div class="text-danger text-sm">{{ $message }}</div>
                         @enderror
                     </div>

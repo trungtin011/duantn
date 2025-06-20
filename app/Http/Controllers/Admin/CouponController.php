@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Coupon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
 
 class CouponController extends Controller
@@ -36,6 +37,7 @@ class CouponController extends Controller
             'code' => 'required|unique:coupon,code|min:3|max:100',
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image
             'discount_value' => 'required|numeric|min:0',
             'discount_type' => 'required|in:percentage,fixed',
             'max_discount_amount' => 'nullable|numeric|min:0',
@@ -54,10 +56,17 @@ class CouponController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Handle image upload
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('coupons', 'public');
+        }
+
         Coupon::create([
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
+            'image' => $imagePath,
             'discount_value' => $request->discount_value,
             'discount_type' => $request->discount_type,
             'max_discount_amount' => $request->max_discount_amount,
@@ -90,6 +99,7 @@ class CouponController extends Controller
             'code' => 'required|unique:coupon,code,' . $id . '|min:3|max:100',
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image
             'discount_value' => 'required|numeric|min:0',
             'discount_type' => 'required|in:percentage,fixed',
             'max_discount_amount' => 'nullable|numeric|min:0',
@@ -108,10 +118,22 @@ class CouponController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Handle image upload
+        $imagePath = $coupon->image;
+        if ($request->hasFile('image')) {
+            // Delete old image if it exists
+            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+            // Store new image
+            $imagePath = $request->file('image')->store('coupons', 'public');
+        }
+
         $coupon->update([
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
+            'image' => $imagePath,
             'discount_value' => $request->discount_value,
             'discount_type' => $request->discount_type,
             'max_discount_amount' => $request->max_discount_amount,
@@ -132,6 +154,12 @@ class CouponController extends Controller
     public function destroy($id)
     {
         $coupon = Coupon::findOrFail($id);
+
+        // Delete associated image if it exists
+        if ($coupon->image && Storage::disk('public')->exists($coupon->image)) {
+            Storage::disk('public')->delete($coupon->image);
+        }
+
         $coupon->delete();
         
         return redirect()->route('admin.coupon.index')->with('success', 'Coupon deleted successfully.');

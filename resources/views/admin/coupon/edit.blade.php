@@ -19,7 +19,7 @@
     <div class="row g-3">
         <div class="col-md-12">
             <div class="admin-card">
-                <form action="{{ route('admin.coupon.update', $coupon->id) }}" method="POST">
+                <form action="{{ route('admin.coupon.update', $coupon->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <div class="mb-3">
@@ -44,6 +44,21 @@
                         @error('description')
                             <div class="text-danger text-sm">{{ $message }}</div>
                         @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Ảnh mã giảm giá</label>
+                        <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
+                        @error('image')
+                            <div class="text-danger text-sm">{{ $message }}</div>
+                        @enderror
+                        @if ($coupon->image)
+                            <div class="mt-2">
+                                <label class="form-label">Hình ảnh hiện tại:</label>
+                                <img src="{{ asset('storage/' . $coupon->image) }}" alt="{{ $coupon->name }}"
+                                     style="max-width: 150px; max-height: 150px; object-fit: cover;">
+                            </div>
+                        @endif
                     </div>
 
                     <div class="mb-3">

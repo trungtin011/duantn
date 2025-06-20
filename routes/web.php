@@ -19,6 +19,7 @@ use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
+use App\Http\Controllers\Seller\ComboController;
 //user
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\ProductController;
@@ -208,6 +209,17 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/orders', function () {
         return view('seller.orders');
     })->name('seller.orders');
+
+
+Route::get('/combos', [ComboController::class, 'index'])->name('seller.combo.index');
+    Route::get('/combos/create', [ComboController::class, 'create'])->name('seller.combo.create');
+    Route::post('/combos', [ComboController::class, 'store'])->name('seller.combo.store');
+    Route::get('/combos/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
+    Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
+    Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
+
+
+
 });
 
 // customer routes
