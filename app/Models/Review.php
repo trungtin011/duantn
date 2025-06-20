@@ -28,4 +28,13 @@ class Review extends Model
     {
         return $this->belongsTo(Product::class, 'productID');
     }
+    public function likes()
+    {
+        return $this->hasMany(ReviewLike::class);
+    }
+
+    public function likedByUser($userId)
+    {
+        return $this->likes()->where('user_id', $userId)->exists();
+    }
 }

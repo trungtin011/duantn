@@ -5,15 +5,19 @@
     // Kiểm tra và hiển thị thông báo từ session
     @if (session('success'))
         Swal.fire({
+            position: 'top-end',
+            toast: true,
             icon: 'success',
             title: 'Thành công!',
             text: '{{ session('success') }}',
             confirmButtonColor: '#0989ff',
-            timer: 3000, // Tự động đóng sau 3 giây
+            timer: 3000,
             showConfirmButton: false
         });
     @elseif (session('error'))
         Swal.fire({
+            position: 'top-end',
+            toast: true,
             icon: 'error',
             title: 'Lỗi!',
             text: '{{ session('error') }}',

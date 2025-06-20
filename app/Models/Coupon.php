@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coupon extends Model
 {
+    protected $table = 'coupon';
     protected $fillable = [
         'code',
         'name',
@@ -97,4 +98,4 @@ class Coupon extends Model
 
         return $discount;
     }
-} 
+}

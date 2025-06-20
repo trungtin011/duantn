@@ -111,7 +111,7 @@ class LoginController extends Controller
             ]);
         }
         Auth::login($user);
-        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Google thành công!');
+        return redirect()->route('home')->with('success', 'Đăng nhập bằng Google thành công!');
     }
 
     public function handleFacebookCallback()
@@ -139,7 +139,7 @@ class LoginController extends Controller
             ]
         );
         Auth::login($user);
-        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Facebook thành công!');
+        return redirect()->route('home')->with('success', 'Đăng nhập bằng Facebook thành công!');
     }
 
     public function redirectToFacebook()
