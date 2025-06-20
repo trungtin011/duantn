@@ -51,6 +51,11 @@ class Product extends Model
         return $this->belongsTo(Shop::class, 'shopID');
     }
 
+    public function coupons()
+    {
+        return $this->hasMany(Coupon::class);
+    }
+
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class, 'productID');
@@ -91,6 +96,14 @@ class Product extends Model
             'id',
             'id'
         )->join('product_variant_attribute_values', 'attribute_values.id', '=', 'product_variant_attribute_values.attribute_value_id');
+    }
+
+    // Mối quan hệ với bảng orders thông qua bảng trung gian items_order
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'items_order', 'productID', 'orderID')
+            ->withPivot('variantID', 'quantity', 'unit_price', 'total_price', 'discount_amount')
+            ->withTimestamps();
     }
 
     // Scopes

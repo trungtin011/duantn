@@ -523,13 +523,35 @@ return new class extends Migration
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
         });
 
+        // Bảng product_reviews (nếu giữ, đảm bảo không trùng lặp với review)
+        Schema::create('product_reviews', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->tinyInteger('rating')->comment('1-5 sao');
+            $table->text('comment')->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('video_path')->nullable();
+            $table->timestamps();
+            $table->unique(['user_id', 'product_id']);
+        });
+
         // Bảng review_images
         Schema::create('review_images', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('reviewID');
+            $table->unsignedBigInteger('review_id');
             $table->text('image_path');
             $table->timestamps();
-            $table->foreign('reviewID')->references('id')->on('review')->onDelete('cascade');
+            $table->foreign('review_id')->references('id')->on('product_reviews')->onDelete('cascade');
+        });
+
+        // Bảng review_likes (thêm vào đây, tham chiếu bảng review)
+        Schema::create('review_likes', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('review_id')->constrained('review')->onDelete('cascade'); // Hoặc 'product_reviews' nếu chọn bảng này
+            $table->timestamps();
+            $table->unique(['user_id', 'review_id']);
         });
 
         // Bảng wishlist
@@ -734,6 +756,8 @@ return new class extends Migration
         Schema::dropIfExists('view_history');
         Schema::dropIfExists('wishlist');
         Schema::dropIfExists('review_images');
+        Schema::dropIfExists('review_likes'); // Thêm dòng này
+        Schema::dropIfExists('product_reviews');
         Schema::dropIfExists('review');
         Schema::dropIfExists('coupon_user');
         Schema::dropIfExists('coupon');

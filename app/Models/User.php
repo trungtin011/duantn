@@ -68,6 +68,17 @@ class User extends Authenticatable
         return $this->hasOne(Seller::class);
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+    
+    public function followedShops()
+    {
+        return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
+            ->withTimestamps();
+    }
+
     // Scopes
     public function scopeActive($query)
     {

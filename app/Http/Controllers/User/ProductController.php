@@ -14,19 +14,61 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
-        $product = Product::with(['images', 'reviews', 'variants', 'shop'])
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $ratingFilter = $request->input('rating');
 
+        $product = Product::with([
+            'images',
+            'reviews.user',
+            'variants',
+            'reviews.likes',
+            'shop.coupons',
+        ])->where('slug', $slug)->firstOrFail();
+
+        $viewed = session()->get('viewed_products', []);
+        $viewed = array_unique(array_merge([$product->id], $viewed));
+        session()->put('viewed_products', array_slice($viewed, 0, 10));
+
+        $recentProducts = Product::whereIn('id', $viewed)->where('id', '!=', $product->id)->with('images')->get();
         $logoPath = $product->shop ? Storage::url($product->shop->logo) : asset('images/default_shop_logo.png');
-        Log::info('Logo URL: ' . $logoPath);
 
-        return view('user.product.product_detail', compact('product'));
+        // Kiểm tra xem người dùng đã mua sản phẩm hay chưa
+        $hasPurchased = Auth::check() && $product->orders()->where('userID', Auth::id())->exists();
+
+        // Lọc đánh giá theo filter
+        $filter = $request->input('filter');
+        $reviews = $product->reviews;
+
+        if ($filter === 'images') {
+            $filteredReviews = $reviews->filter(fn($r) => $r->images && $r->images->count() > 0);
+        } elseif (Str::startsWith($filter, 'star-')) {
+            $rating = (int) Str::after($filter, 'star-');
+            $filteredReviews = $reviews->where('rating', $rating);
+        } else {
+            $filteredReviews = $reviews;
+        }
+
+        $filteredReviews = $filteredReviews->sortByDesc('created_at');
+
+        // Trả về partial nếu là AJAX
+        if ($request->ajax()) {
+            return view('partials.review_list', ['reviews' => $filteredReviews]);
+        }
+
+        return view('user.product.product_detail', [
+            'product' => $product,
+            'filteredReviews' => $filteredReviews,
+            'ratingFilter' => $ratingFilter,
+            'recentProducts' => $recentProducts,
+            'shop' => $product->shop,
+            'logoPath' => $logoPath,
+            'hasPurchased' => $hasPurchased,
+        ]);
     }
 
     public function reportProduct(Request $request, Product $product)

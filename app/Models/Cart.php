@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
-  protected $table = 'cart'; // Tên bảng chính xác trong database
+    protected $table = 'cart'; // Tên bảng chính xác trong database
 
     protected $fillable = [
         'userID',
@@ -16,14 +16,15 @@ class Cart extends Model
         'price',
         'total_price',
         'session_id',
+        'buying_flag',
     ];
 
 
-public function product()
-{
-    return $this->belongsTo(Product::class, 'productID');
-}
- public function variant()
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'productID');
+    }
+    public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'variantID');
     }

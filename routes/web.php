@@ -25,6 +25,9 @@ use App\Http\Controllers\User\OrderController as UserOrderController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\User\WishlistController;
+use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\ReviewLikeController;
+use App\Http\Controllers\User\CheckinController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -159,6 +162,9 @@ Route::prefix('customer')->group(function () {
     // customer routes
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
 
+    Route::post('/product/{product}/review', [ProductReviewController::class, 'store'])->name('product.review')->middleware('auth');
+    Route::post('/review/{review}/like', [ReviewLikeController::class, 'toggle'])->middleware('auth');
+
     Route::middleware('CheckRole:customer')->group(function () {
         Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
 
@@ -186,6 +192,8 @@ Route::prefix('customer')->group(function () {
         // Trang tích điểm
         Route::prefix('user/account/points')->group(function () {
             Route::get('/', [UserController::class, 'points'])->name('account.points');
+            Route::get('/checkin', [CheckinController::class, 'index'])->name('account.checkin');
+            Route::post('/checkin', [CheckinController::class, 'store'])->name('account.checkin.store');
         });
 
         // Trang yêu thích
