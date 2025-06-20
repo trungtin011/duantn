@@ -63,9 +63,9 @@ class User extends Authenticatable
         return $this->hasOne(Employee::class);
     }
 
-    public function seller(): HasOne
+public function seller()
     {
-        return $this->hasOne(Seller::class);
+        return $this->hasOne(Seller::class, 'userID', 'id');
     }
 
     // Scopes
@@ -123,4 +123,5 @@ class User extends Authenticatable
             default => 'Không xác định',
         };
     }
+    
 }

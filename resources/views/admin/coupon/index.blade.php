@@ -44,6 +44,7 @@
                                 <th class="py-3 w-[50px]">ID</th>
                                 <th class="py-3">Mã</th>
                                 <th class="py-3">Tên</th>
+                                <th class="py-3">Ảnh</th>
                                 <th class="py-3">Giảm giá</th>
                                 <th class="py-3">Loại</th>
                                 <th class="py-3">Trạng thái</th>
@@ -60,6 +61,14 @@
                                     <td class="py-4 text-[13px]">#{{ $coupon->id }}</td>
                                     <td class="py-4 text-[13px]">{{ $coupon->code }}</td>
                                     <td class="py-4 text-[13px]">{{ $coupon->name }}</td>
+                                    <td class="py-4 text-[13px]">
+                                        @if ($coupon->image)
+                                            <img src="{{ Storage::url($coupon->image) }}" alt="{{ $coupon->name }}"
+                                                style="max-width: 50px; max-height: 50px; object-fit: cover;">
+                                        @else
+                                            Không có ảnh
+                                        @endif
+                                    </td>
                                     <td class="py-4 text-[13px]">
                                         {{ $coupon->discount_value }} {{ $coupon->discount_type === 'percentage' ? '%' : 'VND' }}
                                     </td>
@@ -98,7 +107,7 @@
                             @endforeach
                             @if ($coupons->isEmpty())
                                 <tr>
-                                    <td colspan="8" class="text-center text-gray-400 py-4">Không có mã giảm giá nào</td>
+                                    <td colspan="9" class="text-center text-gray-400 py-4">Không có mã giảm giá nào</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -133,4 +142,4 @@
             });
         </script>
     @endpush
-@endsection 
+@endsection
