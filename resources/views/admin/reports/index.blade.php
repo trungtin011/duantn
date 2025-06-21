@@ -5,7 +5,17 @@
     <h1 class="admin-page-title">Danh sách Báo Cáo</h1>
     <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Trang chủ</a> / Báo Cáo</div>
 </div>
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 
+@if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
 <table class="table table-bordered table-hover">
     <thead class="thead-dark">
         <tr>
@@ -74,8 +84,15 @@
                     {{ $resolutions[$report->resolution] ?? '-' }}
                 </td>
                 <td>
-                    {{ $report->status === 'resolved' ? ($report->resolution_note ?? '-') : '-' }}
+                    @if(in_array($report->status, ['resolved', 'rejected']))
+                        {{ $report->resolution_note ?? '-' }}
+                    @else
+                        -
+                    @endif
                 </td>
+                {{-- <td>
+                    {{ $report->status === 'resolved' ? ($report->resolution_note ?? '-') : '-' }}
+                </td> --}}
                 <td>
                     {{ $report->status === 'resolved' && $report->resolved_at ? $report->resolved_at->format('d/m/Y H:i') : '-' }}
                 </td>
@@ -88,16 +105,39 @@
                         <input type="hidden" name="status" value="under_review">
                         <button class="btn btn-sm btn-success mb-1">Chấp nhận</button>
                     </form>
-                    <form action="{{ route('report.updateStatus', $report->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn từ chối báo cáo này không?');">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="status" value="rejected">
-                        <button class="btn btn-sm btn-warning text-white mb-1">Từ chối</button>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-warning text-white mb-1" data-bs-toggle="modal" data-bs-target="#rejectModal-{{ $report->id }}">
+                        Từ chối
+                    </button>
+                    <div class="modal fade" id="rejectModal-{{ $report->id }}" tabindex="-1" aria-labelledby="rejectModalLabel-{{ $report->id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <form action="{{ route('report.updateStatus', $report->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="status" value="rejected">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="rejectModalLabel-{{ $report->id }}">Lý do từ chối báo cáo #{{ $report->id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="resolution_note_{{ $report->id }}" class="form-label">Nhập lý do từ chối</label>
+                                            <textarea class="form-control" name="resolution_note" id="resolution_note_{{ $report->id }}" rows="3" required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                        <button type="submit" class="btn btn-danger">Từ chối báo cáo</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                     <form action="{{ route('admin.reports.destroy', $report->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa báo cáo này không?');">
                         @csrf
                         @method('DELETE')
-                        <button class="btn btn-sm btn-danger">Xóa</button>
+                        {{-- <button class="btn btn-sm btn-danger">Xóa</button> --}}
                     </form>
                 </td>
             </tr>

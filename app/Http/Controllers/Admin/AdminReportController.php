@@ -35,10 +35,6 @@ class AdminReportController extends Controller
 
         $report->status = $status;
 
-        if (!$report->resolved_by && in_array($status, ['under_review', 'processing', 'resolved', 'rejected'])) {
-            $report->resolved_by = Auth::id();
-        }
-
         $statusToResolution = [
             'resolved' => 'accepted',
             'rejected' => 'rejected',
@@ -47,9 +43,21 @@ class AdminReportController extends Controller
             'pending' => null,
         ];
 
+        if (!$report->resolved_by && in_array($status, ['under_review', 'processing', 'resolved', 'rejected'])) {
+            $report->resolved_by = Auth::id();
+        }
+
         if (in_array($status, ['resolved', 'rejected'])) {
             $report->resolved_at = now();
             $report->resolution = $statusToResolution[$status];
+
+            if (!$report->resolved_by) {
+                $report->resolved_by = Auth::id();
+            }
+
+            if ($status === 'rejected') {
+                $report->resolution_note = $request->input('resolution_note');
+            }
         }
 
         $report->save();

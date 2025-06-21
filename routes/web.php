@@ -11,6 +11,7 @@ use App\Http\Controllers\User\WishlistController;
 use App\Http\Controllers\Seller\ReviewController;
 use App\Http\Controllers\User\ReportController;
 use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\ProductImportController;
 use Illuminate\Support\Facades\Auth;
 
 // trang chủ
@@ -30,6 +31,8 @@ Route::get('/about', function () {
 
 // trang chi tiết sản phẩm
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('productDetail');
+Route::get('/products/import', [ProductImportController::class, 'showImportForm'])->name('products.import.form');
+Route::post('/products/import', [ProductImportController::class, 'import'])->name('products.import');
 
 // trang wishlist
 Route::get('/client/wishlist', function () {

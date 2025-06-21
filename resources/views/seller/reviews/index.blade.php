@@ -10,7 +10,17 @@
 <div class="admin-page-header">
     <div class="admin-breadcrumb mt-3"><a href="{{ route('admin.dashboard') }}" class="admin-breadcrumb-link">Home</a> / Reviews List</div>
 </div>
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
 
+@if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
 <div class="admin-card mb-4 mt-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-3">
@@ -39,7 +49,7 @@
             <thead class="admin-table-thead">
                 <tr>
                     <th style="width: 40px; padding-left: 16px;"><input type="checkbox"></th>
-                    <th>SHOP</th>
+                    {{-- <th>SHOP</th> --}}
                     <th>PRODUCT</th>
                     <th>CUSTOMER</th>
                     <th>RATING</th>
@@ -51,7 +61,7 @@
                 @foreach ($reviews as $review)
                     <tr>
                         <td style="padding-left: 16px;"><input type="checkbox"></td>
-                        <td>{{ $review->product->shop->shop_name ?? 'N/A' }}</td>
+                        {{-- <td>{{ $review->product->shop->shop_name ?? 'N/A' }}</td> --}}
                         <td>
                             <div class="d-flex align-items-center">
                                 <img src="{{ $review->product->images->first()->image_path ?? asset('images/default.jpg') }}" alt="" class="me-3 product-img-table">
