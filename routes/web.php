@@ -10,14 +10,12 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\UserControllerAdmin;
+use App\Http\Controllers\Admin\AdminShopController;
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
-use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 use App\Http\Controllers\Seller\ChatSettingsController;
-use App\Http\Controllers\Seller\Chat\AutoChatSettingController;
-use App\Http\Controllers\Seller\Chat\QaChatController;
 use App\Http\Controllers\Seller\SellerSettingsController;
 //user
 use App\Http\Controllers\User\CartController;
@@ -25,8 +23,7 @@ use App\Http\Controllers\User\OrderController as UserOrderController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\Seller\Chat\ReplyChatController;
-use App\Http\Controllers\Seller\Chat\QAController;
+
 
 // trang chủ
 Route::get('/', function () {
@@ -160,6 +157,13 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/{id}', [UserControllerAdmin::class, 'show'])->name('admin.users.show');
         Route::delete('/{id}', [UserControllerAdmin::class, 'destroy'])->name('admin.users.destroy');
     });
+
+    // Shop Approval (Admin)
+    Route::prefix('shops')->group(function () {
+        Route::get('/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
+        Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
+        Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
+    });
 });
 
 // seller routes
@@ -266,10 +270,6 @@ Route::prefix('seller/chat')->middleware('CheckRole:seller')->group(function () 
     Route::post('/auto-reply-toggle', [ChatSettingsController::class, 'toggleAutoReply'])
         ->middleware('CheckRole:seller')
         ->name('seller.chat.auto_reply_toggle');
-
-    // API routes for seller chat (moved from ChatController)
-    Route::get('/qa/messages', [QAController::class, 'getQaMessagesForSeller'])->name('seller.chat.qa.messages');
-    Route::get('/messages/{userId}', [QAController::class, 'getMessagesByShopIdForSeller'])->name('seller.chat.messages_by_user_for_seller');
 });
 
 Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);

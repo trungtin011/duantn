@@ -21,13 +21,7 @@
             <form action="{{ route('seller.register.step4.post') }}" method="POST" enctype="multipart/form-data" class="rounded-2xl p-6">
                 @csrf
                 @if ($errors->any())
-                    <div class="bg-red-100 text-red-700 border border-red-300 p-3 rounded text-sm mb-4">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                    <!-- Đã chuyển lỗi validate xuống từng trường -->
                 @endif
                 <div class="min-h-screen bg-white flex items-center justify-center">
                     <div class="rounded-2xl p-6 flex flex-col gap-10">
@@ -60,6 +54,9 @@
                                     Hộ chiếu
                                 </label>
                             </div>
+                            @error('id_type')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Số giấy tờ -->
@@ -68,6 +65,9 @@
                                 <sup class="text-red-500 text-[12px]">*</sup> Số giấy tờ
                             </label>
                             <input type="text" name="id_number" maxlength="20" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('id_number') }}">
+                            @error('id_number')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Họ và tên -->
@@ -77,6 +77,9 @@
                             </label>
                             <div class="col-span-4 space-y-1">
                                 <input type="text" name="full_name" maxlength="100" required class="w-full md:w-1/2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('full_name') }}">
+                                @error('full_name')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                                 <p class="text-xs text-gray-500">Theo CMND/CCCD/Hộ Chiếu</p>
                             </div>
                         </div>
@@ -87,6 +90,9 @@
                                 <sup class="text-red-500 text-[12px]">*</sup> Ngày sinh
                             </label>
                             <input type="date" name="birthday" required class="col-span-2 border rounded px-3 py-2 text-sm" value="{{ old('birthday') }}">
+                            @error('birthday')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Quốc tịch -->
@@ -95,6 +101,9 @@
                                 <sup class="text-red-500 text-[12px]">*</sup> Quốc tịch
                             </label>
                             <input type="text" name="nationality" maxlength="50" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('nationality') }}">
+                            @error('nationality')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Quê quán -->
@@ -103,6 +112,9 @@
                                 <sup class="text-red-500 text-[12px]">*</sup> Quê quán
                             </label>
                             <input type="text" name="hometown" maxlength="100" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('hometown') }}">
+                            @error('hometown')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Nơi thường trú -->
@@ -111,6 +123,9 @@
                                 <sup class="text-red-500 text-[12px]">*</sup> Nơi thường trú
                             </label>
                             <input type="text" name="residence" maxlength="100" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('residence') }}">
+                            @error('residence')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Ảnh chụp giấy tờ -->
@@ -126,6 +141,9 @@
                                 <input type="file" name="file" accept="image/*" class="hidden" id="filechoose" required>
                                 <button type="button" onclick="document.getElementById('filechoose').click()" class="px-4 py-2 bg-blue-500 text-white rounded text-sm">Tải ảnh lên</button>
                                 <img id="filepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
+                                @error('file')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
@@ -142,6 +160,9 @@
                                 <input type="file" name="holding_file" accept="image/*" class="hidden" id="holdingfilechoose">
                                 <button type="button" onclick="document.getElementById('holdingfilechoose').click()" class="px-4 py-2 bg-blue-500 text-white rounded text-sm">Tải ảnh lên</button>
                                 <img id="holdingfilepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
+                                @error('holding_file')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
@@ -149,6 +170,9 @@
                         <div class="flex items-center space-x-2 text-sm bg-gray-100 p-3 rounded">
                             <input type="checkbox" id="confirm" name="confirm" required>
                             <label for="confirm">Tôi xác nhận tất cả dữ liệu đã cung cấp là chính xác và trung thực. Tôi đã đọc và đồng ý với <a href="" class="text-blue-500 hover:underline">Chính Sách Bảo Mật</a>.</label>
+                            @error('confirm')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>

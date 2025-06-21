@@ -21,7 +21,7 @@ class RegisterShopController extends Controller
      */
     private function checkAlreadySeller()
     {
-        if (\App\Models\Seller::where('userID', \Auth::id())->exists()) {
+        if (\App\Models\Seller::where('userID', Auth::id())->exists()) {
             return redirect()->route('seller.home')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
         }
         return null;
@@ -353,12 +353,6 @@ class RegisterShopController extends Controller
                 'bank_account_name' => '',
                 'business_license_id' => $businessLicense->id,
                 'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // 6. Cập nhật vai trò người dùng
-            User::where('id', Auth::id())->update([
-                'role' => 'seller',
                 'updated_at' => now(),
             ]);
 
