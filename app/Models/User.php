@@ -68,6 +68,11 @@ class User extends Authenticatable
         return $this->hasOne(Seller::class);
     }
 
+    public function shop(): HasOne
+    {
+        return $this->hasOne(Shop::class, 'ownerID', 'id');
+    }
+
     // Scopes
     public function scopeActive($query)
     {

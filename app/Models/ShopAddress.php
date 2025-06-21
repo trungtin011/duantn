@@ -12,10 +12,9 @@ class ShopAddress extends Model
     protected $fillable = [
         'shopID',
         'shop_address',
-        'shop_city',
-        'shop_state',
-        'shop_zip_code',
-        'shop_country',
+        'shop_province',
+        'shop_district',
+        'shop_ward',
         'is_default',
     ];
 
@@ -25,6 +24,6 @@ class ShopAddress extends Model
 
     public function shop()
     {
-        return $this->belongsTo(Shop::class, 'shopID');
+        return $this->belongsTo(Shop::class, 'shopID', 'id');
     }
 } 

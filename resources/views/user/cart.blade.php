@@ -79,17 +79,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <!-- Mã giảm giá -->
                 <div class="shadow-sm rounded-lg py-4 px-4">
-                    <h6 class="text-gray-700 mb-3">Mã giảm giá</h6>
-                    <form action="#" method="POST">
-                        @csrf
-                        <div class="flex">
-                            <input type="text" name="coupon"
-                                class="border border-gray-300 rounded-l-md p-2 flex-1 focus:outline-none"
-                                placeholder="Nhập mã giảm giá">
-                            <button type="submit"
-                                class="bg-gray-800 text-white px-4 py-2 rounded-r-md hover:bg-gray-900">Áp dụng mã</button>
-                        </div>
-                    </form>
+                  
                 </div>
 
                 <!-- Tổng tiền -->
@@ -111,8 +101,8 @@
                         </div>
                     </div>
                     <div class="text-right mt-4">
-                        <a href="{{ route('checkout') }}"
-                            class="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-900">Tiến hành thanh toán</a>
+                        <a href="{{ route('checkout', ['flow_type' => 'cart_to_checkout']) }}" class="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-900">Tiến hành thanh
+                            toán</a>
                     </div>
                 </div>
             </div>
@@ -123,7 +113,7 @@
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const buttons = document.querySelectorAll('.remove-cart-item');
-                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                const token = '{{ csrf_token() }}';
 
                 if (!token) {
                     console.error('CSRF token not found!');
@@ -149,7 +139,6 @@
                                 return response.json();
                             })
                             .then(data => {
-                                alert(data.message);
                                 window.location.reload();
                             })
                             .catch(error => {
