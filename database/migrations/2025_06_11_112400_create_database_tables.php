@@ -188,24 +188,9 @@ return new class extends Migration
             $table->text('meta_description')->nullable();
             $table->string('meta_keywords', 255)->nullable();
             $table->enum('status', ['active', 'inactive', 'deleted']);
+            $table->unsignedBigInteger('parent_id')->nullable();
             $table->timestamps();
-            $table->index(['name', 'slug']);
-        });
-
-        // Bảng sub_brand
-        Schema::create('sub_brand', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->unsignedBigInteger('brandID');
-            $table->string('name', 100);
-            $table->string('slug', 100);
-            $table->text('description');
-            $table->text('image_path');
-            $table->string('meta_title', 255)->nullable();
-            $table->text('meta_description')->nullable();
-            $table->string('meta_keywords', 255)->nullable();
-            $table->enum('status', ['active', 'inactive', 'deleted']);
-            $table->timestamps();
-            $table->foreign('brandID')->references('id')->on('brand')->onDelete('cascade');
+            $table->foreign('parent_id')->references('id')->on('brand')->onDelete('cascade');
             $table->index(['name', 'slug']);
         });
 
@@ -223,23 +208,6 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->timestamps();
             $table->foreign('parent_id')->references('id')->on('categories')->onDelete('cascade');
-            $table->index(['name', 'slug']);
-        });
-
-        // Bảng sub_categories
-        Schema::create('sub_categories', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->unsignedBigInteger('categoryID');
-            $table->string('name', 100);
-            $table->string('slug', 100);
-            $table->text('description');
-            $table->text('image_path');
-            $table->string('meta_title', 255)->nullable();
-            $table->text('meta_description')->nullable();
-            $table->string('meta_keywords', 255)->nullable();
-            $table->enum('status', ['active', 'inactive', 'deleted']);
-            $table->timestamps();
-            $table->foreign('categoryID')->references('id')->on('categories')->onDelete('cascade');
             $table->index(['name', 'slug']);
         });
 
@@ -273,8 +241,6 @@ return new class extends Migration
             $table->string('sku', 100)->unique();
             $table->string('brand', 100);
             $table->string('category', 100);
-            $table->string('sub_category', 100)->nullable();
-            $table->string('sub_brand', 100)->nullable();
             $table->enum('status', ['active', 'out_of_stock', 'deleted']);
             $table->string('meta_title', 255)->nullable();
             $table->text('meta_description')->nullable();
@@ -327,31 +293,6 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
-        });
-
-        // Bảng attribute_values
-        Schema::create('attributes', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->timestamps();
-        });
-
-        Schema::create('attribute_values', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('attribute_id');
-            $table->string('value');
-            $table->timestamps();
-            $table->foreign('attribute_id')->references('id')->on('attributes')->onDelete('cascade');
-        });
-
-        Schema::create('product_variant_attribute_values', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('product_variant_id');
-            $table->unsignedBigInteger('attribute_value_id');
-            $table->timestamps();
-            $table->unique(['product_variant_id', 'attribute_value_id'], 'pv_attr_val_unique');
-            $table->foreign('product_variant_id')->references('id')->on('product_variants')->onDelete('cascade');
-            $table->foreign('attribute_value_id')->references('id')->on('attribute_values')->onDelete('cascade');
         });
 
         // Bảng cart
@@ -559,7 +500,7 @@ return new class extends Migration
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
         });
 
-        // Bảng notification
+        // Bảng notifications
         Schema::create('notifications', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('shop_id')->nullable();
@@ -586,7 +527,7 @@ return new class extends Migration
             $table->index(['receiver_shop_id', 'status'], 'notif_shop_status_idx');
         });
 
-        // Bảng stock_transactions (THÊM MỚI)
+        // Bảng stock_transactions
         Schema::create('stock_transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('shopID');
@@ -729,7 +670,7 @@ return new class extends Migration
         Schema::dropIfExists('cache');
         Schema::dropIfExists('point_transactions');
         Schema::dropIfExists('report');
-        Schema::dropIfExists('stock_transactions'); // THÊM MỚI
+        Schema::dropIfExists('stock_transactions');
         Schema::dropIfExists('notifications');
         Schema::dropIfExists('view_history');
         Schema::dropIfExists('wishlist');
@@ -743,17 +684,12 @@ return new class extends Migration
         Schema::dropIfExists('shop_order');
         Schema::dropIfExists('orders');
         Schema::dropIfExists('cart');
-        Schema::dropIfExists('product_variant_attribute_values');
-        Schema::dropIfExists('attribute_values');
-        Schema::dropIfExists('attributes');
         Schema::dropIfExists('product_dimensions');
         Schema::dropIfExists('product_images');
         Schema::dropIfExists('product_variants');
         Schema::dropIfExists('products');
         Schema::dropIfExists('employees');
-        Schema::dropIfExists('sub_categories');
         Schema::dropIfExists('categories');
-        Schema::dropIfExists('sub_brand');
         Schema::dropIfExists('brand');
         Schema::dropIfExists('shop_shipping_options');
         Schema::dropIfExists('shop_followers');
