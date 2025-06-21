@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
                 })
                 ->whereIn('id', function($query) {
                     $query->selectRaw('MIN(id)')
-                        ->from('notification')
+                        ->from('notifications')
                         ->groupBy('title', 'type', 'receiver_type');
                 })
                 ->orderBy('created_at', 'desc')
@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
                 })
                 ->whereIn('id', function($query) {
                     $query->selectRaw('MIN(id)')
-                        ->from('notification')
+                        ->from('notifications')
                         ->groupBy('title', 'type', 'receiver_type');
                 })
                 ->orderBy('created_at', 'desc')

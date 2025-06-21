@@ -114,7 +114,8 @@
     overflow: hidden;
 }
 
-.slide-promotion, .slide-best-seller {
+.slide-promotion,
+.slide-best-seller {
     width: 372px !important;
     max-width: 100%;
     height: auto !important;
@@ -140,4 +141,66 @@
 
 .card-button-container {
     width: 100%;
+}
+
+/* Hover thông báo customer */
+.dropdown-notification {
+    position: relative;
+}
+
+.dropdown-notification .dropdown-notification-content {
+    display: none;
+    top: calc(100% + 15px);
+    right: 0;
+    z-index: 10;
+}
+
+.dropdown-notification:hover .dropdown-notification-content {
+    display: block;
+}
+
+.dropdown-notification:hover::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 15px;
+    background: transparent;
+    z-index: 9;
+}
+
+.clip-triangle {
+    clip-path: content-box polygon(50% 0, 100% 100%, 0 100%);
+}
+
+/* Dropdown User */
+.dropdown-parent {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    top: calc(100% + 15px);
+    right: 0;
+    z-index: 10;
+}
+
+.dropdown-parent:hover::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 15px;
+    background: transparent;
+    z-index: 9;
+}
+
+.clip-triangle-second {
+    clip-path: content-box polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.dropdown-parent:hover .dropdown-content {
+    display: block;
 }

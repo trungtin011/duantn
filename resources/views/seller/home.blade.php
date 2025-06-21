@@ -1,5 +1,9 @@
 @extends('layouts.seller_home')
-
+{{-- import css --}}
+@push('css')
+<link rel="stylesheet" href="{{ asset('css/seller/seller-home.css') }}">
+@endpush
+@section('title', 'Trang chủ')
 @section('content')
 <div class="flex min-h-[calc(100vh-40px)]">
   <main class="flex-1 p-4 space-y-6 overflow-y-auto">

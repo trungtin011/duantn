@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Shopee Kênh Người Bán')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
-    <!-- Quill CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
-    <!-- Quill JS -->
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-    <link rel="stylesheet" href="{{ asset('css/seller/seller-home.css') }}">
+
+    <script src="https://cdn.tiny.cloud/1/bwf2fyyh0knkijbdmdtqiak2d3uzu8b0rxcg0zuwqwdsddde/tinymce/7/tinymce.min.js"
+        referrerpolicy="origin"></script>
+
     <link rel="stylesheet" href="{{ asset('css/seller/seller-products.css') }}">
     @stack('styles')
     <style>
@@ -35,10 +35,10 @@
 <body class="bg-[#f5f5f7] text-[#222222] text-sm leading-relaxed font-[Inter]" x-data="{ notificationDropdownOpen: false }">
     <header class="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white sticky top-0 z-30">
         <div class="flex items-center space-x-1">
-            <img alt="Shopee logo orange square with white S letter" class="w-6 h-6" height="24"
-                src="https://storage.googleapis.com/a1aa/image/85613291-9ad9-4179-6ad5-12944deb52ae.jpg"
+            <img alt="Logo orange square with white S letter" class="w-6 h-6" height="24"
+                src="https://storage.googleapis.com/a1aa/image/0e0e42f3-afbf-4f26-d5b2-574d3f5640d2.jpg"
                 width="24" />
-            <span class="text-orange-500 font-semibold text-base">Shopee</span>
+            <span class="text-orange-500 font-semibold text-base">...</span>
             <span class="font-semibold text-base">Kênh Người Bán</span>
         </div>
         <div class="flex items-center space-x-6 text-gray-600">
@@ -127,16 +127,21 @@
                 <span class="text-xs text-gray-700 select-none">{{ Auth::user()->username ?? 'Tài khoản' }}</span>
                 <i class="fas fa-chevron-down text-xs text-gray-700"></i>
                 <!-- Dropdown menu -->
-                <div class="absolute right-0 top-10 z-50 min-w-[180px] bg-white border border-gray-200 rounded shadow-lg hidden group-hover:block group-focus-within:block"
+                <div class="absolute right-0 top-10 z-50 min-w-[200px] bg-white border border-gray-200 rounded shadow-lg hidden group-hover:block group-focus-within:block"
                     id="user-menu-dropdown">
-                    <a href="{{ route('seller.settings') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"><i
-                            class="fas fa-cog mr-2"></i>Cài đặt cửa hàng</a>
-                    <a href="{{ route('seller.profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"><i
-                            class="fas fa-user mr-2"></i>Thông tin cá nhân</a>
+                    <a href="{{ route('seller.settings') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
+                            class="fas fa-cog mr-2"></i>Cài đặt cửa hàng
+                    </a>
+                    <a href="{{ route('seller.profile') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
+                            class="fas fa-user mr-2"></i>Thông tin cá nhân
+                    </a>
                     <a href="{{ route('logout') }}"
                         onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
                         class="block px-4 py-2 text-gray-700 hover:bg-gray-100"><i
-                            class="fas fa-sign-out-alt mr-2"></i>Đăng xuất</a>
+                            class="fas fa-sign-out-alt mr-2"></i>Đăng xuất
+                    </a>
                     <form id="logout-form-header" action="{{ route('logout') }}" method="POST" class="hidden">@csrf
                     </form>
                 </div>

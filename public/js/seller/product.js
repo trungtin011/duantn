@@ -1,21 +1,44 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Khởi tạo Quill Editor (nếu có)
-    const quillEditor = document.querySelector('#quill-editor .ql-container');
-    if (quillEditor) {
-        const quill = new Quill(quillEditor, {
-            theme: 'snow',
-            placeholder: 'Viết mô tả chi tiết...',
-            modules: {
-                toolbar: '#quill-editor .ql-toolbar'
-            }
-        });
-
-        const productForm = document.getElementById('product-form');
-        if (productForm) {
-            productForm.onsubmit = function () {
-                document.getElementById('description').value = quill.root.innerHTML;
+    tinymce.init({
+        selector: '#description',
+        height: 300,
+        plugins: 'image imagetools code link lists table media',
+        toolbar: 'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | forecolor backcolor | code | removeformat',
+        images_upload_url: '{{ route("seller.upload.image") }}', // Sử dụng route Laravel
+        image_advtab: true,
+        image_caption: true,
+        file_picker_types: 'image',
+        file_picker_callback: function (cb, value, meta) {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.onchange = function () {
+                const file = this.files[0];
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const id = 'blobid' + (new Date()).getTime();
+                    const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                    const base64 = reader.result.split(',')[1];
+                    const blobInfo = blobCache.create(id, file, base64);
+                    blobCache.add(blobInfo);
+                    cb(blobInfo.blobUri(), { title: file.name });
+                };
+                reader.readAsDataURL(file);
             };
+            input.click();
+        },
+        setup: function (editor) {
+            editor.on('change', function () {
+                editor.save();
+            });
         }
+    });
+
+    const productForm = document.getElementById('product-form');
+    if (productForm) {
+        productForm.addEventListener('submit', function () {
+            tinymce.triggerSave();
+        });
     }
 
     // Xử lý SEO Preview và đồng bộ tên sản phẩm với meta title
@@ -103,43 +126,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     <h5 class="text-gray-700 font-medium">Biến thể #${variantCount + 1}</h5>
                     <button type="button" class="remove-variant text-red-500 hover:text-red-700">Xóa</button>
                 </div>
+                <input type="hidden" name="variants[${variantCount}][index]" value="${variantCount}">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">Tên biến thể <span class="text-red-500">*</span></label>
-                        <input type="text" name="variants[${variantCount}][name]" class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tên biến thể (ví dụ: Đỏ - Nhỏ)" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">Giá gốc <span class="text-red-500">*</span></label>
-                        <input type="number" name="variants[${variantCount}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Giá gốc" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">Giá nhập <span class="text-red-500">*</span></label>
-                        <input type="number" name="variants[${variantCount}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Giá nhập" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">Giá bán <span class="text-red-500">*</span></label>
-                        <input type="number" name="variants[${variantCount}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Giá bán" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">SKU <span class="text-red-500">*</span></label>
-                        <input type="text" name="variants[${variantCount}][sku]" class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="SKU biến thể" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho <span class="text-red-500">*</span></label>
-                        <input type="number" name="variants[${variantCount}][stock]" class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Số lượng tồn kho" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">Thuế VAT (%)</label>
-                        <input type="number" name="variants[${variantCount}][vat_amount]" step="0.01" class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Phần trăm thuế VAT">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                        <input type="file" name="variants[${variantCount}][image]" class="variant-image-input w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*">
-                        <div class="variant-image-preview mt-2 hidden">
-                            <img src="" alt="Preview" class="w-24 h-auto rounded-md">
-                            <button type="button" class="remove-image text-red-500 hover:text-red-700 text-sm mt-1">Xóa hình ảnh</button>
-                        </div>
-                    </div>
+                    <div><input type="text" name="variants[${variantCount}][name]" ...></div>
+                    <div><input type="number" name="variants[${variantCount}][price]" ...></div>
+                    <div><input type="number" name="variants[${variantCount}][purchase_price]" ...></div>
+                    <div><input type="number" name="variants[${variantCount}][sale_price]" ...></div>
+                    <div><input type="text" name="variants[${variantCount}][sku]" ...></div>
+                    <div><input type="number" name="variants[${variantCount}][stock]" ...></div>
+                    <div><input type="file" name="variants[${variantCount}][image]" ...></div>
                 </div>
             `;
 
@@ -605,7 +600,6 @@ function addAttribute() {
     });
 }
 
-
 function generateVariants() {
     let attributes = document.querySelectorAll('[name="attributes[][name]"]');
     let values = document.querySelectorAll('[name="attributes[][values]"]');
@@ -622,57 +616,101 @@ function generateVariants() {
 
     variants.forEach((variant, index) => {
         let variantDiv = document.createElement('div');
-        variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white');
-
+        variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white', 'relative');
         variantDiv.innerHTML = `
             <div class="flex justify-between items-center mb-3">
                 <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
-                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600"
-                    onclick="removeVariant(this)">Xóa</button>
+                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-variant">Xóa</button>
             </div>
+            <input type="hidden" name="variants[${index}][index]" value="${index}">
             <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
-
-            <!-- Dữ liệu sản phẩm -->
-            <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <div>
-                    <label class="block text-gray-700 font-medium">Giá gốc</label>
-                    <input type="number" name="variants[${index}][price]" step="0.01" 
-                        class="w-full border p-3 rounded-md focus:ring-blue-500">
+                    <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                    <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc">
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium">Giá nhập</label>
-                    <input type="number" name="variants[${index}][purchase_price]" step="0.01" 
-                        class="w-full border p-3 rounded-md focus:ring-blue-500">
+                    <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                    <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập">
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium">Giá bán</label>
-                    <input type="number" name="variants[${index}][sale_price]" step="0.01" 
-                        class="w-full border p-3 rounded-md focus:ring-blue-500">
+                    <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                    <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán">
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium">SKU</label>
-                    <input type="text" name="variants[${index}][sku]" 
-                        class="w-full border p-3 rounded-md focus:ring-blue-500">
+                    <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                    <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU">
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium">Số lượng tồn kho</label>
-                    <input type="number" name="variants[${index}][stock_total]" 
-                        class="w-full border p-3 rounded-md focus:ring-blue-500">
+                    <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                    <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng">
                 </div>
             </div>
-
-            <!-- Hình ảnh biến thể -->
-            <div class="mt-3">
-                <label class="block text-gray-700 font-medium">Ảnh biến thể ${index + 1}</label>
-                <input type="file" name="variant_images[${index}][]" multiple accept="image/*"
-                    class="w-full border p-2 rounded-md focus:ring-blue-500"
-                    onchange="previewVariantImage(event, ${index})">
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
+                <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
                 <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
         `;
-
         variantContainer.appendChild(variantDiv);
+
+        // Thêm sự kiện xóa cho nút "Xóa"
+        const removeButton = variantDiv.querySelector('.remove-variant');
+        removeButton.addEventListener('click', function () {
+            variantDiv.remove();
+            updateVariantIndices(); // Cập nhật lại chỉ số sau khi xóa
+        });
     });
+}
+
+// Hàm cập nhật chỉ số sau khi xóa
+function updateVariantIndices() {
+    const variantItems = document.querySelectorAll('#variant-container > div');
+    variantItems.forEach((item, index) => {
+        const label = item.querySelector('h5');
+        label.textContent = `Biến thể ${index + 1}: ${item.querySelector('input[name$="[name]"]').value}`;
+        const inputs = item.querySelectorAll('input[name], select[name]');
+        inputs.forEach(input => {
+            const name = input.getAttribute('name').replace(/\[\d+\]/, `[${index}]`);
+            input.setAttribute('name', name);
+        });
+        const previewId = `preview-images-${index}`;
+        item.querySelector('div[id^="preview-images-"]').id = previewId;
+        item.querySelector('input[type="file"]').setAttribute('onchange', `previewVariantImage(event, ${index})`);
+    });
+}
+
+// Giữ nguyên các hàm khác như getCombinations, previewVariantImage, removeVariant
+function getCombinations(arr) {
+    return arr.reduce((acc, val) => acc.flatMap(a => val.map(v => [...a, v])), [[]]);
+}
+
+function previewVariantImage(event, index) {
+    let previewContainer = document.getElementById(`preview-images-${index}`);
+    previewContainer.innerHTML = '';
+
+    Array.from(event.target.files).forEach((file, fileIndex) => {
+        let reader = new FileReader();
+        reader.onload = function (e) {
+            let imgContainer = document.createElement('div');
+            imgContainer.classList.add('relative');
+            imgContainer.innerHTML = `
+                <img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md border border-gray-300">
+                <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md" onclick="removeImage(this)">✖</button>
+            `;
+            previewContainer.appendChild(imgContainer);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage(element) {
+    element.parentElement.remove();
+}
+
+function removeVariant(element) {
+    element.closest('.p-6').remove();
+    updateVariantIndices();
 }
 
 function getCombinations(arr) {
@@ -708,12 +746,12 @@ function removeImage(element) {
     element.parentElement.remove();
 }
 
-document.getElementById('select-all').addEventListener('change', function () {
-    let checkboxes = document.querySelectorAll('.select-item');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-    });
-});
+// document.getElementById('select-all').addEventListener('change', function () {
+//     let checkboxes = document.querySelectorAll('.select-item');
+//     checkboxes.forEach(checkbox => {
+//         checkbox.checked = this.checked;
+//     });
+// });
 
 document.getElementById('statusFilter').addEventListener('change', function () {
     this.form.submit(); // Gửi form ngay khi thay đổi trạng thái

@@ -139,12 +139,12 @@
                         <div class="mb-10">
                             <h2 class="text-lg font-semibold mb-2">Chọn địa chỉ</h2>
                             @if (isset($user_addresses) && $user_addresses->count() > 0)
-                                @foreach ($user_addresses as $address)
                             <select name="address" id="address"
                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                @foreach ($user_addresses as $address)
                                 <option value="{{ $address->id }}">{{ $address->receiver_name }} - {{ $address->address }} - {{ $address->province }} - {{ $address->district }} - {{ $address->ward }} - {{ $address->zip_code }}</option>
-                            </select>
                                 @endforeach
+                            </select>
                             @else
                                 <p>Không có địa chỉ nào</p>
                             @endif
@@ -401,7 +401,7 @@
         
         function calculateShippingFee(addressId) {
             if (!addressId) return;
- 
+        
             document.getElementById('shipping-fee').textContent = '0 VND';
             fetch('/calculate-shipping-fee', {
                 method: 'POST',

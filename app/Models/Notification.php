@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Notification extends Model
 {
-    protected $table = 'notification';
+    protected $table = 'notifications';
     
     protected $fillable = [
         'shop_id',

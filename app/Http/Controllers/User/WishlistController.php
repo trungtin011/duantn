@@ -13,8 +13,21 @@ class WishlistController extends Controller
 
     public function index()
     {
-        $wishlist = Wishlist::where('userID', Auth::user()->id)->get();
-        return view('client.wishlist', compact('wishlist'));
+        $user = Auth::user();
+
+        // Lấy danh sách sản phẩm yêu thích của người dùng
+        $wishlistItems = Wishlist::where('userID', $user->id)
+            ->with([
+                'product' => function ($query) {
+                    $query->with(['images' => function ($q) {
+                        $q->where('is_default', 1); // Lấy ảnh mặc định
+                    }]);
+                },
+                'shop'
+            ])
+            ->get();
+
+        return view('user.account.wishlist.wishlist', compact('user', 'wishlistItems'));
     }
 
     public function store(Request $request)
