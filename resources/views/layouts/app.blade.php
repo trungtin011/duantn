@@ -168,34 +168,7 @@
                         window.userId = "{{ session('user_id') }}";
                     </script>
                 @endauth
-                @guest
-                    <!-- Notification Bell -->
-                    <a href="#" id="notification-bell" class="relative">
-                        <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
-                        <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">0</span>
-                    </a>
-
-                    <!-- Notification Dropdown -->
-                    <div x-show="notificationDropdownOpen" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="absolute top-20 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
-                        <div class="py-2">
-                            <div class="px-4 py-2 border-b border-gray-100">
-                                <h3 class="text-sm font-semibold text-gray-900">Thông báo</h3>
-                            </div>
-                            <div class="max-h-96 overflow-y-auto" id="notification-list">
-                                <div class="px-4 py-3 text-center text-gray-500">
-                                    <p>Không có thông báo mới</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endguest
+                
 
                 <!-- Delete Confirmation Modal -->
                 <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden items-center justify-center z-50">
@@ -620,7 +593,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
     window.Laravel = {
-        user: JSON.parse('{!! json_encode(Auth::user()) !!}')
+        user: @json(Auth::user())
     };
     </script>
     @stack('scripts')

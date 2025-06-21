@@ -12,7 +12,6 @@ use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\Order;
 use App\Models\OrderAddress;
-use App\Models\OrderStatusHistory;
 use App\Models\ShopOrder;
 use App\Models\ItemsOrder;
 use Illuminate\Support\Facades\Http;
@@ -133,7 +132,6 @@ class CheckoutController extends Controller
 
         $order = Order::create([
             'userID' => Auth::id(),
-            'shopID' => 1,
             'user_address' => $user_address->id,
             'total_price' => $total_price,
             'payment_method' => $request->payment,
@@ -164,10 +162,8 @@ class CheckoutController extends Controller
             'quantity' => $quantity,
             'brand' => $product->brand,
             'category' => $product->category,
-            'sub_category' => $product->sub_category,
-            'color' => $product->variants->first()->color,
-            'size' => $product->variants->first()->size,
-            'variant_name' => $product->variants->first()->variant_name,
+            'attribute_value' => $product->variants->first()->attribute_value,
+            'attribute_name' => $product->variants->first()->attribute_name,
             'product_image' => $product->image,
             'unit_price' => $product->variants->first()->price,
             'total_price' => $total_price,

@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductVariant extends Model
 {
     protected $table = 'product_variants';
-    
+
     protected $fillable = [
         'productID',
         'variant_name',
@@ -19,10 +20,6 @@ class ProductVariant extends Model
         'stock',
         'sku',
         'status',
-        'vat_amount',
-        'discount_type',
-        'size',
-        'color',
     ];
 
     protected $casts = [
@@ -43,14 +40,15 @@ class ProductVariant extends Model
         return $this->hasOne(ProductDimension::class, 'variantID');
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class, 'variantID');
     }
 
-    public function attributeValues()
+    public function attributeValues(): HasMany
     {
-        return $this->hasMany(AttributeValue::class);
+        return $this->hasMany(ProductVariantAttributeValue::class, 'product_variant_id')
+            ->with('attributeValue');
     }
 
     // Scopes

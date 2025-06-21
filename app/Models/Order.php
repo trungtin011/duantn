@@ -12,7 +12,6 @@ class Order extends Model
     protected $table = 'orders';
     protected $fillable = [
         'userID', // Cột trong migration là userID
-        'shopID',
         'order_code',
         'total_price',
         'couponID',

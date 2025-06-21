@@ -21,38 +21,56 @@
                             <th class="py-3 text-sm font-semibold text-gray-700">Giá</th>
                             <th class="py-3 text-sm font-semibold text-gray-700">Số lượng</th>
                             <th class="py-3 text-sm font-semibold text-gray-700">Tổng</th>
+                            <th class="py-3 text-sm font-semibold text-gray-700">Xóa</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $total = 0; @endphp
-                        @foreach ($cartItems as $item)
-                            @php
-                                $subtotal = $item->price * $item->quantity;
-                                $total += $subtotal;
-                            @endphp
-                            <tr class="border-b border-gray-200">
-                                <td class="py-4 px-4">
-                                    <div class="flex items-center">
-                                        <img src="{{ $item->product->image ?? 'https://via.placeholder.com/150' }}"
-                                            alt="{{ $item->product->name }}" class="w-[100px] h-[100px] object-contain mr-4">
-                                        <span class="text-gray-700">{{ $item->product->name }}</span>
-                                    </div>
-                                </td>
-                                <td class="py-4 text-center text-gray-700">{{ number_format($item->price, 0, ',', '.') }}đ</td>
-                                <td class="py-4 text-center">
-                                    <div class="flex items-center justify-center">
-                                        <form action="{{ route('cart.update', $item->id) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="number" name="quantity" value="{{ $item->quantity }}"
-                                                class="w-16 text-center border border-gray-300" min="1">
-                                            <button type="submit" class="ml-2 px-2 py-1 border border-gray-300 hover:bg-gray-100">Cập nhật</button>
-                                        </form>
-                                    </div>
-                                </td>
-                                <td class="py-4 text-center text-gray-700">{{ number_format($subtotal, 0, ',', '.') }}đ</td>
+                        @if ($cartItems->isEmpty())
+                            <tr>
+                                <td colspan="5" class="py-4 text-center text-gray-500">Giỏ hàng của bạn đang trống.</td>
                             </tr>
-                        @endforeach
+                        @else
+                            @foreach ($cartItems as $item)
+                                @php
+                                    $subtotal = $item->price * $item->quantity;
+                                    $total += $subtotal;
+                                @endphp
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center">
+                                            <img src="{{ $item->product->image ?? 'https://via.placeholder.com/150' }}"
+                                                alt="{{ $item->product->name }}"
+                                                class="w-[100px] h-[100px] object-contain mr-4">
+                                            <span class="text-gray-700">{{ $item->product->name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 text-center text-gray-700">
+                                        {{ number_format($item->price, 0, ',', '.') }}đ</td>
+                                    <td class="py-4 text-center">
+                                        <div class="flex items-center justify-center">
+                                            <form action="{{ route('cart.update', $item->id) }}" method="POST">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="number" name="quantity" value="{{ $item->quantity }}"
+                                                    class="w-16 text-center border border-gray-300" min="1">
+                                                <button type="submit"
+                                                    class="ml-2 px-2 py-1 border border-gray-300 hover:bg-gray-100">Cập
+                                                    nhật</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 text-center text-gray-700">{{ number_format($subtotal, 0, ',', '.') }}đ
+                                    </td>
+                                    <td class="py-4 text-center">
+                                        <button class="remove-cart-item text-red-500 hover:text-red-700"
+                                            data-id="{{ $item->id }}">
+                                            X
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
                     </tbody>
                 </table>
             </div>
@@ -61,16 +79,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <!-- Mã giảm giá -->
                 <div class="shadow-sm rounded-lg py-4 px-4">
-                    <h6 class="text-gray-700 mb-3">Mã giảm giá</h6>
-                    <form action="#" method="POST">
-                        @csrf
-                        <div class="flex">
-                            <input type="text" name="coupon"
-                                class="border border-gray-300 rounded-l-md p-2 flex-1 focus:outline-none"
-                                placeholder="Nhập mã giảm giá">
-                            <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-r-md hover:bg-gray-900">Áp dụng mã</button>
-                        </div>
-                    </form>
+                  
                 </div>
 
                 <!-- Tổng tiền -->
@@ -99,4 +108,46 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const buttons = document.querySelectorAll('.remove-cart-item');
+                const token = '{{ csrf_token() }}';
+
+                if (!token) {
+                    console.error('CSRF token not found!');
+                    alert('Không tìm thấy CSRF token! Vui lòng tải lại trang.');
+                    return;
+                }
+
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const cartItemId = button.getAttribute('data-id');
+
+                        fetch(`/cart/remove/${cartItemId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': token,
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                },
+                            })
+                            .then(response => {
+                                if (!response.ok) throw new Error(
+                                    `HTTP error! Status: ${response.status}`);
+                                return response.json();
+                            })
+                            .then(data => {
+                                window.location.reload();
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Đã có lỗi xảy ra khi xóa sản phẩm! Vui lòng thử lại.');
+                            });
+                    });
+                });
+            });
+        </script>
+    @endpush
 @endsection

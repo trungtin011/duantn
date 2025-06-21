@@ -3,19 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Attribute extends Model
 {
     protected $table = 'attributes';
+
     protected $fillable = ['name'];
 
-    public function attributeValues()
+    // Relationships
+    public function attributeValues(): HasMany
     {
-        return $this->hasMany(\App\Models\AttributeValue::class, 'attribute_id');
+        return $this->hasMany(AttributeValue::class, 'attribute_id');
     }
 
-    public function products()
+    public function products(): HasMany
     {
-        return $this->belongsToMany(Product::class, 'product_attributes')->withPivot('value');
+        return $this->hasManyThrough(
+            Product::class,
+            ProductVariant::class,
+            'id',
+            'id',
+            'id',
+            'productID'
+        )->join('product_variant_attribute_values', 'product_variants.id', '=', 'product_variant_attribute_values.product_variant_id')
+            ->join('attribute_values', 'product_variant_attribute_values.attribute_value_id', '=', 'attribute_values.id')
+            ->where('attribute_values.attribute_id', $this->id);
     }
 }

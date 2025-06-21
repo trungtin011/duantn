@@ -24,14 +24,14 @@ class ProductDimension extends Model
     ];
 
     // Relationships
-    public function product(): BelongsTo
+    public function product()
     {
-        return $this->belongsTo(Product::class, 'productID');
+        return $this->belongsTo(Product::class, 'productID', 'id');
     }
 
-    public function variant(): BelongsTo
+    public function variant()
     {
-        return $this->belongsTo(ProductVariant::class, 'variantID');
+        return $this->belongsTo(ProductVariant::class, 'variantID', 'id');
     }
 
     // Methods
@@ -44,4 +44,4 @@ class ProductDimension extends Model
     {
         return "{$this->length} x {$this->width} x {$this->height}";
     }
-} 
+}
