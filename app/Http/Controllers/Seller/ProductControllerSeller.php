@@ -49,9 +49,10 @@ class ProductControllerSeller extends Controller
      */
     public function create()
     {
+        $attributes = Attribute::all();
         $categories = Category::where('status', 'active')->get();
         $brands = Brand::where('status', 'active')->get();
-        return view('seller.products.create', compact('categories', 'brands'));
+        return view('seller.products.create', compact('categories', 'brands', 'attributes'));
     }
 
     /**
@@ -357,9 +358,10 @@ class ProductControllerSeller extends Controller
      */
     public function edit($id)
     {
+        $attributes = Attribute::all();
         $categories = Category::where('status', 'active')->get();
         $brands = Brand::where('status', 'active')->get();
-        return view('seller.products.create', compact('categories', 'brands'));
+        return view('seller.products.create', compact('categories', 'brands', 'attributes'));
     }
 
     /**
@@ -596,6 +598,16 @@ class ProductControllerSeller extends Controller
 
             return response()->json($values);
         }
-        return response()->json([], 200); // Trả về mảng rỗng nếu không có thuộc tính
+        return response()->json([], 200);
+    }
+
+    public function simple()
+    {
+        return view('product', ['type' => 'simple']);
+    }
+
+    public function variable()
+    {
+        return view('product', ['type' => 'variable']);
     }
 }

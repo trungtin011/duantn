@@ -33,9 +33,14 @@ class OrderItem extends Model
     ];
 
     // Relationships
-    public function order(): BelongsTo
+    public function order()
     {
-        return $this->belongsTo(Order::class, 'orderID'); // Chỉ định khóa ngoại là orderID
+        return $this->belongsTo(Order::class, 'orderID', 'id');
+    }
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class, 'shop_orderID', 'id');
     }
 
     public function shopOrder(): BelongsTo
