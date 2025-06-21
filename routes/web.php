@@ -28,6 +28,7 @@ use App\Http\Controllers\User\WishlistController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use App\Http\Controllers\User\CheckinController;
+use App\Http\Controllers\User\OrderController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -155,6 +156,9 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::get('/{id}', [ProductControllerSeller::class, 'show'])->name('seller.products.show');
         Route::get('/api/attribute-values', [ProductControllerSeller::class, 'getAttributeValues']);
         Route::post('/upload', [ProductControllerSeller::class, 'uploadImage'])->name('seller.upload.image');
+
+        Route::get('/simple', [ProductController::class, 'simple'])->name('product.simple');
+        Route::get('/variable', [ProductController::class, 'variable'])->name('product.variable');
     });
 });
 
@@ -223,9 +227,7 @@ Route::prefix('customer')->group(function () {
         })->name('checkout');
 
         // Trang lịch sử đơn hàng
-        Route::get('/user/order/order-history', function () {
-            return view('user.order.order_history');
-        })->name('order_history');
+        Route::get('/user/order/order-history', [OrderController::class, 'history'])->name('order_history');
 
         // Trang chi tiết đơn hàng
         Route::get('/user/order/order-detail', function () {

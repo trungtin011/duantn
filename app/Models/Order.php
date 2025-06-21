@@ -41,9 +41,9 @@ class Order extends Model
         return $this->belongsTo(User::class, 'userID'); // Chỉ định rõ cột userID
     }
 
-    public function shop(): BelongsTo
+    public function shop()
     {
-        return $this->belongsTo(Shop::class, 'shopID'); // Chỉ định rõ cột shopID
+        return $this->hasOneThrough(Shop::class, OrderItem::class, 'orderID', 'id', 'id', 'shop_orderID');
     }
 
     public function coupon(): BelongsTo
@@ -53,7 +53,7 @@ class Order extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class, 'order_id', 'id');
+        return $this->hasMany(OrderItem::class, 'orderID', 'id');
     }
 
     public function address(): HasOne
