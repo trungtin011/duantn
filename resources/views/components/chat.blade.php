@@ -50,7 +50,7 @@
                             <div class="flex items-start px-3 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50"
                                 :class="{'bg-orange-50': isCustomer ? conversation.id === selectedConversation.id : conversation.user_id === selectedConversation.user_id}"
                                 @click="selectConversation(conversation)">
-                                <img :src="(isCustomer ? (conversation.shop_logo ? '/storage/' + conversation.shop_logo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conversation.shop_name)) : (conversation.user_avatar ? '/storage/' + conversation.user_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conversation.user_name)))" class="w-6 h-6 flex-shrink-0 rounded-sm object-cover bg-gray-200" />
+                                <img :src="(isCustomer ? (conversation.shop_logo ? conversation.shop_logo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conversation.shop_name)) : (conversation.user_avatar ? conversation.user_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conversation.user_name)))" class="w-6 h-6 flex-shrink-0 rounded-sm object-cover bg-gray-200" />
                                 <div class="ml-3 flex-1 min-w-0">
                                     <div class="flex justify-between items-center">
                                         <p class="text-xs font-bold text-gray-900 truncate max-w-[130px]" x-text="isCustomer ? conversation.shop_name : conversation.user_name"></p>
@@ -68,7 +68,7 @@
                 <div x-show="selectedConversation" class="flex-1 flex flex-col bg-gray-50">
                     <!-- Chat header -->
                     <div class="flex items-center px-4 py-2 border-b border-gray-200">
-                        <img :src="(isCustomer ? (selectedConversation.shop_logo ? '/storage/' + selectedConversation.shop_logo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedConversation.shop_name)) : (selectedConversation.user_avatar ? '/storage/' + selectedConversation.user_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedConversation.user_name)))" class="w-8 h-8 rounded-full object-cover" />
+                        <img :src="(isCustomer ? (selectedConversation.shop_logo ? selectedConversation.shop_logo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedConversation.shop_name)) : (selectedConversation.user_avatar ? selectedConversation.user_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedConversation.user_name)))" class="w-8 h-8 rounded-full object-cover" />
                         <p class="text-sm font-semibold ml-3" x-text="isCustomer ? selectedConversation.shop_name : selectedConversation.user_name"></p>
                     </div>
                     <!-- Messages -->
@@ -76,7 +76,7 @@
                         <template x-for="message in messages" :key="message.id">
                             <div class="flex" :class="{'justify-end': (userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'), 'justify-start': !((userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'))}">
                                 <div class="flex items-end" :class="{'flex-row-reverse': (userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop')}">
-                                    <img :src="message.sender_avatar ? '/storage/' + message.sender_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.sender_name)" class="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                                    <img :src="message.sender_avatar ? message.sender_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.sender_name)" class="w-6 h-6 rounded-full object-cover flex-shrink-0" />
                                     <div class="rounded-lg p-2 max-w-xs mx-2 text-sm"
                                         :class="{'bg-orange-500 text-white': (userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'), 'bg-gray-200 text-gray-800': !((userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'))}">
                                         <p x-text="message.message"></p>
@@ -89,6 +89,22 @@
                     </div>
                     <!-- Message input -->
                     <div class="border-t border-gray-200 p-4">
+                        <!-- Danh sách tin nhắn nằm ngay trên input -->
+                        <div class="overflow-y-auto scrollbar-thin max-h-80 space-y-4 mb-4" x-ref="messagesContainer">
+                            <template x-for="message in messages" :key="message.id">
+                                <div class="flex" :class="{'justify-end': (userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'), 'justify-start': !((userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'))}">
+                                    <div class="flex items-end" :class="{'flex-row-reverse': (userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop')}">
+                                        <img :src="message.sender_avatar ? message.sender_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.sender_name)" class="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                                        <div class="rounded-lg p-2 max-w-xs mx-2 text-sm"
+                                            :class="{'bg-orange-500 text-white': (userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'), 'bg-gray-200 text-gray-800': !((userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'))}">
+                                            <p x-text="message.message"></p>
+                                            <img x-show="message.image_url" :src="message.image_url" class="max-w-full h-auto mt-2 rounded-md" />
+                                            <span class="block text-right text-xs mt-1" :class="{'text-orange-200': (userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'), 'text-gray-500': !((userRole === 'customer' && message.sender_type === 'user') || (userRole === 'seller' && message.sender_type === 'shop'))}" x-text="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                         <form @submit.prevent="sendMessage" class="flex items-center space-x-2">
                             <input type="file" x-ref="imageInput" @change="handleImageChange" class="hidden" accept="image/*" />
                             <button type="button" @click="$refs.imageInput.click()" class="text-gray-500 hover:text-orange-500">
@@ -140,7 +156,7 @@
             previewImage: null,
             userRole: '{{ Auth::user()->role ?? null }}',
             currentUserId: '{{ Auth::id() ?? null }}',
-            userShopId: '{{ Auth::user()->shop->id ?? null }}', // Add user's shop ID for sellers
+            userShopId: '{{ Auth::user()->seller->shop->id ?? null }}', // Add user's shop ID for sellers
             isCustomer: false,
             isSeller: false,
             currentChannel: null, // To store the current Pusher channel subscription

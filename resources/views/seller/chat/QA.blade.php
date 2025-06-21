@@ -3,10 +3,11 @@
 @section('content')
 <div class="bg-white text-gray-900 font-sans px-4 py-6 max-w-3xl mx-auto relative" id="qa-chat-resizable" style="resize: none; min-width: 320px; width: 100%; max-width: 700px;"
     x-data="qaChatDemo({
-        sellerShopId: '{{ Auth::user()->shop->id ?? null }}',
+        sellerShopId: '{{ optional(optional(Auth::user())->seller)->shop->id ?? null }}',
         csrfToken: '{{ csrf_token() }}',
-        pusherKey: '{{ env('PUSHER_APP_KEY') }}',
-        pusherCluster: '{{ env('PUSHER_APP_CLUSTER') }}'
+        pusherKey: '{{ config('broadcasting.connections.pusher.key') }}',
+        pusherCluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+        sellerShopLogo: '{{ optional(optional(Auth::user())->seller)->shop->shop_logo ? Storage::url(optional(optional(Auth::user())->seller)->shop->shop_logo) : null }}'
     })">
    <!-- Thanh kéo resize -->
    <div id="qa-chat-dragger" style="position: absolute; top: 0; right: 0; width: 8px; height: 100%; cursor: ew-resize; z-index: 10;"></div>
@@ -54,47 +55,84 @@
     </div>
     <div x-show="activeTab === 'overview'">
         <h2 class="text-base font-semibold mb-3">Bảng tổng quan Hỏi-đáp khách hàng</h2>
-        <div id="qa-overview-list" class="space-y-4">
-            <template x-if="conversations.length === 0">
-                <div class="text-xs text-gray-500">Chưa có tin nhắn nào từ khách hàng.</div>
-            </template>
-            <template x-for="conv in conversations" :key="conv.user_id">
-                <div :id="`conversation-${conv.user_id}`" class='border rounded p-3 bg-white shadow flex flex-col'>
-                    <div class='flex items-center mb-1'>
-                        <span class='font-semibold text-orange-600 text-xs mr-2' x-text="conv.user_name || 'Khách hàng'"></span>
-                        <span class='text-xs text-gray-400' x-text="conv.last_message_time ? new Date(conv.last_message_time).toLocaleString() : ''"></span>
+        <div class="flex border border-gray-200 rounded-md bg-white" style="height: 500px;">
+            <!-- Left Panel: Conversation List -->
+            <div class="w-80 border-r border-gray-200 flex flex-col">
+                <div class="flex items-center px-3 py-2 border-b border-gray-200 space-x-2">
+                    <div class="flex items-center bg-gray-50 rounded-md border border-gray-200 px-2 py-1 flex-grow">
+                        <i class="fas fa-search text-gray-400 text-sm"></i>
+                        <input aria-label="Search by name" class="bg-transparent placeholder-gray-400 text-xs ml-2 w-full focus:outline-none" placeholder="Tìm theo tên" type="text"/>
                     </div>
-                    <!-- Messages container for this conversation -->
-                    <div class='messages-container text-sm mb-2 max-h-48 overflow-y-auto border-b pb-2'
-                         x-init="fetchMessagesForConversation(conv.user_id, $el)">
-                        <template x-for="msg in conv.messages" :key="msg.id">
-                            <div class='flex' :class="{'justify-end': msg.sender_type === 'shop', 'justify-start': msg.sender_type !== 'shop'}">
-                                <div class='max-w-xs rounded px-3 py-2 text-sm shadow mb-1'
-                                     :class="{'bg-orange-100': msg.sender_type === 'shop', 'bg-white': msg.sender_type !== 'shop'}">
-                                    <span class='block font-semibold text-xs mb-1' x-text="msg.sender_type === 'shop' ? 'Shop' : (msg.sender_name || 'Khách')"></span>
-                                    <img x-show="msg.image_url" :src="`/storage/${msg.image_url}`" class="max-w-xs max-h-48 rounded mb-1" />
-                                    <span x-show="msg.message" x-text="msg.message"></span>
-                                    <div class='text-[10px] text-gray-400 mt-1 text-right' x-text="new Date(msg.created_at).toLocaleString()"></div>
+                </div>
+                <div class="flex-1 overflow-y-auto scrollbar-thin">
+                    <template x-for="conv in conversations" :key="conv.user_id">
+                        <div class="flex items-start px-3 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50"
+                            :class="{'bg-orange-50': selectedConversation && conv.user_id === selectedConversation.user_id}"
+                            @click="selectConversation(conv)">
+                            <img :src="conv.user_avatar ? conv.user_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conv.user_name)" class="w-6 h-6 flex-shrink-0 rounded-sm object-cover bg-gray-200" />
+                            <div class="ml-3 flex-1 min-w-0">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-xs font-bold text-gray-900 truncate max-w-[130px]" x-text="conv.user_name"></p>
+                                </div>
+                                <p class="text-xs text-gray-600 truncate max-w-[130px]" x-text="conv.last_message"></p>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="conversations.length === 0">
+                        <div class="text-xs text-gray-400 px-3 py-4">Chưa có cuộc trò chuyện nào.</div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Right Panel: Message Display -->
+            <div x-show="selectedConversation" class="flex-1 flex flex-col bg-gray-50">
+                <!-- Chat header -->
+                <div class="flex items-center px-4 py-2 border-b border-gray-200">
+                    <img :src="selectedConversation.user_avatar ? selectedConversation.user_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedConversation.user_name)" class="w-8 h-8 rounded-full object-cover" />
+                    <p class="text-sm font-semibold ml-3" x-text="selectedConversation.user_name"></p>
+                </div>
+                <!-- Messages -->
+                <div class="flex-1 overflow-y-auto scrollbar-thin p-4 space-y-4" x-ref="messagesContainer">
+                        <template x-for="message in messages" :key="message.id">
+                            <div class="flex" :class="{'justify-end': message.sender_type === 'shop', 'justify-start': message.sender_type !== 'shop'}">
+                                <div class="flex items-end" :class="{'flex-row-reverse': message.sender_type === 'shop'}">
+                                    <img :src="message.sender_avatar ? message.sender_avatar : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(message.sender_name)" class="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                                    <div class="rounded-lg p-2 max-w-xs mx-2 text-sm"
+                                        :class="{'bg-orange-500 text-white': message.sender_type === 'shop', 'bg-gray-200 text-gray-800': message.sender_type !== 'shop'}">
+                                        <p x-text="message.message"></p>
+                                        <img x-show="message.image_url" :src="message.image_url" class="max-w-full h-auto mt-2 rounded-md" />
+                                        <span class="block text-right text-xs mt-1" :class="{'text-orange-200': message.sender_type === 'shop', 'text-gray-500': message.sender_type !== 'shop'}" x-text="new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })"></span>
+                                    </div>
                                 </div>
                             </div>
                         </template>
                     </div>
-                    <form @submit.prevent="replyToCustomer(conv.user_id)" class='flex items-center space-x-2 qa-reply-form mt-2'>
-                        <input type="file" :id="`imageInput-${conv.user_id}`" class="hidden" accept="image/*" @change="handleImageChangeForConv(conv.user_id, $event)" />
-                        <button type="button" @click="document.getElementById(`imageInput-${conv.user_id}`).click()" class="text-gray-500 hover:text-orange-500">
+                </div>
+                <!-- Message input -->
+                <div class="border-t border-gray-200 p-4">
+                    <form @submit.prevent="replyToCustomer(selectedConversation.user_id)" class="flex items-center space-x-2">
+                        <input type="file" x-ref="imageInput" @change="handleImageChange" class="hidden" accept="image/*" />
+                        <button type="button" @click="$refs.imageInput.click()" class="text-gray-500 hover:text-orange-500">
                             <i class="fas fa-image text-lg"></i>
                         </button>
-                        <input x-model="conv.newMessage" type='text' class='flex-1 border border-gray-300 rounded px-2 py-1 text-xs' placeholder='Trả lời khách...' />
-                        <button type='submit' class='bg-orange-600 text-white text-xs rounded px-3 py-1'>Gửi</button>
+                        <input type="text" x-model="newMessage" placeholder="Nhập tin nhắn..." class="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500" />
+                        <button type="submit" class="bg-orange-600 text-white rounded-full p-2 w-9 h-9 flex items-center justify-center hover:bg-orange-700">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </form>
-                    <div x-show="conv.previewImage" class="mt-2 relative">
-                        <img :src="conv.previewImage" class="max-w-[100px] h-auto rounded-md" />
-                        <button @click="removeImageForConv(conv.user_id)" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    <div x-show="previewImage" class="mt-2 relative">
+                        <img :src="previewImage" class="max-w-[100px] h-auto rounded-md" />
+                        <button @click="removeImage" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
-            </template>
+            </div>
+            <div x-show="!selectedConversation" class="flex-1 bg-gray-100 flex flex-col justify-center items-center px-6">
+                <img alt="Illustration of a laptop with a blue chat bubble and a red chat bubble with three white dots" class="mb-4" draggable="false" height="120" src="https://storage.googleapis.com/a1aa/image/0ed79df3-c2cf-4dc0-2a97-e1c61b1597a1.jpg" width="150"/>
+                <p class="text-sm font-semibold text-gray-900 mb-1 select-none">Chào mừng bạn đến với Shopee Chat</p>
+                <p class="text-xs text-gray-700 select-none">Chọn một cuộc trò chuyện để bắt đầu!</p>
+            </div>
         </div>
     </div>
    </div>
@@ -117,308 +155,5 @@
    </div>
    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.0/dist/echo.iife.js"></script>
-   <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('qaChatDemo', (initialData) => ({
-            sellerShopId: initialData.sellerShopId,
-            csrfToken: initialData.csrfToken,
-            pusherKey: initialData.pusherKey,
-            pusherCluster: initialData.pusherCluster,
-            activeTab: 'overview', // 'overview' or 'shopQuestions'
-            conversations: [],
-            shopQuestions: [],
-            newShopQuestion: '',
-
-            init() {
-                this.initializeEcho();
-                this.fetchConversations();
-                this.fetchShopQuestions();
-            },
-
-            initializeEcho() {
-                if (!this.sellerShopId) {
-                    console.warn('Seller Shop ID is not available. Real-time chat for seller might not work.');
-                    return;
-                }
-                window.Pusher = Pusher;
-                window.Echo = new Echo({
-                    broadcaster: 'pusher',
-                    key: this.pusherKey,
-                    cluster: this.pusherCluster,
-                    encrypted: true,
-                    authEndpoint: '/broadcasting/auth',
-                    auth: {
-                        headers: {
-                            'X-CSRF-TOKEN': this.csrfToken,
-                        },
-                    },
-                });
-
-                window.Echo.connector.pusher.connection.bind('state_change', (states) => {
-                    console.log('Pusher connection state (seller QA):', states.current);
-                });
-
-                window.Echo.connector.pusher.connection.bind('error', (err) => {
-                    console.error('Pusher connection error (seller QA):', err);
-                });
-
-                console.log('Laravel Echo initialized for Seller QA.');
-
-                // Listen for messages directed to this shop
-                window.Echo.private(`seller.shop.notifications.${this.sellerShopId}`)
-                    .listen('.message.new', (e) => {
-                        console.log('New message received for seller:', e.message);
-                        // Update the relevant conversation
-                        const convIndex = this.conversations.findIndex(c => c.user_id === e.message.user_id);
-                        if (convIndex !== -1) {
-                            const conv = this.conversations[convIndex];
-                            // If the messages are already loaded for this conversation, add it
-                            if (conv.messages) {
-                                conv.messages.push({
-                                    id: e.message.id,
-                                    shop_id: e.message.shop_id,
-                                    user_id: e.message.user_id,
-                                    sender_type: e.message.sender_type,
-                                    message: e.message.message,
-                                    image_url: e.message.image_url,
-                                    created_at: e.message.created_at,
-                                    sender_name: e.message.sender_type === 'user' ? (conv.user_name || 'Khách') : 'Shop',
-                                    sender_avatar: e.message.sender_type === 'user' ? conv.user_avatar : null,
-                                });
-                                this.$nextTick(() => {
-                                    const container = document.querySelector(`#conversation-${conv.user_id} .messages-container`);
-                                    if (container) container.scrollTop = container.scrollHeight;
-                                });
-                            }
-                            // Update last message preview
-                            conv.last_message = e.message.message || '(Ảnh)';
-                            conv.last_message_time = e.message.created_at;
-                            this.conversations.sort((a, b) => new Date(b.last_message_time) - new Date(a.last_message_time));
-                        } else {
-                            // If it's a new conversation, re-fetch all conversations
-                            this.fetchConversations();
-                        }
-                    })
-                    .error((error) => {
-                        console.error('Pusher seller notifications channel error:', error);
-                    });
-
-                // Listen for private messages if the seller is currently viewing a specific chat
-                window.Echo.private(`chat.${this.sellerShopId}.{{ Auth::id() ?? null }}`) // This is not correct. It should be user_id of the customer.
-                    .listen('MessageSent', (e) => {
-                        console.log('Private chat message received:', e.message);
-                        // This specific channel listen is likely not needed if seller.shop.notifications covers all.
-                        // However, if implemented, it should be for the specific user they are chatting with.
-                        // This part might need further refinement based on how specific seller-to-customer chat is managed.
-                    });
-            },
-
-            async fetchConversations() {
-                try {
-                    const res = await fetch('/api/seller/chat/qa/messages');
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    this.conversations = await res.json();
-                    this.conversations.forEach(conv => {
-                        conv.messages = []; // Initialize messages array for each conversation
-                        conv.newMessage = ''; // Initialize message input for each conversation
-                        conv.selectedImage = null; // Initialize selected image for each conversation
-                        conv.previewImage = null; // Initialize preview image for each conversation
-                    });
-
-                    // Pre-fetch messages for all conversations (or just the first few for performance)
-                    // For simplicity, we'll fetch only when a conversation is selected via fetchMessagesForConversation
-                } catch (error) {
-                    console.error("Error fetching conversations:", error);
-                    this.conversations = [];
-                }
-            },
-
-            async fetchMessagesForConversation(userId, containerEl) {
-                const conv = this.conversations.find(c => c.user_id === userId);
-                if (!conv) return;
-
-                try {
-                    const res = await fetch(`/api/seller/chat/messages/${userId}`);
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    conv.messages = await res.json();
-                    this.$nextTick(() => {
-                        if (containerEl) containerEl.scrollTop = containerEl.scrollHeight;
-                    });
-                } catch (error) {
-                    console.error(`Error fetching messages for user ${userId}:`, error);
-                    conv.messages = [];
-                }
-            },
-
-            async replyToCustomer(userId) {
-                const conv = this.conversations.find(c => c.user_id === userId);
-                if (!conv || (!conv.newMessage.trim() && !conv.selectedImage)) {
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('shop_id', this.sellerShopId);
-                formData.append('user_id', userId); // The customer's ID
-                formData.append('sender_type', 'shop'); // Seller is sending
-                if (conv.newMessage.trim()) {
-                    formData.append('message', conv.newMessage.trim());
-                }
-                if (conv.selectedImage) {
-                    formData.append('image', conv.selectedImage);
-                }
-
-                try {
-                    const res = await fetch('/api/chat/send-message', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': this.csrfToken,
-                            'Accept': 'application/json',
-                        },
-                        body: formData,
-                    });
-
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-
-                    const result = await res.json();
-                    if (result.status === 'success') {
-                        conv.messages.push({
-                            id: result.data.id,
-                            shop_id: result.data.shop_id,
-                            user_id: result.data.user_id,
-                            sender_type: result.data.sender_type,
-                            message: result.data.message,
-                            image_url: result.data.image_url,
-                            created_at: result.data.created_at,
-                            sender_name: 'Shop',
-                            sender_avatar: null, // Assuming shop avatar is not sent in message data
-                        });
-                        conv.newMessage = '';
-                        conv.selectedImage = null; // Clear image after sending
-                        conv.previewImage = null; // Clear image preview
-                        document.getElementById(`imageInput-${userId}`).value = ''; // Clear file input
-                        this.$nextTick(() => {
-                            const container = document.querySelector(`#conversation-${userId} .messages-container`);
-                            if (container) container.scrollTop = container.scrollHeight;
-                        });
-                        // Update last message preview for this conversation
-                        conv.last_message = result.data.message || '(Ảnh)';
-                        conv.last_message_time = result.data.created_at;
-                        this.conversations.sort((a, b) => new Date(b.last_message_time) - new Date(a.last_message_time));
-                    }
-                } catch (error) {
-                    console.error("Error sending message:", error);
-                }
-            },
-
-            handleImageChangeForConv(userId, event) {
-                const conv = this.conversations.find(c => c.user_id === userId);
-                if (!conv) return;
-
-                const file = event.target.files[0];
-                if (file) {
-                    conv.selectedImage = file;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        conv.previewImage = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    conv.selectedImage = null;
-                    conv.previewImage = null;
-                }
-            },
-
-            removeImageForConv(userId) {
-                const conv = this.conversations.find(c => c.user_id === userId);
-                if (!conv) return;
-
-                conv.selectedImage = null;
-                conv.previewImage = null;
-                document.getElementById(`imageInput-${userId}`).value = ''; // Clear file input
-            },
-
-            async fetchShopQuestions() {
-                try {
-                    const res = await fetch('/api/seller/chat/qa/messages'); // This API returns all messages
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    const allMessages = await res.json();
-                    // Filter for messages sent by the shop itself (as questions/templates)
-                    this.shopQuestions = allMessages.filter(msg => msg.sender_type === 'shop');
-                } catch (error) {
-                    console.error("Error fetching shop questions:", error);
-                    this.shopQuestions = [];
-                }
-            },
-
-            async sendShopQuestion() {
-                if (!this.newShopQuestion.trim() || !this.sellerShopId) {
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('shop_id', this.sellerShopId);
-                formData.append('user_id', '{{ Auth::id() ?? null }}'); // Assuming seller user ID for shop questions
-                formData.append('sender_type', 'shop');
-                formData.append('message', this.newShopQuestion.trim());
-
-                try {
-                    const res = await fetch('/api/chat/send-message', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': this.csrfToken,
-                            'Accept': 'application/json',
-                        },
-                        body: formData,
-                    });
-
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-
-                    const result = await res.json();
-                    if (result.status === 'success') {
-                        this.newShopQuestion = '';
-                        this.fetchShopQuestions(); // Reload shop questions
-                    }
-                } catch (error) {
-                    console.error("Error sending shop question:", error);
-                }
-            },
-
-            // Kéo ra/kéo vào khung chat QA
-            initResizable() {
-                const resizable = document.getElementById('qa-chat-resizable');
-                const dragger = document.getElementById('qa-chat-dragger');
-                let isResizing = false;
-                let startX, startWidth;
-                dragger.addEventListener('mousedown', function(e) {
-                    isResizing = true;
-                    startX = e.clientX;
-                    startWidth = resizable.offsetWidth;
-                    document.body.style.userSelect = 'none';
-                });
-                document.addEventListener('mousemove', function(e) {
-                    if (!isResizing) return;
-                    let newWidth = startWidth + (e.clientX - startX);
-                    newWidth = Math.max(320, Math.min(newWidth, 700)); // Giới hạn min/max
-                    resizable.style.maxWidth = newWidth + 'px';
-                    resizable.style.width = newWidth + 'px';
-                });
-                document.addEventListener('mouseup', function() {
-                    isResizing = false;
-                    document.body.style.userSelect = '';
-                });
-            }
-        }));
-    });
-   </script>
-  </div>
+   <script src="{{ asset('js/seller/qa-chat.js') }}"></script>
 @endsection

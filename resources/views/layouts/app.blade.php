@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title')</title>
 
     <!-- Font + Tailwind + Icons -->
@@ -144,7 +145,7 @@
                                         </svg>
                                         Sản phẩm của tôi
                                     </a>
-                                    <a href="{{ route('seller.orders') }}"
+                                    <a href="{{ route('seller.order.index') }}"
                                         class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -340,7 +341,7 @@
                                         </svg>
                                         Sản phẩm của tôi
                                     </a>
-                                    <a href="{{ route('seller.orders') }}"
+                                    <a href="{{ route('seller.order.index') }}"
                                         class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -510,20 +511,8 @@
     </footer>
 
     @stack('scripts')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.x.x/dist/echo.iife.js"></script>
-
-    <script>
-        window.Pusher = Pusher;
-        window.Echo = new Echo({
-            broadcaster: 'pusher',
-            key: '{{ config('broadcasting.connections.pusher.key') }}',
-            cluster: '{{ config('broadcasting.connections.pusher.cluster') }}',
-            forceTLS: true
-        });
-    </script>
-
     @include('components.chat')
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
+
 </html>
