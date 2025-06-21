@@ -26,6 +26,7 @@ use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Seller\Chat\ReplyChatController;
+use App\Http\Controllers\Seller\Chat\QAController;
 
 // trang chủ
 Route::get('/', function () {
@@ -265,6 +266,10 @@ Route::prefix('seller/chat')->middleware('CheckRole:seller')->group(function () 
     Route::post('/auto-reply-toggle', [ChatSettingsController::class, 'toggleAutoReply'])
         ->middleware('CheckRole:seller')
         ->name('seller.chat.auto_reply_toggle');
+
+    // API routes for seller chat (moved from ChatController)
+    Route::get('/qa/messages', [QAController::class, 'getQaMessagesForSeller'])->name('seller.chat.qa.messages');
+    Route::get('/messages/{userId}', [QAController::class, 'getMessagesByShopIdForSeller'])->name('seller.chat.messages_by_user_for_seller');
 });
 
 Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);

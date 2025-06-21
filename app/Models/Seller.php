@@ -6,6 +6,7 @@ use App\Enums\CustomerRanking;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Seller extends Model
 {
@@ -37,6 +38,11 @@ class Seller extends Model
     public function businessLicense(): BelongsTo
     {
         return $this->belongsTo(BusinessLicense::class, 'business_license_id');
+    }
+
+    public function shop(): HasOne
+    {
+        return $this->hasOne(Shop::class, 'ownerID', 'userID');
     }
 
     // Scopes
