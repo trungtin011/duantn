@@ -33,6 +33,7 @@
                     <th>Số lượng</th>
                     <th>Đơn giá</th>
                     <th>Thành tiền</th>
+                    <th>Tên biến thể</th>
                 </tr>
             </thead>
             <tbody>
@@ -42,6 +43,7 @@
                         <td>{{ $item->quantity }}</td>
                         <td>{{ number_format($item->unit_price, 0, ',', '.') }} VNĐ</td>
                         <td>{{ number_format($item->total_price, 0, ',', '.') }} VNĐ</td>
+                        <td>{{ $item->variant_name }}</td>
                     </tr>
                 @endforeach
             </tbody>

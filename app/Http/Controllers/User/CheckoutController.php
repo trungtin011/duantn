@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Event;
 
 class CheckoutController extends Controller
 {
-
     public function getItemsFromFlow($request)
     {
         $items = [];
@@ -137,7 +136,7 @@ class CheckoutController extends Controller
             'payment_method' => $request->payment,
             'order_code' => 'DH'. '-' .strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
             'order_status' => 'pending',
-            'note' => $request->order_note
+            'note' => $request->order_note,
         ]);
         
         foreach($products as $product){
@@ -153,6 +152,7 @@ class CheckoutController extends Controller
                     $total_price = $item['total_price'];
                 }
             }
+
             $items_order = ItemsOrder::create([
             'orderID' => $order->id,
             'shop_orderID' => $shop_order->id,
@@ -162,8 +162,7 @@ class CheckoutController extends Controller
             'quantity' => $quantity,
             'brand' => $product->brand,
             'category' => $product->category,
-            'attribute_value' => $product->variants->first()->attribute_value,
-            'attribute_name' => $product->variants->first()->attribute_name,
+            'variant_name' => $product->variants->first()->variant_name,
             'product_image' => $product->image,
             'unit_price' => $product->variants->first()->price,
             'total_price' => $total_price,
@@ -402,7 +401,9 @@ class CheckoutController extends Controller
             return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
 
-        $product = Product::where('id', $order->items->first()->productID)->with('variants')->first();
+        $product = Product::with(['variants' => function($query) use ($order) {
+            $query->where('id', $order->items->first()->variantID);
+        }])->find($order->items->first()->productID);
         $stock = $product->variants->first()->stock - $order->items->first()->quantity;
         $product->variants->first()->update([
             'stock' => $stock
@@ -445,6 +446,4 @@ class CheckoutController extends Controller
         return redirect()->route('checkout')->with('error', 'Thanh toán thất bại. Vui lòng thử lại.');
     }    
 
-    
-        
 }

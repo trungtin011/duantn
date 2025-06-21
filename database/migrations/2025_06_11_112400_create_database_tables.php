@@ -437,8 +437,7 @@ return new class extends Migration
             $table->string('product_name', 255)->nullable();
             $table->string('brand', 255)->nullable();
             $table->string('category', 255)->nullable();
-            $table->string('attribute_value', 255)->nullable();
-            $table->string('attribute_name', 255)->nullable();
+            $table->string('variant_name', 255)->nullable();
             $table->text('product_image')->nullable();
             $table->integer('quantity')->nullable();
             $table->decimal('unit_price', 12, 2)->nullable();
@@ -564,8 +563,6 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('shop_id')->nullable();
             $table->unsignedBigInteger('sender_id')->nullable();
-            $table->unsignedBigInteger('receiver_user_id')->nullable();
-            $table->unsignedBigInteger('receiver_shop_id')->nullable();
             $table->string('title', 100);
             $table->text('content');
             $table->string('type', 100);
@@ -573,17 +570,20 @@ return new class extends Migration
             $table->enum('receiver_type', ['user', 'shop', 'all', 'admin', 'employee']);
             $table->enum('priority', ['low', 'normal', 'high'])->default('normal');
             $table->enum('status', ['pending', 'active', 'inactive', 'failed'])->default('pending');
-            $table->boolean('is_read')->default(false);
-            $table->timestamp('read_at')->nullable();
-            $table->timestamp('expired_at')->nullable();
             $table->timestamps();
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('receiver_user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('receiver_shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->index(['type', 'status', 'priority', 'receiver_type', 'created_at'], 'notif_type_status_idx');
-            $table->index(['receiver_user_id', 'status'], 'notif_user_status_idx');
-            $table->index(['receiver_shop_id', 'status'], 'notif_shop_status_idx');
+        });
+
+        Schema::create('notification_receiver', function (Blueprint $table) {
+            $table->unsignedBigInteger('notification_id');
+            $table->unsignedBigInteger('receiver_id');
+            $table->enum('receiver_type', ['user', 'shop', 'all', 'admin', 'employee']);
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('read_at')->nullable();
+            $table->foreign('notification_id')->references('id')->on('notifications')->onDelete('cascade');
+            $table->primary(['notification_id', 'receiver_id']);
         });
 
         // Bảng stock_transactions (THÊM MỚI)
@@ -673,13 +673,12 @@ return new class extends Migration
         // Bảng jobs
         Schema::create('jobs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('queue', 255);
+            $table->string('queue')->index();
             $table->longText('payload');
             $table->unsignedTinyInteger('attempts');
             $table->unsignedInteger('reserved_at')->nullable();
             $table->unsignedInteger('available_at');
             $table->unsignedInteger('created_at');
-            $table->index('queue');
         });
 
         // Bảng job_batches
