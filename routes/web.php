@@ -98,6 +98,19 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/report', [AdminOrderController::class, 'report'])->name('admin.orders.report');
     });
 
+
+    // notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/edit/{id}', [NotificationController::class, 'edit'])->name('admin.notifications.edit');
+        Route::get('/create', [NotificationController::class, 'create'])->name('admin.notifications.create');
+        Route::get('/', [NotificationController::class, 'index'])->name('admin.notifications.index');
+        Route::post('/', [NotificationController::class, 'store'])->name('admin.notifications.store');
+        Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
+        Route::get('/{id}', [NotificationController::class, 'show'])->name('admin.notifications.show');
+        Route::put('/{id}', [NotificationController::class, 'update'])->name('admin.notifications.update');
+        
+    });
     // products categories
     Route::prefix('categories')->group(function () {
         Route::get('/', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
@@ -144,6 +157,10 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/profile', function () {
         return view('seller.profile');
     })->name('seller.profile');
+
+    Route::get('/orders', function () {
+        return view('seller.orders');
+    })->name('seller.orders');
 
     Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
     Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
