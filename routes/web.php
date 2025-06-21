@@ -37,7 +37,6 @@ Route::get('/403', function () {
     return view('error.403');
 })->name('403');
 
-
 // trang đăng ký, đăng nhập, quên mật khẩu
 Route::get('/signup', function () {
     return view('auth.register');

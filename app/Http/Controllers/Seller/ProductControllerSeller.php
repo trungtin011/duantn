@@ -12,6 +12,7 @@ use App\Models\ProductDimension;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantAttributeValue; // Thêm model mới
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -83,8 +84,13 @@ class ProductControllerSeller extends Controller
 
             $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
 
+            // Lấy shopID từ người dùng hiện tại
+            $shop = \App\Models\Shop::where('ownerID', auth()->id())->firstOrFail();
+            $shopID = $shop->id;
+
             // Lưu sản phẩm chính
             $product = Product::create([
+                'shopID' => $shopID, // Thêm shopID
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description ?: '',
@@ -218,107 +224,6 @@ class ProductControllerSeller extends Controller
             DB::rollBack();
             Log::error('Lỗi khi thêm sản phẩm: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm sản phẩm: ' . $e->getMessage())->withInput();
-        }
-    }
-
-    /**
-     * Hiển thị form thêm biến thể cho sản phẩm
-     */
-    public function createVariant($productId)
-    {
-        $product = Product::findOrFail($productId);
-        $attributes = Attribute::all();
-        return view('seller.products.create-variant', compact('product', 'attributes'));
-    }
-
-    /**
-     * Lưu biến thể cho sản phẩm
-     */
-    public function storeVariant(Request $request, $productId)
-    {
-        try {
-            $product = Product::findOrFail($productId);
-
-            $rules = [
-                'variants.*.name' => 'required|string|max:100',
-                'variants.*.price' => 'required|numeric|min:0',
-                'variants.*.purchase_price' => 'required|numeric|min:0',
-                'variants.*.sale_price' => 'required|numeric|min:0',
-                'variants.*.stock' => 'required|integer|min:0',
-                'variants.*.sku' => 'required|string|max:100|unique:product_variants,sku',
-                'variants.*.length' => 'required|numeric|min:0',
-                'variants.*.width' => 'nullable|numeric|min:0',
-                'variants.*.height' => 'nullable|numeric|min:0',
-                'variants.*.weight' => 'nullable|numeric|min:0',
-                'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-                'variants.*.attributes.*.attribute_name' => 'required|string|max:100',
-                'variants.*.attributes.*.value' => 'required|string|max:100',
-            ];
-
-            $request->validate($rules);
-
-            $product->update(['is_variant' => 1]);
-
-            foreach ($request->variants as $variantData) {
-                $variant = ProductVariant::create([
-                    'productID' => $product->id,
-                    'variant_name' => $variantData['name'],
-                    'price' => $variantData['price'],
-                    'purchase_price' => $variantData['purchase_price'],
-                    'sale_price' => $variantData['sale_price'],
-                    'stock' => $variantData['stock'],
-                    'sku' => $variantData['sku'],
-                    'status' => 'active',
-                ]);
-
-                // Lưu kích thước
-                ProductDimension::create([
-                    'productID' => $product->id,
-                    'variantID' => $variant->id,
-                    'length' => $variantData['length'],
-                    'width' => $variantData['width'] ?? 0,
-                    'height' => $variantData['height'] ?? 0,
-                    'weight' => $variantData['weight'] ?? 0,
-                ]);
-
-                // Lưu ảnh
-                if ($request->hasFile("variants.{$variantData['index']}.image")) {
-                    $path = $request->file("variants.{$variantData['index']}.image")->store('product_images', 'public');
-                    ProductImage::create([
-                        'productID' => $product->id,
-                        'variantID' => $variant->id,
-                        'image_path' => $path,
-                        'is_default' => 1,
-                        'display_order' => 0,
-                        'alt_text' => $variantData['name'] . ' - Variant Image',
-                        'created_at' => now(),
-                    ]);
-                }
-
-                if (isset($variantData['attributes'])) {
-                    foreach ($variantData['attributes'] as $attrData) {
-                        $attribute = Attribute::firstOrCreate(['name' => $attrData['attribute_name']]);
-                        Log::info('Created/Found Attribute: ' . json_encode($attribute));
-
-                        $attributeValue = AttributeValue::firstOrCreate([
-                            'attribute_id' => $attribute->id,
-                            'value' => $attrData['value'],
-                        ]);
-                        Log::info('Created/Found AttributeValue: ' . json_encode($attributeValue));
-
-                        ProductVariantAttributeValue::create([
-                            'product_variant_id' => $variant->id,
-                            'attribute_value_id' => $attributeValue->id,
-                        ]);
-                        Log::info('Created ProductVariantAttributeValue for variant_id: ' . $variant->id);
-                    }
-                }
-            }
-
-            return redirect()->route('seller.products.index')->with('success', 'Biến thể đã được thêm thành công vào ' . now()->format('H:i:s d/m/Y'));
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi thêm biến thể: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm biến thể: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -532,58 +437,13 @@ class ProductControllerSeller extends Controller
         return view('seller.products.show', compact('product'));
     }
 
-    /**
-     * Lấy danh sách thương hiệu phụ
-     */
-    public function getSubBrands(Request $request)
+    public function simple()
     {
-        try {
-            $brand = $request->query('brand');
-            if ($brand) {
-                $subBrands = Brand::where('name', $brand)->first()?->subBrands()->where('status', 'active')->get(['name']);
-                return response()->json($subBrands ?? []);
-            }
-            return response()->json([]);
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi lấy sub-brands: ' . $e->getMessage());
-            return response()->json(['error' => 'Không thể lấy danh sách thương hiệu phụ'], 500);
-        }
+        return view('product', ['type' => 'simple']);
     }
 
-    /**
-     * Lấy danh sách danh mục phụ
-     */
-    public function getSubCategories(Request $request)
+    public function variable()
     {
-        try {
-            $category = $request->query('category');
-            if ($category) {
-                $subCategories = Category::where('name', $category)->first()?->subCategories()->where('status', 'active')->get(['name']);
-                return response()->json($subCategories ?? []);
-            }
-            return response()->json([]);
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi lấy sub-categories: ' . $e->getMessage());
-            return response()->json(['error' => 'Không thể lấy danh sách danh mục phụ'], 500);
-        }
-    }
-
-    public function getAttributes()
-    {
-        $attributes = Attribute::all()->pluck('name');
-        return response()->json($attributes);
-    }
-
-    public function getAttributeValues(Request $request)
-    {
-        $attributeName = $request->query('attribute');
-        if ($attributeName) {
-            $values = AttributeValue::whereHas('attribute', function ($query) use ($attributeName) {
-                $query->where('name', $attributeName);
-            })->pluck('value')->toArray();
-
-            return response()->json($values);
-        }
-        return response()->json([], 200); // Trả về mảng rỗng nếu không có thuộc tính
+        return view('product', ['type' => 'variable']);
     }
 }
