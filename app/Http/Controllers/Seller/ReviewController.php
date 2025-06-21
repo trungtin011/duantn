@@ -30,7 +30,12 @@ class ReviewController extends Controller
     public function destroy($id)
     {
         $review = Review::find($id);
-        $review->delete();
-        return redirect()->route('seller.reviews.index');
+
+        if ($review) {
+            $review->delete();
+            return redirect()->route('seller.reviews.index')->with('success', 'Đánh giá đã được xóa thành công!');
+        }
+
+        return redirect()->route('seller.reviews.index')->with('error', 'Không tìm thấy đánh giá!');
     }
 }
