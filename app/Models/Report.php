@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Report extends Model
 {
+    protected $table = 'report';
+
     protected $fillable = [
         'reporter_id',
         'product_id',

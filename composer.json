@@ -7,7 +7,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "bensampo/laravel-enum": "^6.12",
+        "guzzlehttp/guzzle": "^7.9",
+        "intervention/image": "^3.11",
         "laravel/framework": "^12.0",
+        "laravel/socialite": "^5.21",
         "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
@@ -72,4 +76,5 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true
+    
 }
