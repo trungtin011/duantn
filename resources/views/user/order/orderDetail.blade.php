@@ -1,0 +1,146 @@
+@extends('layouts.app')
+
+@section('content')
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <div class="container mx-auto py-5">
+        <!-- Breadcrumb -->
+        <div class="flex flex-wrap items-center gap-2 mb-10 px-[10px] sm:px-0 md:mb-20 text-sm md:text-base">
+            <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
+            <span>/</span>
+            <span>Chi tiết đơn hàng</span>
+        </div>
+
+        <!-- Header: Chi tiết đơn hàng -->
+        <div class="mb-4">
+            <div class="bg-gray-100 shadow-sm rounded-lg p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-1">Chi tiết đơn hàng</h2>
+                    <p class="text-gray-600 text-sm">Đơn hàng {{ $order->order_code ?? 'N/A' }} | Order Created: {{ $order->created_at->format('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin khách hàng, thanh toán, giao hàng -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <!-- Khách hàng -->
+            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
+                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                    Khách hàng
+                </h5>
+                <p class="text-gray-600 text-sm">
+                    <strong>Tên:</strong> {{ $order->user->fullname ?? 'Không có thông tin' }}<br>
+                    <strong>Email:</strong> {{ $order->user->email ?? 'Không có thông tin' }}<br>
+                    <strong>Số điện thoại:</strong> {{ $order->user->phone ?? 'Không có thông tin' }}
+                </p>
+            </div>
+            <!-- Thông tin thanh toán -->
+            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
+                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                    </svg>
+                    Thông tin thanh toán
+                </h5>
+                <p class="text-gray-600 text-sm">
+                    <strong>Phương thức thanh toán:</strong> {{ $order->payment_method ?? 'VNPay' }}<br>
+                    <strong>Tên chủ tài khoản:</strong> {{ $order->user->fullname ?? 'Không có thông tin' }}<br>
+                    <strong>Số tài khoản:</strong> Không có thông tin
+                </p>
+            </div>
+            <!-- Thông tin giao hàng -->
+            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
+                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677h.75m0-11.177v-.548c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v.548m12 0h.75" />
+                    </svg>
+                    Thông tin giao hàng
+                </h5>
+                <p class="text-gray-600 text-sm">
+                    <strong>Phương thức vận chuyển:</strong> {{ $orderAddress->shipping_provider ?? 'GHN' }}<br>
+                    <strong>Địa chỉ:</strong> {{ $orderAddress->full_address ?? 'Không có thông tin' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Danh sách sản phẩm và Tổng quan đơn hàng -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Danh sách sản phẩm -->
+            <div class="md:col-span-2">
+                <div class="bg-white shadow-sm rounded-lg p-4">
+                    <h5 class="font-semibold text-gray-800 mb-4">Danh sách sản phẩm</h5>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 text-sm font-semibold text-gray-700">Sản phẩm</th>
+                                    <th class="p-3 text-sm font-semibold text-gray-700">Đơn giá</th>
+                                    <th class="p-3 text-sm font-semibold text-gray-700">Số lượng</th>
+                                    <th class="p-3 text-sm font-semibold text-gray-700">Thành giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if(isset($orderItems) && $orderItems->isNotEmpty())
+                                    @foreach($orderItems as $item)
+                                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                            <td class="p-3">
+                                                <div class="flex items-center">
+                                                    <img src="{{ $item->product->images->first()->image_path ?? 'https://via.placeholder.com/40' }}"
+                                                        alt="{{ $item->product_name ?? $item->variant_name ?? ($item->product->name ?? 'Sản phẩm') }}"
+                                                        class="w-10 h-10 rounded mr-3 object-cover">
+                                                    <span>{{ $item->product_name ?? $item->variant_name ?? ($item->product->name ?? 'Sản phẩm không còn tồn tại') }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="p-3 text-gray-600">{{ number_format($item->unit_price, 0, ',', '.') }} VND</td>
+                                            <td class="p-3 text-gray-600">{{ $item->quantity }}</td>
+                                            <td class="p-3 text-gray-600">{{ number_format($item->total_price, 0, ',', '.') }} VND</td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="4" class="p-3 text-gray-600 text-center">Không có sản phẩm nào trong đơn hàng này.</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tổng quan đơn hàng -->
+            <div class="md:col-span-1">
+                <div class="bg-white shadow-sm rounded-lg p-4">
+                    <h5 class="font-semibold text-gray-800 mb-4">Tổng quan đơn hàng</h5>
+                    <table class="w-full text-sm">
+                        <tbody>
+                            <tr>
+                                <td class="py-2 text-gray-600">Tổng tiền hàng</td>
+                                <td class="py-2 text-right font-medium text-gray-800">{{ number_format($order->subtotal, 0, ',', '.') }} VND</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 text-gray-600">Phí ship</td>
+                                <td class="py-2 text-right font-medium text-gray-800">{{ number_format($order->shipping_fee ?? 0, 0, ',', '.') }} VND</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 text-gray-600">Giảm giá</td>
+                                <td class="py-2 text-right font-medium text-green-600">{{ number_format($order->coupon_discount ?? 0, 0, ',', '.') }} VND</td>
+                            </tr>
+                            <tr class="border-t border-gray-200 pt-2">
+                                <td class="py-2 font-bold text-gray-800">Tổng cộng</td>
+                                <td class="py-2 text-right font-bold text-blue-600">{{ number_format($order->final_price, 0, ',', '.') }} VND</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

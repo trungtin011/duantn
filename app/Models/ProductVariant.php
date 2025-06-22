@@ -5,21 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductVariant extends Model
 {
+    protected $table = 'product_variants';
+
     protected $fillable = [
         'productID',
-        'color',
-        'color_code',
-        'size',
         'variant_name',
         'price',
         'purchase_price',
         'sale_price',
         'stock',
         'sku',
-        'status'
+        'status',
     ];
 
     protected $casts = [
@@ -40,9 +40,15 @@ class ProductVariant extends Model
         return $this->hasOne(ProductDimension::class, 'variantID');
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class, 'variantID');
+    }
+
+    public function attributeValues(): HasMany
+    {
+        return $this->hasMany(ProductVariantAttributeValue::class, 'product_variant_id')
+            ->with('attributeValue');
     }
 
     // Scopes
@@ -81,4 +87,4 @@ class ProductVariant extends Model
     {
         return $this->stock <= 0 || $this->status === 'out_of_stock';
     }
-} 
+}
