@@ -35,7 +35,7 @@ class Shop extends Model
 
     public function addresses()
     {
-        return $this->belongsTo(\App\Models\ShopAddress::class, 'shop_address_id');
+        return $this->hasMany(ShopAddress::class, 'shopID', 'id');
     }
 
     public function followers()
@@ -51,7 +51,7 @@ class Shop extends Model
 
     public function products()
     {
-        return $this->hasMany(Product::class, 'shopID');
+        return $this->hasMany(Product::class, 'shopID', 'id');
     }
     public function user()
     {
@@ -71,5 +71,10 @@ class Shop extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class, 'shop_orderID', 'id');
+    }
+
+    public function seller()
+    {
+        return $this->belongsTo(Seller::class, 'ownerID', 'id');
     }
 }

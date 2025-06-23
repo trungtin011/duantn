@@ -124,7 +124,7 @@
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const buttons = document.querySelectorAll('.remove-cart-item');
-                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                const token = '{{ csrf_token() }}';
 
                 if (!token) {
                     console.error('CSRF token not found!');
@@ -149,7 +149,6 @@
                                 return response.json();
                             })
                             .then(data => {
-                                alert(data.message);
                                 window.location.reload();
                             })
                             .catch(error => {

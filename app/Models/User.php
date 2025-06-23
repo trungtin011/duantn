@@ -63,20 +63,25 @@ class User extends Authenticatable
         return $this->hasOne(Employee::class);
     }
 
-    public function seller(): HasOne
+    public function seller()
     {
-        return $this->hasOne(Seller::class);
+        return $this->hasOne(\App\Models\Seller::class, 'userID', 'id');
     }
 
     public function reviews()
     {
         return $this->hasMany(ProductReview::class);
     }
-    
+
     public function followedShops()
     {
         return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
             ->withTimestamps();
+    }
+
+    public function shop(): HasOne
+    {
+        return $this->hasOne(Shop::class, 'ownerID', 'id');
     }
 
     // Scopes
