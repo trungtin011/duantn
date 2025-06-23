@@ -24,12 +24,12 @@ class Employee extends Model
     // Relationships
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'userID');
+        return $this->belongsTo(User::class, 'userID', 'id');
     }
 
     public function shop(): BelongsTo
     {
-        return $this->belongsTo(Shop::class, 'shopID');
+        return $this->belongsTo(Shop::class, 'shopID', 'id');
     }
 
     // Scopes

@@ -188,11 +188,11 @@
                                 <h4 class="text-xl font-semibold mb-4">Thuộc tính sản phẩm</h4>
                                 <div id="attribute-container">
                                     <div class="mb-4 flex items-center gap-4">
-                                        <input type="text" name="attributes[][name]"
+                                        <input type="text" name="attributes[0][name]"
                                             placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
                                             class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required>
-                                        <input type="text" name="attributes[][values]"
+                                        <input type="text" name="attributes[0][values]"
                                             placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
                                             class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required>
