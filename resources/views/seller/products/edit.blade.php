@@ -1,9 +1,26 @@
-@extends('layouts.seller')
+@extends('layouts.seller_home')
+
+@section('title', 'Chỉnh Sửa Sản Phẩm')
 
 @section('content')
-    <div class="container">
-        <h1 class="text-2xl font-semibold text-gray-800 mb-6">Chỉnh sửa sản phẩm</h1>
+    <div class="">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-800">Chỉnh sửa sản phẩm</h1>
+                <div class="text-sm text-gray-500">
+                    <a href="#" class="hover:underline">Trang chủ</a> / Chỉnh sửa sản phẩm
+                </div>
+            </div>
+            <div class="flex space-x-3">
+                <button type="submit" form="product-form"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và đăng</button>
+                <button type="submit" form="product-form" name="save_draft" value="1"
+                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Lưu nháp</button>
+            </div>
+        </div>
 
+        <!-- Error Messages -->
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
                 <ul>
@@ -14,11 +31,11 @@
             </div>
         @endif
 
-        <form action="{{ route('seller.products.update', $product->id) }}" method="POST" enctype="multipart/form-data"
-            id="product-form">
+        <!-- Main Content -->
+        <form id="product-form" action="{{ route('seller.products.update', $product->id) }}" method="POST"
+            enctype="multipart/form-data">
             @csrf
             @method('PUT')
-
             <div class="grid grid-cols-12 gap-6">
                 <div class="col-span-12 lg:col-span-12">
                     <div class="flex gap-6">
@@ -37,6 +54,7 @@
                                     @error('name')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
+                                    <span class="text-sm text-gray-500 block mt-1">Tên sản phẩm nên là duy nhất.</span>
                                 </div>
                                 <div>
                                     <label class="block text-gray-700 font-medium mb-1">Mô tả</label>
@@ -51,192 +69,237 @@
                             <!-- Product Data Section -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <h4 class="text-xl font-semibold mb-4">Dữ liệu sản phẩm</h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">Giá gốc <span
-                                                class="text-red-500">*</span></label>
-                                        <input type="number" name="price" step="0.01"
-                                            value="{{ old('price', $product->price) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Giá gốc của sản phẩm" required>
-                                        @error('price')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">Giá nhập <span
-                                                class="text-red-500">*</span></label>
-                                        <input type="number" name="purchase_price" step="0.01"
-                                            value="{{ old('purchase_price', $product->purchase_price) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Giá nhập sản phẩm" required>
-                                        @error('purchase_price')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">Giá bán <span
-                                                class="text-red-500">*</span></label>
-                                        <input type="number" name="sale_price" step="0.01"
-                                            value="{{ old('sale_price', $product->sale_price) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Giá bán sản phẩm" required>
-                                        @error('sale_price')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">SKU sản phẩm <span
-                                                class="text-red-500">*</span></label>
-                                        <input type="text" name="sku" value="{{ old('sku', $product->sku) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Mã SKU sản phẩm" required>
-                                        @error('sku')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho <span
-                                                class="text-red-500">*</span></label>
-                                        <input type="number" name="stock_total"
-                                            value="{{ old('stock_total', $product->stock_total) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Số lượng tồn kho" required>
-                                        @error('stock_total')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 font-medium mb-1">Loại sản phẩm <span
+                                            class="text-red-500">*</span></label>
+                                    <select name="product_type" id="product-type"
+                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        onchange="updateProductFields()">
+                                        <option value="simple_product" {{ $product->is_variant ? '' : 'selected' }}>Simple
+                                            product</option>
+                                        <option value="variable_product" {{ $product->is_variant ? 'selected' : '' }}>
+                                            Variable product</option>
+                                    </select>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
-                                        <input type="number" name="length" step="0.01"
-                                            value="{{ old('length', $product->length ?? 0) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Chiều dài sản phẩm">
-                                        @error('length')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
-                                        <input type="number" name="width" step="0.01"
-                                            value="{{ old('width', $product->width ?? 0) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Chiều rộng sản phẩm">
-                                        @error('width')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
-                                        <input type="number" name="height" step="0.01"
-                                            value="{{ old('height', $product->height ?? 0) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Chiều cao sản phẩm">
-                                        @error('height')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
-                                        <input type="number" name="weight" step="0.01"
-                                            value="{{ old('weight', $product->weight ?? 0) }}"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Trọng lượng sản phẩm">
-                                        @error('weight')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Biến thể -->
-                            <div id="variants-section" class="bg-white p-6 rounded-lg shadow-sm">
-                                <h4 class="text-xl font-semibold mb-4">Biến thể sản phẩm</h4>
-                                <div id="variant-container">
-                                    @foreach ($product->variants as $index => $variant)
-                                        <div class="p-6 border border-gray-300 rounded-md mb-6 bg-white relative">
-                                            <div class="flex justify-between items-center mb-3">
-                                                <h5 class="text-lg font-semibold">Biến thể {{ $index + 1 }}:
-                                                    {{ $variant->variant_name }}</h5>
-                                                <button type="button"
-                                                    class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-variant">Xóa</button>
-                                            </div>
-                                            <input type="hidden" name="variants[{{ $index }}][index]"
-                                                value="{{ $index }}">
-                                            <input type="hidden" name="variants[{{ $index }}][name]"
-                                                value="{{ $variant->variant_name }}">
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                                    <input type="number" name="variants[{{ $index }}][price]"
-                                                        step="0.01"
-                                                        value="{{ old("variants.$index.price", $variant->price) }}"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập giá gốc">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
-                                                    <input type="number"
-                                                        name="variants[{{ $index }}][purchase_price]"
-                                                        step="0.01"
-                                                        value="{{ old("variants.$index.purchase_price", $variant->purchase_price) }}"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập giá nhập">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                                                    <input type="number"
-                                                        name="variants[{{ $index }}][sale_price]" step="0.01"
-                                                        value="{{ old("variants.$index.sale_price", $variant->sale_price) }}"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập giá bán">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                                    <input type="text" name="variants[{{ $index }}][sku]"
-                                                        value="{{ old("variants.$index.sku", $variant->sku) }}"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập SKU">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Số lượng tồn
-                                                        kho</label>
-                                                    <input type="number"
-                                                        name="variants[{{ $index }}][stock_total]"
-                                                        value="{{ old("variants.$index.stock_total", $variant->stock) }}"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập số lượng">
-                                                </div>
+                                <div id="product-fields">
+                                    <!-- Simple Product Fields -->
+                                    <div class="simple-product-fields {{ $product->is_variant ? 'hidden' : '' }}">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                                <input type="number" name="price" step="0.01"
+                                                    value="{{ old('price', $product->price) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Giá gốc của sản phẩm">
                                             </div>
                                             <div>
-                                                <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                                                <input type="file" name="variant_images[{{ $index }}][]"
-                                                    multiple
-                                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    accept="image/*"
-                                                    onchange="previewVariantImage(event, {{ $index }})">
-                                                <div id="preview-images-{{ $index }}"
-                                                    class="mt-2 flex flex-wrap gap-2">
-                                                    @foreach ($variant->images as $image)
-                                                        <div class="relative">
-                                                            <img src="{{ Storage::url($image->image_path) }}"
-                                                                alt="{{ $image->alt_text }}"
-                                                                class="w-24 h-24 object-cover rounded-md border border-gray-300">
-                                                            <button type="button"
-                                                                class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md"
-                                                                onclick="removeImage(this)">✖</button>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
+                                                <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                                                <input type="number" name="purchase_price" step="0.01"
+                                                    value="{{ old('purchase_price', $product->purchase_price) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Giá nhập sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                                <input type="number" name="sale_price" step="0.01"
+                                                    value="{{ old('sale_price', $product->sale_price) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Giá bán sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">SKU sản phẩm</label>
+                                                <input type="text" name="sku"
+                                                    value="{{ old('sku', $product->sku) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Mã SKU sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                                                <input type="number" name="stock_total"
+                                                    value="{{ old('stock_total', $product->stock_total) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Số lượng tồn kho">
                                             </div>
                                         </div>
-                                    @endforeach
+                                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                                <input type="number" name="length" step="0.01"
+                                                    value="{{ old('length', optional($product->dimensions)->first()->length ?? 0) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Chiều dài sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng
+                                                    (inch)</label>
+                                                <input type="number" name="width" step="0.01"
+                                                    value="{{ old('width', optional($product->dimensions)->first()->width ?? 0) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Chiều rộng sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Chiều cao
+                                                    (inch)</label>
+                                                <input type="number" name="height" step="0.01"
+                                                    value="{{ old('height', optional($product->dimensions)->first()->height ?? 0) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Chiều cao sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng
+                                                    (kg)</label>
+                                                <input type="number" name="weight" step="0.01"
+                                                    value="{{ old('weight', optional($product->dimensions)->first()->weight ?? 0) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Trọng lượng sản phẩm">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Variable Product Fields -->
+                                    <div class="variable-product-fields {{ $product->is_variant ? '' : 'hidden' }}">
+                                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Chiều dài
+                                                    (inch)</label>
+                                                <input type="number" name="length" step="0.01"
+                                                    value="{{ old('length', optional($product->dimensions)->first()->length ?? 0) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Chiều dài sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng
+                                                    (inch)</label>
+                                                <input type="number" name="width" step="0.01"
+                                                    value="{{ old('width', optional($product->dimensions)->first()->width ?? 0) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Chiều rộng sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Chiều cao
+                                                    (inch)</label>
+                                                <input type="number" name="height" step="0.01"
+                                                    value="{{ old('height', optional($product->dimensions)->first()->height ?? 0) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Chiều cao sản phẩm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng
+                                                    (kg)</label>
+                                                <input type="number" name="weight" step="0.01"
+                                                    value="{{ old('weight', optional($product->dimensions)->first()->weight ?? 0) }}"
+                                                    class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Trọng lượng sản phẩm">
+                                            </div>
+                                        </div>
+                                        <div id="variants-section" class="bg-white p-6 rounded-lg shadow-sm">
+                                            <h4 class="text-xl font-semibold mb-4">Biến thể sản phẩm</h4>
+                                            <div id="variant-container">
+                                                @foreach ($product->variants as $index => $variant)
+                                                    <div
+                                                        class="p-6 border border-gray-300 rounded-md mb-6 bg-white relative">
+                                                        <div class="flex justify-between items-center mb-3">
+                                                            <h5 class="text-lg font-semibold">Biến thể {{ $index + 1 }}
+                                                            </h5>
+                                                            <button type="button"
+                                                                class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-variant">Xóa</button>
+                                                        </div>
+                                                        <div
+                                                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                                            <div>
+                                                                <label class="block text-gray-700 font-medium mb-1">Tên
+                                                                    biến thể <span class="text-red-500">*</span></label>
+                                                                <input type="text"
+                                                                    name="variants[{{ $index }}][name]"
+                                                                    value="{{ old("variants.$index.name", $variant->variant_name) }}"
+                                                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    placeholder="VD: Đen S" required>
+                                                                @error("variants.$index.name")
+                                                                    <span
+                                                                        class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                                @enderror
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-gray-700 font-medium mb-1">Giá
+                                                                    gốc</label>
+                                                                <input type="number"
+                                                                    name="variants[{{ $index }}][price]"
+                                                                    step="0.01"
+                                                                    value="{{ old("variants.$index.price", $variant->price) }}"
+                                                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    placeholder="Nhập giá gốc">
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-gray-700 font-medium mb-1">Giá
+                                                                    nhập</label>
+                                                                <input type="number"
+                                                                    name="variants[{{ $index }}][purchase_price]"
+                                                                    step="0.01"
+                                                                    value="{{ old("variants.$index.purchase_price", $variant->purchase_price) }}"
+                                                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    placeholder="Nhập giá nhập">
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-gray-700 font-medium mb-1">Giá
+                                                                    bán</label>
+                                                                <input type="number"
+                                                                    name="variants[{{ $index }}][sale_price]"
+                                                                    step="0.01"
+                                                                    value="{{ old("variants.$index.sale_price", $variant->sale_price) }}"
+                                                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    placeholder="Nhập giá bán">
+                                                            </div>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-gray-700 font-medium mb-1">SKU</label>
+                                                                <input type="text"
+                                                                    name="variants[{{ $index }}][sku]"
+                                                                    value="{{ old("variants.$index.sku", $variant->sku) }}"
+                                                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    placeholder="Nhập SKU">
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-gray-700 font-medium mb-1">Số
+                                                                    lượng tồn kho</label>
+                                                                <input type="number"
+                                                                    name="variants[{{ $index }}][stock_total]"
+                                                                    value="{{ old("variants.$index.stock_total", $variant->stock) }}"
+                                                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    placeholder="Nhập số lượng">
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Hình
+                                                                ảnh</label>
+                                                            <input type="file"
+                                                                name="variant_images[{{ $index }}][]" multiple
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                accept="image/*"
+                                                                onchange="previewVariantImage(event, {{ $index }})">
+                                                            <div id="preview-images-{{ $index }}"
+                                                                class="mt-2 flex flex-wrap gap-2">
+                                                                @foreach ($variant->images as $image)
+                                                                    <div class="relative">
+                                                                        <img src="{{ Storage::url($image->image_path) }}"
+                                                                            alt="{{ $image->alt_text }}"
+                                                                            class="w-24 h-24 object-cover rounded-md border border-gray-300">
+                                                                        <button type="button"
+                                                                            class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md"
+                                                                            onclick="removeImage(this)">✖</button>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <button type="button" id="add-variant"
+                                                class="mt-4 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600">Thêm
+                                                biến thể</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button type="button" id="add-variant"
-                                    class="mt-4 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600">Thêm biến
-                                    thể</button>
                             </div>
                         </div>
 
@@ -292,7 +355,7 @@
                                     <img id="uploadIcon1" class="w-24 h-auto mx-auto mb-2"
                                         src="{{ $product->images->first() ? Storage::url($product->images->first()->image_path) : 'https://html.hixstudio.net/ebazer/assets/img/icons/upload.png' }}"
                                         alt="Upload Icon">
-                                    <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh phải nhỏ hơn 5Mb</span>
+                                    <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh phải nhỏ hơn 5MB</span>
                                     <label for="mainImage"
                                         class="block w-full py-2 px-4 border border-gray-300 rounded-md text-center text-sm text-gray-700 hover:bg-blue-50 cursor-pointer">Tải
                                         ảnh chính lên</label>
@@ -313,12 +376,11 @@
                                             src="https://html.hixstudio.net/ebazer/assets/img/icons/upload.png"
                                             alt="Upload Icon">
                                     </div>
-                                    <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh phải nhỏ hơn 5Mb</span>
+                                    <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh phải nhỏ hơn 5MB</span>
                                     <div id="additionalImagesPreview"
-                                        class="mt-2 mb-2 flex flex-wrap gap-2 @if ($product->images->count() > 1) hidden @endif">
+                                        class="mt-2 mb-2 flex flex-wrap gap-2 {{ $product->images->count() > 1 ? '' : 'hidden' }}">
                                         @foreach ($product->images as $image)
                                             @if (!$loop->first)
-                                                <!-- Loại bỏ ảnh chính -->
                                                 <div class="relative">
                                                     <img src="{{ Storage::url($image->image_path) }}"
                                                         alt="{{ $image->alt_text }}"
@@ -532,21 +594,56 @@
                     variantCount++;
                     variantItem.innerHTML = `
                         <div class="flex justify-between items-center mb-3">
-                            <h5 class="text-lg font-semibold">Biến thể #${variantCount}</h5>
+                            <h5 class="text-lg font-semibold">Biến thể ${variantCount}</h5>
                             <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-variant">Xóa</button>
                         </div>
-                        <input type="hidden" name="variants[${variantCount}][index]" value="${variantCount}">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                            <div><input type="text" name="variants[${variantCount}][name]" class="w-full border border-gray-300 rounded-md p-2" placeholder="Tên biến thể"></div>
-                            <div><input type="number" name="variants[${variantCount}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2" placeholder="Giá gốc"></div>
-                            <div><input type="number" name="variants[${variantCount}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2" placeholder="Giá nhập"></div>
-                            <div><input type="number" name="variants[${variantCount}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2" placeholder="Giá bán"></div>
-                            <div><input type="text" name="variants[${variantCount}][sku]" class="w-full border border-gray-300 rounded-md p-2" placeholder="SKU"></div>
-                            <div><input type="number" name="variants[${variantCount}][stock_total]" class="w-full border border-gray-300 rounded-md p-2" placeholder="Số lượng tồn kho"></div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Tên biến thể <span class="text-red-500">*</span></label>
+                                <input type="text" name="variants[${variantCount}][name]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="VD: Đen S" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                <input type="number" name="variants[${variantCount}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                                <input type="number" name="variants[${variantCount}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                <input type="number" name="variants[${variantCount}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                <input type="text" name="variants[${variantCount}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                                <input type="number" name="variants[${variantCount}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                <input type="number" name="variants[${variantCount}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài biến thể">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
+                                <input type="number" name="variants[${variantCount}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng biến thể">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
+                                <input type="number" name="variants[${variantCount}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao biến thể">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
+                                <input type="number" name="variants[${variantCount}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng biến thể">
+                            </div>
                         </div>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                            <input type="file" name="variant_images[${variantCount}][]" multiple class="w-full border border-gray-300 rounded-md p-2" accept="image/*" onchange="previewVariantImage(event, ${variantCount})">
+                            <input type="file" name="variant_images[${variantCount}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${variantCount})">
                             <div id="preview-images-${variantCount}" class="mt-2 flex flex-wrap gap-2"></div>
                         </div>
                     `;
@@ -564,7 +661,7 @@
                 input.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file && file.size > 5 * 1024 * 1024) {
-                        alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
+                        alert('Kích thước ảnh phải nhỏ hơn 5MB!');
                         input.value = '';
                         uploadIcon.src = "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
                         return;
@@ -608,7 +705,7 @@
                         previewContainer.innerHTML = '';
                         Array.from(files).forEach((file) => {
                             if (file.size > 5 * 1024 * 1024) {
-                                alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
+                                alert('Kích thước ảnh phải nhỏ hơn 5MB!');
                                 input.value = '';
                                 return;
                             }
@@ -676,6 +773,24 @@
             window.removeImage = function(element) {
                 element.parentElement.remove();
             };
+
+            // Function to update product fields based on product type
+            function updateProductFields() {
+                const productType = document.getElementById('product-type').value;
+                const simpleFields = document.querySelector('.simple-product-fields');
+                const variableFields = document.querySelector('.variable-product-fields');
+
+                if (productType === 'simple_product') {
+                    simpleFields.classList.remove('hidden');
+                    variableFields.classList.add('hidden');
+                } else if (productType === 'variable_product') {
+                    simpleFields.classList.add('hidden');
+                    variableFields.classList.remove('hidden');
+                }
+            }
+
+            // Initialize fields based on current product type
+            updateProductFields();
         });
     </script>
 @endsection

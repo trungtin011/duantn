@@ -45,12 +45,7 @@ class ProductVariant extends Model
         return $this->hasMany(ProductImage::class, 'variantID');
     }
 
-    public function attributeValues(): HasMany
-    {
-        return $this->hasMany(ProductVariantAttributeValue::class, 'product_variant_id')
-            ->with('attributeValue');
-    }
-
+    
     // Scopes
     public function scopeActive($query)
     {
