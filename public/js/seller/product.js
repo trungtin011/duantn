@@ -36,8 +36,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const productForm = document.getElementById('product-form');
     if (productForm) {
-        productForm.addEventListener('submit', function () {
+        productForm.addEventListener('submit', function (e) {
             tinymce.triggerSave();
+            // Kiểm tra dữ liệu trước khi gửi (debug)
+            console.log('Description:', document.getElementById('description').value);
         });
     }
 
@@ -668,14 +670,15 @@ function updateVariantIndices() {
     const variantItems = document.querySelectorAll('#variant-container > div');
     variantItems.forEach((item, index) => {
         const label = item.querySelector('h5');
-        label.textContent = `Biến thể ${index + 1}: ${item.querySelector('input[name$="[name]"]').value}`;
+        const nameInput = item.querySelector('input[name$="[name]"]');
+        label.textContent = `Biến thể ${index + 1}: ${nameInput.value}`;
         const inputs = item.querySelectorAll('input[name], select[name]');
         inputs.forEach(input => {
-            const name = input.getAttribute('name').replace(/\[\d+\]/, `[${index}]`);
-            input.setAttribute('name', name);
+            let oldName = input.getAttribute('name');
+            let newName = oldName.replace(/\[\d+\]/, `[${index}]`);
+            input.setAttribute('name', newName);
         });
-        const previewId = `preview-images-${index}`;
-        item.querySelector('div[id^="preview-images-"]').id = previewId;
+        item.querySelector('div[id^="preview-images-"]').id = `preview-images-${index}`;
         item.querySelector('input[type="file"]').setAttribute('onchange', `previewVariantImage(event, ${index})`);
     });
 }
@@ -756,3 +759,24 @@ function removeImage(element) {
 document.getElementById('statusFilter').addEventListener('change', function () {
     this.form.submit(); // Gửi form ngay khi thay đổi trạng thái
 });
+
+function updateProductFields() {
+    const productType = document.getElementById('product-type').value;
+    const simpleFields = document.querySelector('.simple-product-fields');
+    const variableFields = document.querySelector('.variable-product-fields');
+
+    if (productType === 'simple_product') {
+        simpleFields.classList.remove('hidden');
+        variableFields.classList.add('hidden');
+        // Xóa giá trị của các input simple khi chuyển sang variable
+        simpleFields.querySelectorAll('input').forEach(input => input.value = '');
+    } else if (productType === 'variable_product') {
+        simpleFields.classList.add('hidden');
+        variableFields.classList.remove('hidden');
+        // Xóa giá trị của các input simple khi chuyển sang variable
+        simpleFields.querySelectorAll('input').forEach(input => input.value = '');
+    }
+}
+
+// Gọi hàm khi trang tải
+document.addEventListener('DOMContentLoaded', updateProductFields);

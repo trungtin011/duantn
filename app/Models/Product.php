@@ -81,23 +81,6 @@ class Product extends Model
         return $this->hasOne(ProductImage::class, 'productID')->where('is_default', true);
     }
 
-    public function attributes()
-    {
-        return $this->hasMany(Attribute::class, 'productID', 'id');
-    }
-
-    public function attributeValues(): HasMany
-    {
-        return $this->hasManyThrough(
-            AttributeValue::class,
-            ProductVariant::class,
-            'productID',
-            'id',
-            'id',
-            'id'
-        )->join('product_variant_attribute_values', 'attribute_values.id', '=', 'product_variant_attribute_values.attribute_value_id');
-    }
-
     // Mối quan hệ với bảng orders thông qua bảng trung gian items_order
     public function orders()
     {
