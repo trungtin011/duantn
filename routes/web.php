@@ -4,6 +4,12 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
+use App\Http\Controllers\User\NotificationControllers as UserNotificationControllers;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\User\SuggestedProductController;
+use App\Http\Controllers\User\CheckoutController;
+use App\Http\Controllers\VNPayController;
 // admin
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductControllerAdmin;
@@ -12,11 +18,13 @@ use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\UserControllerAdmin;
 use App\Http\Controllers\Admin\AdminReportController;
+
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
+
 //user
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\ProductController;
@@ -29,6 +37,7 @@ use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use App\Http\Controllers\User\CheckinController;
 use App\Http\Controllers\User\OrderController;
+use App\Http\Controllers\User\ShippingFeeController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -40,7 +49,6 @@ Route::get('/404', function () {
 Route::get('/403', function () {
     return view('error.403');
 })->name('403');
-
 
 // trang đăng ký, đăng nhập, quên mật khẩu
 Route::get('/signup', function () {
@@ -56,11 +64,11 @@ Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallba
 Route::get('/auth/facebook', [LoginController::class, 'redirectToFacebook'])->name('auth.facebook.login');
 Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCallback']);
 
-
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-
+    Route::get('/notification', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
+    
     // products admin
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerAdmin::class, 'index'])->name('admin.products.index');
@@ -144,6 +152,8 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 
     Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
     Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+    // seller.order.shipping
+    Route::get('/order/{id}/shipping/create', [SellerOrderController::class, 'createShipping'])->name('seller.order.shipping.create');
     Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 
     Route::prefix('products')->group(function () {
@@ -165,10 +175,10 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 Route::prefix('customer')->group(function () {
     // customer routes
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
-
     Route::post('/product/{product}/review', [ProductReviewController::class, 'store'])->name('product.review')->middleware('auth');
     Route::post('/review/{review}/like', [ReviewLikeController::class, 'toggle'])->middleware('auth');
 
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::middleware('CheckRole:customer')->group(function () {
         Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
 
@@ -237,6 +247,16 @@ Route::prefix('customer')->group(function () {
         // Route báo cáo sản phẩm
         Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
     });
+
+    //checkout
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+    Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
+    Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
+    Route::get('/checkout/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
+    Route::post('/checkout/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
 });
 
 // seller registration routes
@@ -264,3 +284,7 @@ Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.ord
 
 
 Route::post('/update-session', [App\Http\Controllers\SessionController::class, 'updateSession'])->name('update-session');
+Route::post('/calculate-shipping-fee', [ShippingFeeController::class, 'calculateShippingFee'])->name('calculate-shipping-fee');
+// API - VNPAY   
+Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');  
+Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');

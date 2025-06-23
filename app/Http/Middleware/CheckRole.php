@@ -27,7 +27,6 @@ class CheckRole
         if ($user->role !== $role && !in_array($user->role, UserRole::cases())) {
             return redirect()->route('403');
         }
-
         return $next($request);
     }
 }

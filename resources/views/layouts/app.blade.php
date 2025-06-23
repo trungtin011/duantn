@@ -262,12 +262,12 @@
                     <input type="text" placeholder="Bạn muốn tìm kiếm gì ?" class="text-sm focus:outline-none" />
                     <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
                 </form>
-                <div class=" flex items-center gap-3">
-                    <a href="{{ route('wishlist') }}">
-                        <i class="fa fa-heart text-gray-700 hover:text-orange-500"></i>
-                    </a>
+                <div class="relative">
+                    <div class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
+                        <span class="text-center text-xs text-white">3</span>
+                    </div>
                     <a href="{{ route('cart') }}">
-                        <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
+                        <i class="fa fa-shopping-cart text-gray-700 hover:text-red-500 text-2xl"></i>
                     </a>
                 </div>
             </div>

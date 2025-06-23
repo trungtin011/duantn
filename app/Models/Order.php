@@ -12,10 +12,9 @@ class Order extends Model
     protected $table = 'orders';
     protected $fillable = [
         'userID', // Cột trong migration là userID
-        'shopID',
         'order_code',
         'total_price',
-        'coupon_id',
+        'couponID',
         'coupon_discount',
         'payment_method',
         'payment_status',
@@ -46,6 +45,11 @@ class Order extends Model
         return $this->hasOneThrough(Shop::class, OrderItem::class, 'orderID', 'id', 'id', 'shop_orderID');
     }
 
+    public function shop_order()
+    {
+        return $this->hasMany(ShopOrder::class, 'orderID', 'id');
+    }
+
     public function coupon(): BelongsTo
     {
         return $this->belongsTo(Coupon::class);
@@ -53,7 +57,7 @@ class Order extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class, 'orderID', 'id');
+        return $this->hasMany(ItemsOrder::class, 'orderID', 'id');
     }
 
     public function address(): HasOne

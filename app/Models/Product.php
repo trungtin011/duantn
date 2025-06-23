@@ -48,12 +48,23 @@ class Product extends Model
     // Relationships
     public function shop()
     {
-        return $this->belongsTo(Shop::class, 'shopID');
+        return $this->belongsTo(Shop::class, 'shopID', 'id');
     }
 
     public function coupons()
     {
         return $this->hasMany(Coupon::class);
+    }
+
+    public function variantAttributeValues()
+    {
+        return $this->hasMany(ProductVariantAttributeValue::class, 'product_id');
+    }
+
+    // App/Models/Product.php
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'product_attribute', 'product_id', 'attribute_id');
     }
 
     public function variants(): HasMany
@@ -66,10 +77,11 @@ class Product extends Model
         return $this->hasMany(ProductImage::class, 'productID');
     }
 
-    public function dimension(): HasOne
+    public function dimension()
     {
-        return $this->hasOne(ProductDimension::class, 'productID');
+        return $this->hasMany(ProductDimension::class, 'productID');
     }
+
 
     public function reviews(): HasMany
     {
@@ -87,6 +99,19 @@ class Product extends Model
         return $this->belongsToMany(Order::class, 'items_order', 'productID', 'orderID')
             ->withPivot('variantID', 'quantity', 'unit_price', 'total_price', 'discount_amount')
             ->withTimestamps();
+        return $this->hasMany(ProductVariantAttributeValue::class, '', 'id');
+    }
+
+    public function attributeValues(): HasMany
+    {
+        return $this->hasManyThrough(
+            AttributeValue::class,
+            ProductVariant::class,
+            'productID',
+            'id',
+            'id',
+            'id'
+        )->join('product_variant_attribute_values', 'attribute_values.id', '=', 'product_variant_attribute_values.attribute_value_id');
     }
 
     // Scopes
@@ -118,7 +143,7 @@ class Product extends Model
 
     public function dimensions()
     {
-        return $this->hasOne(ProductDimension::class, 'productID', 'id')->where('variantID', null);
+        return $this->hasMany(ProductDimension::class, 'productID');
     }
 
     // Nếu cần mối quan hệ với tất cả kích thước (bao gồm biến thể)

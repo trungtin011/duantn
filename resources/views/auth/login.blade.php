@@ -265,54 +265,54 @@
             }
         }
 
-        .title {
+            .title {
             font-size: 36px;
             font-weight: bold;
             margin-bottom: 16px;
-        }
+            }
 
-        .subtitle {
+            .subtitle {
             font-size: 18px;
             color: #666666;
             margin-bottom: 32px;
-        }
+            }
 
-        .form-group {
+            .form-group {
             margin-bottom: 24px;
-        }
+            }
 
-        .input-text {
+            .input-text {
             width: 100%;
             padding: 12px 8px;
             font-size: 16px;
             border: none;
             border-bottom: 1px solid #ccc;
             outline: none;
-        }
+            }
 
-        .input-text:focus {
+            .input-text:focus {
             border-color: #000;
-        }
+            }
 
-        .form-remember {
+            .form-remember {
             display: flex;
             align-items: center;
             margin-bottom: 32px;
             font-size: 14px;
             color: #555;
-        }
+            }
 
-        .form-remember input {
+            .form-remember input {
             margin-right: 8px;
-        }
+            }
 
-        .form-actions {
+            .form-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
+            }
 
-        .login-button {
+            .login-button {
             background-color: #000;
             color: #fff;
             padding: 12px 32px;
@@ -320,49 +320,49 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-        }
+            }
 
-        .login-button:hover {
+            .login-button:hover {
             background-color: #333;
-        }
+            }
 
-        .forgot-password {
+            .forgot-password {
             font-size: 14px;
             color: #999;
             text-decoration: none;
-        }
+            }
 
-        .forgot-password:hover {
+            .forgot-password:hover {
             text-decoration: underline;
-        }
+            }
 
-        .signup-wrap {
+            .signup-wrap {
             margin-top: 24px;
             font-size: 14px;
-        }
+            }
 
-        .signup-wrap a {
+            .signup-wrap a {
             color: #444;
             text-decoration: none;
             margin-left: 4px;
-        }
+            }
 
-        .signup-wrap a:hover {
+            .signup-wrap a:hover {
             text-decoration: underline;
-        }
+            }
 
-        @media (max-width: 768px) {
+            @media (max-width: 768px) {
             .login-box {
-                flex-direction: column;
+            flex-direction: column;
             }
 
             .login-image,
             .login-form {
-                width: 100%;
+            width: 100%;
             }
 
             .login-form {
-                padding: 40px;
+            padding: 40px;
             }
         }
     </style>

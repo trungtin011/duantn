@@ -40,12 +40,21 @@ class ProductVariant extends Model
         return $this->hasOne(ProductDimension::class, 'variantID');
     }
 
+    public function dimensions()
+{
+    return $this->hasOne(ProductDimension::class, 'variantID');
+}
+
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class, 'variantID');
     }
 
-    
+    public function attributeValues()
+    {
+        return $this->belongsToMany(AttributeValue::class, 'product_variant_attribute_values', 'product_variant_id', 'attribute_value_id');
+    }
+
     // Scopes
     public function scopeActive($query)
     {

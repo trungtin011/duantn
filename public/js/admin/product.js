@@ -583,14 +583,14 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function addAttribute() {
+    let index = document.querySelectorAll('[name$="[name]"]').length; // Đếm số input name hiện tại
     let container = document.getElementById('attribute-container');
     let newAttribute = document.createElement('div');
     newAttribute.classList.add('mb-4', 'flex', 'items-center', 'gap-4');
-
     newAttribute.innerHTML = `
-        <input type="text" name="attributes[][name]" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
+        <input type="text" name="attributes[${index}][name]" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
             class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-        <input type="text" name="attributes[][values]" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
+        <input type="text" name="attributes[${index}][values]" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
             class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
         <button type="button" class="ml-3 bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">
             Xóa
@@ -607,15 +607,50 @@ function addAttribute() {
 
 
 function generateVariants() {
-    let attributes = document.querySelectorAll('[name="attributes[][name]"]');
-    let values = document.querySelectorAll('[name="attributes[][values]"]');
+    let attributes = document.querySelectorAll('[name$="[name]"]');
+    let values = document.querySelectorAll('[name$="[values]"]');
+    console.log('Attributes:', attributes.length, 'Values:', values.length);
     let variantContainer = document.getElementById('variant-container');
+    let attributeContainer = document.getElementById('attribute-container');
     variantContainer.innerHTML = '';
 
+    // Thu thập dữ liệu và tạo lại input attributes
+    let attributesData = [];
     let attributeValues = [];
     attributes.forEach((attr, index) => {
-        let valuesArray = values[index].value.split(',').map(v => v.trim());
-        if (valuesArray.length) attributeValues.push(valuesArray);
+        if (values[index] && attr.value && values[index].value) {
+            let valuesArray = values[index].value.split(',').map(v => v.trim()).filter(v => v);
+            if (valuesArray.length) {
+                attributeValues.push(valuesArray);
+                attributesData.push({
+                    name: attr.value,
+                    values: valuesArray.join(',')
+                });
+            }
+        }
+    });
+
+    // Tạo lại input attributes
+    attributeContainer.innerHTML = '';
+    attributesData.forEach((attr, index) => {
+        let div = document.createElement('div');
+        div.classList.add('mb-4', 'flex', 'items-center', 'gap-4');
+        div.innerHTML = `
+            <input type="text" name="attributes[${index}][name]" value="${attr.name}"
+                placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
+                class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <input type="text" name="attributes[${index}][values]" value="${attr.values}"
+                placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
+                class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <button type="button" class="ml-3 bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">
+                Xóa
+            </button>
+        `;
+        div.querySelector('.remove-attribute').addEventListener('click', function () {
+            div.remove();
+            generateVariants();
+        });
+        attributeContainer.appendChild(div);
     });
 
     let variants = getCombinations(attributeValues);
@@ -631,22 +666,20 @@ function generateVariants() {
                     onclick="removeVariant(this)">Xóa</button>
             </div>
             <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
-
-            <!-- Dữ liệu sản phẩm -->
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div>
                     <label class="block text-gray-700 font-medium">Giá gốc</label>
-                    <input type="number" name="variants[${index}][price]" step="0.01" 
+                    <input type="number" name="variants[${index}][price]" step="1000" 
                         class="w-full border p-3 rounded-md focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-gray-700 font-medium">Giá nhập</label>
-                    <input type="number" name="variants[${index}][purchase_price]" step="0.01" 
+                    <input type="number" name="variants[${index}][purchase_price]" step="1000" 
                         class="w-full border p-3 rounded-md focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-gray-700 font-medium">Giá bán</label>
-                    <input type="number" name="variants[${index}][sale_price]" step="0.01" 
+                    <input type="number" name="variants[${index}][sale_price]" step="1000" 
                         class="w-full border p-3 rounded-md focus:ring-blue-500">
                 </div>
                 <div>
@@ -660,8 +693,6 @@ function generateVariants() {
                         class="w-full border p-3 rounded-md focus:ring-blue-500">
                 </div>
             </div>
-
-            <!-- Hình ảnh biến thể -->
             <div class="mt-3">
                 <label class="block text-gray-700 font-medium">Ảnh biến thể ${index + 1}</label>
                 <input type="file" name="variant_images[${index}][]" multiple accept="image/*"
@@ -670,7 +701,6 @@ function generateVariants() {
                 <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
         `;
-
         variantContainer.appendChild(variantDiv);
     });
 }

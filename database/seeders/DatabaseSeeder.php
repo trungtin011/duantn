@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'admin',
                 'fullname' => 'Admin User',
                 'phone' => '0901234567',
-                'email' => 'khoaebanypk03641@gmail.com',
+                'email' => 'Admin@gmail.com',
                 'password' => Hash::make('123123123'),
                 'status' => 'active',
                 'gender' => 'male',
@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'Khoa Không Khoẻ',
                 'fullname' => 'Y Khoa Êban',
                 'phone' => null,
-                'email' => 'dauxanh008@gmail.com',
+                'email' => 'Customer@gmail.com',
                 'password' => Hash::make('123123123'),
                 'status' => 'active',
                 'gender' => 'male',
@@ -240,23 +240,7 @@ class DatabaseSeeder extends Seeder
                 'meta_description' => null,
                 'meta_keywords' => null,
                 'status' => 'active',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
-        // Bảng sub_brand
-        DB::table('sub_brand')->insert([
-            [
-                'brandID' => 1,
-                'name' => 'Sub Brand A1',
-                'slug' => 'sub-brand-a1',
-                'description' => 'Sub brand of Brand A',
-                'image_path' => '/sub-brands/sub-brand-a1.png',
-                'meta_title' => null,
-                'meta_description' => null,
-                'meta_keywords' => null,
-                'status' => 'active',
+                'parent_id' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -275,23 +259,6 @@ class DatabaseSeeder extends Seeder
                 'meta_keywords' => null,
                 'status' => 'active',
                 'parent_id' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
-        // Bảng sub_categories
-        DB::table('sub_categories')->insert([
-            [
-                'categoryID' => 1,
-                'name' => 'Smartphones',
-                'slug' => 'smartphones',
-                'description' => 'Latest smartphones',
-                'image_path' => '/sub-categories/smartphones.png',
-                'meta_title' => null,
-                'meta_description' => null,
-                'meta_keywords' => null,
-                'status' => 'active',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -327,8 +294,6 @@ class DatabaseSeeder extends Seeder
                 'sku' => 'SPX001',
                 'brand' => 'Brand A',
                 'category' => 'Electronics',
-                'sub_category' => 'Smartphones',
-                'sub_brand' => null,
                 'status' => 'active',
                 'meta_title' => null,
                 'meta_description' => null,
@@ -380,37 +345,6 @@ class DatabaseSeeder extends Seeder
                 'width' => null,
                 'height' => null,
                 'weight' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
-        // Bảng attributes
-        DB::table('attributes')->insert([
-            [
-                'id' => 1,
-                'name' => 'Color',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
-        // Bảng attribute_values
-        DB::table('attribute_values')->insert([
-            [
-                'id' => 1,
-                'attribute_id' => 1,
-                'value' => 'Black',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
-        // Bảng product_variant_attribute_values
-        DB::table('product_variant_attribute_values')->insert([
-            [
-                'product_variant_id' => 1,
-                'attribute_value_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -624,7 +558,6 @@ class DatabaseSeeder extends Seeder
                 'content' => 'Your order ORD001 has been confirmed.',
                 'type' => 'order',
                 'reference_id' => 1,
-                'receiver_type' => 'order',
                 'receiver_type' => 'user',
                 'priority' => 'normal',
                 'status' => 'pending',
