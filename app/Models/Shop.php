@@ -34,7 +34,7 @@ class Shop extends Model
 
     public function addresses()
     {
-        return $this->hasMany(ShopAddress::class, 'shopID');
+        return $this->hasMany(ShopAddress::class, 'shopID', 'id');
     }
 
     public function followers()
