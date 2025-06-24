@@ -4,40 +4,65 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Report;
-use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class AdminReportController extends Controller
 {
     public function index()
     {
-        $reports = Report::orderBy('created_at', 'desc')->paginate(10);
-        return view('admin.reports.index', compact('reports'));
+        $reports = Report::all();
+        return view('admin.reports.index' , compact('reports'));
     }
 
-    public function show(Report $report)
+    public function show($id)
     {
+        $report = Report::with(['reporter', 'reportedUser', 'product', 'shop', 'order', 'resolvedBy'])->findOrFail($id);
         return view('admin.reports.show', compact('report'));
     }
 
-    public function updateStatus(Request $request, Report $report)
+    public function destroy(Report $report)
     {
-        $request->validate([
-            'status' => 'required|in:pending,under_review,processing,resolved,rejected',
-            'resolution_note' => 'nullable|string|max:1000',
-        ]);
+        $report->delete();
+        return redirect()->back();
+    }
 
-        $report->status = $request->status;
-        if ($request->status == 'resolved' || $request->status == 'rejected') {
+    public function updateStatus(Request $request, $id)
+    {
+        $report = Report::findOrFail($id);
+        $status = $request->input('status');
+
+        $report->status = $status;
+
+        $statusToResolution = [
+            'resolved' => 'accepted',
+            'rejected' => 'rejected',
+            'under_review' => null,
+            'processing' => null,
+            'pending' => null,
+        ];
+
+        if (!$report->resolved_by && in_array($status, ['under_review', 'processing', 'resolved', 'rejected'])) {
             $report->resolved_by = Auth::id();
-            $report->resolved_at = now();
-        } else {
-            $report->resolved_by = null;
-            $report->resolved_at = null;
         }
-        $report->resolution_note = $request->resolution_note;
+
+        if (in_array($status, ['resolved', 'rejected'])) {
+            $report->resolved_at = now();
+            $report->resolution = $statusToResolution[$status];
+
+            if (!$report->resolved_by) {
+                $report->resolved_by = Auth::id();
+            }
+
+            if ($status === 'rejected') {
+                $report->resolution_note = $request->input('resolution_note');
+            }
+        }
+
         $report->save();
 
-        return redirect()->back()->with('success', 'Trạng thái báo cáo đã được cập nhật.');
+        return back()->with('success', 'Cập nhật trạng thái thành công');
     }
-} 
+
+}

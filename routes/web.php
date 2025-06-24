@@ -29,6 +29,7 @@ use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 use App\Http\Controllers\Seller\ComboController;
+use App\Http\Controllers\Seller\ReviewController;
 
 //user
 use App\Http\Controllers\User\HomeController;
@@ -73,6 +74,27 @@ Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCa
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/notification', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
+
+    //quản lý user
+    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/user/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/admin/user', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/admin/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/admin/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+
+    //quản lý review
+    Route::get('/seller/review', [ReviewController::class, 'index'])->name('seller.reviews.index');
+    Route::get('/seller/review/{review}', [ReviewController::class, 'show'])->name('seller.reviews.show');
+    Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('seller.reviews.create');
+    Route::post('/seller/review', [ReviewController::class, 'store'])->name('seller.reviews.store');
+    Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('seller.reviews.destroy');
+
+    //quản lý review
+    Route::get('/admin/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/admin/report/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
+    Route::put('/reports/{id}/status', [AdminReportController::class, 'updateStatus'])->name('report.updateStatus');
+    Route::delete('/admin/report/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
 
     // products admin
     Route::prefix('products')->group(function () {
