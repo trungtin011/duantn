@@ -33,7 +33,7 @@ class OrderItem extends Model
     ];
 
     // Relationships
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'orderID', 'id');
     }
@@ -43,11 +43,6 @@ class OrderItem extends Model
         return $this->belongsTo(Shop::class, 'shop_orderID', 'id');
     }
 
-    public function shopOrder(): BelongsTo
-    {
-        return $this->belongsTo(ShopOrder::class, 'shop_orderID'); // Quan hệ với bảng shop_order
-    }
-
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'productID'); // Đúng với productID
@@ -55,7 +50,12 @@ class OrderItem extends Model
 
     public function variant(): BelongsTo
     {
-        return $this->belongsTo(ProductVariant::class, 'variantID'); // Đúng với variantID
+        return $this->belongsTo(ProductVariant::class, 'variantID', 'id');
+    }
+
+    public function shopOrder(): BelongsTo
+    {
+        return $this->belongsTo(ShopOrder::class, 'shop_orderID', 'id');
     }
 
     // Methods
@@ -66,7 +66,6 @@ class OrderItem extends Model
 
     public function getDiscountAmountAttribute()
     {
-        // Trả về trực tiếp giá trị từ cột discount_amount
-        return $this->discount_amount;
+        return $this->discount_amount ?? ($this->subtotal - $this->total_price);
     }
 }

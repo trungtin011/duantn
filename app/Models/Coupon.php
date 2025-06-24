@@ -13,6 +13,7 @@ class Coupon extends Model
         'code',
         'name',
         'description',
+        'image',
         'discount_value',
         'discount_type',
         'max_discount_amount',
@@ -20,7 +21,6 @@ class Coupon extends Model
         'quantity',
         'max_uses_per_user',
         'max_uses_total',
-        'used_count',
         'start_date',
         'end_date',
         'rank_limit',
@@ -28,7 +28,8 @@ class Coupon extends Model
         'is_public',
         'created_by',
         'shop_id',
-        'status'
+        'status',
+        'used_count'
     ];
 
     protected $casts = [

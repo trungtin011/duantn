@@ -190,6 +190,7 @@
                         <i class="fas fa-chevron-down ml-auto mt-1 text-xs"></i>
                     </button>
                     <ul class="mt-2 space-y-1 pl-3 text-gray-700 font-normal">
+                         <li><a class="block hover:text-orange-500" href="{{ route('seller.combo.index') }}">Tạo combo</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Kênh Marketing</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Đấu Giá Rẻ Vô Địch</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Quảng Cáo Shopee</a></li>

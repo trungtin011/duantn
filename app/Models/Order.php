@@ -10,8 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     protected $table = 'orders';
+
     protected $fillable = [
-        'userID', // Cột trong migration là userID
+        'userID',
+        'shopID',
         'order_code',
         'total_price',
         'couponID',
@@ -37,7 +39,7 @@ class Order extends Model
     // Sửa quan hệ user và shop
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'userID'); // Chỉ định rõ cột userID
+        return $this->belongsTo(User::class, 'userID', 'id');
     }
 
     public function shop()
@@ -52,22 +54,42 @@ class Order extends Model
 
     public function coupon(): BelongsTo
     {
-        return $this->belongsTo(Coupon::class);
+        return $this->belongsTo(Coupon::class, 'coupon_id', 'id');
     }
 
-    public function items()
+    public function items(): HasMany
     {
-        return $this->hasMany(ItemsOrder::class, 'orderID', 'id');
+        return $this->hasMany(OrderItem::class, 'orderID', 'id');
     }
 
     public function address(): HasOne
     {
-        return $this->hasOne(OrderAddress::class);
+        return $this->hasOne(OrderAddress::class, 'order_id', 'id');
     }
 
     public function statusHistory()
     {
         return $this->hasMany(OrderStatusHistory::class, 'order_id', 'id');
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'order_id');
+    }
+
+    public function orderAddress()
+    {
+        return $this->hasOne(OrderAddress::class, 'order_id');
+    }
+
+    public function orderStatusHistory()
+    {
+        return $this->hasMany(OrderStatusHistory::class, 'order_id');
+    }
+
+    public function shopOrders()
+    {
+        return $this->hasMany(ShopOrder::class, 'orderID', 'id');
     }
 
     // Scopes
@@ -117,18 +139,33 @@ class Order extends Model
         return $this->total_price - $this->coupon_discount;
     }
 
-    public function orderItems()
+    public function getStatusLabelAttribute()
     {
-        return $this->hasMany(OrderItem::class, 'order_id');
+        $statusLabels = [
+            'pending' => 'Đang chờ xử lý',
+            'processing' => 'Đang xử lý',
+            'awaiting-pickup' => 'Chờ lấy hàng',
+            'in-delivery' => 'Đang giao hàng',
+            'delivered' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy',
+            'refunded' => 'Trả hàng/Hoàn tiền',
+        ];
+
+        return $statusLabels[$this->order_status] ?? ucfirst($this->order_status);
     }
 
-    public function orderAddress()
+    public function getStatusClassesAttribute()
     {
-        return $this->hasOne(OrderAddress::class, 'order_id');
-    }
+        $statusClasses = [
+            'pending' => 'bg-yellow-50 text-yellow-700 ring-yellow-600/10',
+            'processing' => 'bg-yellow-50 text-yellow-700 ring-yellow-600/10',
+            'awaiting-pickup' => 'bg-blue-50 text-blue-700 ring-blue-600/10',
+            'in-delivery' => 'bg-blue-50 text-blue-700 ring-blue-600/10',
+            'delivered' => 'bg-green-50 text-green-700 ring-green-600/10',
+            'cancelled' => 'bg-red-50 text-red-700 ring-red-600/10 filter-none',
+            'refunded' => 'bg-gray-50 text-gray-700 ring-gray-600/10',
+        ];
 
-    public function orderStatusHistory()
-    {
-        return $this->hasMany(OrderStatusHistory::class, 'order_id');
+        return $statusClasses[$this->order_status] ?? 'bg-gray-50 text-gray-700 ring-gray-600/10';
     }
 }
