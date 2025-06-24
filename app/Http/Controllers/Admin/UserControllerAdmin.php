@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Enums\UserRole;
+use App\Enums\UserStatus;
+use App\Enums\UserGender;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -48,12 +50,12 @@ class UserControllerAdmin extends Controller
      */
     public function edit($id): View
     {
-        $user = User::findOrFail($id);
-        $roles = ['admin' => 'Quản trị viên', 'customer' => 'Khách hàng'];
-        $statuses = ['active' => 'Hoạt động', 'inactive' => 'Không hoạt động', 'banned' => 'Bị khóa'];
-        $genders = ['male' => 'Nam', 'female' => 'Nữ'];
-
-        return view('admin.users.edit', compact('user', 'roles', 'statuses', 'genders'));
+        return view('admin.users.edit', [
+            'user' => $user,
+            'roles' => UserRole::cases(),
+            'statuses' => UserStatus::cases(),
+            'genders' => UserGender::cases(),
+        ]);
     }
 
     /**

@@ -398,165 +398,179 @@
             </div>
         </div>
 
-        <!-- JavaScript -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Thay đổi ảnh chính
-                function changeMainImage(imagePath) {
-                    document.getElementById('main-image').src = imagePath;
+        <!-- Đánh giá -->
+        <div class="mt-6 bg-white rounded-lg">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Đánh giá người dùng</h3>
+            @forelse($reviews as $review)
+                <div class="review mb-4 border-b pb-2">
+                    <strong>{{ $review->user->fullname ?? 'Người dùng ẩn danh' }}</strong>
+                    <span class="text-yellow-500">{{ $review->rating }} sao</span>
+                    <p>{{ $review->comment }}</p>
+                    <small class="text-gray-500">{{ $review->created_at->diffForHumans() }}</small>
+                </div>
+            @empty
+                <p>Chưa có đánh giá nào.</p>
+            @endforelse
+        </div>
+    </div>
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Thay đổi ảnh chính
+            function changeMainImage(imagePath) {
+                document.getElementById('main-image').src = imagePath;
+            }
+            window.changeMainImage = changeMainImage;
+
+            // Tăng/giảm số lượng
+            const decreaseBtn = document.getElementById('decreaseQty');
+            const increaseBtn = document.getElementById('increaseQty');
+            const quantityInput = document.getElementById('quantity');
+            decreaseBtn.addEventListener('click', () => {
+                let value = parseInt(quantityInput.value);
+                if (value > 1) quantityInput.value = value - 1;
+            });
+            increaseBtn.addEventListener('click', () => {
+                let value = parseInt(quantityInput.value);
+                quantityInput.value = value + 1;
+            });
+            // Modal báo cáo
+            const reportButton = document.getElementById('reportProductBtn');
+            const reportModal = document.getElementById('reportProductModal');
+            const cancelReportBtn = document.getElementById('cancelReportBtn');
+            reportButton.addEventListener('click', () => reportModal.classList.remove('hidden'));
+            cancelReportBtn.addEventListener('click', () => reportModal.classList.add('hidden'));
+            reportModal.addEventListener('click', (e) => {
+                if (e.target === reportModal) reportModal.classList.add('hidden');
+            });
+
+            // Chọn sao đánh giá
+            const stars = document.querySelectorAll('.star');
+            const ratingInput = document.getElementById('ratingInput');
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const value = star.getAttribute('data-value');
+                    ratingInput.value = value;
+                    stars.forEach(s => {
+                        s.classList.toggle('text-yellow-400', s.getAttribute(
+                            'data-value') <= value);
+                        s.classList.toggle('text-gray-300', s.getAttribute('data-value') >
+                            value);
+                    });
+                });
+            });
+        });
+
+        // Hiển thị mô tả sản phẩm
+        document.addEventListener('DOMContentLoaded', () => {
+            const readMore = document.getElementById('readMore');
+            const shortDescription = document.getElementById('shortDescription');
+            const fullDescription = document.getElementById('fullDescription');
+            const descriptionContent = document.querySelector('.description-content');
+
+            readMore.addEventListener('click', () => {
+                if (readMore.textContent.trim() === 'Xem thêm') {
+                    // Hiển thị toàn bộ mô tả
+                    shortDescription.style.display = 'none';
+                    const fullDescClone = fullDescription.cloneNode(true);
+                    fullDescClone.classList.remove('hidden');
+                    descriptionContent.innerHTML = '';
+                    descriptionContent.appendChild(fullDescClone);
+                    readMore.textContent = 'Thu gọn';
+                } else {
+                    // Thu gọn lại
+                    shortDescription.style.display = 'block';
+                    fullDescription.classList.add('hidden');
+                    descriptionContent.innerHTML = shortDescription.outerHTML;
+                    readMore.textContent = 'Xem thêm';
                 }
-                window.changeMainImage = changeMainImage;
+            });
+        });
 
-                // Tăng/giảm số lượng
-                const decreaseBtn = document.getElementById('decreaseQty');
-                const increaseBtn = document.getElementById('increaseQty');
-                const quantityInput = document.getElementById('quantity');
-                decreaseBtn.addEventListener('click', () => {
-                    let value = parseInt(quantityInput.value);
-                    if (value > 1) quantityInput.value = value - 1;
-                });
-                increaseBtn.addEventListener('click', () => {
-                    let value = parseInt(quantityInput.value);
-                    quantityInput.value = value + 1;
-                });
+        // Hiển thị menu khi nhấn nút
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.getElementById('menuButton');
+            const menuDropdown = document.getElementById('menuDropdown');
+            const reportBtn = document.getElementById('reportBtn');
+            const favoriteBtn = document.getElementById('favoriteBtn');
 
-                // Modal báo cáo
-                const reportButton = document.getElementById('reportProductBtn');
-                const reportModal = document.getElementById('reportProductModal');
-                const cancelReportBtn = document.getElementById('cancelReportBtn');
-                reportButton.addEventListener('click', () => reportModal.classList.remove('hidden'));
-                cancelReportBtn.addEventListener('click', () => reportModal.classList.add('hidden'));
-                reportModal.addEventListener('click', (e) => {
-                    if (e.target === reportModal) reportModal.classList.add('hidden');
-                });
-
-                // Chọn sao đánh giá
-                const stars = document.querySelectorAll('.star');
-                const ratingInput = document.getElementById('ratingInput');
-                stars.forEach(star => {
-                    star.addEventListener('click', () => {
-                        const value = star.getAttribute('data-value');
-                        ratingInput.value = value;
-                        stars.forEach(s => {
-                            s.classList.toggle('text-yellow-400', s.getAttribute(
-                                'data-value') <= value);
-                            s.classList.toggle('text-gray-300', s.getAttribute('data-value') >
-                                value);
-                        });
-                    });
-                });
+            menuButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                menuDropdown.classList.toggle('hidden');
             });
 
-            // Hiển thị mô tả sản phẩm
-            document.addEventListener('DOMContentLoaded', () => {
-                const readMore = document.getElementById('readMore');
-                const shortDescription = document.getElementById('shortDescription');
-                const fullDescription = document.getElementById('fullDescription');
-                const descriptionContent = document.querySelector('.description-content');
-
-                readMore.addEventListener('click', () => {
-                    if (readMore.textContent.trim() === 'Xem thêm') {
-                        // Hiển thị toàn bộ mô tả
-                        shortDescription.style.display = 'none';
-                        const fullDescClone = fullDescription.cloneNode(true);
-                        fullDescClone.classList.remove('hidden');
-                        descriptionContent.innerHTML = '';
-                        descriptionContent.appendChild(fullDescClone);
-                        readMore.textContent = 'Thu gọn';
-                    } else {
-                        // Thu gọn lại
-                        shortDescription.style.display = 'block';
-                        fullDescription.classList.add('hidden');
-                        descriptionContent.innerHTML = shortDescription.outerHTML;
-                        readMore.textContent = 'Xem thêm';
-                    }
-                });
-            });
-
-            // Hiển thị menu khi nhấn nút
-            document.addEventListener('DOMContentLoaded', function() {
-                const menuButton = document.getElementById('menuButton');
-                const menuDropdown = document.getElementById('menuDropdown');
-                const reportBtn = document.getElementById('reportBtn');
-                const favoriteBtn = document.getElementById('favoriteBtn');
-
-                menuButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    menuDropdown.classList.toggle('hidden');
-                });
-
-                // Ẩn dropdown khi nhấp ra ngoài
-                document.addEventListener('click', function(e) {
-                    if (!menuButton.contains(e.target) && !menuDropdown.contains(e.target)) {
-                        menuDropdown.classList.add('hidden');
-                    }
-                });
-
-                // Xử lý yêu thích sản phẩm
-                favoriteBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('Thêm vào danh sách yêu thích!');
+            // Ẩn dropdown khi nhấp ra ngoài
+            document.addEventListener('click', function(e) {
+                if (!menuButton.contains(e.target) && !menuDropdown.contains(e.target)) {
                     menuDropdown.classList.add('hidden');
-                });
-
-                // Xử lý báo cáo sản phẩm (mở modal nếu cần)
-                reportBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.getElementById('reportProductModal').classList.remove('hidden');
-                    menuDropdown.classList.add('hidden');
-                });
+                }
             });
 
-            // Xử lý ajax lọc
-            document.addEventListener('DOMContentLoaded', function() {
-                const filterButtons = document.querySelectorAll('.review-filter-btn');
-                const reviewList = document.getElementById('review-list');
-                let activeFilter = null;
+            // Xử lý yêu thích sản phẩm
+            favoriteBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Thêm vào danh sách yêu thích!');
+                menuDropdown.classList.add('hidden');
+            });
 
-                filterButtons.forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault(); // Ngăn hành vi mặc định của nút
+            // Xử lý báo cáo sản phẩm (mở modal nếu cần)
+            reportBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('reportProductModal').classList.remove('hidden');
+                menuDropdown.classList.add('hidden');
+            });
+        });
 
-                        const selected = this.getAttribute('data-filter'); // Lấy giá trị data-filter
-                        // Nếu bấm lại bộ lọc đang chọn, reset về không lọc
-                        const applyFilter = activeFilter === selected ? null : selected;
+        // Xử lý ajax lọc
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.review-filter-btn');
+            const reviewList = document.getElementById('review-list');
+            let activeFilter = null;
 
-                        // Cập nhật activeFilter
-                        activeFilter = applyFilter;
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault(); // Ngăn hành vi mặc định của nút
 
-                        // Tạo URL cho yêu cầu AJAX
-                        const url = applyFilter ?
-                            `${window.location.pathname}?filter=${encodeURIComponent(applyFilter)}` :
-                            window.location.pathname;
+                    const selected = this.getAttribute('data-filter'); // Lấy giá trị data-filter
+                    // Nếu bấm lại bộ lọc đang chọn, reset về không lọc
+                    const applyFilter = activeFilter === selected ? null : selected;
 
-                        fetch(url, {
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest'
+                    // Cập nhật activeFilter
+                    activeFilter = applyFilter;
+
+                    // Tạo URL cho yêu cầu AJAX
+                    const url = applyFilter ?
+                        `${window.location.pathname}?filter=${encodeURIComponent(applyFilter)}` :
+                        window.location.pathname;
+
+                    fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(res => res.text())
+                        .then(html => {
+                            if (reviewList) {
+                                reviewList.innerHTML = html;
+
+                                // Reset trạng thái tất cả các nút
+                                filterButtons.forEach(btn => {
+                                    btn.classList.remove('bg-blue-600', 'text-white');
+                                    btn.classList.add('text-gray-700');
+                                });
+
+                                // Cập nhật trạng thái nút được chọn
+                                if (applyFilter) {
+                                    this.classList.remove('text-gray-700');
+                                    this.classList.add('bg-blue-600', 'text-white');
                                 }
-                            })
-                            .then(res => res.text())
-                            .then(html => {
-                                if (reviewList) {
-                                    reviewList.innerHTML = html;
-
-                                    // Reset trạng thái tất cả các nút
-                                    filterButtons.forEach(btn => {
-                                        btn.classList.remove('bg-blue-600', 'text-white');
-                                        btn.classList.add('text-gray-700');
-                                    });
-
-                                    // Cập nhật trạng thái nút được chọn
-                                    if (applyFilter) {
-                                        this.classList.remove('text-gray-700');
-                                        this.classList.add('bg-blue-600', 'text-white');
-                                    }
-                                    // Khi applyFilter là null, không tô màu bất kỳ nút nào
-                                }
-                            })
-                            .catch(err => console.error('Lỗi khi tải đánh giá:', err));
-                    });
+                                // Khi applyFilter là null, không tô màu bất kỳ nút nào
+                            }
+                        })
+                        .catch(err => console.error('Lỗi khi tải đánh giá:', err));
                 });
             });
-        </script>
+        });
+    </script>
     </div>
 @endsection
