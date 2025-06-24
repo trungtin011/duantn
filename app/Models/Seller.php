@@ -90,4 +90,5 @@ class Seller extends Model
     {
         $this->update(['status' => 'active']);
     }
-}
+
+} 

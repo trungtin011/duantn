@@ -133,11 +133,13 @@
                 </a>
                 <a href="{{ route('admin.reports.index') }}" class="link_admin">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none">
-                        <path fill="currentColor" d="M22 6H2V2h20v4zM22 8H2v4h20V8zM22 14H2v4h20v-4zM22 20H2v2h20v-2z"/>
+                        <path fill="currentColor"
+                            d="M22 6H2V2h20v4zM22 8H2v4h20V8zM22 14H2v4h20v-4zM22 20H2v2h20v-2z" />
                     </svg>
                     Báo cáo
                 </a>
-                <a href="#" class="link_admin">
+                <a href="{{ route('admin.coupon.index') }}"
+                    class="{{ request()->routeIs('admin.coupon.index') ? 'active' : '' }} link_admin">
                     <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"
                         height="16">
                         <path fill="currentColor"
@@ -146,6 +148,28 @@
                         <path fill="currentColor" d="M13,15H11a1,1,0,0,0,0,2h2a1,1,0,0,0,0-2Z"></path>
                     </svg>
                     Mã giảm giá
+                </a>
+                <a href="{{ route('admin.refunds.index') }}"
+                    class="{{ request()->routeIs('admin.refunds.index') ? 'active' : '' }} link_admin">
+                    <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"
+                        height="16">
+                        <path fill="currentColor"
+                            d="M16,0h-.13a2.02,2.02,0,0,0-1.941,1.532,2,2,0,0,1-3.858,0A2.02,2.02,0,0,0,8.13,0H8A5.006,5.006,0,0,0,3,5V21a3,3,0,0,0,3,3H8.13a2.02,2.02,0,0,0,1.941-1.532,2,2,0,0,1,3.858,0A2.02,2.02,0,0,0,15.87,24H18a3,3,0,0,0,3-3V5A5.006,5.006,0,0,0,16,0Zm2,22-2.143-.063A4,4,0,0,0,8.13,22H6a1,1,0,0,1-1-1V17H7a1,1,0,0,0,0-2H5V5A3,3,0,0,1,8,2l.143.063A4.01,4.01,0,0,0,12,5a4.071,4.071,0,0,0,3.893-3H16a3,3,0,0,1,3,3V15H17a1,1,0,0,0,0,2h2v4A1,1,0,0,1,18,22Z">
+                        </path>
+                        <path fill="currentColor" d="M13,15H11a1,1,0,0,0,0,2h2a1,1,0,0,0,0-2Z"></path>
+                    </svg>
+                    xử lý hoàn hàng
+                </a>
+                <a href="{{ route('admin.brands.index') }}"
+                    class="{{ request()->routeIs('admin.brands.index') ? 'active' : '' }} link_admin">
+                    <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"
+                        height="16">
+                        <path fill="currentColor"
+                            d="M16,0h-.13a2.02,2.02,0,0,0-1.941,1.532,2,2,0,0,1-3.858,0A2.02,2.02,0,0,0,8.13,0H8A5.006,5.006,0,0,0,3,5V21a3,3,0,0,0,3,3H8.13a2.02,2.02,0,0,0,1.941-1.532,2,2,0,0,1,3.858,0A2.02,2.02,0,0,0,15.87,24H18a3,3,0,0,0,3-3V5A5.006,5.006,0,0,0,16,0Zm2,22-2.143-.063A4,4,0,0,0,8.13,22H6a1,1,0,0,1-1-1V17H7a1,1,0,0,0,0-2H5V5A3,3,0,0,1,8,2l.143.063A4.01,4.01,0,0,0,12,5a4.071,4.071,0,0,0,3.893-3H16a3,3,0,0,1,3,3V15H17a1,1,0,0,0,0,2h2v4A1,1,0,0,1,18,22Z">
+                        </path>
+                        <path fill="currentColor" d="M13,15H11a1,1,0,0,0,0,2h2a1,1,0,0,0,0-2Z"></path>
+                    </svg>
+                    thương hiệu
                 </a>
                 <a href="{{ route('admin.users.index') }}" class="link_admin">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="none">
@@ -195,6 +219,7 @@
                         </svg>
                         Trang
                     </a>
+
                 </div>
             </div>
         </div>

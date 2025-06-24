@@ -465,6 +465,7 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('shop_id')->nullable();
             $table->enum('status', ['active', 'inactive', 'expired', 'deleted'])->default('active');
+            $table->string('image', 255)->nullable(); // Xóa after('status')
             $table->timestamps();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');

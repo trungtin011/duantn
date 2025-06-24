@@ -139,4 +139,5 @@ class User extends Authenticatable
             default => 'Không xác định',
         };
     }
+    
 }
