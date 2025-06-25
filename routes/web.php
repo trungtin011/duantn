@@ -161,6 +161,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     // Shop Approval (Admin)
     Route::prefix('shops')->group(function () {
         Route::get('/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
+        Route::get('/{shop}', [AdminShopController::class, 'show'])->name('admin.shops.show');
         Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
         Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
     });

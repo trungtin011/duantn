@@ -40,6 +40,11 @@ class Seller extends Model
         return $this->belongsTo(BusinessLicense::class, 'business_license_id');
     }
 
+    public function identityVerification(): HasOne
+    {
+        return $this->hasOne(IdentityVerification::class, 'userID', 'userID');
+    }
+
     public function shop(): HasOne
     {
         return $this->hasOne(Shop::class, 'ownerID', 'userID');

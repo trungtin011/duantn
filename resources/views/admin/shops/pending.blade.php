@@ -76,7 +76,7 @@
                                         $statusText = 'Hoạt động';
                                     } else {
                                         $statusClass = 'bg-red-200';
-                                        $statusText = 'Bị từ chối';
+                                        $statusText = 'Chờ duyệt';
                                     }
                                 @endphp
                                 <span class="relative inline-block px-3 py-1 font-semibold leading-tight">
@@ -85,11 +85,12 @@
                                 </span>
                             </td>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                <a href="{{ route('admin.shops.show', $shop->id) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">Xem chi tiết</a>
                                 <form action="{{ route('admin.shops.approve', $shop) }}" method="POST" class="inline-block">
                                     @csrf
                                     <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs">Duyệt</button>
                                 </form>
-                                <button type="button" onclick="showRejectModal({{ $shop->id }}, {{ Js::from($shop->shop_name) }})" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 text-xs">Từ chối</button>
+                                <button type="button" data-shop-id="{{ $shop->id }}" data-shop-name="{{ $shop->shop_name }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2 text-xs reject-shop-btn">Từ chối</button>
                             </td>
                         </tr>
                         @endforeach
@@ -122,13 +123,21 @@
 
 @section('scripts')
 <script>
+    document.querySelectorAll('.reject-shop-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const shopId = this.dataset.shopId;
+            const shopName = this.dataset.shopName;
+            showRejectModal(shopId, shopName);
+        });
+    });
+
     function showRejectModal(shopId, shopName) {
         const modal = document.getElementById('rejectModal');
         const shopNameSpan = document.getElementById('shopNameReject');
         const rejectForm = document.getElementById('rejectForm');
         
         shopNameSpan.textContent = shopName;
-        rejectForm.action = '/admin/shops/' + shopId + '/reject'; // Update this to your actual route
+        rejectForm.action = '/admin/shops/' + shopId + '/reject';
         modal.classList.remove('hidden');
     }
 </script>
