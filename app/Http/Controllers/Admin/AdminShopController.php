@@ -8,6 +8,11 @@ use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\BusinessLicense;
+use App\Models\ShopAddress;
+use App\Models\ShopShippingOption;
+use App\Models\Seller;
+use App\Models\IdentityVerification;
 
 class AdminShopController extends Controller
 {
@@ -18,6 +23,16 @@ class AdminShopController extends Controller
     {
         $shops = Shop::where('shop_status', 'inactive')->orWhere('shop_status', 'pending')->get();
         return view('admin.shops.pending', compact('shops'));
+    }
+
+    /**
+     * Display the specified shop registration details.
+     */
+    public function show(Shop $shop)
+    {
+        $shop->load('shopAddress', 'shopShippingOptions', 'owner.seller.businessLicense', 'owner.seller.identityVerification');
+
+        return view('admin.shops.show', compact('shop'));
     }
 
     /**
