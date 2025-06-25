@@ -15,6 +15,7 @@ class ReviewController extends Controller
         
     }
 
+
     public function index()
     {
         $reviews = Review::with('user', 'product.shop', 'product.images')->latest()->get();
