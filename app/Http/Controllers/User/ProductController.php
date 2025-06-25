@@ -21,6 +21,9 @@ class ProductController extends Controller
     public function show(Request $request, $slug)
     {
         $ratingFilter = $request->input('rating');
+        $reviews = Review::with('user')->whereHas('product', function ($query) use ($slug) {
+            $query->where('slug', $slug);
+        })->get();
 
         $product = Product::with([
             'images',
@@ -68,6 +71,7 @@ class ProductController extends Controller
             'shop' => $product->shop,
             'logoPath' => $logoPath,
             'hasPurchased' => $hasPurchased,
+            'reviews' => $reviews,
         ]);
     }
 

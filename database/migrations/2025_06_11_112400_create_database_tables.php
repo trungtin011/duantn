@@ -102,6 +102,32 @@ return new class extends Migration
             $table->foreign('business_license_id')->references('id')->on('business_licenses')->onDelete('cascade');
         });
 
+        // Bảng identity_verifications
+        Schema::create('identity_verifications', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('userID');
+            $table->string('full_name', 100);
+            $table->string('identity_number', 20)->unique();
+            $table->date('birth_date');
+            $table->string('nationality', 100)->default('Vietnam');
+            $table->enum('gender', ['male', 'female', 'other']);
+            $table->string('hometown', 255);
+            $table->string('residence', 255);
+            $table->enum('identity_type', ['cccd', 'cmnd'])->default('cccd');
+            $table->date('identity_card_date');
+            $table->string('identity_card_place', 255);
+            $table->text('identity_card_image');
+            $table->text('identity_card_holding_image');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->text('rejection_reason')->nullable();
+            $table->unsignedBigInteger('verified_by')->nullable();
+            $table->timestamp('verified_at')->nullable();
+            $table->timestamps();
+            $table->foreign('userID')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('verified_by')->references('id')->on('users')->onDelete('set null');
+            $table->index(['status', 'identity_number'], 'identity_verifications_status_identity_number_index');
+        });
+
         // Bảng seller_registrations
         Schema::create('seller_registrations', function (Blueprint $table) {
             $table->bigIncrements('id');
@@ -289,8 +315,9 @@ return new class extends Migration
             $table->decimal('sale_price', 12, 0);
             $table->integer('stock');
             $table->string('sku', 100)->unique();
-            $table->enum('status', ['active', 'out_of_stock', 'deleted', 'draft']);
+            $table->enum('status', ['active', 'out_of_stock', 'deleted', '']);
             $table->timestamps();
+
             $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
         });
 
@@ -465,7 +492,7 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('shop_id')->nullable();
             $table->enum('status', ['active', 'inactive', 'expired', 'deleted'])->default('active');
-            $table->string('image', 255)->nullable(); // Xóa after('status')
+            $table->string('image', 255)->nullable();
             $table->timestamps();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
@@ -739,6 +766,7 @@ return new class extends Migration
         Schema::dropIfExists('shop_addresses');
         Schema::dropIfExists('shops');
         Schema::dropIfExists('seller_registrations');
+        Schema::dropIfExists('identity_verifications');
         Schema::dropIfExists('sellers');
         Schema::dropIfExists('business_licenses');
         Schema::dropIfExists('customers');

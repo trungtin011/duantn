@@ -32,3 +32,7 @@ refresh lại seedder
 ``` bash
 php artisan migrate:fresh --seed
 ```
+Tạo Policy: Chạy lệnh sau để tạo Policy
+``` bash
+php artisan make:policy ReportPolicy --model=Report
+```

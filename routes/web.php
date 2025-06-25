@@ -76,12 +76,12 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/notification', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
 
     //quản lý user
-    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users.index');
-    Route::get('/admin/user/create', [UserController::class, 'create'])->name('admin.users.create');
-    Route::post('/admin/user', [UserController::class, 'store'])->name('admin.users.store');
-    Route::get('/admin/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
-    Route::put('/admin/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
-    Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::get('/user', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/user/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/user', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
     //quản lý review
     Route::get('/seller/review', [ReviewController::class, 'index'])->name('seller.reviews.index');
@@ -91,10 +91,10 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('seller.reviews.destroy');
 
     //quản lý review
-    Route::get('/admin/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
-    Route::get('/admin/report/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
+    Route::get('/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/report/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
     Route::put('/reports/{id}/status', [AdminReportController::class, 'updateStatus'])->name('report.updateStatus');
-    Route::delete('/admin/report/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
+    Route::get('/reports/{report}/edit', [AdminReportController::class, 'edit'])->name('admin.reports.edit');
 
     // products admin
     Route::prefix('products')->group(function () {
