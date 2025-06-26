@@ -67,7 +67,7 @@ class Product extends Model
         return $this->belongsToMany(Attribute::class, 'product_attribute', 'product_id', 'attribute_id');
     }
 
-    public function variants(): HasMany
+    public function variants()
     {
         return $this->hasMany(ProductVariant::class, 'productID');
     }
@@ -81,7 +81,6 @@ class Product extends Model
     {
         return $this->hasMany(ProductDimension::class, 'productID');
     }
-
 
     public function reviews(): HasMany
     {
@@ -188,5 +187,12 @@ class Product extends Model
             return Storage::url($mainImage->image_path);
         }
         return Storage::url('product_images/default.png');
+    }
+
+    protected $dates = ['flash_sale_end_at'];
+
+    public function isFlashSaleActive()
+    {
+        return $this->flash_sale_price && now()->lt($this->flash_sale_end_at);
     }
 }

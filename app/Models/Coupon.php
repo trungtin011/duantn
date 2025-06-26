@@ -21,6 +21,7 @@ class Coupon extends Model
         'quantity',
         'max_uses_per_user',
         'max_uses_total',
+        'used_count',
         'start_date',
         'end_date',
         'rank_limit',

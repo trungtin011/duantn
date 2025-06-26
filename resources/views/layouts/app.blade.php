@@ -227,10 +227,23 @@
 
     <!-- Header -->
     <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
-        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex items-center gap-[180px]">
+        <div class="container mx-auto px-[10px] sm:px-0 flex items-center gap-[180px]">
             <!-- Logo -->
-            <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
-
+            @if (empty($settings->logo))
+                <a class="w-full lg:w-[14%] flex items-center justify-center gap-2 py-2" href="/">
+                    <div class="bg-black flex items-center gap-2 py-1 px-2 rounded lg:w-[175px]">
+                        <img src="{{ asset('images/logo.svg') }}" alt="logo" class="w-[30%] h-[30%]">
+                        <div class="text-white grid">
+                            <h5 class="m-0 text-xl">ZynoxMall</h5>
+                            <span class="text-xs text-right">zynoxmall.xyz</span>
+                        </div>
+                    </div>
+                </a>
+            @else
+                <a href="{{ route('home') }}" class="flex items-center">
+                    <img src="{{ asset('storage/' . $settings->logo) }}" alt="logo" class="w-20">
+                </a>
+            @endif
             <!-- Menu cho desktop -->
             {{-- <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
@@ -255,7 +268,7 @@
             </button>
 
             <!-- Search & Icons -->
-            <div class="hidden md:flex items-center gap-10 w-5/6">
+            <div class="hidden md:flex items-center gap-10 w-5/6 py-3">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST"
                     class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
                     @csrf
@@ -263,7 +276,8 @@
                     <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
                 </form>
                 <div class="relative">
-                    <div class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
+                    <div
+                        class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
                         <span class="text-center text-xs text-white">3</span>
                     </div>
                     <a href="{{ route('cart') }}">

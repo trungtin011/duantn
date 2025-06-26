@@ -43,7 +43,6 @@ class Seller extends Model
         return $this->belongsTo(BusinessLicense::class, 'business_license_id');
     }
 
-
     // Scopes
     public function scopeActive($query)
     {

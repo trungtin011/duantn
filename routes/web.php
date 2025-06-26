@@ -22,6 +22,16 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\HelpArticleController;
+use App\Http\Controllers\Admin\HelpCategoryController;
+use App\Http\Controllers\Admin\LogoController;
+use App\Http\Controllers\Admin\AdminSettingsController;
+
+//post
+use App\Http\Controllers\Admin\PostCategoryController;
+use App\Http\Controllers\Admin\PostTagController;
+use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\HelpController;
 
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
@@ -44,6 +54,7 @@ use App\Http\Controllers\ReviewLikeController;
 use App\Http\Controllers\User\CheckinController;
 use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
+use App\Http\Controllers\User\FrontendController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -121,7 +132,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::delete('/{id}', [AttributeController::class, 'destroy'])->name('admin.attributes.destroy');
     });
 
-    // products orders
+    // orders
     Route::prefix('orders')->group(function () {
         Route::get('/', [AdminOrderController::class, 'index'])->name('admin.orders.index');
         Route::get('/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
@@ -130,7 +141,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/report', [AdminOrderController::class, 'report'])->name('admin.orders.report');
     });
 
-    // products categories
+    // categories
     Route::prefix('categories')->group(function () {
         Route::get('/', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
         Route::post('/', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
@@ -140,15 +151,20 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/remove-sub/{id}', [AdminCategoryController::class, 'removeSubCategory'])->name('admin.categories.removeSubCategory');
     });
 
-    // products reviews
+    // reviews
     Route::get('/reviews', function () {
         return view('admin.reviews.index');
     })->name('admin.reviews.index');
 
-    // products settings
-    Route::get('/settings', function () {
-        return view('admin.settings.index');
-    })->name('admin.settings.index');
+    // settings
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
+        Route::get('/create', [AdminSettingsController::class, 'create'])->name('admin.settings.create');
+        Route::put('/', [AdminSettingsController::class, 'update'])->name('admin.settings.update');
+        Route::delete('/logo', [AdminSettingsController::class, 'destroyLogo'])->name('admin.settings.destroyLogo');
+        Route::delete('/banner', [AdminSettingsController::class, 'destroyBanner'])->name('admin.settings.destroyBanner');
+        Route::delete('/favicon', [AdminSettingsController::class, 'destroyFavicon'])->name('admin.settings.destroyFavicon');
+    });
 
     // users
     Route::prefix('users')->group(function () {
@@ -184,6 +200,16 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('admin.brands.edit');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('admin.brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('admin.brands.destroy');
+    // Post Category
+    Route::resource('post-categories', PostCategoryController::class);
+    // Post Tag
+    Route::resource('post-tags', PostTagController::class);
+    // Post
+    Route::resource('post', PostController::class);
+    // Help
+    Route::resource('help-category', HelpCategoryController::class);
+    Route::resource('help-article', HelpArticleController::class);
+    Route::resource('logo', LogoController::class);
 });
 
 // seller routes
@@ -306,6 +332,21 @@ Route::prefix('customer')->group(function () {
         // Route báo cáo sản phẩm
         Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
     });
+
+    // Blog
+    Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
+    Route::get('/blog-detail/{slug}', [FrontendController::class, 'blogDetail'])->name('blog.detail');
+    Route::get('/blog/search', [FrontendController::class, 'blogSearch'])->name('blog.search');
+    Route::post('/blog/filter', [FrontendController::class, 'blogFilter'])->name('blog.filter');
+    Route::get('blog-cat/{slug}', [FrontendController::class, 'blogByCategory'])->name('blog.category');
+    Route::get('blog-tag/{slug}', [FrontendController::class, 'blogByTag'])->name('blog.tag');
+
+    // Help
+    Route::get('/help', [FrontendController::class, 'helpCenter'])->name('help.center');
+    Route::get('/help/{slug}', [FrontendController::class, 'helpCategory'])->name('help.category');
+    Route::get('/help/article/{slug}', [FrontendController::class, 'helpDetail'])->name('help.detail');
+    Route::get('/help/ajax/category/{slug}', [FrontendController::class, 'ajaxHelpByCategory'])->name('help.category.ajax');
+    Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
 
     //checkout
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');

@@ -315,7 +315,7 @@ return new class extends Migration
             $table->decimal('sale_price', 12, 0);
             $table->integer('stock');
             $table->string('sku', 100)->unique();
-            $table->enum('status', ['active', 'out_of_stock', 'deleted', '']);
+            $table->enum('status', ['active', 'out_of_stock', 'deleted', 'draft']);
             $table->timestamps();
 
             $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');

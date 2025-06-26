@@ -417,6 +417,37 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
+        // Bảng attributes
+        DB::table('attributes')->insert([
+            [
+                'id' => 1,
+                'name' => 'Color',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng attribute_values
+        DB::table('attribute_values')->insert([
+            [
+                'id' => 1,
+                'attribute_id' => 1,
+                'value' => 'Black',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng product_variant_attribute_values
+        DB::table('product_variant_attribute_values')->insert([
+            [
+                'product_variant_id' => 1,
+                'attribute_value_id' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
         // Bảng cart
         DB::table('cart')->insert([
             [

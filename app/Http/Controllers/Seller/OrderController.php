@@ -107,9 +107,51 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
-        $order->update(['order_status' => 'processing']);   
-        return redirect()->back()->with('success', 'Đã nhận đơn hàng #'. $order->order_code);
+        try {
+            $request->validate([
+                'status' => 'required|in:pending,processing,shipped,delivered,cancelled,refunded',
+                'description' => 'nullable|string',
+                'shipping_provider' => 'nullable|string',
+                'note' => 'nullable|string',
+            ]);
+
+            $sellerId = Auth::user()->shop_id;
+
+            if ($sellerId !== null) {
+                // Nếu có shopID thì lọc theo shopID
+                $order = Order::where('shopID', $sellerId)->findOrFail($id);
+            } else {
+                // Nếu không có shopID thì tìm đơn hàng theo id
+                $order = Order::findOrFail($id);
+            }
+
+            $order->order_status = $request->status;
+
+            if ($request->status === 'cancelled') {
+                $order->cancelled_at = now();
+                $order->cancel_reason = $request->note;
+            } elseif ($request->status === 'delivered') {
+                $order->delivered_at = now();
+            } elseif ($request->status === 'refunded') {
+                $order->cancelled_at = now();
+            }
+
+            $order->save();
+
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'status' => $request->status,
+                'description' => $request->description,
+                'shipping_provider' => $request->shipping_provider,
+                'note' => $request->note,
+            ]);
+
+            return response()->json(['message' => 'Cập nhật trạng thái thành công!'], 200);
+        } catch (\Throwable $e) {
+            Log::error('Update order status error: '.$e->getMessage());
+            Log::error($e->getTraceAsString());
+            return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
+        }
     }
 }
 ?>

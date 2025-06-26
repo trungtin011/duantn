@@ -36,3 +36,8 @@ Tạo Policy: Chạy lệnh sau để tạo Policy
 ``` bash
 php artisan make:policy ReportPolicy --model=Report
 ```
+
+Chạy migrate mỗi file đó
+``` bash
+php artisan migrate --path=database/migrations/dan_ten_migration.php
+```
