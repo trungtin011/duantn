@@ -2,6 +2,7 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "build": "vite build",
         "dev": "vite",
         "dev:artisan": "concurrently -n SERVER,VITE -c green,cyan \"php artisan serve\" \"npm run dev\"",
         "dev:all": "concurrently -n SERVER,VITE,ECHO,QUEUE -c green,cyan,yellow,red \"php artisan serve\" \"npm run dev\" \"laravel-echo-server start\" \"php artisan queue:listen\""
