@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-
+    @vite('resources/js/echo.js')
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
@@ -215,8 +215,13 @@
     </div>
 
     <!-- Header -->
+<<<<<<< HEAD
     <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
         <div class="container mx-auto px-[10px] sm:px-0 py-3 flex items-center gap-[180px]">
+=======
+    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
+        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
+>>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
             <!-- Logo -->
             <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
 
@@ -244,6 +249,7 @@
             </button>
 
             <!-- Search & Icons -->
+<<<<<<< HEAD
             <div class="hidden md:flex items-center gap-10 w-5/6">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST"
                     class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
@@ -258,6 +264,298 @@
                     <a href="{{ route('cart') }}">
                         <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
                     </a>
+=======
+            <div class="hidden md:flex items-center gap-3">
+                <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
+                    class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
+                <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('wishlist.index') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
+
+
+                @auth
+                    <!-- Notification Bell -->
+                    <a href="#" id="notification-bell" class="relative" @click="notificationDropdownOpen = !notificationDropdownOpen" @click.away="notificationDropdownOpen = false">
+                        <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
+                        <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                            {{ $groupedNotifications->flatten()->count() }}
+                        </span>
+                    </a>
+
+                    <!-- Notification Dropdown -->
+                    <div x-show="notificationDropdownOpen" 
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute top-20 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
+                        <div class="py-2">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <h3 class="text-sm font-semibold text-gray-900">Thông báo</h3>
+                            </div>
+                            
+                            <div class="max-h-96 overflow-y-auto" id="notification-list">
+                                @forelse($groupedNotifications as $type => $notifications)
+                                    <!-- Notification Group -->
+                                    <div class="notification-type" data-type="{{ $type }}">
+                                        <div class="px-4 py-2 bg-gray-50">
+                                            <h4 class="text-xs font-medium text-gray-500 uppercase">
+                                                @switch($type)
+                                                    @case('order')
+                                                        Đơn hàng
+                                                        @break
+                                                    @case('promotion')
+                                                        Khuyến mãi
+                                                        @break
+                                                    @case('system')
+                                                        Hệ thống
+                                                        @break
+                                                    @default
+                                                        {{ $type }}
+                                                @endswitch
+                                            </h4>
+                                        </div>
+                                        <div class="notification-items">
+                                            @foreach($notifications as $notification)
+                                                <a href="{{ $notification->link ?? '#' }}" 
+                                                class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
+                                                data-notification-id="{{ $notification->id }}"
+                                                data-notification-title="{{ $notification->title }}"
+                                                data-notification-type="{{ $notification->type }}"
+                                                data-notification-receiver-type="{{ $notification->receiver_type }}">
+                                                    <div class="flex items-start">
+                                                        <div class="flex-shrink-0">
+                                                            <span class="inline-block h-2 w-2 rounded-full {{ $notification->read_at ? 'bg-gray-300' : 'bg-red-500' }}"></span>
+                                                        </div>
+                                                        <div class="ml-3 w-0 flex-1">
+                                                            <p class="text-sm font-medium text-gray-900">{{ $notification->title }}</p>
+                                                            <p class="text-sm text-gray-500">{{ $notification->content }}</p>
+                                                            <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="px-4 py-3 text-center text-gray-500">
+                                        <p>Không có thông báo mới</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                            
+                            <!-- View All Link -->
+                            <div class="px-4 py-2 bg-gray-50">
+                                <a href="#" class="text-sm font-medium text-orange-500 hover:text-orange-600">Xem tất cả thông báo</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        window.userId = "{{ session('user_id') }}";
+                    </script>
+                @endauth
+                @guest
+                    <!-- Notification Bell -->
+                    <a href="#" id="notification-bell" class="relative">
+                        <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
+                        <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">0</span>
+                    </a>
+
+                    <!-- Notification Dropdown -->
+                    <div x-show="notificationDropdownOpen" 
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute top-20 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
+                        <div class="py-2">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <h3 class="text-sm font-semibold text-gray-900">Thông báo</h3>
+                            </div>
+                            <div class="max-h-96 overflow-y-auto" id="notification-list">
+                                <div class="px-4 py-3 text-center text-gray-500">
+                                    <p>Không có thông báo mới</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endguest
+
+                <!-- Delete Confirmation Modal -->
+                <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden items-center justify-center z-50">
+                    <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div class="mt-3 text-center">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Xác nhận xóa</h3>
+                            <div class="mt-2 px-7 py-3">
+                                <p class="text-sm text-gray-500">
+                                    Bạn có chắc chắn muốn xóa thông báo này không?
+                                </p>
+                            </div>
+                            <div class="flex justify-center gap-4 mt-4">
+                                <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                                    Hủy
+                                </button>
+                                <form id="deleteNotificationForm" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ route('cart') }}">
+                    <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
+                </a>
+
+                <div class="relative" @click="userDropdownOpen = !userDropdownOpen"
+                    @click.away="userDropdownOpen = false">
+                    <div class="flex items-center gap-2 w-auto">
+                        @auth
+                            <span
+                                class="text-sm font-semibold text-gray-700">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
+                        @endauth
+                        <div
+                            class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-200">
+                            <i class="fa fa-user"></i>
+                        </div>
+                    </div>
+                    <!-- Dropdown Menu (Desktop) -->
+                    <div x-show="userDropdownOpen"
+                        class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-gradient-to-b from-gray-800 to-purple-900 bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-10">
+                        @guest
+                            <a href="{{ route('signup') }}"
+                                class="flex items-center justify-between gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                Đăng ký
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
+                                </svg>
+                            </a>
+                            <a href="{{ route('login') }}"
+                                class="flex items-center justify-between gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                Đăng nhập
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
+                                </svg>
+                            </a>
+                        @endguest
+                        @auth
+                            <!-- Admin Links -->
+                            @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
+                                <a href="{{ route('admin.dashboard') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                        class="size-6">
+                                        <path stroke="#FFFFFF" stroke-width="2"
+                                            d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5ZM14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5ZM4 16a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3ZM14 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-6Z" />
+                                    </svg>
+                                    Quản trị viên
+                                </a>
+                                <a href="{{ route('admin.products.index') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                    </svg>
+                                    Quản lý sản phẩm
+                                </a>
+                                <!-- Seller Links -->
+                            @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
+                                <a href="{{ route('seller.dashboard') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6z" />
+                                    </svg>
+                                    Bảng điều khiển Seller
+                                </a>
+                                <a href="{{ route('seller.products.index') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                    </svg>
+                                    Sản phẩm của tôi
+                                </a>
+                                <a href="{{ route('seller.orders') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                    </svg>
+                                    Đơn hàng
+                                </a>
+                                <!-- Customer Links -->
+                            @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
+                                <a href="{{ route('account.profile') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                    </svg>
+                                    Quản lý tài khoản
+                                </a>
+                                <a href="{{ route('order_history') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                    </svg>
+                                    Đơn hàng của tôi
+                                </a>
+                                <a href="{{ route('wishlist') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                    </svg>
+                                    Danh sách ước
+                                </a>
+                                <a href="{{ route('seller.register') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+                                    </svg>
+                                    Trở thành người bán
+                                </a>
+                            @endif
+                            <!-- Common Logout Link -->
+                            <a href="{{ route('logout') }}"
+                                onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
+                                class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600 hover:rounded-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                                </svg>
+                                Đăng xuất
+                            </a>
+                            <form id="logout-form-header" action="{{ route('logout') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+                        @endauth
+                    </div>
+>>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
                 </div>
             </div>
         </div>
@@ -270,6 +568,7 @@
                 <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
                 @guest
                     <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
+                    <li><a href="{{ route('login') }}" class="hover:text-orange-500">Đăng nhập</a></li>
                 @endguest
                 @auth
                     @if (Auth::user()->role === 'customer')
@@ -287,7 +586,7 @@
                 <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
                 <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
-                <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
+                <a href="{{ route('wishlist.index') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
                 <a href="{{ route('cart') }}"><i
                         class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
                 @if (Auth::check())
@@ -463,14 +762,11 @@
                         @csrf
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
-                        nhập</a>
-                    <a href="{{ route('register') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
-                        ký</a>
-                    <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
-                    <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách
-                        ước</a>
-                    <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
+                <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng nhập</a>
+                <a href="{{ route('signup') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng ký</a>
+                <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
+                <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách ước</a>
+                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
                 @endauth
             </div>
 
@@ -510,9 +806,21 @@
         </div>
     </footer>
 
+<<<<<<< HEAD
     @stack('scripts')
     @include('components.chat')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+=======
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+    window.Laravel = {
+        user: JSON.parse('{!! json_encode(Auth::user()) !!}')
+    };
+    </script>
+    @stack('scripts')
+
+   
+>>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
 </body>
 
 </html>
