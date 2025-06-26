@@ -12,6 +12,7 @@ use App\Models\Wishlist;
 use App\Models\Address;
 use App\Models\Coupon;
 use App\Models\Notification;
+use App\Models\NotificationReceiver;
 
 class HomeController extends Controller
 {
@@ -21,8 +22,6 @@ class HomeController extends Controller
         $products = Product::with(['images', 'reviews'])->get();
         $categories = Category::where('status', 'active')->get();
         $cartItems = $user ? Cart::where('userID', $user->id)->get() : [];
-        $notifications = $user ? Notification::where('receiver_user_id', $user->id)->where('status', 'unread')->get() : [];
-
-        return view('user.home', compact('products', 'categories', 'cartItems', 'notifications'));
+        return view('user.home', compact('products', 'categories', 'cartItems'));
     }
 }

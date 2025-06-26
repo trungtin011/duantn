@@ -14,12 +14,14 @@ use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\ShopOrder;
 use App\Models\ItemsOrder;
+use App\Models\OrderStatusHistory;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\VNPayController;
 use App\Models\ShopAddress;
 use App\Events\CreateOrderEvent;
 use Illuminate\Support\Facades\Event;
+use App\Http\Requests\CheckoutRequest;
 
 class CheckoutController extends Controller
 {
@@ -79,8 +81,9 @@ class CheckoutController extends Controller
         return view('client.checkout', compact('user_addresses','items','products','default_address','shops'));
     }
 
-    public function store(Request $request)
-    {
+    public function store(CheckoutRequest $request)
+    {   
+        $request->validated();
         $items = session('checkout_items');
         $user = Auth::user();
 
@@ -115,7 +118,8 @@ class CheckoutController extends Controller
         return redirect()->route('checkout')->with('message', 'Đặt hàng thành công');
     }
 
-    private function getTotalPrice($items){
+    private function getTotalPrice($items)
+    {
         $total_price = 0;
         foreach($items as $item){
             $total_price += $item['total_price'];
@@ -143,6 +147,7 @@ class CheckoutController extends Controller
             $shop_order = ShopOrder::create([
                 'shopID' => $product->shopID,
                 'orderID' => $order->id,
+                'code' => 'DHS'. '-' .strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . substr(time(), -3),
                 'note' => $shop_notes[$product->shopID] ?? ''
             ]);
             Log::info($shop_order);
@@ -417,6 +422,12 @@ class CheckoutController extends Controller
             ]);
             event(new CreateOrderEvent($shop_order->shopID ,$order));
         }
+
+        $order_status_history = new OrderStatusHistory();
+        $order_status_history->order_id = $order->id;
+        $order_status_history->order_status = 'pending';
+        $order_status_history->save();
+
 
         return view('user.checkout_status.success_payment', compact('order','product'));
     }

@@ -17,8 +17,7 @@ class OrderItem extends Model
         'product_name',
         'brand',
         'category',
-        'attribute_value', // Thay color và size
-        'attribute_name', // Thay color và size
+        'variant_name',
         'product_image',
         'quantity',
         'unit_price',
@@ -33,9 +32,14 @@ class OrderItem extends Model
     ];
 
     // Relationships
-    public function order(): BelongsTo
+    public function order()
     {
-        return $this->belongsTo(Order::class, 'orderID'); // Chỉ định khóa ngoại là orderID
+        return $this->belongsTo(Order::class, 'orderID', 'id');
+    }
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class, 'shop_orderID', 'id');
     }
 
     public function shopOrder(): BelongsTo

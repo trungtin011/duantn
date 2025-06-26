@@ -89,11 +89,12 @@ class ShippingFeeController extends Controller
             'shopId' => '196252',
         ])
         ->post($url, $requestData);
+
         Log::info($response->json());
         $expectedDeliveryTime = Carbon::parse($response->json()['data']['expected_delivery_time'])
         ->setTimezone('Asia/Ho_Chi_Minh')
         ->format('d/m/Y H:i');
-
+        
         if ($response->status() == 200 ) {
             return response()->json([
                 'shipping_fee' => $response->json()['data']['total_fee'],
