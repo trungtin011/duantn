@@ -12,6 +12,7 @@ use App\Models\ProductDimension;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantAttributeValue; // Thêm model mới
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -48,9 +49,10 @@ class ProductControllerSeller extends Controller
      */
     public function create()
     {
+        $attributes = Attribute::all();
         $categories = Category::where('status', 'active')->get();
         $brands = Brand::where('status', 'active')->get();
-        return view('seller.products.create', compact('categories', 'brands'));
+        return view('seller.products.create', compact('categories', 'brands', 'attributes'));
     }
 
     /**
@@ -83,8 +85,13 @@ class ProductControllerSeller extends Controller
 
             $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
 
+            // Lấy shopID từ người dùng hiện tại
+            $shop = \App\Models\Shop::where('ownerID', auth()->id())->firstOrFail();
+            $shopID = $shop->id;
+
             // Lưu sản phẩm chính
             $product = Product::create([
+                'shopID' => $shopID, // Thêm shopID
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description ?: '',
@@ -239,6 +246,12 @@ class ProductControllerSeller extends Controller
         try {
             $product = Product::findOrFail($productId);
 
+            // Kiểm tra xem sản phẩm có thuộc shop của seller không
+            $shop = \App\Models\Shop::where('ownerID', Auth::user()->id)->firstOrFail();
+            if ($product->shopID !== $shop->id) {
+                throw new \Exception('Bạn không có quyền chỉnh sửa sản phẩm này.');
+            }
+
             $rules = [
                 'variants.*.name' => 'required|string|max:100',
                 'variants.*.price' => 'required|numeric|min:0',
@@ -345,9 +358,10 @@ class ProductControllerSeller extends Controller
      */
     public function edit($id)
     {
+        $attributes = Attribute::all();
         $categories = Category::where('status', 'active')->get();
         $brands = Brand::where('status', 'active')->get();
-        return view('seller.products.create', compact('categories', 'brands'));
+        return view('seller.products.create', compact('categories', 'brands', 'attributes'));
     }
 
     /**
@@ -584,6 +598,16 @@ class ProductControllerSeller extends Controller
 
             return response()->json($values);
         }
-        return response()->json([], 200); // Trả về mảng rỗng nếu không có thuộc tính
+        return response()->json([], 200);
+    }
+
+    public function simple()
+    {
+        return view('product', ['type' => 'simple']);
+    }
+
+    public function variable()
+    {
+        return view('product', ['type' => 'variable']);
     }
 }

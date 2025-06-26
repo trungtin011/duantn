@@ -75,7 +75,7 @@ class DatabaseSeeder extends Seeder
                 'address' => '13 Lý Thái Tổ',
                 'province' => 'Thành phố Hồ Chí Minh',
                 'district' => 'Quận 1',
-                'ward' => 'Tự Đức',
+                'ward' => 'Cầu Kho',
                 'zip_code' => null,
                 'address_type' => 'home',
                 'note' => null,
@@ -443,7 +443,7 @@ class DatabaseSeeder extends Seeder
                 'coupon_discount' => 0,
                 'payment_method' => 'cod',
                 'payment_status' => 'pending',
-                'order_status' => 'processing',
+                'order_status' => 'pending',
                 'order_note' => null,
                 'cancel_reason' => null,
                 'paid_at' => null,
@@ -515,9 +515,7 @@ class DatabaseSeeder extends Seeder
         DB::table('order_status_history')->insert([
             [
                 'order_id' => 1,
-                'status' => 'processing',
-                'description' => 'Order is being processed',
-                'shipping_provider' => null,
+                'order_status' => 'pending',
                 'note' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -578,15 +576,6 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Bảng review_images
-        DB::table('review_images')->insert([
-            [
-                'reviewID' => 1,
-                'image_path' => '/reviews/review1.png',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
 
         // Bảng wishlist
         DB::table('wishlist')->insert([
@@ -615,25 +604,30 @@ class DatabaseSeeder extends Seeder
         // Bảng notifications
         DB::table('notifications')->insert([
             [
-                'shop_id' => 1,
+                'shop_id' => null,
                 'sender_id' => 1,
-                'receiver_user_id' => 3,
-                'receiver_shop_id' => null,
                 'title' => 'Order Confirmation',
                 'content' => 'Your order ORD001 has been confirmed.',
                 'type' => 'order',
                 'reference_id' => 1,
-                'receiver_type' => 'order',
                 'receiver_type' => 'user',
                 'priority' => 'normal',
                 'status' => 'pending',
-                'is_read' => false,
-                'read_at' => null,
-                'expired_at' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
         ]);
+        
+        DB::table('notification_receiver')->insert([
+            [
+                'notification_id' => 1,
+                'receiver_id' => 3,
+                'receiver_type' => 'user',
+                'is_read' => false,
+                'read_at' => null,
+            ],
+        ]);
+
 
         // Bảng report
         DB::table('report')->insert([

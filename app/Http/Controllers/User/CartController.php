@@ -15,10 +15,12 @@ class CartController extends Controller
     // Hiển thị giỏ hàng
     public function index()
     {
+        // Kiểm tra xem người dùng đã đăng nhập hay chưa
+        $user = Auth::user();
         $userID = Auth::check() ? Auth::id() : null;
         $sessionID = Session::getId();
 
-        $cartItems = Cart::with(['product', 'variant'])
+        $cartItems = Cart::with(['product.shop', 'variant'])
             ->where(function ($query) use ($userID, $sessionID) {
                 if ($userID) {
                     $query->where('userID', $userID);
@@ -28,7 +30,7 @@ class CartController extends Controller
             })
             ->get();
 
-        return view('user.cart', compact('cartItems'));
+        return view('user.cart', compact('cartItems', 'user'));
     }
 
     // Thêm sản phẩm vào giỏ hàng
@@ -77,7 +79,8 @@ class CartController extends Controller
                 'quantity' => $quantity,
                 'price' => $price,
                 'total_price' => $total,
-                'session_id' => $userID ? null : $sessionID,
+                'session_id' => $sessionID,
+                'buying_flag' => false
             ]);
         }
 
@@ -115,7 +118,7 @@ class CartController extends Controller
         $userID = Auth::check() ? Auth::id() : null;
         $sessionID = Session::getId();
 
-        $cartItem = Cart::where('id', $id)
+        $cartItem = Cart::with(['product', 'variant'])->where('id', $id)
             ->where(function ($query) use ($userID, $sessionID) {
                 if ($userID) {
                     $query->where('userID', $userID);
@@ -125,14 +128,22 @@ class CartController extends Controller
             })
             ->firstOrFail();
 
-        $cartItem->quantity = $request->quantity;
+        $stock = $cartItem->product->stock_total;
+
+        if ($request->quantity > $stock) {
+            return response()->json([
+                'message' => 'Số lượng vượt quá tồn kho hiện tại!',
+                'available' => $stock,
+            ], 422);
+        }
+
+        $cartItem->quantity = min($request->quantity, $stock);
         $cartItem->total_price = $cartItem->quantity * $cartItem->price;
         $cartItem->save();
 
         return response()->json([
-            'message' => 'Số lượng đã được cập nhật!',
+            'message' => 'Đã cập nhật số lượng!',
             'total_price' => number_format($cartItem->total_price, 0, ',', '.'),
-        ], 200);
+        ]);
     }
 }
-?>

@@ -15,7 +15,7 @@
                     @endif
                 </div>
                 <div>
-                    <a href="" class="text-sm text-[#ef3248] hover:text-red-600">
+                    <a href="{{ route('account.checkin') }}" class="text-sm text-[#ef3248] hover:text-red-600">
                         <span class="text-sm">Nhận thêm điểm <i class="fas fa-chevron-right text-[10px]"></i></span>
                     </a>
                 </div>

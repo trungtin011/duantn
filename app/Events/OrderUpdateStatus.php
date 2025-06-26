@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UpdateOrderEvent
+class OrderUpdateStatus
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -19,26 +19,18 @@ class UpdateOrderEvent
      */
     public function __construct()
     {
-        $this->shop_id = $shop_id;
+        //
     }
 
-    public function broadcastAs()
-    {
-        return 'update-order';
-    }
-
-    public function broadcastWith()
-    {
-        return [
-            'shop_id' => $this->shop_id,
-            'order' => $this->order
-        ];
-    }
-
+    /**
+     * Get the channels the event should broadcast on.
+     *
+     * @return array<int, \Illuminate\Broadcasting\Channel>
+     */
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('order.updated.' . $this->shop_id)
+            new PrivateChannel('channel-name'),
         ];
     }
 }

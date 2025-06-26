@@ -31,6 +31,10 @@ use App\Http\Controllers\User\OrderController as UserOrderController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\User\WishlistController;
+use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\ReviewLikeController;
+use App\Http\Controllers\User\CheckinController;
+use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
 
 // trang chủ
@@ -44,8 +48,6 @@ Route::get('/403', function () {
     return view('error.403');
 })->name('403');
 
-
-// trang đăng ký, đăng nhập, quên mật khẩu
 Route::get('/signup', function () {
     return view('auth.register');
 })->name('signup');
@@ -158,13 +160,16 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.profile');
     })->name('seller.profile');
 
-    Route::get('/orders', function () {
-        return view('seller.orders');
-    })->name('seller.orders');
 
-    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
-    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
+    Route::prefix('orders')->group(function () {
+    Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
+    Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+    Route::put('/{id}/{shop_id}', [SellerOrderController::class, 'confirmOrder'])->name('seller.order.update-status');
+    Route::post('/{id}/shipping', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
+    Route::get('/order', [SellerOrderController::class, 'order'])->name('seller.orders');
+    Route::put('/cancel', [SellerOrderController::class, 'cancelOrder'])->name('seller.order.cancel');
+    Route::post('/tracking', [SellerOrderController::class, 'trackingOrder'])->name('seller.order.tracking');
+    });
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerSeller::class, 'index'])->name('seller.products.index');
@@ -176,12 +181,18 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::get('/{id}', [ProductControllerSeller::class, 'show'])->name('seller.products.show');
         Route::get('/api/attribute-values', [ProductControllerSeller::class, 'getAttributeValues']);
         Route::post('/upload', [ProductControllerSeller::class, 'uploadImage'])->name('seller.upload.image');
+
+        Route::get('/simple', [ProductController::class, 'simple'])->name('product.simple');
+        Route::get('/variable', [ProductController::class, 'variable'])->name('product.variable');
     });
 });
 
 Route::prefix('customer')->group(function () {
     // customer routes
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
+
+    Route::post('/product/{product}/review', [ProductReviewController::class, 'store'])->name('product.review')->middleware('auth');
+    Route::post('/review/{review}/like', [ReviewLikeController::class, 'toggle'])->middleware('auth');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::middleware('CheckRole:customer')->group(function () {
         Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
@@ -210,6 +221,8 @@ Route::prefix('customer')->group(function () {
         // Trang tích điểm
         Route::prefix('user/account/points')->group(function () {
             Route::get('/', [UserController::class, 'points'])->name('account.points');
+            Route::get('/checkin', [CheckinController::class, 'index'])->name('account.checkin');
+            Route::post('/checkin', [CheckinController::class, 'store'])->name('account.checkin.store');
         });
 
         // Trang yêu thích
@@ -239,9 +252,7 @@ Route::prefix('customer')->group(function () {
         })->name('checkout');
 
         // Trang lịch sử đơn hàng
-        Route::get('/user/order/order-history', function () {
-            return view('user.order.order_history');
-        })->name('order_history');
+        Route::get('/user/order/order-history', [OrderController::class, 'history'])->name('order_history');
 
         // Trang chi tiết đơn hàng
         Route::get('/user/order/order-detail', function () {

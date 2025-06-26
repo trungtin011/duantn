@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
     <title>@yield('title')</title>
 
     <!-- Font + Tailwind + Icons -->
@@ -23,7 +25,16 @@
 <body class="font-[Inter]">
     <!-- Top Header -->
     <div class="bg-black text-white py-3">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            @auth
+                @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
+                    <div>
+                        <a href="{{ route('seller.register') }}" class="text-[#EF3248] capitalize hover:text-orange-600">
+                            Kênh người bán
+                        </a>
+                    </div>
+                @endif
+            @endauth
             <div class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left">
                 <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
                 <button class="text-white font-bold border-b border-white hover:text-orange-500">Mua ngay</button>
@@ -500,7 +511,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="bg-white pb-10">
+    <main class="bg-[#F5F5F5] pb-10">
         @yield('content')
     </main>
 

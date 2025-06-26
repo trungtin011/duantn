@@ -7,9 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use App\Models\Employee;
+use App\Models\Shop;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\DB; // Thêm để truy vấn bảng sessions
+use App\Enums\UserRole;
 
 class LoginController extends Controller
 {
@@ -61,6 +64,18 @@ class LoginController extends Controller
 
             $request->session()->regenerate();
             $request->session()->put('user_id', Auth::user()->id);
+            if (Auth::user()->role == UserRole::SELLER) {
+                $shop = Shop::where('ownerID', Auth::user()->id)->first();
+                if ($shop) {
+                    $request->session()->put('current_shop_id', $shop->id);
+                }
+            }
+            elseif(Auth::user()->role == UserRole::EMPLOYEE){
+                $shopID = Employee::where('userID', Auth::user()->id)->first()->shopID;
+                if ($shopID) {
+                    $request->session()->put('current_shop_id', $shopID);
+                }
+            }
             RateLimiter::clear($key);
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }
@@ -112,7 +127,7 @@ class LoginController extends Controller
             ]);
         }
         Auth::login($user);
-        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Google thành công!');
+        return redirect()->route('home')->with('success', 'Đăng nhập bằng Google thành công!');
     }
 
     public function handleFacebookCallback()
@@ -140,7 +155,7 @@ class LoginController extends Controller
             ]
         );
         Auth::login($user);
-        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Facebook thành công!');
+        return redirect()->route('home')->with('success', 'Đăng nhập bằng Facebook thành công!');
     }
 
     public function redirectToFacebook()
