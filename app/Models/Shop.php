@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ShopAddress;
 use App\Models\ShopShippingOption;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shop extends Model
 {
@@ -46,16 +47,41 @@ class Shop extends Model
 
     public function addresses()
     {
-        return $this->hasMany(ShopAddress::class, 'shopID', 'id');
+        return $this->belongsTo(ShopAddress::class, 'shop_address_id');
     }
 
     public function followers()
     {
-        return $this->hasMany(ShopFollower::class, 'shopID');
+        return $this->belongsToMany(User::class, 'shop_followers', 'shopID', 'followerID')
+            ->withTimestamps();
     }
 
     public function employees()
     {
         return $this->hasMany(Employee::class, 'shopID');
     }
-} 
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'shopID');
+    }
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function coupons(): HasMany
+    {
+        return $this->hasMany(Coupon::class, 'shop_id', 'id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'shop_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class, 'shop_orderID', 'id');
+    }
+}

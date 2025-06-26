@@ -41,7 +41,65 @@ class OrderController extends Controller
         $orderItems = $order->items;
         $orderAddress = $order->address;
 
-        return view('user.order.orderDetail', compact('order', 'orderItems', 'orderAddress'));
+        return view('user.order.detail', compact('order', 'orderItems', 'orderAddress'));
+    }
+
+    public function history()
+    {
+        $userId = Auth::id();
+
+        // Lấy tất cả đơn hàng
+        $allOrders = Order::with(['items', 'shop'])
+            ->where('userID', $userId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Lấy đơn hàng theo từng trạng thái
+        $processingOrders = Order::with(['items'])
+            ->where('userID', $userId)
+            ->where('order_status', 'processing')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $pendingOrders = Order::with(['items'])
+            ->where('userID', $userId)
+            ->where('order_status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $shippedOrders = Order::with(['items'])
+            ->where('userID', $userId)
+            ->where('order_status', 'shipped')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $deliveredOrders = Order::with(['items'])
+            ->where('userID', $userId)
+            ->where('order_status', 'delivered')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $cancelledOrders = Order::with(['items'])
+            ->where('userID', $userId)
+            ->where('order_status', 'cancelled')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $refundedOrders = Order::with(['items'])
+            ->where('userID', $userId)
+            ->where('order_status', 'refunded')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('user.order.history', compact(
+            'allOrders',
+            'processingOrders',
+            'pendingOrders',
+            'shippedOrders',
+            'deliveredOrders',
+            'cancelledOrders',
+            'refundedOrders'
+        ));
     }
 
     public function cancelOrder($id)

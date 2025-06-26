@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
+    protected $table = 'products';
+
     protected $fillable = [
         'shopID',
         'name',
@@ -21,19 +23,16 @@ class Product extends Model
         'sold_quantity',
         'stock_total',
         'sku',
-        'barcode',
-        'quantity',
-        'weight',
-        'dimensions',
         'brand',
         'category',
         'sub_category',
+        'sub_brand',
         'status',
-        'is_featured',
-        'is_active',
         'meta_title',
         'meta_description',
-        'meta_keywords'
+        'meta_keywords',
+        'is_featured',
+        'is_variant',
     ];
 
     protected $casts = [
@@ -42,25 +41,19 @@ class Product extends Model
         'sale_price' => 'decimal:2',
         'sold_quantity' => 'integer',
         'stock_total' => 'integer',
-        'quantity' => 'integer',
-        'weight' => 'decimal:2',
-        'dimensions' => 'array',
         'is_featured' => 'boolean',
-        'is_active' => 'boolean'
+        'is_variant' => 'boolean',
     ];
 
     // Relationships
-
-    //linh
-    public function defaultImage()
-    {
-        return $this->hasOne(ProductImage::class, 'productID')->where('is_default', true);
-    }
-    //linh
-
-    public function shop(): BelongsTo
+    public function shop()
     {
         return $this->belongsTo(Shop::class, 'shopID', 'id');
+    }
+
+    public function coupons()
+    {
+        return $this->hasMany(Coupon::class);
     }
 
     public function variants(): HasMany
@@ -68,7 +61,7 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class, 'productID');
     }
 
-    public function images(): HasMany
+    public function images()
     {
         return $this->hasMany(ProductImage::class, 'productID');
     }
@@ -78,14 +71,39 @@ class Product extends Model
         return $this->hasOne(ProductDimension::class, 'productID');
     }
 
-    public function attribute()
+    public function reviews(): HasMany
     {
-        return $this->hasMany(ProductAttribute::class, 'product_id');
+        return $this->hasMany(Review::class, 'productID');
     }
 
-    public function dimensions()
+    public function defaultImage(): HasOne
     {
-        return $this->hasOne(ProductDimension::class, 'productID');
+        return $this->hasOne(ProductImage::class, 'productID')->where('is_default', true);
+    }
+
+    public function attributes()
+    {
+        return $this->hasMany(ProductVariantAttributeValue::class, '', 'id');
+    }
+
+    public function attributeValues(): HasMany
+    {
+        return $this->hasManyThrough(
+            AttributeValue::class,
+            ProductVariant::class,
+            'productID',
+            'id',
+            'id',
+            'id'
+        )->join('product_variant_attribute_values', 'attribute_values.id', '=', 'product_variant_attribute_values.attribute_value_id');
+    }
+
+    // Mối quan hệ với bảng orders thông qua bảng trung gian items_order
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'items_order', 'productID', 'orderID')
+            ->withPivot('variantID', 'quantity', 'unit_price', 'total_price', 'discount_amount')
+            ->withTimestamps();
     }
 
     // Scopes
@@ -115,6 +133,17 @@ class Product extends Model
             ->where('status', '!=', 'out_of_stock');
     }
 
+    public function dimensions()
+    {
+        return $this->hasOne(ProductDimension::class, 'productID', 'id')->where('variantID', null);
+    }
+
+    // Nếu cần mối quan hệ với tất cả kích thước (bao gồm biến thể)
+    public function allDimensions()
+    {
+        return $this->hasMany(ProductDimension::class, 'productID', 'id');
+    }
+
     // Methods
     public function getCurrentPriceAttribute()
     {
@@ -128,11 +157,10 @@ class Product extends Model
 
     public function getDiscountPercentageAttribute()
     {
-        if (!$this->hasDiscount()) {
-            return 0;
+        if ($this->hasDiscount()) {
+            return round((($this->price - $this->sale_price) / $this->price) * 100);
         }
-
-        return round((($this->price - $this->sale_price) / $this->price) * 100);
+        return 0;
     }
 
     public function isOutOfStock()
@@ -145,28 +173,12 @@ class Product extends Model
         return $this->stock_total + $this->variants->sum('stock');
     }
 
-    // public function attributes()
-    // {
-    //     return $this->hasMany(\App\Models\Attribute::class);
-    // }
-
-    public function attributes()
-    {
-        return $this->belongsToMany(Attribute::class, 'product_attributes');
-    }
-
-    public function attributeValues()
-    {
-        return $this->hasManyThrough(\App\Models\AttributeValue::class, \App\Models\Attribute::class, 'product_id', 'attribute_id');
-    }
-
-    // Phương thức để lấy đường dẫn ảnh chính
     public function getImageUrlAttribute()
     {
         $mainImage = $this->images()->where('is_default', 1)->first();
         if ($mainImage) {
-            return Storage::url($mainImage->image_path); // Tạo URL từ đường dẫn lưu trữ
+            return Storage::url($mainImage->image_path);
         }
-        return Storage::url('product_images/default.png'); // Ảnh mặc định nếu không có
+        return Storage::url('product_images/default.png');
     }
 }

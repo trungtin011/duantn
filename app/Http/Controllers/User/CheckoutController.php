@@ -12,19 +12,20 @@ use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\Order;
 use App\Models\OrderAddress;
-use App\Models\OrderStatusHistory;
 use App\Models\ShopOrder;
 use App\Models\ItemsOrder;
+use App\Models\OrderStatusHistory;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\VNPayController;
 use App\Models\ShopAddress;
 use App\Events\CreateOrderEvent;
 use Illuminate\Support\Facades\Event;
+use App\Http\Requests\CheckoutRequest;
+
 
 class CheckoutController extends Controller
 {
-
     public function getItemsFromFlow($request)
     {
         $items = [];
@@ -81,8 +82,9 @@ class CheckoutController extends Controller
         return view('client.checkout', compact('user_addresses','items','products','default_address','shops'));
     }
 
-    public function store(Request $request)
-    {
+    public function store(CheckoutRequest $request)
+    {   
+        $request->validated();
         $items = session('checkout_items');
         $user = Auth::user();
 
@@ -117,7 +119,8 @@ class CheckoutController extends Controller
         return redirect()->route('checkout')->with('message', 'Đặt hàng thành công');
     }
 
-    private function getTotalPrice($items){
+    private function getTotalPrice($items)
+    {
         $total_price = 0;
         foreach($items as $item){
             $total_price += $item['total_price'];
@@ -133,19 +136,19 @@ class CheckoutController extends Controller
 
         $order = Order::create([
             'userID' => Auth::id(),
-            'shopID' => 1,
             'user_address' => $user_address->id,
             'total_price' => $total_price,
             'payment_method' => $request->payment,
             'order_code' => 'DH'. '-' .strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
             'order_status' => 'pending',
-            'note' => $request->order_note
+            'note' => $request->order_note,
         ]);
         
         foreach($products as $product){
             $shop_order = ShopOrder::create([
                 'shopID' => $product->shopID,
                 'orderID' => $order->id,
+                'code' => 'DHS'. '-' .strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . substr(time(), -3),
                 'note' => $shop_notes[$product->shopID] ?? ''
             ]);
             Log::info($shop_order);
@@ -155,6 +158,7 @@ class CheckoutController extends Controller
                     $total_price = $item['total_price'];
                 }
             }
+
             $items_order = ItemsOrder::create([
             'orderID' => $order->id,
             'shop_orderID' => $shop_order->id,
@@ -164,9 +168,6 @@ class CheckoutController extends Controller
             'quantity' => $quantity,
             'brand' => $product->brand,
             'category' => $product->category,
-            'sub_category' => $product->sub_category,
-            'color' => $product->variants->first()->color,
-            'size' => $product->variants->first()->size,
             'variant_name' => $product->variants->first()->variant_name,
             'product_image' => $product->image,
             'unit_price' => $product->variants->first()->price,
@@ -406,7 +407,9 @@ class CheckoutController extends Controller
             return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
 
-        $product = Product::where('id', $order->items->first()->productID)->with('variants')->first();
+        $product = Product::with(['variants' => function($query) use ($order) {
+            $query->where('id', $order->items->first()->variantID);
+        }])->find($order->items->first()->productID);
         $stock = $product->variants->first()->stock - $order->items->first()->quantity;
         $product->variants->first()->update([
             'stock' => $stock
@@ -420,6 +423,12 @@ class CheckoutController extends Controller
             ]);
             event(new CreateOrderEvent($shop_order->shopID ,$order));
         }
+
+        $order_status_history = new OrderStatusHistory();
+        $order_status_history->order_id = $order->id;
+        $order_status_history->order_status = 'pending';
+        $order_status_history->save();
+
 
         return view('user.checkout_status.success_payment', compact('order','product'));
     }
@@ -449,6 +458,4 @@ class CheckoutController extends Controller
         return redirect()->route('checkout')->with('error', 'Thanh toán thất bại. Vui lòng thử lại.');
     }    
 
-    
-        
 }

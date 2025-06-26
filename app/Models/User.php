@@ -79,6 +79,17 @@ class User extends Authenticatable
         return $this->hasOne(Shop::class, 'ownerID', 'id');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+    
+    public function followedShops()
+    {
+        return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
+            ->withTimestamps();
+    }
+
     // Scopes
     public function scopeActive($query)
     {
@@ -118,7 +129,7 @@ class User extends Authenticatable
 
     public function isBanned()
     {
-        return $this->status === 'banned';
+        return $this->status === UserStatus::BANNED;
     }
 
     public function getDefaultAddress()

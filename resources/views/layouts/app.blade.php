@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
     <title>@yield('title')</title>
 
     <!-- Font + Tailwind + Icons -->
@@ -28,7 +29,7 @@
             @auth
                 @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
                     <div>
-                        <a href="/seller/index" class="text-[#EF3248] capitalize hover:text-orange-600">
+                        <a href="{{ route('seller.register') }}" class="text-[#EF3248] capitalize hover:text-orange-600">
                             Kênh người bán
                         </a>
                     </div>
@@ -215,18 +216,13 @@
     </div>
 
     <!-- Header -->
-<<<<<<< HEAD
-    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
-        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex items-center gap-[180px]">
-=======
-    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
-        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
->>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
+<header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
+    <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
             <!-- Logo -->
             <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
 
             <!-- Menu cho desktop -->
-            {{-- <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
+            <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
                 <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
                 <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
@@ -240,7 +236,17 @@
                         </li>
                     @endif
                 @endauth
-            </ul> --}}
+
+                @auth
+                    @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
+                        <li>
+                            <a href="/seller/index" class="text-orange-500 font-semibold hover:text-orange-600">
+                                Bạn có muốn trở thành người bán?
+                            </a>
+                        </li>
+                    @endif
+                @endauth
+            </ul>
 
 
             <!-- Icon menu mobile -->
@@ -249,22 +255,6 @@
             </button>
 
             <!-- Search & Icons -->
-<<<<<<< HEAD
-            <div class="hidden md:flex items-center gap-10 w-5/6">
-                <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                    class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
-                    @csrf
-                    <input type="text" placeholder="Bạn muốn tìm kiếm gì ?" class="text-sm focus:outline-none" />
-                    <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
-                </form>
-                <div class=" flex items-center gap-3">
-                    <a href="{{ route('wishlist') }}">
-                        <i class="fa fa-heart text-gray-700 hover:text-orange-500"></i>
-                    </a>
-                    <a href="{{ route('cart') }}">
-                        <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
-                    </a>
-=======
             <div class="hidden md:flex items-center gap-3">
                 <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
                     class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
@@ -356,34 +346,7 @@
                         window.userId = "{{ session('user_id') }}";
                     </script>
                 @endauth
-                @guest
-                    <!-- Notification Bell -->
-                    <a href="#" id="notification-bell" class="relative">
-                        <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
-                        <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">0</span>
-                    </a>
-
-                    <!-- Notification Dropdown -->
-                    <div x-show="notificationDropdownOpen" 
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="absolute top-20 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
-                        <div class="py-2">
-                            <div class="px-4 py-2 border-b border-gray-100">
-                                <h3 class="text-sm font-semibold text-gray-900">Thông báo</h3>
-                            </div>
-                            <div class="max-h-96 overflow-y-auto" id="notification-list">
-                                <div class="px-4 py-3 text-center text-gray-500">
-                                    <p>Không có thông báo mới</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endguest
+                
 
                 <!-- Delete Confirmation Modal -->
                 <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden items-center justify-center z-50">
@@ -555,7 +518,6 @@
                             </form>
                         @endauth
                     </div>
->>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
                 </div>
             </div>
         </div>
@@ -716,7 +678,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="bg-white pb-10">
+    <main class="bg-[#F5F5F5] pb-10">
         @yield('content')
     </main>
 
@@ -806,21 +768,15 @@
         </div>
     </footer>
 
-<<<<<<< HEAD
+
     @stack('scripts')
     @include('components.chat')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-=======
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
     window.Laravel = {
-        user: JSON.parse('{!! json_encode(Auth::user()) !!}')
+        user: @json(Auth::user())
     };
     </script>
-    @stack('scripts')
-
-   
->>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
 </body>
 
 </html>

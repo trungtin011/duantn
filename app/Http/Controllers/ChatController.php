@@ -42,7 +42,7 @@ class ChatController extends Controller
                 ->first();
 
             // Kiểm tra trạng thái online của shop
-            $isOnline = \DB::table('sessions')
+            $isOnline = DB::table('sessions')
                 ->where('user_id', $shop->ownerID)
                 ->where('last_activity', '>=', now()->subMinutes(5))
                 ->exists();
@@ -88,7 +88,7 @@ class ChatController extends Controller
                 ->first();
 
             // Kiểm tra trạng thái online của user
-            $isOnline = \DB::table('sessions')
+            $isOnline = DB::table('sessions')
                 ->where('user_id', $user->id)
                 ->where('last_activity', '>=', now()->subMinutes(5))
                 ->exists();

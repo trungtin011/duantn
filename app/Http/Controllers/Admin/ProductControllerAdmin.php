@@ -11,14 +11,14 @@ use App\Models\Product;
 use App\Models\ProductDimension;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
-use App\Models\ProductAttribute;
+use App\Models\ProductVariantAttributeValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
-class ProductController extends Controller
+class ProductControllerAdmin extends Controller
 {
     /**
      * Hiển thị danh sách sản phẩm
@@ -54,15 +54,20 @@ class ProductController extends Controller
         return view('admin.products.create', compact('categories', 'brands'));
     }
 
-    /**
-     * Lưu sản phẩm đơn giản
-     */
+   
     public function store(Request $request)
     {
         try {
-            DB::beginTransaction(); // Đảm bảo dữ liệu nhất quán
+            DB::beginTransaction();
+            
+            // Log thông tin request
+            Log::info('Creating new product', [
+                'request_data' => $request->except(['images', 'variant_images']),
+                'has_images' => $request->hasFile('images'),
+                'has_variants' => $request->filled('variants'),
+                'user_id' => auth()->id() ?? 'guest'
+            ]);
 
-            // Xác thực dữ liệu
             $rules = [
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
@@ -86,7 +91,7 @@ class ProductController extends Controller
             // Xử lý `meta_keywords` nếu trống
             $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
 
-            // Lưu sản phẩm chính
+            // lƯU sản phẩm
             $product = Product::create([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
@@ -107,29 +112,39 @@ class ProductController extends Controller
                 'sold_quantity' => 0,
             ]);
 
-            // Lưu thuộc tính vào `product_attributes`
-            if ($request->filled('attributes')) {
-                foreach ($request->attributes as $attributeInput) {
-                    $attribute = Attribute::firstOrCreate(['name' => $attributeInput['name']]); // Chỉ dùng 'name'
+            // Log thông tin sản phẩm đã tạo
+            Log::info('Product created successfully', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'product_sku' => $product->sku
+            ]);
 
+            // Xử lý lưu attribute và attribute value
+            if ($request->filled('attributes')) {
+                Log::info('Processing attributes', ['attributes_count' => count($request->input('attributes'))]);
+                foreach ($request->input('attributes') as $attributeInput) {
+                    if (!isset($attributeInput['name']) || !isset($attributeInput['values'])) {
+                        continue; 
+                    }
+                    $attribute = Attribute::firstOrCreate(['name' => $attributeInput['name']]);
                     foreach (explode(',', $attributeInput['values']) as $value) {
                         $attributeValue = AttributeValue::firstOrCreate([
                             'attribute_id' => $attribute->id,
                             'value' => trim($value),
                         ]);
 
-                        ProductAttribute::create([
-                            'product_id' => $product->id,
+                        Log::info('Attribute value created', [
                             'attribute_id' => $attribute->id,
                             'attribute_value_id' => $attributeValue->id,
+                            'attribute_value' => $attributeValue->value
                         ]);
                     }
                 }
             }
 
-            // Lưu biến thể sản phẩm & kích thước vào `product_dimensions`
             $variants = [];
             if ($request->filled('variants')) {
+                Log::info('Processing variants', ['variants_count' => count($request->variants)]);
                 foreach ($request->variants as $variantData) {
                     $variant = ProductVariant::create([
                         'productID' => $product->id,
@@ -142,7 +157,19 @@ class ProductController extends Controller
                         'status' => 'active',
                     ]);
                     $variants[] = $variant;
-
+                    
+                    // Log thông tin variant đã tạo
+                    Log::info('Variant created', [
+                        'variant_id' => $variant->id,
+                        'variant_name' => $variant->variant_name,
+                        'variant_sku' => $variant->sku
+                    ]);
+                    
+                    // Lưu attribute và attribute value vào `product_attributes`
+                    ProductVariantAttributeValue::create([
+                        'product_variant_id' => $variant->id,
+                        'attribute_value_id' => $attributeValue->id,
+                    ]);
                     // Lưu kích thước của biến thể vào `product_dimensions`
                     ProductDimension::create([
                         'productID' => $product->id,
@@ -168,6 +195,9 @@ class ProductController extends Controller
             // Lưu ảnh sản phẩm chính & biến thể vào `product_images`
             $displayOrder = 0;
             if ($request->hasFile('images')) {
+                $imageCount = count($request->file('images'));
+                Log::info('Processing main product images', ['image_count' => $imageCount]);
+                
                 foreach ($request->file('images') as $index => $image) {
                     $path = $image->store('product_images', 'public');
                     ProductImage::create([
@@ -178,12 +208,26 @@ class ProductController extends Controller
                         'display_order' => $displayOrder++,
                         'alt_text' => "{$product->name} - Image {$index}",
                     ]);
+                    
+                    // Log thông tin ảnh đã lưu
+                    Log::info('Main product image saved', [
+                        'image_path' => $path,
+                        'is_default' => ($index === 0) ? 1 : 0,
+                        'display_order' => $displayOrder - 1
+                    ]);
                 }
             }
 
             // Lưu ảnh biến thể vào `product_images`
             foreach ($variants as $variantIndex => $variant) {
                 if ($request->hasFile("variant_images.{$variantIndex}")) {
+                    $variantImageCount = count($request->file("variant_images.{$variantIndex}"));
+                    Log::info('Processing variant images', [
+                        'variant_id' => $variant->id,
+                        'variant_name' => $variant->variant_name,
+                        'image_count' => $variantImageCount
+                    ]);
+                    
                     foreach ($request->file("variant_images.{$variantIndex}") as $image) {
                         $path = $image->store('product_images', 'public');
                         ProductImage::create([
@@ -194,17 +238,32 @@ class ProductController extends Controller
                             'display_order' => $displayOrder++,
                             'alt_text' => "{$variant->variant_name} - Image",
                         ]);
+                        
+                        // Log thông tin ảnh variant đã lưu
+                        Log::info('Variant image saved', [
+                            'variant_id' => $variant->id,
+                            'image_path' => $path,
+                            'display_order' => $displayOrder - 1
+                        ]);
                     }
                 }
             }
-
-            DB::commit(); // Hoàn thành transaction
+            
+            DB::commit();
+            
+            // Log thông tin hoàn thành
+            Log::info('Product creation completed successfully', [
+                'product_id' => $product->id,
+                'total_variants' => count($variants),
+                'total_images' => $displayOrder
+            ]);
 
             return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được tạo thành công.');
         } catch (\Exception $e) {
-            DB::rollBack(); // Khôi phục nếu có lỗi
-            Log::error('Lỗi khi thêm sản phẩm: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm sản phẩm: ' . $e->getMessage())->withInput();
+            DB::rollBack();
+            
+            // Log lỗi chi tiết
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -353,7 +412,8 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        $product = Product::with(['variants', 'images', 'dimensions', 'attributes'])->findOrFail($id);
+        $product = Product::with(['variants', 'images', 'dimensions'])->findOrFail($id);
+        dd($product);
         $categories = Category::where('status', 'active')->get();
         $brands = Brand::where('status', 'active')->get();
         $attributes = Attribute::all();
@@ -504,9 +564,7 @@ class ProductController extends Controller
     }
 
 
-    /**
-     * Xóa sản phẩm (soft delete)
-     */
+
     public function destroy($id)
     {
         try {
@@ -514,12 +572,13 @@ class ProductController extends Controller
 
             // Tìm sản phẩm cần xóa
             $product = Product::findOrFail($id);
+            $variantIds = ProductVariant::where('productID', $product->id)->pluck('id');
 
             // Xóa tất cả liên kết: biến thể, ảnh, thuộc tính, kích thước
             ProductVariant::where('productID', $product->id)->delete();
             ProductImage::where('productID', $product->id)->delete();
-            ProductAttribute::where('product_id', $product->id)->delete();
             ProductDimension::where('productID', $product->id)->delete();
+            ProductVariantAttributeValue::whereIn('product_variant_id', $variantIds)->delete();
 
             // Xóa sản phẩm chính
             $product->delete();
@@ -532,9 +591,7 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Hiển thị chi tiết sản phẩm
-     */
+
     public function show($id)
     {
         $product = Product::with(['variants', 'images', 'dimensions'])->findOrFail($id);

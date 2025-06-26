@@ -23,6 +23,8 @@ return [
         'get_ward' => env('GHN_GET_WARD'),
         'tracking' => env('GHN_TRACKING'),
         'cancel' => env('GHN_CANCEL'),
+        'return' => env('GHN_RETURN'),
+        'detail_order' => env('GHN_DETAIL_ORDER'),
     ],
 
     'broadcasting' => [
@@ -58,16 +60,16 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+
     'google' => [
-    'client_id' => env('GOOGLE_CLIENT_ID'),
-    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-    'redirect' => env('GOOGLE_REDIRECT_URI'),
-],
-'facebook' => [
-    'client_id' => env('FACEBOOK_CLIENT_ID'),
-    'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
-    'redirect' => env('FACEBOOK_REDIRECT_URI'),
-],
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
 
-
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI'),
+    ],
 ];

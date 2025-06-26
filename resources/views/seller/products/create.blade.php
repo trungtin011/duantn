@@ -1,5 +1,6 @@
 @extends('layouts.seller_home')
 
+@section('title', 'Thêm Sản Phẩm Mới')
 @section('content')
     <div class="">
         <!-- Header -->
@@ -18,19 +19,8 @@
             </div>
         </div>
 
-        <!-- Error Messages -->
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <!-- Main Content -->
-        <form id="product-form" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="product-form" action="{{ route('seller.products.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="grid grid-cols-12 gap-6">
                 <div class="col-span-12 lg:col-span-12">
@@ -53,39 +43,15 @@
                                 </div>
                                 <div>
                                     <label class="block text-gray-700 font-medium mb-1">Mô tả</label>
-                                    <div id="quill-editor">
-                                        <div class="ql-toolbar ql-snow">
-                                            <span class="ql-formats">
-                                                <select class="ql-header">
-                                                    <option value="normal">Bình thường</option>
-                                                    <option value="1">Tiêu đề 1</option>
-                                                    <option value="2">Tiêu đề 2</option>
-                                                </select>
-                                            </span>
-                                            <span class="ql-formats">
-                                                <button class="ql-bold"></button>
-                                                <button class="ql-italic"></button>
-                                                <button class="ql-underline"></button>
-                                            </span>
-                                            <span class="ql-formats">
-                                                <button class="ql-image"></button>
-                                                <button class="ql-code-block"></button>
-                                            </span>
-                                        </div>
-                                        <div class="ql-container">
-                                            <div class="ql-editor" data-placeholder="Viết mô tả chi tiết...">
-                                                {!! old('description') !!}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" name="description" id="description">
+                                    <textarea id="description" name="description"
+                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">{!! old('description') !!}</textarea>
                                     @error('description')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
                             </div>
 
-                            <!-- Product Data Section -->
+                            {{-- <!-- Product Data Section -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <h4 class="text-xl font-semibold mb-4">Dữ liệu sản phẩm</h4>
                                 <!-- Pricing and Inventory -->
@@ -210,6 +176,283 @@
                                 <button type="button"
                                     class="mt-4 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600"
                                     onclick="generateVariants()">Tạo biến thể từ thuộc tính</button>
+                            </div> --}}
+
+                            <div class="max-w-full mx-auto">
+                                <div class="border border-gray-300 rounded-md shadow-sm">
+                                    <!-- Header -->
+                                    <div class="flex items-center border-b border-gray-300 px-4 py-2 select-none bg-white">
+                                        <span class="font-semibold text-sm text-gray-800 mr-2">Dữ liệu sản phẩm</span>
+                                        <div class="relative inline-block text-left">
+                                            <select id="product_type" aria-label="Product data type"
+                                                class="border border-gray-300 rounded-md text-sm text-gray-700 pl-3 pr-8 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="simple" selected>Sản phẩm Đơn</option>
+                                                <option value="variable">Sản phẩm Biến thể</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex-grow border-l border-gray-300 ml-4"></div>
+                                        <button aria-label="Toggle panel"
+                                            class="text-gray-400 hover:text-gray-600 focus:outline-none" type="button">
+                                            <i class="fas fa-chevron-up"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="flex flex-col md:flex-row bg-white">
+                                        <!-- Sidebar -->
+                                        <div id="sidebar-container">
+                                            <div id="sidebar-simple">
+                                                @include('partials.sidebar-simple')
+                                            </div>
+                                            <div id="sidebar-variable" style="display: none;">
+                                                @include('partials.sidebar-variable')
+                                            </div>
+                                        </div>
+
+                                        <!-- Main content -->
+                                        <section class="flex-grow p-6 text-sm text-gray-700">
+                                            <form class="space-y-6">
+                                                <!-- Main content for Simple Product -->
+                                                <div id="main-content-simple" style="display: block;">
+                                                    <!-- Overview section -->
+                                                    <div id="overview-section" class="space-y-4">
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="regular_price"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Regular
+                                                                price (VNĐ)</label>
+                                                            <input id="regular_price" type="text"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                                                            <button type="button" aria-label="Regular price help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="sale_price"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Sale
+                                                                price (VNĐ)</label>
+                                                            <input id="sale_price" type="text"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                                                            <button type="button" aria-label="Sale price help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                            <a href="#"
+                                                                class="col-span-2 text-blue-600 underline">Schedule</a>
+                                                        </div>
+                                                        <!-- Bổ sung SKU -->
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="sku"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">SKU</label>
+                                                            <input id="sku" type="text"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                                                            <button type="button" aria-label="SKU help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Stock section -->
+                                                    <div id="stock-section" class="space-y-4" style="display: none;">
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="stock_quantity"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Số
+                                                                lượng tồn kho</label>
+                                                            <input id="stock_quantity" type="number"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                                                            <button type="button" aria-label="Stock quantity help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Shipping section -->
+                                                    <div id="shipping-section" class="space-y-4" style="display: none;">
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="weight"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Weight
+                                                                (kg)</label>
+                                                            <input id="weight" type="number"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                step="0.01" />
+                                                            <button type="button" aria-label="Weight help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Dimensions
+                                                                (cm)</label>
+                                                            <div class="col-span-9 flex gap-2">
+                                                                <input id="length" type="number"
+                                                                    class="w-1/3 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                    placeholder="Length" step="0.01" />
+                                                                <input id="width" type="number"
+                                                                    class="w-1/3 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                    placeholder="Width" step="0.01" />
+                                                                <input id="height" type="number"
+                                                                    class="w-1/3 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                    placeholder="Height" step="0.01" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Main content for Variable Product -->
+                                                <div id="main-content-variable" style="display: none;">
+                                                    <!-- Stock section -->
+                                                    <div id="stock-section" class="space-y-4">
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="stock_quantity"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Số
+                                                                lượng tồn kho</label>
+                                                            <input id="stock_quantity" type="number"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                                                            <button type="button" aria-label="Stock quantity help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Shipping section -->
+                                                    <div id="shipping-section" class="space-y-4" style="display: none;">
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="weight"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Weight
+                                                                (kg)</label>
+                                                            <input id="weight" type="number"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                step="0.01" />
+                                                            <button type="button" aria-label="Weight help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Dimensions
+                                                                (cm)</label>
+                                                            <div class="col-span-9 flex gap-2">
+                                                                <input id="length" type="number"
+                                                                    class="w-1/3 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                    placeholder="Length" step="0.01" />
+                                                                <input id="width" type="number"
+                                                                    class="w-1/3 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                    placeholder="Width" step="0.01" />
+                                                                <input id="height" type="number"
+                                                                    class="w-1/3 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                    placeholder="Height" step="0.01" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Attributes section -->
+                                                    <div id="attributes-section" class="space-y-4"
+                                                        style="display: none;">
+                                                        <div class="flex items-center gap-2 mb-5">
+                                                            <label for="product_attributes"
+                                                                class="text-xs font-semibold text-gray-700">Thuộc tính sản
+                                                                phẩm</label>
+                                                            <select id="product_attributes"
+                                                                class="border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                                                <option value="">Chọn thuộc tính</option>
+                                                                @foreach ($attributes as $attribute)
+                                                                    <option value="{{ $attribute->id }}">
+                                                                        {{ $attribute->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            <input id="select_attribute_value" type="text"
+                                                                class="border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ml-2"
+                                                                placeholder="Nhập giá trị" />
+                                                            <button type="button"
+                                                                class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
+                                                                onclick="addAttributeFromSelect()">Thêm từ danh
+                                                                sách</button>
+                                                        </div>
+                                                        <div class="w-full bg-gray-200 p-2">
+                                                            <span class="text-xs italic">Thêm thuộc tính thủ công</span>
+                                                        </div>
+                                                        <div class="grid grid-cols-12 gap-4 items-center mt-3">
+                                                            <label for="custom_attribute_name"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Tên
+                                                                thuộc tính</label>
+                                                            <input id="custom_attribute_name" type="text"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                placeholder="Nhập tên thuộc tính" />
+                                                            <button type="button" aria-label="Attribute name help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="custom_attribute_value"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Giá
+                                                                trị thuộc tính</label>
+                                                            <input id="custom_attribute_value" type="text"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                placeholder="Nhập giá trị thuộc tính" />
+                                                            <button type="button" aria-label="Attribute value help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <button type="button"
+                                                                class="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700"
+                                                                onclick="addCustomAttribute()">Thêm thuộc tính nhập
+                                                                tay</button>
+                                                        </div>
+                                                        <div id="attribute-inputs" class="space-y-4">
+                                                            <!-- Các thuộc tính sẽ được thêm động ở đây -->
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Variants section -->
+                                                    <div id="variants-section" class="space-y-4" style="display: none;">
+                                                        <div class="w-full bg-gray-200 p-2">
+                                                            <span class="text-xs italic">Tạo biến thể từ thuộc tính</span>
+                                                        </div>
+                                                        <div id="variant-attributes" class="space-y-4">
+                                                            <!-- Dropdown thuộc tính sẽ được thêm động ở đây -->
+                                                        </div>
+                                                        <div class="grid grid-cols-12 gap-4 items-center mt-3">
+                                                            <label for="variant_sku"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">SKU
+                                                                biến thể</label>
+                                                            <input id="variant_sku" type="text"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                placeholder="Nhập SKU biến thể" />
+                                                            <button type="button" aria-label="Variant SKU help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="grid grid-cols-12 gap-4 items-center">
+                                                            <label for="variant_price"
+                                                                class="col-span-3 text-xs font-semibold text-gray-700">Giá
+                                                                biến thể (VNĐ)</label>
+                                                            <input id="variant_price" type="text"
+                                                                class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                placeholder="Nhập giá biến thể" />
+                                                            <button type="button" aria-label="Variant price help"
+                                                                class="col-span-1 text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <button type="button"
+                                                                class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
+                                                                onclick="addVariant()">Thêm biến thể</button>
+                                                        </div>
+                                                        <div id="variant-list" class="space-y-4">
+                                                            <!-- Danh sách biến thể sẽ được thêm động ở đây -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </section>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -390,4 +633,241 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+        <script>
+            // Khởi tạo attributeMap và attributesStorage
+            const attributeMap = {
+                @if ($attributes->isNotEmpty())
+                    @foreach ($attributes as $attribute)
+                        {{ $attribute->id }}: "{{ $attribute->name }}",
+                    @endforeach
+                @endif
+                'default': 'Không xác định'
+            };
+
+            // Lưu trữ thuộc tính đã thêm (name: [values])
+            const attributesStorage = {};
+
+            document.getElementById('product_type').addEventListener('change', function() {
+                const productType = this.value;
+                const sidebarSimple = document.getElementById('sidebar-simple');
+                const sidebarVariable = document.getElementById('sidebar-variable');
+                const mainContentSimple = document.getElementById('main-content-simple');
+                const mainContentVariable = document.getElementById('main-content-variable');
+
+                sidebarSimple.style.display = 'none';
+                sidebarVariable.style.display = 'none';
+                mainContentSimple.style.display = 'none';
+                mainContentVariable.style.display = 'none';
+
+                if (productType === 'simple') {
+                    sidebarSimple.style.display = 'block';
+                    mainContentSimple.style.display = 'block';
+                    showSection('overview');
+                } else if (productType === 'variable') {
+                    sidebarVariable.style.display = 'block';
+                    mainContentVariable.style.display = 'block';
+                    showSection('stock');
+                }
+            });
+
+            document.querySelectorAll('.active-section').forEach(button => {
+                button.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    const mainContent = document.getElementById('product_type').value === 'simple' ?
+                        'main-content-simple' : 'main-content-variable';
+                    showSection(section, mainContent);
+                    document.querySelectorAll(`#${mainContent} + div .active-section`).forEach(btn => btn
+                        .classList.remove('bg-white', 'text-blue-600', 'font-semibold', 'border-l-4',
+                            'border-blue-600'));
+                    this.classList.add('bg-white', 'text-blue-600', 'font-semibold', 'border-l-4',
+                        'border-blue-600');
+
+                    // Khi chuyển sang Variants section, cập nhật dropdown
+                    if (section === 'variants') {
+                        updateVariantAttributes();
+                    }
+                });
+            });
+
+            function showSection(section, mainContent) {
+                const sections = ['overview', 'stock', 'shipping', 'attributes', 'variants'];
+                sections.forEach(s => {
+                    const element = document.querySelector(`#${mainContent} #${s}-section`);
+                    if (element) element.style.display = section === s ? 'block' : 'none';
+                });
+            }
+
+            // Thêm thuộc tính từ dropdown
+            function addAttributeFromSelect() {
+                const select = document.getElementById('product_attributes');
+                const attributeId = select.value;
+                const attributeValue = document.getElementById('select_attribute_value').value.trim();
+                const attributeInputs = document.getElementById('attribute-inputs');
+
+                if (attributeId === '') {
+                    alert('Vui lòng chọn một thuộc tính từ danh sách!');
+                    return;
+                }
+                if (!attributeValue) {
+                    alert('Vui lòng nhập giá trị thuộc tính!');
+                    return;
+                }
+
+                const attributeName = attributeMap[attributeId] || 'Không xác định';
+
+                // Lưu vào attributesStorage
+                if (!attributesStorage[attributeName]) {
+                    attributesStorage[attributeName] = [];
+                }
+                if (!attributesStorage[attributeName].includes(attributeValue)) {
+                    attributesStorage[attributeName].push(attributeValue);
+                }
+
+                const div = document.createElement('div');
+                div.className = 'grid grid-cols-12 gap-4 items-center bg-gray-50 p-2 rounded-md';
+                div.innerHTML = `
+            <label class="col-span-3 text-xs font-semibold text-gray-700">${attributeName}</label>
+            <input type="text" value="${attributeValue}" class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" readonly>
+            <button type="button" class="col-span-1 text-red-500 hover:text-red-700 focus:outline-none" onclick="removeAttribute(this, '${attributeName}', '${attributeValue}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+                attributeInputs.appendChild(div);
+
+                // Reset input
+                select.value = '';
+                document.getElementById('select_attribute_value').value = '';
+            }
+
+            // Thêm thuộc tính nhập tay
+            function addCustomAttribute() {
+                const attributeName = document.getElementById('custom_attribute_name').value.trim();
+                const attributeValue = document.getElementById('custom_attribute_value').value.trim();
+                const attributeInputs = document.getElementById('attribute-inputs');
+
+                if (!attributeName || !attributeValue) {
+                    alert('Vui lòng nhập cả tên và giá trị thuộc tính!');
+                    return;
+                }
+
+                // Lưu vào attributesStorage
+                if (!attributesStorage[attributeName]) {
+                    attributesStorage[attributeName] = [];
+                }
+                if (!attributesStorage[attributeName].includes(attributeValue)) {
+                    attributesStorage[attributeName].push(attributeValue);
+                }
+
+                const div = document.createElement('div');
+                div.className = 'grid grid-cols-12 gap-4 items-center bg-gray-50 p-2 rounded-md';
+                div.innerHTML = `
+            <label class="col-span-3 text-xs font-semibold text-gray-700">${attributeName}</label>
+            <input type="text" value="${attributeValue}" class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" readonly>
+            <button type="button" class="col-span-1 text-red-500 hover:text-red-700 focus:outline-none" onclick="removeAttribute(this, '${attributeName}', '${attributeValue}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+                attributeInputs.appendChild(div);
+
+                // Reset input
+                document.getElementById('custom_attribute_name').value = '';
+                document.getElementById('custom_attribute_value').value = '';
+            }
+
+            // Xóa thuộc tính và cập nhật attributesStorage
+            function removeAttribute(button, attributeName, attributeValue) {
+                // Xóa khỏi attributesStorage
+                if (attributesStorage[attributeName]) {
+                    attributesStorage[attributeName] = attributesStorage[attributeName].filter(val => val !== attributeValue);
+                    if (attributesStorage[attributeName].length === 0) {
+                        delete attributesStorage[attributeName];
+                    }
+                }
+                // Xóa phần tử khỏi giao diện
+                button.parentElement.remove();
+                // Cập nhật dropdown trong variants-section nếu đang mở
+                if (document.getElementById('variants-section').style.display === 'block') {
+                    updateVariantAttributes();
+                }
+            }
+
+            // Cập nhật dropdown trong variants-section
+            function updateVariantAttributes() {
+                const variantAttributes = document.getElementById('variant-attributes');
+                variantAttributes.innerHTML = ''; // Xóa nội dung cũ
+
+                for (const [attributeName, values] of Object.entries(attributesStorage)) {
+                    if (values.length === 0) continue;
+
+                    const div = document.createElement('div');
+                    div.className = 'grid grid-cols-12 gap-4 items-center';
+                    div.innerHTML = `
+                <label class="col-span-3 text-xs font-semibold text-gray-700">${attributeName}</label>
+                <select class="col-span-6 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 variant-attribute" data-attribute="${attributeName}">
+                    <option value="">Chọn ${attributeName}</option>
+                    ${values.map(value => `<option value="${value}">${value}</option>`).join('')}
+                </select>
+            `;
+                    variantAttributes.appendChild(div);
+                }
+            }
+
+            // Thêm biến thể
+            function addVariant() {
+                const variantSku = document.getElementById('variant_sku').value.trim();
+                const variantPrice = document.getElementById('variant_price').value.trim();
+                const variantList = document.getElementById('variant-list');
+
+                if (!variantSku || !variantPrice) {
+                    alert('Vui lòng nhập SKU và giá biến thể!');
+                    return;
+                }
+
+                // Lấy tất cả giá trị đã chọn từ dropdown
+                const variantAttributes = {};
+                const dropdowns = document.querySelectorAll('.variant-attribute');
+                dropdowns.forEach(dropdown => {
+                    const attributeName = dropdown.getAttribute('data-attribute');
+                    const value = dropdown.value;
+                    if (value) {
+                        variantAttributes[attributeName] = value;
+                    }
+                });
+
+                if (Object.keys(variantAttributes).length === 0) {
+                    alert('Vui lòng chọn ít nhất một giá trị thuộc tính!');
+                    return;
+                }
+
+                // Tạo biến thể
+                const div = document.createElement('div');
+                div.className = 'grid grid-cols-12 gap-4 items-center bg-gray-50 p-2 rounded-md';
+                const attributeText = Object.entries(variantAttributes).map(([name, value]) => `${name}: ${value}`).join(', ');
+                div.innerHTML = `
+            <label class="col-span-3 text-xs font-semibold text-gray-700">${variantSku}</label>
+            <input type="text" value="${attributeText}" class="col-span-3 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none" readonly>
+            <input type="text" value="${variantPrice} VNĐ" class="col-span-3 border border-gray-300 rounded-md px-3 py-1 text-xs focus:outline-none" readonly>
+            <button type="button" class="col-span-1 text-red-500 hover:text-red-700 focus:outline-none" onclick="this.parentElement.remove()">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+                variantList.appendChild(div);
+
+                // Reset input
+                document.getElementById('variant_sku').value = '';
+                document.getElementById('variant_price').value = '';
+                dropdowns.forEach(dropdown => dropdown.value = '');
+            }
+
+            // Khởi tạo mặc định
+            document.getElementById('main-content-simple').style.display = 'block';
+            document.getElementById('sidebar-simple').style.display = 'block';
+            showSection('overview', 'main-content-simple');
+            document.querySelector('#sidebar-simple .active-section[data-section="overview"]').classList.add('bg-white',
+                'text-blue-600');
+        </script>
+    @endpush
 @endsection

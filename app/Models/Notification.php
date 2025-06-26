@@ -8,36 +8,18 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Notification extends Model
 {
-    protected $table = 'notification';
-<<<<<<< HEAD
-
-=======
+    protected $table = 'notifications';
     
->>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
     protected $fillable = [
         'shop_id',
         'sender_id',
-        'receiver_user_id',
-        'receiver_shop_id',
         'title',
         'content',
         'type',
         'reference_id',
-        'reference_type',
+        'receiver_type',
         'priority',
         'status',
-        'receiver_type',
-        'read_at',
-        'expired_at',
-        'is_read'
-    ];
-
-    protected $casts = [
-        'data' => 'array',
-        'is_read' => 'boolean',
-        'read_at' => 'datetime',
-        'priority' => 'integer',
-        'expired_at' => 'datetime'
     ];
 
     // Relationships

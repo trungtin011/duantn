@@ -29,29 +29,34 @@
                     @php
                         $statusClasses = [
                             'pending' => 'bg-yellow-200 text-yellow-800',
-                            'processing' => 'bg-blue-200 text-blue-800',
-                            'shipped' => 'bg-purple-200 text-purple-800',
-                            'delivered' => 'bg-green-200 text-green-800',
+                            'confirmed' => 'bg-blue-200 text-blue-800',
+                            'ready_to_pick' => 'bg-purple-200 text-purple-800',
+                            'picked' => 'bg-green-200 text-green-800',
+                            'shipping' => 'bg-green-200 text-green-800',
+                            'delivered' => 'bg-red-200 text-red-800',
                             'cancelled' => 'bg-red-200 text-red-800',
+                            'shipping_failed' => 'bg-red-200 text-red-800',
+                            'returned' => 'bg-red-200 text-red-800',
+                            'completed' => 'bg-green-200 text-green-800',
                         ];
-                        $currentStatusClass = $statusClasses[$order->order_status] ?? 'bg-gray-200 text-gray-800';
+                        $currentStatusClass = $statusClasses[$order->status] ?? 'bg-gray-200 text-gray-800';
                     @endphp
                     <tr class="border border-gray-300">
-                        <td class="py-2 px-4">{{ $order->order_code }}</td>
-                        <td class="py-2 px-4">{{ $order->user->name ?? 'Khách vãng lai' }}</td>
-                        <td class="py-2 px-4">{{ number_format($order->total_price, 0, ',', '.') }}đ</td>
+                        <td class="py-2 px-4">{{ $order->code }}</td>
+                        <td class="py-2 px-4">{{ $order->order->address->receiver_name ?? 'Khách vãng lai' }}</td>
+                        <td class="py-2 px-4">{{ number_format($order->items->sum('unit_price'), 0, ',', '.') }}đ</td>
                         <td class="py-2 px-4">
-                            @if($order->address)
-                                {{ $order->address->receiver_name }}<br>
-                                {{ $order->address->address }}, {{ $order->address->ward }}, {{ $order->address->district }}, {{ $order->address->province }}<br>
-                                Điện thoại: {{ $order->address->receiver_phone }}
+                            @if($order->order->address)
+                                {{ $order->order->address->receiver_name }}<br>
+                                {{ $order->order->address->address }}, {{ $order->order->address->ward }}, {{ $order->order->address->district }}, {{ $order->order->address->province }}<br>
+                                Điện thoại: {{ $order->order->address->receiver_phone }}
                             @else
                                 Chưa có địa chỉ
                             @endif
                         </td>
                         <td class="py-2 px-4">
                             <span class="inline-block px-2 py-1 rounded {{ $currentStatusClass }}">
-                                {{ ucfirst($order->order_status) }}
+                                {{ ucfirst($order->status) }}
                             </span>
                         </td>
                         <td class="py-2 px-4">
@@ -71,7 +76,7 @@
                         </td>
                         <td class="py-2 px-4">{{ $order->created_at->format('d/m/Y H:i') }}</td>
                         <td class="py-2 px-4">
-                            <a href="{{ route('seller.order.show', $order->id) }}" class="text-blue-600 hover:underline">Xem chi tiết</a>
+                            <a href="{{ route('seller.order.show', $order->code) }}" class="text-blue-600 hover:underline">Xem chi tiết</a>
                         </td>
                     </tr>
                 @endforeach
