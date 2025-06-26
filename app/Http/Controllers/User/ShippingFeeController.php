@@ -25,9 +25,11 @@ class ShippingFeeController extends Controller
 
     public function calculateShippingFee(Request $request)
     {
+        Log::info($request->all());
         $userAddress = UserAddress::find($request->address_id);
-        $shopAddress = ShopAddress::where('id', 2)->get();
-
+        Log::info($userAddress);
+        $shopAddress = ShopAddress::where('is_default', 1)->first();
+        Log::info($shopAddress);
         if (!$userAddress || !$shopAddress) {
             return response()->json(['error' => 'Không tìm thấy địa chỉ'], 404);
         }
@@ -88,10 +90,11 @@ class ShippingFeeController extends Controller
         ])
         ->post($url, $requestData);
 
+        Log::info($response->json());
         $expectedDeliveryTime = Carbon::parse($response->json()['data']['expected_delivery_time'])
         ->setTimezone('Asia/Ho_Chi_Minh')
         ->format('d/m/Y H:i');
-
+        
         if ($response->status() == 200 ) {
             return response()->json([
                 'shipping_fee' => $response->json()['data']['total_fee'],

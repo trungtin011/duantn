@@ -3,24 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AttributeValue extends Model
 {
     protected $table = 'attribute_values';
-    protected $fillable = ['attribute_id', 'value', 'product_id', 'product_variant_id'];
-    
-    public function attribute()
+
+    protected $fillable = [
+        'attribute_id',
+        'value',
+    ];
+
+    // Relationships
+    public function attribute(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Attribute::class, 'attribute_id');
+        return $this->belongsTo(Attribute::class, 'attribute_id');
     }
 
-    public function productVariant()
+    public function variants(): HasMany
     {
-        return $this->belongsTo(\App\Models\ProductVariant::class, 'product_variant_id');
-    }
-
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'product_id'); // Nếu có cột product_id trong bảng attribute_values.
+        return $this->hasMany(ProductVariantAttributeValue::class, 'attribute_value_id');
     }
 }

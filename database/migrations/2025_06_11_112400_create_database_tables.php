@@ -264,7 +264,7 @@ return new class extends Migration
             $table->unsignedBigInteger('shopID')->nullable();
             $table->string('name', 100);
             $table->string('slug', 100);
-            $table->text('description');
+            $table->longText('description');
             $table->decimal('price', 12, 0);
             $table->decimal('purchase_price', 12, 0);
             $table->decimal('sale_price', 12, 0);
@@ -329,35 +329,29 @@ return new class extends Migration
             $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
         });
 
-        // Bảng attributes
-        Schema::create('attributes', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('name', 100);
-            $table->timestamps();
-        });
-
         // Bảng attribute_values
-        Schema::create('attribute_values', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->unsignedBigInteger('attribute_id');
-            $table->string('value', 255);
-            $table->unsignedBigInteger('product_id')->nullable();
-            $table->unsignedBigInteger('product_variant_id')->nullable();
+        Schema::create('attributes', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
             $table->timestamps();
-            $table->foreign('attribute_id')->references('id')->on('attributes')->onDelete('cascade');
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreign('product_variant_id')->references('id')->on('product_variants')->onDelete('cascade');
         });
 
-        // Bảng product_attributes
-        Schema::create('product_attributes', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->unsignedBigInteger('product_id');
+        Schema::create('attribute_values', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('attribute_id');
+            $table->string('value');
             $table->timestamps();
-            $table->unique(['product_id', 'attribute_id']);
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('attribute_id')->references('id')->on('attributes')->onDelete('cascade');
+        });
+
+        Schema::create('product_variant_attribute_values', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('product_variant_id');
+            $table->unsignedBigInteger('attribute_value_id');
+            $table->timestamps();
+            $table->unique(['product_variant_id', 'attribute_value_id'], 'pv_attr_val_unique');
+            $table->foreign('product_variant_id')->references('id')->on('product_variants')->onDelete('cascade');
+            $table->foreign('attribute_value_id')->references('id')->on('attribute_values')->onDelete('cascade');
         });
 
         // Bảng cart
@@ -370,6 +364,7 @@ return new class extends Migration
             $table->decimal('price', 12, 0);
             $table->decimal('total_price', 12, 0);
             $table->string('session_id', 100);
+            $table->boolean('buying_flag', false);
             $table->timestamps();
             $table->foreign('userID')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
@@ -380,22 +375,36 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('userID')->nullable();
-            $table->unsignedBigInteger('shopID');
             $table->string('order_code', 100)->unique();
             $table->decimal('total_price', 12, 2);
             $table->unsignedBigInteger('coupon_id')->nullable();
             $table->decimal('coupon_discount', 12, 2)->default(0.00);
             $table->string('payment_method', 100);
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded']);
-            $table->enum('order_status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']);
-            $table->text('order_note')->nullable();
+            $table->enum('order_status', [
+                'pending',
+                'partially_confirmed',
+                'confirmed',
+                'partially_ready_to_pick',
+                'ready_to_pick',
+                'partially_picked',
+                'picked',
+                'partially_shipping',
+                'shipping',
+                'partially_delivered',
+                'delivered',
+                'cancelled',
+                'shipping_failed',
+                'returned',
+                'completed'
+            ])->default('pending');            
+            $table->text('order_note')->nullable();  
             $table->text('cancel_reason')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->timestamps();
             $table->foreign('userID')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
             $table->index(['order_code', 'payment_status', 'order_status', 'created_at']);
         });
 
@@ -417,40 +426,102 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
-        // Bảng order_items
-        Schema::create('order_items', function (Blueprint $table) {
+        // Bảng shop_order
+        Schema::create('shop_order', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('order_id');
-            $table->unsignedBigInteger('productID');
-            $table->unsignedBigInteger('variantID')->nullable();
-            $table->integer('quantity');
-            $table->decimal('unit_price', 12, 2);
-            $table->decimal('total_price', 12, 2);
-            $table->decimal('discount_amount', 12, 2)->default(0.00);
-            $table->string('sku', 100);
-            $table->string('product_name', 255);
-            $table->string('brand', 100);
-            $table->string('category', 100);
-            $table->string('sub_category', 100);
-            $table->string('color', 100)->nullable();
-            $table->string('size', 100)->nullable();
-            $table->string('variant_name', 100)->nullable();
-            $table->text('product_image')->nullable();
+            $table->unsignedBigInteger('shopID');
+            $table->unsignedBigInteger('orderID');
+            $table->string('code', 255)->nullable();
+            $table->string('shipping_provider', 255)->nullable();
+            $table->string('shipping_fee', 255)->nullable();
+            $table->string('tracking_code', 255)->nullable();
+            $table->dateTime('expected_delivery_date')->nullable();
+            $table->dateTime('actual_delivery_date')->nullable();
+            $table->enum('status', [
+                'pending',
+                'confirmed',
+                'ready_to_pick',
+                'picked',
+                'shipping',
+                'delivered',
+                'cancelled',
+                'shipping_failed',
+                'returned',
+                'completed'
+            ])->default('pending');
             $table->text('note')->nullable();
-            $table->boolean('is_reviewed')->default(0);
             $table->timestamps();
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
+            $table->foreign('orderID')->references('id')->on('orders')->onDelete('cascade');
+        });
+
+        Schema::create('history_order_shop', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('shop_order_id');
+            $table->enum('status', [
+                'pending',
+                'confirmed',
+                'ready_to_pick',
+                'picked',
+                'shipping',
+                'delivered',
+                'cancelled',
+                'shipping_failed',
+                'returned',
+                'completed'
+            ])->default('pending');
+            $table->string('description')->nullable();
+            $table->string('note')->nullable();
+            $table->foreign('shop_order_id')->references('id')->on('shop_order')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        // Bảng items_order
+        Schema::create('items_order', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('orderID');
+            $table->unsignedBigInteger('shop_orderID');
+            $table->unsignedBigInteger('productID');
+            $table->unsignedBigInteger('variantID');
+            $table->string('product_name', 255)->nullable();
+            $table->string('brand', 255)->nullable();
+            $table->string('category', 255)->nullable();
+            $table->string('variant_name', 255)->nullable();
+            $table->text('product_image')->nullable();
+            $table->integer('quantity')->nullable();
+            $table->decimal('unit_price', 12, 2)->nullable();
+            $table->decimal('total_price', 12, 2)->nullable();
+            $table->decimal('discount_amount', 12, 2)->default(0.00)->nullable();
+            $table->timestamps();
+            $table->foreign('orderID')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreign('shop_orderID')->references('id')->on('shop_order')->onDelete('cascade');
             $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
+            $table->index(['orderID', 'shop_orderID', 'productID', 'variantID', 'created_at'], 'items_order_idx');
         });
 
         // Bảng order_status_history
         Schema::create('order_status_history', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('order_id');
-            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']);
-            $table->text('description')->nullable();
-            $table->string('shipping_provider', 255)->nullable();
+            $table->enum('order_status', [
+                'pending',
+                'partially_confirmed',
+                'confirmed',
+                'partially_ready_to_pick',
+                'ready_to_pick',
+                'partially_picked',
+                'picked',
+                'partially_shipping',
+                'shipping',
+                'partially_delivered',
+                'delivered',
+                'cancelled',
+                'shipping_failed',
+                'returned',
+                'completed'
+            ])->default('pending');
+            $table->string('description')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
@@ -515,13 +586,35 @@ return new class extends Migration
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
         });
 
+        // Bảng product_reviews (nếu giữ, đảm bảo không trùng lặp với review)
+        Schema::create('product_reviews', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->tinyInteger('rating')->comment('1-5 sao');
+            $table->text('comment')->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('video_path')->nullable();
+            $table->timestamps();
+            $table->unique(['user_id', 'product_id']);
+        });
+
         // Bảng review_images
         Schema::create('review_images', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('reviewID');
+            $table->unsignedBigInteger('review_id');
             $table->text('image_path');
             $table->timestamps();
-            $table->foreign('reviewID')->references('id')->on('review')->onDelete('cascade');
+            $table->foreign('review_id')->references('id')->on('product_reviews')->onDelete('cascade');
+        });
+
+        // Bảng review_likes (thêm vào đây, tham chiếu bảng review)
+        Schema::create('review_likes', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('review_id')->constrained('review')->onDelete('cascade'); // Hoặc 'product_reviews' nếu chọn bảng này
+            $table->timestamps();
+            $table->unique(['user_id', 'review_id']);
         });
 
         // Bảng wishlist
@@ -552,30 +645,46 @@ return new class extends Migration
         });
 
         // Bảng notification
-        Schema::create('notification', function (Blueprint $table) {
+        Schema::create('notifications', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('shop_id')->nullable();
             $table->unsignedBigInteger('sender_id')->nullable();
-            $table->unsignedBigInteger('receiver_user_id')->nullable();
-            $table->unsignedBigInteger('receiver_shop_id')->nullable();
             $table->string('title', 100);
             $table->text('content');
             $table->string('type', 100);
             $table->unsignedBigInteger('reference_id')->nullable();
-            $table->string('reference_type', 255)->nullable();
+            $table->enum('receiver_type', ['user', 'shop', 'all', 'admin', 'employee']);
             $table->enum('priority', ['low', 'normal', 'high'])->default('normal');
-            $table->enum('status', ['unread', 'read', 'archived'])->default('unread');
-            $table->enum('receiver_type', ['user', 'shop']);
-            $table->timestamp('read_at')->nullable();
-            $table->timestamp('expired_at')->nullable();
+            $table->enum('status', ['pending', 'active', 'inactive', 'failed'])->default('pending');
             $table->timestamps();
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('receiver_user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('receiver_shop_id')->references('id')->on('shops')->onDelete('cascade');
-            $table->index(['type', 'status', 'priority', 'receiver_type', 'created_at']);
-            $table->index(['receiver_user_id', 'status']);
-            $table->index(['receiver_shop_id', 'status']);
+            $table->index(['type', 'status', 'priority', 'receiver_type', 'created_at'], 'notif_type_status_idx');
+        });
+
+        Schema::create('notification_receiver', function (Blueprint $table) {
+            $table->unsignedBigInteger('notification_id');
+            $table->unsignedBigInteger('receiver_id');
+            $table->enum('receiver_type', ['user', 'shop', 'all', 'admin', 'employee']);
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('read_at')->nullable();
+            $table->foreign('notification_id')->references('id')->on('notifications')->onDelete('cascade');
+            $table->primary(['notification_id', 'receiver_id']);
+        });
+
+        // Bảng stock_transactions (THÊM MỚI)
+        Schema::create('stock_transactions', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('shopID');
+            $table->unsignedBigInteger('productID');
+            $table->unsignedBigInteger('variantID')->nullable();
+            $table->integer('quantity');
+            $table->enum('type', ['import', 'export', 'adjustment']);
+            $table->text('note')->nullable();
+            $table->timestamps();
+            $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
+            $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
         });
 
         // Bảng report
@@ -609,6 +718,19 @@ return new class extends Migration
             $table->index(['report_type', 'status', 'priority', 'created_at']);
         });
 
+        // Bảng point_transactions
+        Schema::create('point_transactions', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('userID');
+            $table->integer('points');
+            $table->enum('type', ['checkin', 'order', 'bonus', 'redeem']);
+            $table->string('description', 255)->nullable();
+            $table->unsignedBigInteger('orderID')->nullable();
+            $table->timestamps();
+            $table->foreign('userID')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('orderID')->references('id')->on('orders')->onDelete('set null');
+        });
+
         // Bảng cache
         Schema::create('cache', function (Blueprint $table) {
             $table->string('key')->primary();
@@ -637,13 +759,12 @@ return new class extends Migration
         // Bảng jobs
         Schema::create('jobs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('queue', 255);
+            $table->string('queue')->index();
             $table->longText('payload');
             $table->unsignedTinyInteger('attempts');
             $table->unsignedInteger('reserved_at')->nullable();
             $table->unsignedInteger('available_at');
             $table->unsignedInteger('created_at');
-            $table->index('queue');
         });
 
         // Bảng job_batches
@@ -678,7 +799,7 @@ return new class extends Migration
             $table->index(['user_id', 'last_activity']);
         });
 
-        // Cập nhật dữ liệu cho bảng sellers (chuyển '' thành NULL cho bank_account)
+        // Cập nhật dữ liệu cho bảng sellers
         DB::table('sellers')->where('bank_account', '')->update(['bank_account' => null]);
     }
 
@@ -691,20 +812,26 @@ return new class extends Migration
         Schema::dropIfExists('failed_jobs');
         Schema::dropIfExists('cache_locks');
         Schema::dropIfExists('cache');
+        Schema::dropIfExists('point_transactions');
         Schema::dropIfExists('report');
-        Schema::dropIfExists('notification');
+        Schema::dropIfExists('stock_transactions'); // THÊM MỚI
+        Schema::dropIfExists('notifications');
         Schema::dropIfExists('view_history');
         Schema::dropIfExists('wishlist');
         Schema::dropIfExists('review_images');
+        Schema::dropIfExists('review_likes'); // Thêm dòng này
+        Schema::dropIfExists('product_reviews');
         Schema::dropIfExists('review');
         Schema::dropIfExists('coupon_user');
         Schema::dropIfExists('coupon');
         Schema::dropIfExists('order_status_history');
-        Schema::dropIfExists('order_items');
+        Schema::dropIfExists('items_order');
         Schema::dropIfExists('order_addresses');
+        Schema::dropIfExists('shop_order');
+        Schema::dropIfExists('history_order_shop');
         Schema::dropIfExists('orders');
         Schema::dropIfExists('cart');
-        Schema::dropIfExists('product_attributes');
+        Schema::dropIfExists('product_variant_attribute_values');
         Schema::dropIfExists('attribute_values');
         Schema::dropIfExists('attributes');
         Schema::dropIfExists('product_dimensions');

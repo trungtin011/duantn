@@ -12,10 +12,10 @@ Make another env. file clone env.example
 php artisan key:generate --ansi  
 ```
 ``` bash
-php artisan migrate  
+php artisan migrate
 ```
-composer require laravel/socialite
 
+composer require laravel/socialite
 
 Chuyển sang nhánh của mình  
 ``` bash
@@ -32,6 +32,3 @@ refresh lại seedder
 ``` bash
 php artisan migrate:fresh --seed
 ```
-
-
-

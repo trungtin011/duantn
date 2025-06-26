@@ -21,10 +21,10 @@
         <div class="col-md-3">
             <div class="admin-card d-flex justify-content-between align-items-start">
                 <div>
-                    <h2 class="card-number font-semibold">356</h2>
+                    <h2 class="card-number font-semibold">{{ $deliveredOrders }}</h2>
                     <p class="mb-0 text-muted text-xs mb-3">Đơn hàng đã nhận</p>
                     <span class="text-xs bg-[#EDFAF3] text-[#50CD89] px-2 py-1 rounded flex items-center gap-1 w-fit">
-                        10%
+                        {{ $deliveredGrowth }}%
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 512.001 512.001" width="12"
                             height="12">
                             <path fill="currentColor"
@@ -60,10 +60,10 @@
         <div class="col-md-3">
             <div class="admin-card d-flex justify-content-between align-items-start">
                 <div>
-                    <h2 class="card-number font-semibold">568.000 VNĐ</h2>
-                    <p class="mb-0 text-muted text-sm mb-3">Doanh thu trung bình hàng ngày</p>
+                    <h2 class="card-number font-semibold">{{ number_format($avgDailyRevenue) }} VNĐ</h2>
+                    <p class="mb-0 text-muted text-xs mb-3">Doanh thu trung bình hàng ngày</p>
                     <span class="text-xs bg-[#F1EBFD] text-[#7239EA] px-2 py-1 rounded flex items-center gap-1 w-fit">
-                        30%
+                        {{ $revenueGrowth }}%
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 512.001 512.001" width="12"
                             height="12">
                             <path fill="currentColor"
@@ -100,10 +100,10 @@
         <div class="col-md-3">
             <div class="admin-card d-flex justify-content-between align-items-start">
                 <div>
-                    <h2 class="card-number font-semibold">5.8K</h2>
-                    <p class="mb-0 text-muted text-sm mb-3">Khách hàng mới trong tháng này</p>
+                    <h2 class="card-number font-semibold">{{ number_format($newCustomers) }}</h2>
+                    <p class="mb-0 text-muted text-xs mb-3">Khách hàng mới trong tháng này</p>
                     <span class="text-xs bg-[#EBF4FF] text-[#3E97FF] px-2 py-1 rounded flex items-center gap-1 w-fit">
-                        13%
+                        {{ $customerGrowth }}%
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 512.001 512.001" width="12"
                             height="12">
                             <path fill="currentColor"
@@ -153,10 +153,10 @@
         <div class="col-md-3">
             <div class="admin-card d-flex justify-content-between align-items-start">
                 <div>
-                    <h2 class="card-number font-semibold">580</h2>
-                    <p class="mb-0 text-muted text-sm mb-3">Lệnh chờ xử lý</p>
+                    <h2 class="card-number font-semibold">{{ $pendingOrders }}</h2>
+                    <p class="mb-0 text-muted text-xs mb-3">Lệnh chờ xử lý</p>
                     <span class="text-xs bg-[#FFF4E5] text-[#FF9800] px-2 py-1 rounded flex items-center gap-1 w-fit">
-                        10%
+                        {{ $pendingGrowth }}%
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 512.001 512.001"
                             width="12" height="12">
                             <path fill="currentColor"
@@ -197,15 +197,15 @@
 
     <div class="row mb-4 g-3">
         <div class="col-md-8">
-            <div class="admin-card">
-                <h5 class="mb-3 admin-card-title">Sales Statics</h5>
-                <canvas id="salesChart"></canvas>
+            <div class="bg-white rounded-md">
+                <h5 class="px-4 pt-4 font-semibold">Thống kê bán hàng</h5>
+                <canvas id="salesChart" class="p-4"></canvas>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="admin-card">
-                <h5 class="mb-3 admin-card-title">Most Selling Category</h5>
-                <canvas id="categoryChart"></canvas>
+            <div class="bg-white rounded-md p-0 h-[555px]">
+                <h5 class="px-4 pt-4 font-semibold">Danh mục bán chạy nhất</h5>
+                <canvas id="categoryChart" class="p-5"></canvas>
             </div>
         </div>
     </div>
@@ -221,22 +221,24 @@
                     tất cả</a>
             </div>
             <div class="space-y-5">
-                <div class="flex flex-wrap items-center justify-between">
-                    <div class="m-2 mb:sm-0 flex items-center space-x-3">
-                        <div class="avatar">
-                            <img class="rounded-full w-8 h-8" src="{{ asset('images/avatar.png') }}" alt="avatar">
+                @foreach ($recentOrders as $order)
+                    <div class="flex flex-wrap items-center justify-between">
+                        <div class="m-2 mb:sm-0 flex items-center space-x-3">
+                            <div class="avatar">
+                                <img class="rounded-full w-8 h-8" src="{{ asset('images/avatar.png') }}" alt="avatar">
+                            </div>
+                            <div>
+                                <h4 class="text-sm text-base text-slate-700 mb-[6px] leading-none">
+                                    {{ $order->customer_name }}
+                                </h4>
+                                <p class="text-xs text-slate-400 line-clamp-1 m-0 leading-none">
+                                    {{ \Carbon\Carbon::parse($order->created_at)->format('M d, Y - h:i A') }}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="text-sm text-base text-slate-700 mb-[6px] leading-none">
-                                Konnor Guzman
-                            </h4>
-                            <p class="text-xs text-slate-400 line-clamp-1 m-0 leading-none">
-                                Jan 10, 2023 - 06:02 AM
-                            </p>
-                        </div>
+                        <p class="text-sm font-medium text-success mb-0">${{ number_format($order->amount, 2) }}</p>
                     </div>
-                    <p class="text-sm font-medium text-success mb-0">$660.22</p>
-                </div>
+                @endforeach
             </div>
         </div>
         <div class="bg-white p-8 col-span-12 xl:col-span-8 2xl:col-span-6 rounded-md">
@@ -268,42 +270,40 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-gray-900 font-normal">
-                        <tr class="">
-                            <th scope="row"
-                                class="flex items-center py-3 text-gray-900 whitespace-nowrap dark:text-white">
-                                <div class="">
-                                    <div class="text-black">Apple MacBook Pro 17"</div>
-                                </div>
-                            </th>
-                            <td class="py-3">
-                                #XY-25G
-                            </td>
-                            <td class="py-3">
-                                52.999.900 VNĐ
-                            </td>
-                            <td class="py-3">
-                                @if (isset($order) && !$order->isEmpty())
-                                    @if ($order->status == 0)
+                        @foreach ($recentOrders as $order)
+                            <tr>
+                                <th>{{ $order->product_name }}</th>
+                                <td>{{ $order->order_id }}</td>
+                                <td>{{ number_format($order->price) }} VNĐ</td>
+                                <td>
+                                    @if ($order->status == 'pending')
                                         <span class="text-xs text-[#FF9800] bg-[#FFF4E5] px-2 py-1 rounded">Chờ xử
                                             lý</span>
-                                    @elseif ($order->status == 1)
+                                    @elseif ($order->status == 'processing')
                                         <span class="text-xs text-[#3E97FF] bg-[#EBF4FF] px-2 py-1 rounded">Đang xử
                                             lý</span>
-                                    @elseif ($order->status == 2)
-                                        <span class="text-xs text-[#50cd89] bg-[#EDFAF3] px-2 py-1 rounded">Đã
+                                    @elseif ($order->status == 'delivered')
+                                        <span class="text-xs text-[#50CD89] bg-[#EDFAF3] px-2 py-1 rounded">Đã giao</span>
+                                    @elseif ($order->status == 'shipped')
+                                        <span class="text-xs text-[#4CAF50] bg-[#E8F5E9] px-2 py-1 rounded">Đang
                                             giao</span>
+                                    @elseif ($order->status == 'cancelled')
+                                        <span class="text-xs text-[#F44336] bg-[#FFEDEE] px-2 py-1 rounded">Đã hủy</span>
+                                    @elseif ($order->status == 'refunded')
+                                        <span class="text-xs text-[#9E9E9E] bg-[#F5F5F5] px-2 py-1 rounded">Đã hoàn
+                                            tiền</span>
+                                    @else
+                                        <span class="text-xs text-[#757575] bg-[#EEEEEE] px-2 py-1 rounded">Không xác
+                                            định</span>
                                     @endif
-                                @else
-                                    <span class="text-xs text-[#FF9800] bg-[#FFF4E5] px-2 py-1 rounded">Chưa có đơn
-                                        hàng</span>
-                                @endif
-                            </td>
-                            <td class="py-3">
-                                <a href="#"
-                                    class="text-decoration-none text-xs text-[#3e97ff] bg-[#EBF4FF] px-3 py-2 rounded">Chi
-                                    tiết</a>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <a href="#" class="text-xs text-[#3e97ff] bg-[#EBF4FF] px-3 py-2 rounded">
+                                        Chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -369,30 +369,35 @@
         <div class="w-[1400px] 2xl:w-full">
             <div class="grid grid-cols-12 border-b border-[#f2f2f6] rounded-t-md bg-white px-[35px] py-[17px] pb-[25px]">
                 <div class="table-information col-span-4">
-                    <h3 class="font-medium tracking-wide text-slate-800 text-lg mb-2 leading-none">Product List</h3>
-                    <p class="text-slate-500 mb-0 text-xs">Avg. 57 orders per day</p>
+                    <h3 class="font-medium tracking-wide text-slate-800 text-lg mb-2 leading-none">Danh sách sản phẩm</h3>
+                    <p class="text-slate-500 mb-0 text-xs">Trung bình {{ number_format($avgDailyRevenue) }} đơn hàng mỗi ngày</p>
                 </div>
                 <div class="table-actions space-x-9 flex justify-end items-center col-span-8">
                     <div class="table-action-item">
                         <div class="show-category flex items-center category-select">
-                            <span class="text-xs font-normal text-slate-400 mr-2">Category</span>
+                            <span class="text-xs font-normal text-slate-400 mr-2">Danh mục</span>
                             <div class="choices">
                                 <div class="choices__inner">
-                                    <select class="text-xs">
-                                        <option value="">Show All</option>
+                                    <select class="text-xs" name="category">
+                                        <option value="">Tất cả</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
                                     </select>
-
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="table-action-item">
                         <div class="show-category flex items-center status-select">
-                            <span class="text-xs font-normal text-slate-400 mr-2">Status</span>
+                            <span class="text-xs font-normal text-slate-400 mr-2">Trạng thái</span>
                             <div class="">
                                 <div class="">
-                                    <select class="text-xs">
-                                        <option value="">Show All</option>
+                                    <select class="text-xs" name="status">
+                                        <option value="">Tất cả</option>
+                                        <option value="active">Hoạt động</option>
+                                        <option value="out_of_stock">Hết hàng</option>
+                                        <option value="deleted">Xoá</option>
                                     </select>
                                 </div>
                             </div>
@@ -424,86 +429,85 @@
             </div>
 
             <div class="">
-                <div class="relative rounded-b-md bg-white px-10 py-7 ">
+                <div class="relative rounded-b-md bg-white px-10 py-7 mb-̀[30px]">
                     <!-- table -->
                     <table class="w-full text-base text-left text-gray-400">
                         <thead class="bg-white">
                             <tr class="border-b border-[#f2f2f6] text-xs">
-                                <th scope="col" class="pr-8 py-3 text-xs text-text2 uppercase font-semibold">
-                                    Item
+                                <th scope="col" class="pr-8 py-3 text-xs uppercase font-semibold">
+                                    Sản phẩm
                                 </th>
-                                <th scope="col" class="px-3 py-3 text-xs text-text2 uppercase font-semibold">
-                                    Product ID
+                                <th scope="col" class="px-3 py-3 text-xs uppercase font-semibold">
+                                    ID Sản phẩm
                                 </th>
-                                <th scope="col" class="px-3 py-3 text-xs text-text2 uppercase font-semibold">
-                                    Category
+                                <th scope="col" class="px-3 py-3 text-xs uppercase font-semibold">
+                                    Danh mục
                                 </th>
-                                <th scope="col" class="px-3 py-3 text-xs text-text2 uppercase font-semibold">
-                                    Price
+                                <th scope="col" class="px-3 py-3 text-xs uppercase font-semibold">
+                                    Giá
                                 </th>
-                                <th scope="col" class="px-3 py-3 text-xs text-text2 uppercase font-semibold">
-                                    Status
+                                <th scope="col" class="px-3 py-3 text-xs uppercase font-semibold">
+                                    Trạng thái
                                 </th>
-                                <th scope="col"
-                                    class="px-3 py-3 text-xs text-text2 uppercase  font-semibold w-[14%] 2xl:w-[12%]">
-                                    Action
+                                <th scope="col" class="px-3 py-3 text-xs uppercase font-semibold w-[14%] 2xl:w-[12%]">
+                                    Thao tác
                                 </th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr class="bg-white border-b border-gray6 last:border-0 text-start">
-                                <td class="pr-8  whitespace-nowrap">
-                                    <a href="#" class="text-sm text-heading text-hover-primary">Apple MacBook
-                                        Pro 17"</a>
-                                </td>
-                                <td class="px-3 py-3 text-sm text-slate-600">
-                                    #XY-25G
-                                </td>
-                                <td class="px-3 py-3 text-sm text-slate-600">
-                                    Computer
-                                </td>
-                                <td class="px-3 py-3 text-sm text-slate-600">
-                                    $2999.00
-                                </td>
-                                <td class="px-3 py-3">
-                                    <span
-                                        class="text-[11px] text-[#50cd89] px-3 py-1 rounded-md leading-none bg-[#EDFAF3] text-medium font-semibold">Active</span>
-                                </td>
-                                <td class="px-3 py-3">
-                                    <div class="flex items-center space-x-2">
-                                        <button
-                                            class="flex items-center gap-1 bg-[#50cd89] text-white text-center text-tiny text-sm pt-2 pb-[6px] px-[10px] rounded-md">
-                                            <span class="text-[9px] inline-block -translate-y-[1px] mr-[1px]">
-                                                <svg class="-translate-y-px" height="10" viewBox="0 0 492.49284 492"
-                                                    width="10" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill="currentColor"
-                                                        d="m304.140625 82.472656-270.976563 270.996094c-1.363281 1.367188-2.347656 3.09375-2.816406 4.949219l-30.035156 120.554687c-.898438 3.628906.167969 7.488282 2.816406 10.136719 2.003906 2.003906 4.734375 3.113281 7.527344 3.113281.855469 0 1.730469-.105468 2.582031-.320312l120.554688-30.039063c1.878906-.46875 3.585937-1.449219 4.949219-2.8125l271-270.976562zm0 0">
-                                                    </path>
-                                                    <path fill="currentColor"
-                                                        d="m476.875 45.523438-30.164062-30.164063c-20.160157-20.160156-55.296876-20.140625-75.433594 0l-36.949219 36.949219 105.597656 105.597656 36.949219-36.949219c10.070312-10.066406 15.617188-23.464843 15.617188-37.714843s-5.546876-27.648438-15.617188-37.71875zm0 0">
-                                                    </path>
-                                                </svg>
-                                            </span>
-                                            Edit
-                                        </button>
-                                        <button
-                                            class="flex items-center gap-1 bg-transparent text-black text-center text-tiny text-sm pt-2 pb-[6px] px-[10px] rounded-md border border-[#50cd89]">
-                                            <span class="text-[9px] inline-block -translate-y-[1px] mr-[1px]">
-                                                <svg class="-translate-y-px" width="10" height="10"
-                                                    viewBox="0 0 20 22" fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg">
-                                                    <path
-                                                        d="M19.0697 4.23C17.4597 4.07 15.8497 3.95 14.2297 3.86V3.85L14.0097 2.55C13.8597 1.63 13.6397 0.25 11.2997 0.25H8.67967C6.34967 0.25 6.12967 1.57 5.96967 2.54L5.75967 3.82C4.82967 3.88 3.89967 3.94 2.96967 4.03L0.929669 4.23C0.509669 4.27 0.209669 4.64 0.249669 5.05C0.289669 5.46 0.649669 5.76 1.06967 5.72L3.10967 5.52C8.34967 5 13.6297 5.2 18.9297 5.73C18.9597 5.73 18.9797 5.73 19.0097 5.73C19.3897 5.73 19.7197 5.44 19.7597 5.05C19.7897 4.64 19.4897 4.27 19.0697 4.23Z"
-                                                        fill="currentColor"></path>
-                                                    <path
-                                                        d="M17.2297 7.14C16.9897 6.89 16.6597 6.75 16.3197 6.75H3.67975C3.33975 6.75 2.99975 6.89 2.76975 7.14C2.53975 7.39 2.40975 7.73 2.42975 8.08L3.04975 18.34C3.15975 19.86 3.29975 21.76 6.78975 21.76H13.2097C16.6997 21.76 16.8398 19.87 16.9497 18.34L17.5697 8.09C17.5897 7.73 17.4597 7.39 17.2297 7.14ZM11.6597 16.75H8.32975C7.91975 16.75 7.57975 16.41 7.57975 16C7.57975 15.59 7.91975 15.25 8.32975 15.25H11.6597C12.0697 15.25 12.4097 15.59 12.4097 16C12.4097 16.41 12.0697 16.75 11.6597 16.75ZM12.4997 12.75H7.49975C7.08975 12.75 6.74975 12.41 6.74975 12C6.74975 11.59 7.08975 11.25 7.49975 11.25H12.4997C12.9097 11.25 13.2497 11.59 13.2497 12C13.2497 12.41 12.9097 12.75 12.4997 12.75Z"
-                                                        fill="currentColor"></path>
-                                                </svg>
-                                            </span> Delete
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                        <tbody class="divide-y divide-gray-100 text-gray-900 font-normal">
+                            @foreach ($products as $product)
+                                <tr class="bg-white border-b border-gray-6 last:border-0 text-start">
+                                    <td class="py-3">
+                                        <a href="#" class="text-sm text-heading text-hover-primary">
+                                            {{ $product->name }}
+                                        </a>
+                                    </td>
+                                    <td class="py-3 px-[16px]">{{ $product->product_id }}</td>
+                                    <td class="py-3 px-[16px]">{{ $product->category }}</td>
+                                    <td class="py-3 px-[16px]">{{ number_format($product->price) }} VNĐ</td>
+                                    <td class="py-3 px-[16px]">
+                                        <span
+                                            class="text-[11px] text-[#50cd89] px-3 py-1 rounded-md bg-[#EDFAF3]">{{ ucfirst($product->status) }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-[16px]">
+                                        <div class="flex items-center space-x-2">
+                                            <button
+                                                class="flex items-center gap-1 bg-[#50cd89] text-white text-sm pt-2 pb-[6px] px-[10px] rounded-md">
+                                                <span class="text-[9px] inline-block -translate-y-[1px] mr-[1px]">
+                                                    <svg class="translate-y-px" height="10"
+                                                        viewBox="0 0 492.49284 492" width="10"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path fill="currentColor"
+                                                            d="m304.140625 82.472656-270.976563 270.996094c-1.363281 1.367188-2.347656 3.09375-2.816406 4.949219l-30.035156 120.554687c-.898438 3.628906.167969 7.488282 2.816406 10.136719 2.003906 2.003906 4.734375 3.113281 7.527344 3.113281.855469 0 1.730469-.105468 2.582031-.320312l120.554688-30.039063c1.878906-.46875 3.585937-1.449219 4.949219-2.8125l271-270.976562zm0 0">
+                                                        </path>
+                                                        <path fill="currentColor"
+                                                            d="m476.875 45.523438-30.164062-30.164063c-20.160157-20.160156-55.296876-20.140625-75.433594 0l-36.949219 36.949219 105.597656 105.597656 36.949219-36.949219c10.070312-10.066406 15.617188-23.464843 15.617188-37.714843s-5.546876-27.648438-15.617188-37.71875zm0 0">
+                                                        </path>
+                                                    </svg>
+                                                </span>
+                                                Sửa
+                                            </button>
+                                            <button
+                                                class="flex items-center gap-1 bg-transparent text-black text-sm pt-2 pb-[6px] px-[10px] rounded-md border border-[#50cd89]">
+                                                <span class="text-[9px] inline-block -translate-y-[1px] mr-[1px]">
+                                                    <svg class="translate-y-px" width="10" height="10"
+                                                        viewBox="0 0 20 22" fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path
+                                                            d="M19.0697 4.23C17.4597 4.07 15.8497 3.95 14.2297 3.86V3.85L14.0097 2.55C13.8597 1.63 13.6397 0.25 11.2997 0.25H8.67967C6.34967 0.25 6.12967 1.57 5.96967 2.54L5.75967 3.82C4.82967 3.88 3.89967 3.94 2.96967 4.03L0.929669 4.23C0.509669 4.27 0.209669 4.64 0.249669 5.05C0.289669 5.46 0.649669 5.76 1.06967 5.72L3.10967 5.52C8.34967 5 13.6297 5.2 18.9297 5.73C18.9597 5.73 18.9797 5.73 19.0097 5.73C19.3897 5.73 19.7197 5.44 19.7597 5.05C19.7897 4.64 19.4897 4.27 19.0697 4.23Z"
+                                                            fill="currentColor"></path>
+                                                        <path
+                                                            d="M17.2297 7.14C16.9897 6.89 16.6597 6.75 16.3197 6.75H3.67975C3.33975 6.75 2.99975 6.89 2.76975 7.14C2.53975 7.39 2.40975 7.73 2.42975 8.08L3.04975 18.34C3.15975 19.86 3.29975 21.76 6.78975 21.76H13.2097C16.6997 21.76 16.8398 19.87 16.9497 18.34L17.5697 8.09C17.5897 7.73 17.4597 7.39 17.2297 7.14ZM11.6597 16.75H8.32975C7.91975 16.75 7.57975 16.41 7.57975 16C7.57975 15.59 7.91975 15.25 8.32975 15.25H11.6597C12.0697 15.25 12.4097 15.59 12.4097 16C12.4097 16.41 12.0697 16.75 11.6597 16.75ZM12.4997 12.75H7.49975C7.08975 12.75 6.74975 12.41 6.74975 12C6.74975 11.59 7.08975 11.25 7.49975 11.25H12.4997C12.9097 11.25 13.2497 11.59 13.2497 12C13.2497 12.41 12.9097 12.75 12.4997 12.75Z"
+                                                            fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
+                                                Xoá
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -521,27 +525,27 @@
         var salesChart = new Chart(ctxSales, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: @json($labels),
                 datasets: [{
                         label: 'Sales',
-                        data: [20, 15, 25, 30, 20, 35, 40, 30, 25, 20, 15, 10], // Sample data based on image
-                        borderColor: 'rgba(59, 130, 246, 1)', // Blue
+                        data: @json($sales),
+                        borderColor: 'rgba(59, 130, 246, 1)',
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         fill: true,
                         tension: 0.3
                     },
                     {
                         label: 'Visitors',
-                        data: [30, 20, 35, 25, 30, 20, 25, 35, 40, 30, 25, 20], // Sample data based on image
-                        borderColor: 'rgba(163, 230, 53, 1)', // Green
+                        data: @json($visitors),
+                        borderColor: 'rgba(163, 230, 53, 1)',
                         backgroundColor: 'rgba(163, 230, 53, 0.2)',
                         fill: true,
                         tension: 0.3
                     },
                     {
                         label: 'Products',
-                        data: [40, 35, 30, 20, 25, 30, 20, 25, 30, 35, 40, 30], // Sample data based on image
-                        borderColor: 'rgba(251, 191, 36, 1)', // Yellow/Orange
+                        data: @json($products),
+                        borderColor: 'rgba(251, 191, 36, 1)',
                         backgroundColor: 'rgba(251, 191, 36, 0.2)',
                         fill: true,
                         tension: 0.3
@@ -552,8 +556,8 @@
                 responsive: true,
                 plugins: {
                     legend: {
-                        position: 'top',
-                    },
+                        position: 'top'
+                    }
                 },
                 scales: {
                     y: {
@@ -568,24 +572,24 @@
         var categoryChart = new Chart(ctxCategory, {
             type: 'pie',
             data: {
-                labels: ['Grocery', 'Men', 'Women', 'Kids'], // Sample labels based on image
+                labels: @json($categoryLabels),
                 datasets: [{
-                    data: [25, 20, 30, 25], // Sample data based on image proportions
+                    data: @json($categoryValues),
                     backgroundColor: [
-                        'rgba(59, 130, 246, 1)', // Blue
-                        'rgba(239, 68, 68, 1)', // Red
-                        'rgba(163, 230, 53, 1)', // Green
-                        'rgba(251, 191, 36, 1)', // Yellow/Orange
-                    ],
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(163, 230, 53, 1)',
+                        'rgba(251, 191, 36, 1)'
+                    ]
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
                     legend: {
-                        position: 'top',
-                    },
-                },
+                        position: 'top'
+                    }
+                }
             }
         });
     </script>

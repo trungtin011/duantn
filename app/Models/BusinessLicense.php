@@ -44,6 +44,11 @@ class BusinessLicense extends Model
         return $this->hasMany(Seller::class);
     }
 
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class, 'shop_orderID', 'id');
+    }
+
     // Scopes
     public function scopeActive($query)
     {
@@ -104,4 +109,4 @@ class BusinessLicense extends Model
     {
         $this->update(['is_active' => false]);
     }
-} 
+}

@@ -11,15 +11,22 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class UserAddressController extends Controller
 {
     use AuthorizesRequests;
+
     public function index()
     {
         $addresses = Auth::user()->addresses;
-        return view('account.addresses.index', compact('addresses'));
+        $user = Auth::user();
+        if ($addresses->isEmpty()) {
+            return view('user.account.addresses.index', ['addresses' => $addresses])
+                ->with('message', 'Bạn chưa có địa chỉ nào. Hãy thêm địa chỉ mới.');
+        }
+        return view('user.account.addresses.index', compact('addresses', 'user'));
     }
 
     public function create()
     {
-        return view('account.addresses.create');
+        $user = Auth::user();
+        return view('user.account.addresses.create', compact('user'));
     }
 
     public function store(Request $request)
@@ -50,8 +57,9 @@ class UserAddressController extends Controller
 
     public function edit(UserAddress $address)
     {
+        $user = Auth::user();
         $this->authorize('view', $address);
-        return view('account.addresses.edit', compact('address'));
+        return view('user.account.addresses.edit', compact('address', 'user'));
     }
 
     public function update(Request $request, UserAddress $address)
@@ -87,5 +95,18 @@ class UserAddressController extends Controller
         $address->delete();
 
         return back()->with('success', 'Đã xoá địa chỉ.');
+    }
+
+    public function setDefault(UserAddress $address)
+    {
+        $this->authorize('update', $address);
+
+        // Unset all other addresses as default
+        UserAddress::where('userID', Auth::id())->update(['is_default' => 0]);
+
+        // Set the selected address as default
+        $address->update(['is_default' => 1]);
+
+        return redirect()->route('account.addresses')->with('success', 'Đã đặt địa chỉ làm mặc định.');
     }
 }

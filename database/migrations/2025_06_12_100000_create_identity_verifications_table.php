@@ -34,8 +34,6 @@ return new class extends Migration
             $table->index(['status', 'identity_number']);
         });
 
-        // ĐÃ BỎ CHÈN DỮ LIỆU MẪU userID = 1 ĐỂ TRÁNH LỖI KHOÁ NGOẠI
-        // Nếu cần dữ liệu mẫu, hãy sử dụng Seeder sau khphpi user id=1 đã tồn tại
     }
 
     public function down(): void

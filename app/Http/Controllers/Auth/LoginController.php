@@ -7,8 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use App\Models\Employee;
+use App\Models\Shop;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\DB; // Thêm để truy vấn bảng sessions
+use App\Enums\UserRole;
 
 class LoginController extends Controller
 {
@@ -45,8 +49,33 @@ class LoginController extends Controller
         $key = 'login-attempt:' . strtolower($request->login) . ':' . $request->ip();
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            // Kiểm tra trạng thái của người dùng
+            if ($user->isBanned()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('login')->withErrors([
+                    'login' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
+                ]);
+            }
+
             $request->session()->regenerate();
             $request->session()->put('user_id', Auth::user()->id);
+            if (Auth::user()->role == UserRole::SELLER) {
+                $shop = Shop::where('ownerID', Auth::user()->id)->first();
+                if ($shop) {
+                    $request->session()->put('current_shop_id', $shop->id);
+                }
+            }
+            elseif(Auth::user()->role == UserRole::EMPLOYEE){
+                $shopID = Employee::where('userID', Auth::user()->id)->first()->shopID;
+                if ($shopID) {
+                    $request->session()->put('current_shop_id', $shopID);
+                }
+            }
             RateLimiter::clear($key);
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }
@@ -60,6 +89,13 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        // Cập nhật last_activity trong bảng sessions trước khi đăng xuất
+        if (Auth::check()) {
+            DB::table('sessions')
+                ->where('user_id', Auth::id())
+                ->update(['last_activity' => time()]);
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -73,7 +109,9 @@ class LoginController extends Controller
 
     public function handleGoogleCallback()
     {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+        /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
+        $socialiteProvider = Socialite::driver('google');
+        $googleUser = $socialiteProvider->stateless()->user();
         $user = User::where('email', $googleUser->getEmail())->first();
         if (!$user) {
             $user = User::create([
@@ -89,13 +127,15 @@ class LoginController extends Controller
             ]);
         }
         Auth::login($user);
-        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Google thành công!');
+        return redirect()->route('home')->with('success', 'Đăng nhập bằng Google thành công!');
     }
 
     public function handleFacebookCallback()
     {
         try {
-            $facebookUser = Socialite::driver('facebook')->stateless()->user();
+            /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
+            $socialiteProvider = Socialite::driver('facebook');
+            $facebookUser = $socialiteProvider->stateless()->user();
         } catch (\Exception $e) {
             return redirect()->route('login')->with('error', 'Đăng nhập Facebook thất bại. Vui lòng thử lại.');
         }
@@ -115,12 +155,14 @@ class LoginController extends Controller
             ]
         );
         Auth::login($user);
-        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Facebook thành công!');
+        return redirect()->route('home')->with('success', 'Đăng nhập bằng Facebook thành công!');
     }
 
     public function redirectToFacebook()
     {
-        return Socialite::driver('facebook')
+        /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
+        $socialiteProvider = Socialite::driver('facebook');
+        return $socialiteProvider
             ->scopes(['email'])
             ->redirect();
     }
