@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+<<<<<<< HEAD
 use App\Models\Shop;
 use App\Models\User;
 use App\Enums\UserRole;
@@ -49,3 +50,19 @@ Broadcast::channel('seller.shop.notifications.{shopId}', function ($user, $shopI
     }
     return false;
 }); 
+=======
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
+Broadcast::channel('user.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
+
+Broadcast::channel('notifications.all', function ($user) {
+    return true;    
+});
+
+Broadcast::channel('order.created.{shop_id}', function ($user, $shop_id) {
+    return (int)$user->shop->id === (int)$shop_id;
+});
+>>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad

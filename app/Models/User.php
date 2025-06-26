@@ -74,6 +74,11 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\AutoChatSetting::class, 'user_id');
     }
 
+    public function shop(): HasOne
+    {
+        return $this->hasOne(Shop::class, 'ownerID', 'id');
+    }
+
     // Scopes
     public function scopeActive($query)
     {
