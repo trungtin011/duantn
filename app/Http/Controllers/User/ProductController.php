@@ -28,10 +28,38 @@ class ProductController extends Controller
         $product = Product::with([
             'images',
             'reviews.user',
-            'variants',
+            'variants.attributeValues.attribute',
+            'variants.images',
             'reviews.likes',
             'shop.coupons',
         ])->where('slug', $slug)->firstOrFail();
+
+        // Gán hình ảnh, giá, và số lượng của biến thể
+        $colorImages = [];
+        $variantData = [];
+        $selectedVariant = null;
+        if ($request->has('variant_id')) {
+            $selectedVariant = $product->variants->find($request->variant_id); // Lấy biến thể từ request nếu có
+        } elseif ($product->variants->isNotEmpty()) {
+            $selectedVariant = $product->variants->first(); // Lấy biến thể đầu tiên làm mặc định
+        }
+
+        if ($product->variants->isNotEmpty()) {
+            foreach ($product->variants as $variant) {
+                $color = $variant->attributeValues->where('attribute.name', 'Màu sắc')->first()->value ?? null;
+                if ($color) {
+                    $image = $variant->images->first()->image_path ?? null;
+                    $colorImages[$color] = $image ?: asset('images/default_product_image.png');
+                    $variantData[$variant->id] = [
+                        'price' => $variant->getCurrentPriceAttribute(),
+                        'original_price' => $variant->price,
+                        'stock' => $variant->stock,
+                        'image' => $image ?: asset('images/default_product_image.png'),
+                        'discount_percentage' => $variant->getDiscountPercentageAttribute(),
+                    ];
+                }
+            }
+        }
 
         $viewed = session()->get('viewed_products', []);
         $viewed = array_unique(array_merge([$product->id], $viewed));
@@ -40,10 +68,8 @@ class ProductController extends Controller
         $recentProducts = Product::whereIn('id', $viewed)->where('id', '!=', $product->id)->with('images')->get();
         $logoPath = $product->shop ? Storage::url($product->shop->logo) : asset('images/default_shop_logo.png');
 
-        // Kiểm tra xem người dùng đã mua sản phẩm hay chưa
         $hasPurchased = Auth::check() && $product->orders()->where('userID', Auth::id())->exists();
 
-        // Lọc đánh giá theo filter
         $filter = $request->input('filter');
         $reviews = $product->reviews;
 
@@ -58,7 +84,6 @@ class ProductController extends Controller
 
         $filteredReviews = $filteredReviews->sortByDesc('created_at');
 
-        // Trả về partial nếu là AJAX
         if ($request->ajax()) {
             return view('partials.review_list', ['reviews' => $filteredReviews]);
         }
@@ -72,6 +97,9 @@ class ProductController extends Controller
             'logoPath' => $logoPath,
             'hasPurchased' => $hasPurchased,
             'reviews' => $reviews,
+            'colorImages' => $colorImages,
+            'variantData' => $variantData,
+            'selectedVariant' => $selectedVariant, // Truyền biến selectedVariant
         ]);
     }
 
