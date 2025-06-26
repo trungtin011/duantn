@@ -23,6 +23,7 @@ use App\Events\CreateOrderEvent;
 use Illuminate\Support\Facades\Event;
 use App\Http\Requests\CheckoutRequest;
 
+
 class CheckoutController extends Controller
 {
     public function getItemsFromFlow($request)
