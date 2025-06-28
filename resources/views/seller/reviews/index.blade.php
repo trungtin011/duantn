@@ -81,7 +81,7 @@
                         <td>{{ $review->created_at->format('d/m/Y H:i A') }}</td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <a href="{{ route('productDetail', ['id'=> $review->productID]) }}#review-{{ $review->id }}"
+                                <a href="{{ route('seller.reviews.show', ['id'=> $review->productID]) }}#review-{{ $review->id }}"
                                 class="btn btn-sm btn-outline-primary btn-action-icon">
                                     Xem
                                 </a>

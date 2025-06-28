@@ -138,10 +138,17 @@
 
                         <!-- Nút hành động -->
                         <div class="flex gap-3 mt-10">
-                            <button
+                        <form action="{{ route('cart.add') }}" method="POST" class="inline">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <input type="hidden" name="variant_id" value="{{ $variant->id ?? '' }}">
+                            <input type="hidden" name="quantity" value="1">
+
+                            <button type="submit"
                                 class="bg-red-100 text-red-600 px-6 py-3 rounded hover:bg-red-200 flex items-center gap-2">
                                 <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
                             </button>
+                        </form>
                             <button class="bg-black text-white px-6 py-3 rounded hover:bg-gray-800">Mua ngay</button>
                         </div>
                     </div>
