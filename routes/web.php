@@ -228,6 +228,10 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/combos/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
     Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
     Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
+
+    //review seller
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('seller.reviews.index');
+    Route::get('/reviews/{id}', [ReviewController::class, 'show'])->name('seller.reviews.show');
 });
 
 
