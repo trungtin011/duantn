@@ -11,10 +11,9 @@ class ReviewMedia extends Model
 
     protected $table = 'review_media';
 
+    
     protected $fillable = [
-        'review_id',
-        'type',
-        'path',
+        'review_id', 'type', 'path'
     ];
 
     public function review()

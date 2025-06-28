@@ -85,10 +85,18 @@
             Mua Lại
         </button>
 
-        <a href="{{ route('reviews.create', ['order_id' => $order->id]) }}"
-            class="border border-green-600 text-green-600 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-green-600 hover:text-white">
+    @if ($order->order_status === 'delivered')
+    @foreach ($order->items as $item)
+       <button
+            class="open-review-modal"
+            data-order-id="{{ $order->id }}"
+            data-shop-id="{{ $order->shop->id }}">
             Đánh giá sản phẩm
-        </a>
+        </button>
+    @endforeach
+@endif
+
+
 
         <button
             class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-black hover:text-white">
@@ -112,3 +120,99 @@
     </div>
 </div>
 <br>
+<!-- Modal -->
+<div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white w-full max-w-lg p-6 rounded shadow relative">
+        <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-600 hover:text-black text-xl">&times;</button>
+        
+        <h2 class="text-lg font-bold mb-4">Đánh giá sản phẩm</h2>
+
+<form id="reviewForm" action="{{ route('reviews.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    <input type="hidden" name="orderID" id="modalOrderId">
+    <input type="hidden" name="shopID" id="modalShopId">
+
+            <label class="block mb-2 font-semibold">Đánh giá sao:</label>
+            <div class="flex mb-4" id="modalStarRating">
+                @for ($i = 1; $i <= 5; $i++)
+                    <i class="bi bi-star-fill text-3xl text-gray-400 cursor-pointer mx-1 transition-colors duration-150" data-value="{{ $i }}"></i>
+                @endfor
+                <input type="hidden" name="rating" id="modalRating" value="0">
+            </div>
+
+            <label class="block mb-2 font-semibold">Bình luận:</label>
+            <textarea name="comment" class="w-full border p-2 mb-4" rows="4"></textarea>
+
+            <label class="block mb-2 font-semibold">Hình ảnh:</label>
+            <input type="file" name="images[]" accept="image/*" multiple class="mb-4">
+
+            <label class="block mb-2 font-semibold">Video:</label>
+            <input type="file" name="video" accept="video/*" class="mb-4">
+
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Gửi đánh giá
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Đảm bảo đã thêm Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stars = document.querySelectorAll('#modalStarRating i');
+    const ratingInput = document.getElementById('modalRating');
+    const reviewModal = document.getElementById('reviewModal');
+    const reviewForm = document.getElementById('reviewForm');
+
+    // Gán form action và mở modal
+    document.querySelectorAll('.open-review-modal').forEach(button => {
+        button.addEventListener('click', function () {
+            const orderId = this.dataset.orderId;
+            const shopId = this.dataset.shopId;
+
+            const actionUrl = "{{ route('reviews.store', ':id') }}".replace(':id', orderId);
+
+            document.getElementById('modalOrderId').value = orderId;
+            document.getElementById('modalShopId').value = shopId;
+
+            reviewForm.setAttribute('action', actionUrl);
+
+            // ✅ Thêm class flex và xoá class hidden
+            reviewModal.classList.remove('hidden');
+            reviewModal.classList.add('flex');
+        });
+    });
+
+    // Đóng modal
+    document.getElementById('closeModalBtn').addEventListener('click', function () {
+        reviewModal.classList.add('hidden');
+        reviewModal.classList.remove('flex');
+    });
+
+    // Hiệu ứng sao
+    stars.forEach((star, index) => {
+        star.addEventListener('mouseover', () => {
+            stars.forEach((s, i) => {
+                s.classList.toggle('text-yellow-500', i <= index);
+                s.classList.toggle('text-gray-400', i > index);
+            });
+        });
+
+        star.addEventListener('mouseout', () => {
+            const selected = parseInt(ratingInput.value);
+            stars.forEach((s, i) => {
+                s.classList.toggle('text-yellow-500', i < selected);
+                s.classList.toggle('text-gray-400', i >= selected);
+            });
+        });
+
+        star.addEventListener('click', () => {
+            ratingInput.value = star.dataset.value;
+        });
+    });
+});
+</script>
+@endpush

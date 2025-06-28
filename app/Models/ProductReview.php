@@ -2,31 +2,46 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductReview extends Model
+class Review extends Model
 {
+    use HasFactory;
+
+    protected $table = 'review'; // giữ nguyên
+
     protected $fillable = [
-        'user_id',
-        'product_id',
+        'userID',
+        'orderID',      // Đã thay vì productID
+        'shopID',
         'rating',
         'comment',
-        'image_path',
         'video_path',
-        'likes'
     ];
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'userID');
     }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'orderID');
+    }
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class, 'shopID');
+    }
+
     public function likes()
     {
-        return $this->hasMany(ReviewLike::class, 'review_id');
+        return $this->hasMany(ReviewLike::class);
     }
-    // app/Models/ProductReview.php
-    public function images()
+
+    public function media()
     {
-        return $this->hasMany(ReviewImage::class, 'review_id');
+        return $this->hasMany(ReviewMedia::class);
     }
 }
