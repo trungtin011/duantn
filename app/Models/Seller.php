@@ -28,9 +28,14 @@ class Seller extends Model
     ];
 
     // Relationships
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class, 'userID');
+    }
+
+    public function shops()
+    {
+        return $this->hasMany(Shop::class, 'ownerID', 'userID');
     }
 
     public function businessLicense(): BelongsTo
@@ -84,4 +89,5 @@ class Seller extends Model
     {
         $this->update(['status' => 'active']);
     }
+
 } 

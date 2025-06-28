@@ -16,10 +16,11 @@ class AttributeValue extends Model
     ];
 
     // Relationships
-    public function attribute(): BelongsTo
+    public function attribute()
     {
-        return $this->belongsTo(Attribute::class, 'attribute_id');
+        return $this->belongsTo(Attribute::class, 'attribute_id', 'id');
     }
+
 
     public function variants(): HasMany
     {

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,7 +32,7 @@
     </style>
 </head>
 
-<body class="bg-[#f5f5f7] text-[#222222] text-sm leading-relaxed font-[Inter]">
+<body class="bg-[#f5f5f7] text-[#222222] text-sm leading-relaxed font-[Inter]" x-data="{ notificationDropdownOpen: false }">
     <header class="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white sticky top-0 z-30">
         <div class="flex items-center space-x-1">
             <img alt="Logo orange square with white S letter" class="w-6 h-6" height="24"
@@ -46,9 +45,81 @@
             <button aria-label="Grid menu" class="p-1 hover:text-gray-900 transition-colors">
                 <i class="fas fa-th-large text-lg"></i>
             </button>
-            <button aria-label="Book icon" class="p-1 hover:text-gray-900 transition-colors">
-                <i class="fas fa-book-open text-lg"></i>
+            <button aria-label="Notification icon" class="p-1 hover:text-gray-900 transition-colors relative" @click="notificationDropdownOpen = !notificationDropdownOpen" @click.away="notificationDropdownOpen = false">
+                <i class="fas fa-bell text-lg"></i>
             </button>
+
+            <!-- Notification Dropdown -->
+            <div x-show="notificationDropdownOpen" 
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute top-7 right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50" 
+                        @click.away="notificationDropdownOpen = false">
+                        <div class="py-2">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <h3 class="text-sm font-semibold text-gray-900">Thông báo</h3>
+                            </div>
+                            
+                            <div class="max-h-96 overflow-y-auto" id="notification-list">
+                                @forelse($groupedNotifications as $type => $notifications)
+                                    <!-- Notification Group -->
+                                    <div class="notification-type" data-type="{{ $type }}">
+                                        <div class="px-4 py-2 bg-gray-50">
+                                            <h4 class="text-xs font-medium text-gray-500 uppercase">
+                                                @switch($type)
+                                                    @case('order')
+                                                        Đơn hàng
+                                                        @break
+                                                    @case('promotion')
+                                                        Khuyến mãi
+                                                        @break
+                                                    @case('system')
+                                                        Hệ thống
+                                                        @break
+                                                    @default
+                                                        {{ $type }}
+                                                @endswitch
+                                            </h4>
+                                        </div>
+                                        <div class="notification-items">
+                                            @foreach($notifications as $notification)
+                                                <a href="{{ $notification->link ?? '#' }}" 
+                                                class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
+                                                data-notification-id="{{ $notification->id }}"
+                                                data-notification-title="{{ $notification->title }}"
+                                                data-notification-type="{{ $notification->type }}"
+                                                data-notification-receiver-type="{{ $notification->receiver_type }}">
+                                                    <div class="flex items-start">
+                                                        <div class="flex-shrink-0">
+                                                            <span class="inline-block h-2 w-2 rounded-full {{ $notification->read_at ? 'bg-gray-300' : 'bg-red-500' }}"></span>
+                                                        </div>
+                                                        <div class="ml-3 w-0 flex-1">
+                                                            <p class="text-sm font-medium text-gray-900">{{ $notification->title }}</p>
+                                                            <p class="text-sm text-gray-500">{{ $notification->content }}</p>
+                                                            <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="px-4 py-3 text-center text-gray-500">
+                                        <p>Không có thông báo mới</p>
+                                    </div>
+                                @endforelse
+                            </div>    
+                        </div>
+
+                <script>
+                        window.userId = "{{ session('user_id') }}";
+                </script>
+            </div>
+
             <div class="flex items-center space-x-2 cursor-pointer relative group" id="user-menu-trigger">
                 <img alt="User profile picture" class="w-8 h-8 rounded-full" height="32"
                     src="https://storage.googleapis.com/a1aa/image/0e0e42f3-afbf-4f26-d5b2-574d3f5640d2.jpg"
@@ -119,6 +190,7 @@
                         <i class="fas fa-chevron-down ml-auto mt-1 text-xs"></i>
                     </button>
                     <ul class="mt-2 space-y-1 pl-3 text-gray-700 font-normal">
+                         <li><a class="block hover:text-orange-500" href="{{ route('seller.combo.index') }}">Tạo combo</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Kênh Marketing</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Đấu Giá Rẻ Vô Địch</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Quảng Cáo Shopee</a></li>
@@ -235,8 +307,6 @@
     @stack('scripts')
     <script src="{{ asset('js/seller/product.js') }}"></script>
     <script>
-        // Hiển thị dropdown khi hover hoặc focus vào avatar
-        // Dropdown menu user: giữ menu khi hover hoặc rê chuột xuống menu, không bị mất khi di chuyển chuột
         document.addEventListener('DOMContentLoaded', function() {
             const trigger = document.getElementById('user-menu-trigger');
             const dropdown = document.getElementById('user-menu-dropdown');
@@ -261,6 +331,14 @@
             }
         });
     </script>
+        <script>
+            window.Laravel = {
+                user: @json(Auth::user()),
+                shop: @json(Auth::user()->shop->id),
+            };
+        </script>
+    @vite('resources/js/echo.js')
+
 </body>
 
 </html>

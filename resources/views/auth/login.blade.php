@@ -8,52 +8,7 @@
                 @if (session('success'))
                     <div style="color: green; margin-bottom: 20px;">
                         {{ session('success') }}
-                        <div class="login-container">
-                            <div class="login-box">
-                                <div class="login-image"></div>
-                                <div class="login-form">
-                                    @if (session('success'))
-                                        <div style="color: green; margin-bottom: 20px;">
-                                            {{ session('success') }}
-                                        </div>
-                                    @endif
-                                    <h2 class="title">Đăng nhập</h2>
-                                    <p class="subtitle">Nhập thông tin của bạn bên dưới</p>
-                                    <form method="POST" action="{{ route('login.post') }}">
-                                        @csrf
-                                        <div class="form-group">
-                                            <input type="text" name="login" placeholder="Email hoặc số điện thoại"
-                                                class="input-text" value="{{ old('login') }}">
-                                            @error('login')
-                                                <p style="color:red; font-size: 14px">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-
-                                        <div class="form-group">
-                                            <input type="password" name="password" placeholder="Mật khẩu"
-                                                class="input-text">
-                                            @error('password')
-                                                <p style="color:red; font-size: 14px">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-
-                                        <div class="form-remember">
-                                            <input type="checkbox" name="remember" id="remember">
-                                            <label for="remember">Nhớ mật khẩu</label>
-                                        </div>
-
-                                        <div class="form-actions">
-                                            <button type="submit" class="login-button">Đăng nhập</button>
-                                            <a href="#" class="forgot-password">Quên mật khẩu?</a>
-                                        </div>
-
-                                        <div class="signup-wrap">
-                                            <span>Bạn chưa có tài khoản?
-                                                <a href="{{ route('signup') }}">Đăng ký</a>
-                                            </span>
-                                        </div>
-                                    </form>
-                                </div>
+                    </div>
                 @endif
                 <h2 class="title">Đăng nhập</h2>
                 <p class="subtitle">Nhập thông tin của bạn bên dưới</p>

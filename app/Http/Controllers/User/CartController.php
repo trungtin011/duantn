@@ -15,10 +15,11 @@ class CartController extends Controller
     // Hiển thị giỏ hàng
     public function index()
     {
+        $user = Auth::user();
         $userID = Auth::check() ? Auth::id() : null;
         $sessionID = Session::getId();
 
-        $cartItems = Cart::with(['product', 'variant'])
+        $cartItems = Cart::with(['product.shop', 'variant'])
             ->where(function ($query) use ($userID, $sessionID) {
                 if ($userID) {
                     $query->where('userID', $userID);
@@ -28,7 +29,7 @@ class CartController extends Controller
             })
             ->get();
 
-        return view('user.cart', compact('cartItems'));
+        return view('user.cart', compact('cartItems', 'user'));
     }
 
     // Thêm sản phẩm vào giỏ hàng
@@ -41,11 +42,20 @@ class CartController extends Controller
         ]);
 
         $product = Product::findOrFail($request->product_id);
+        $stock = $product->stock_total;
         $price = $product->sale_price ?? $product->price;
 
         if ($request->variant_id) {
             $variant = ProductVariant::findOrFail($request->variant_id);
+            $stock = $variant->stock ?? $stock; // Sử dụng stock của variant nếu có
             $price = $variant->sale_price ?? $price;
+        }
+
+        if ($request->quantity > $stock) {
+            return response()->json([
+                'message' => 'Số lượng vượt quá tồn kho!',
+                'available' => $stock,
+            ], 422);
         }
 
         $userID = Auth::check() ? Auth::id() : null;
@@ -66,8 +76,15 @@ class CartController extends Controller
         $existingCartItem = $cartQuery->first();
 
         if ($existingCartItem) {
-            $existingCartItem->quantity += $quantity;
-            $existingCartItem->total_price = $existingCartItem->quantity * $price;
+            $newQuantity = $existingCartItem->quantity + $quantity;
+            if ($newQuantity > $stock) {
+                return response()->json([
+                    'message' => 'Số lượng vượt quá tồn kho sau khi cộng thêm!',
+                    'available' => $stock,
+                ], 422);
+            }
+            $existingCartItem->quantity = $newQuantity;
+            $existingCartItem->total_price = $newQuantity * $price;
             $existingCartItem->save();
         } else {
             Cart::create([
@@ -77,7 +94,8 @@ class CartController extends Controller
                 'quantity' => $quantity,
                 'price' => $price,
                 'total_price' => $total,
-                'session_id' => $userID ? null : $sessionID,
+                'session_id' => $sessionID,
+                'buying_flag' => false
             ]);
         }
 
@@ -115,7 +133,7 @@ class CartController extends Controller
         $userID = Auth::check() ? Auth::id() : null;
         $sessionID = Session::getId();
 
-        $cartItem = Cart::where('id', $id)
+        $cartItem = Cart::with(['product', 'variant'])->where('id', $id)
             ->where(function ($query) use ($userID, $sessionID) {
                 if ($userID) {
                     $query->where('userID', $userID);
@@ -125,14 +143,22 @@ class CartController extends Controller
             })
             ->firstOrFail();
 
+        $stock = $cartItem->variant ? $cartItem->variant->stock : $cartItem->product->stock_total;
+
+        if ($request->quantity > $stock) {
+            return response()->json([
+                'message' => 'Số lượng vượt quá tồn kho hiện tại!',
+                'available' => $stock,
+            ], 422);
+        }
+
         $cartItem->quantity = $request->quantity;
         $cartItem->total_price = $cartItem->quantity * $cartItem->price;
         $cartItem->save();
 
         return response()->json([
-            'message' => 'Số lượng đã được cập nhật!',
+            'message' => 'Đã cập nhật số lượng!',
             'total_price' => number_format($cartItem->total_price, 0, ',', '.'),
-        ], 200);
+        ]);
     }
 }
-?>
