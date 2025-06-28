@@ -81,20 +81,36 @@
                         </td>
                         <td class="py-4 text-[13px]">{{ $product->sku }}</td>
                         <td class="py-4 text-[13px]">
-                            {{ $product->stock_total }}
-                            @if ($product->stock_total <= 5 && $product->stock_total > 0)
+                            @php
+                                $displayStock = $product->stock_total ?? 0;
+                                if ($product->is_variant && (!$displayStock || $displayStock == 0)) {
+                                    $variantStock = $product->variants->sum('stock') ?? 0;
+                                    $displayStock = $variantStock > 0 ? $variantStock : 0;
+                                }
+                            @endphp
+                            {{ $displayStock }}
+                            @if ($displayStock <= 5 && $displayStock > 0)
                                 <span
                                     class="inline-block bg-orange-100 text-orange-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
                                     Low Stock
                                 </span>
-                            @elseif ($product->stock_total == 0)
+                            @elseif ($displayStock == 0)
                                 <span
                                     class="inline-block bg-red-100 text-red-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
                                     Out Of Stock
                                 </span>
                             @endif
                         </td>
-                        <td class="py-4 text-[13px]">{{ number_format($product->sale_price, 2) }}</td>
+                        <td class="py-4 text-[13px]">
+                            @php
+                                $displayPrice = $product->sale_price ?? 0;
+                                if ($product->is_variant && (!$displayPrice || $displayPrice == 0)) {
+                                    $variantPrice = $product->variants->min('sale_price') ?? 0;
+                                    $displayPrice = $variantPrice > 0 ? $variantPrice : 0;
+                                }
+                            @endphp
+                            {{ number_format($displayPrice) }}
+                        </td>
                         <td class="py-4">
                             <span
                                 class="inline-block {{ $product->status == 'active' ? 'bg-green-100 text-green-600' : ($product->status == 'inactive' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600') }} text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">

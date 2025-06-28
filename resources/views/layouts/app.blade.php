@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
     <title>@yield('title')</title>
 
     <!-- Font + Tailwind + Icons -->
@@ -14,12 +15,22 @@
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
     @stack('styles')
 </head>
+
+@auth
+    <script>
+        window.addEventListener('beforeunload', function() {
+            navigator.sendBeacon('/update-session', JSON.stringify({
+                user_id: {{ auth()->id() }}
+            }));
+        });
+    </script>
+@endauth
 
 <body class="font-[Inter]">
     <!-- Top Header -->
@@ -28,7 +39,7 @@
             @auth
                 @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
                     <div>
-                        <a href="/seller/index" class="text-[#EF3248] capitalize hover:text-orange-600">
+                        <a href="{{ route('seller.register') }}" class="text-[#EF3248] capitalize hover:text-orange-600">
                             Kênh người bán
                         </a>
                     </div>
@@ -216,10 +227,23 @@
 
     <!-- Header -->
     <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
-        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex items-center gap-[180px]">
+        <div class="container mx-auto px-[10px] sm:px-0 flex items-center gap-[180px]">
             <!-- Logo -->
-            <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
-
+            @if (empty($settings->logo))
+                <a class="w-full lg:w-[14%] flex items-center justify-center gap-2 py-2" href="/">
+                    <div class="bg-black flex items-center gap-2 py-1 px-2 rounded lg:w-[175px]">
+                        <img src="{{ asset('images/logo.svg') }}" alt="logo" class="w-[30%] h-[30%]">
+                        <div class="text-white grid">
+                            <h5 class="m-0 text-xl">ZynoxMall</h5>
+                            <span class="text-xs text-right">zynoxmall.xyz</span>
+                        </div>
+                    </div>
+                </a>
+            @else
+                <a href="{{ route('home') }}" class="flex items-center">
+                    <img src="{{ asset('storage/' . $settings->logo) }}" alt="logo" class="w-20">
+                </a>
+            @endif
             <!-- Menu cho desktop -->
             {{-- <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
@@ -244,19 +268,20 @@
             </button>
 
             <!-- Search & Icons -->
-            <div class="hidden md:flex items-center gap-10 w-5/6">
+            <div class="hidden md:flex items-center gap-10 w-5/6 py-3">
                 <form id="logout-form" action="{{ route('logout') }}" method="POST"
                     class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
                     @csrf
                     <input type="text" placeholder="Bạn muốn tìm kiếm gì ?" class="text-sm focus:outline-none" />
                     <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
                 </form>
-                <div class=" flex items-center gap-3">
-                    <a href="{{ route('wishlist') }}">
-                        <i class="fa fa-heart text-gray-700 hover:text-orange-500"></i>
-                    </a>
+                <div class="relative">
+                    <div
+                        class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
+                        <span class="text-center text-xs text-white">3</span>
+                    </div>
                     <a href="{{ route('cart') }}">
-                        <i class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i>
+                        <i class="fa fa-shopping-cart text-gray-700 hover:text-red-500 text-2xl"></i>
                     </a>
                 </div>
             </div>
@@ -417,7 +442,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="bg-white pb-10">
+    <main class="bg-[#F5F5F5] pb-10">
         @yield('content')
     </main>
 

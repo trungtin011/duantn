@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 use App\Models\PointTransaction;
+use App\Models\User;
 
 class UserController extends Controller
 {
@@ -102,10 +102,6 @@ class UserController extends Controller
 
         return redirect()->route('account.password')->with('success', 'Đổi mật khẩu thành công!');
     }
-
-
-
-
 
     // Hàm xử lý hiển thị lịch sử điểm thưởng
     public function points()

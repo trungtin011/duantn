@@ -2,9 +2,9 @@
 
 @section('title', 'Thanh toán')
 @section('content')
-    <div class="container mx-auto px-[20px] md:px-0 md:py-8 md:mb-[200px]">
+    <div class="container mx-auto px-[20px] md:px-0 md:py-0 md:mb-[200px]">
         <!-- Breadcrumb -->
-        <div class="flex flex-wrap items-center gap-2 my-10 px-[10px] sm:px-0 md:my-20 text-sm md:text-base">
+        <div class="flex flex-wrap items-center gap-2 my-10 px-[10px] sm:px-0 md:my-10 text-sm md:text-base">
             <span>Tài khoản</span>
             <span class="text-gray-300">/</span>
             <span>Tài khoản của tôi</span>
@@ -16,277 +16,269 @@
             <span class="text-black">Thanh toán</span>
         </div>
 
-        <!-- Tiêu đề -->
-        <div class="mb-6">
-            <h1 class="text-[36px] font-bold text-gray-800">Chi tiết hóa đơn</h1>
-        </div>
-
-        <!-- Main Container -->
-        <div class="flex flex-col lg:flex-row gap-[100px]">
-            <!-- Thông tin người nhận -->
-            <div class="w-full lg:w-1/2">
-                <!-- Chọn địa chỉ -->
-                <div class="mb-10">
-                    <h2 class="text-lg font-semibold mb-2">Chọn địa chỉ</h2>
-                    <select name="address"
-                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="1">51 Nguyễn Sinh Sắc, P.Tân Hoà, Thành phố Buôn Ma Thuột, ...</option>
-                        <option value="2">26 Nguyễn Chánh, P.Tân Phong, Quận 7, Hồ Chí Minh</option>
-                        <option value="3">123 Nguyễn Văn Cừ, P.4, Quận 5, Hồ Chí Minh</option>
-                    </select>
-                    <!-- Nút Thêm địa chỉ -->
-                    <button type="button" id="showAddressForm"
-                        class="mt-4 w-full text-[14px] sm:w-auto px-4 py-2 hover:bg-[#F5F5F5]"
-                        style="border: 1px dashed #000; border-radius: 4px;">
-                        <i class="fa fa-plus"></i> Thêm địa chỉ
-                    </button>
-                </div>
-
-                <!-- Form thêm địa chỉ mới -->
-                <div class="create-address-form mt-6 hidden mb-10">
-                    <form action="/create-address-form" method="POST" class="space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Tên Người Nhận <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text"
-                                    class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Số điện thoại <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text"
-                                    class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">
-                                Loại Địa chỉ <span class="text-red-500">*</span>
-                            </label>
-                            <select name="address-type"
-                                class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none">
-                                <option value="home">Nhà</option>
-                                <option value="office">Văn phòng</option>
-                                <option value="other">Khác</option>
-                            </select>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Thành Phố, Tỉnh <span class="text-red-500">*</span>
-                                </label>
-                                <select name="city" id="city"
-                                    class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none">
-                                    <option value="">Chọn Tỉnh/Thành phố</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Quận, Huyện <span class="text-red-500">*</span>
-                                </label>
-                                <select name="district" id="district"
-                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:none"
-                                    disabled>
-                                    <option value="">Chọn Quận/Huyện</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Phường, Xã <span class="text-red-500">*</span>
-                                </label>
-                                <select name="ward" id="ward"
-                                    class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none"
-                                    disabled>
-                                    <option value="">Chọn Phường/Xã</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Địa chỉ cụ thể <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="street"
-                                    class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">
-                                Mã bưu điện
-                            </label>
-                            <input type="text"
-                                class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                        </div>
-
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox"
-                                class="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded" />
-                            <span class="text-sm text-gray-700">Đặt làm địa chỉ mặc định</span>
-                        </label>
-
-                        <button type="button"
-                            class="mt-4 w-full sm:w-auto bg-black text-white px-4 py-2 hover:bg-transparent hover:text-black hover:border hover:border-[#000]">
-                            Thêm địa chỉ
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Form thông tin người nhận -->
-                <form action="/submit-address" method="POST" class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">
-                                Họ và tên <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text"
-                                class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">
-                                Tên công ty
-                            </label>
-                            <input type="text"
-                                class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">
-                            Địa chỉ <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text"
-                            class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">
-                            Căn hộ, tòa nhà, v.v. (tùy chọn)
-                        </label>
-                        <input type="text"
-                            class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">
-                                Thành phố/Thị trấn/Phố <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text"
-                                class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">
-                                Số điện thoại <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text"
-                                class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">
-                            Địa chỉ Email <span class="text-red-500">*</span>
-                        </label>
-                        <input type="email"
-                            class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                    </div>
-
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox"
-                            class="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded" />
-                        <span class="text-sm text-gray-700">Lưu thông tin này để thanh toán nhanh hơn trong lần sau</span>
-                    </label>
-                </form>
+        <div class="bg-white p-8 rounded-[4px]">
+            <!-- Tiêu đề -->
+            <div class="mb-6">
+                <h1 class="text-[36px] font-bold text-gray-800">Chi tiết hóa đơn</h1>
             </div>
-
-            <!-- Danh sách sản phẩm và thanh toán -->
-            <div class="w-full lg:w-1/2">
-                <!-- Danh sách sản phẩm -->
-                <div class="space-y-4 mb-6">
-                    <div class="flex items-center space-x-4">
-                        <img src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-05-27/eyX7CyV5Jm.png"
-                            alt="Product Image" class="w-16 h-16 object-cover rounded-md" />
-                        <div class="flex-1">
-                            <span class="block text-sm font-medium">LCD Monitor</span>
-                            <span class="text-sm text-gray-500">x1</span>
-                        </div>
-                        <span class="text-sm font-semibold">16.250.000 VND</span>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <img src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-05-27/eyX7CyV5Jm.png"
-                            alt="Product Image" class="w-16 h-16 object-cover rounded-md" />
-                        <div class="flex-1">
-                            <span class="block text-sm font-medium">H1 Gamepad</span>
-                            <span class="text-sm text-gray-500">x1</span>
-                        </div>
-                        <span class="text-sm font-semibold">27.500.000 VND</span>
-                    </div>
+            @if (session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {{ session('error') }}
                 </div>
+            @endif
 
-                <!-- Tóm tắt đơn hàng -->
-                <div class="border-t pt-4 mb-6">
-                    <h2 class="text-lg font-semibold mb-2">Tóm tắt đơn hàng</h2>
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span>Tổng cộng:</span>
-                            <span class="font-semibold">43.750.000 VND</span>
-                        </div>
-                        <div class="border-t my-2"></div>
-                        <div class="flex justify-between text-sm">
-                            <span>Phí vận chuyển:</span>
-                            <span class="font-semibold">Miễn phí</span>
-                        </div>
-                        <div class="border-t my-2"></div>
-                        <div class="flex justify-between text-lg font-bold">
-                            <span>Tổng đơn:</span>
-                            <span>43.750.000 VND</span>
-                        </div>
-                    </div>
+            @if (session('message'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {{ session('message') }}
                 </div>
+            @endif
+            <!-- Main Container -->
+            <div class="flex flex-col lg:flex-row gap-[100px]">
 
-                <!-- Phương thức thanh toán -->
-                <form class="space-y-4 mb-6">
-                    <label class="flex items-center space-x-3">
-                        <input type="radio" name="payment" value="bank"
-                            class="h-4 w-4" />
-                        <span class="text-sm">Thanh toán bằng ngân hàng</span>
-                        <div class="flex space-x-2">
-                            <img src="{{ asset('images/image 31.png') }}" alt="Mastercard Icon" class="w-[39px]" />
-                        </div>
-                        <div class="flex space-x-2">
-                            <img src="{{ asset('images/image 30.png') }}" alt="Visa Icon" class="w-[38px]" />
-                        </div>
-                    </label>
-                    <label class="flex items-center space-x-3">
-                        <input type="radio" name="payment" value="cash"
-                            class="h-4 w-4" />
-                        <span class="text-sm">Thanh toán bằng tiền mặt</span>
-                    </label>
-                </form>
+                <!-- Thông tin người nhận -->
+                <div class="w-full lg:w-1/2">
 
-                <div class="flex flex-col lg:flex-row gap-[20px] justify-between">
-                    <div class="flex">
-                        <!-- Mã giảm giá -->
-                        <form action="" class="flex">
-                            <input type="text" placeholder="Mã giảm giá"
-                                class="flex-1 border border-[#000] p-2 focus:outline-none focus:none" />
-                            <button
-                                class="w-[100px] bg-black text-white border border-[#000] px-4 py-2 hover:bg-transparent hover:text-black hover:border hover:border-[#000]">
-                                Áp dụng
+                    <!-- Form thêm địa chỉ mới -->
+                    <div class="create-address-form mt-6 hidden mb-10">
+                        <form action="/create-address-form" method="POST" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Tên Người Nhận <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text"
+                                        class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Số điện thoại <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text"
+                                        class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Loại Địa chỉ <span class="text-red-500">*</span>
+                                </label>
+                                <select name="address-type"
+                                    class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none">
+                                    <option value="home">Nhà</option>
+                                    <option value="office">Văn phòng</option>
+                                    <option value="other">Khác</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Thành Phố, Tỉnh <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="city" id="city"
+                                        class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none">
+                                        <option value="">Chọn Tỉnh/Thành phố</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Quận, Huyện <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="district" id="district"
+                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:none"
+                                        disabled>
+                                        <option value="">Chọn Quận/Huyện</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Phường, Xã <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="ward" id="ward"
+                                        class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none"
+                                        disabled>
+                                        <option value="">Chọn Phường/Xã</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Địa chỉ cụ thể <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="street"
+                                        class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Mã bưu điện
+                                </label>
+                                <input type="text"
+                                    class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
+                            </div>
+
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox"
+                                    class="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded" />
+                                <span class="text-sm text-gray-700">Đặt làm địa chỉ mặc định</span>
+                            </label>
+
+                            <button type="button"
+                                class="mt-4 w-full sm:w-auto bg-black text-white px-4 py-2 hover:bg-transparent hover:text-black hover:border hover:border-[#000]">
+                                Thêm địa chỉ
                             </button>
                         </form>
                     </div>
-                    <div class="flex justify-start">
-                        <!-- Nút đặt hàng -->
-                        <button type="submit" class="bg-[#F1416C] text-white px-4 py-3 hover:bg-pink-600">
-                            Đặt hàng
-                        </button>
+
+                    <!-- Form thanh toán -->
+                    <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form"
+                        class="space-y-4 mb-6 w-full">
+                        @csrf
+                        <!-- Chọn địa chỉ -->
+                        <div class="mb-10">
+                            <h2 class="text-lg font-semibold mb-2">Chọn địa chỉ</h2>
+                            @if (isset($user_addresses) && $user_addresses->count() > 0)
+                                <select name="address" id="address"
+                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    @foreach ($user_addresses as $address)
+                                        <option value="{{ $address->id }}">{{ $address->receiver_name }} -
+                                            {{ $address->address }} - {{ $address->province }} - {{ $address->district }} -
+                                            {{ $address->ward }} - {{ $address->zip_code }}</option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <p>Không có địa chỉ nào</p>
+                            @endif
+                            <!-- Nút Thêm địa chỉ -->
+                            <button type="button" id="showAddressForm"
+                                class="mt-4 w-full text-[14px] sm:w-auto px-4 py-2 hover:bg-[#F5F5F5]"
+                                style="border: 1px dashed #000; border-radius: 4px;">
+                                <i class="fa fa-plus"></i> Thêm địa chỉ
+                            </button>
+                        </div>
+                        <!-- Lời nhắn cho người bán -->
+                        <div class="mb-10">
+                            <input type="hidden" name="shop_notes" id="shop_notes" value="">
+                        </div>
+                        <!-- Phương thức thanh toán -->
+                        <div class="space-y-4 mb-6">
+                            <label class="flex items-center space-x-3">
+                                <input type="radio" name="payment" value="MOMO" class="h-4 w-4" />
+                                <span class="text-sm">Thanh toán bằng MOMO</span>
+                                <div class="flex space-x-2">
+                                    <img src="{{ 'https://pay2s.vn/blog/wp-content/uploads/2024/11/momo_icon_circle_pinkbg_RGB-1024x1024.png' }}"
+                                        alt="Momo Icon" class="w-[39px]" />
+                                </div>
+                            </label><label class="flex items-center space-x-3">
+                                <input type="radio" name="payment" value="VNPAY" class="h-4 w-4" />
+                                <span class="text-sm">Thanh toán bằng vnpay</span>
+                                <div class="flex space-x-2">
+                                    <img src="{{ 'https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg' }}"
+                                        alt="Momo Icon" class="w-[39px]" />
+                                </div>
+                            </label>
+                            <label class="flex items-center space-x-3">
+                                <input type="radio" name="payment" value="COD" class="h-4 w-4" />
+                                <span class="text-sm">Thanh toán bằng tiền mặt</span>
+                            </label>
+                        </div>
+                    </form>
+
+                    <!-- Form thêm địa chỉ mới -->
+                </div>
+
+                <!-- Danh sách sản phẩm và thanh toán -->
+                <div class="w-full lg:w-1/2">
+                    <!-- Danh sách sản phẩm -->
+                    <div class="space-y-4 mb-6">
+                        <!-- Nhóm sản phẩm theo shop -->
+                        @php
+                            // Nhóm items theo shopID
+                            $itemsByShop = collect($items)->groupBy('product.shopID')->sortKeys();
+                        @endphp
+
+                        @foreach ($itemsByShop as $shopId => $shopItems)
+                            <!-- Tiêu đề shop -->
+                            <div class="border-b pb-2 mb-4">
+                                <h3 class="text-lg font-semibold">
+                                    Shop: {{ \App\Models\Shop::find($shopId)->name ?? 'Shop ' . $shopId }}
+                                </h3>
+                            </div>
+
+                            <!-- Danh sách sản phẩm trong shop -->
+                            <div class="space-y-4">
+                                @foreach ($shopItems as $item)
+                                    <div class="flex items-center space-x-4">
+                                        <img src="{{ $item['product']->image ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGh5WFH8TOIfRKxUrIgJZoDCs1yvQ4hIcppw&s' }}"
+                                            alt="Product Image" class="w-16 h-16 object-cover rounded-md" />
+                                        <div class="flex-1">
+                                            <span class="block text-sm font-medium">{{ $item['product']->name }}</span>
+                                            <span class="text-sm text-gray-500">x{{ $item['quantity'] }}</span>
+                                            <span class="text-sm text-gray-500">Loại:
+                                                {{ $item['product']->variants->first()->variant_name ?? 'N/A' }}</span>
+                                        </div>
+                                        <span class="text-sm font-semibold">{{ number_format($item['product']->price) }}
+                                            VND</span>
+                                    </div>
+                                @endforeach
+                                <textarea name="note_for_shop[{{ $shopId }}][{{ $item['product']->id }}]"
+                                    id="note-{{ $shopId }}-{{ $item['product']->id }}"
+                                    class="w-full h-[40px] border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Lời nhắn cho người bán" data-shop-id="{{ $shopId }}">
+                                </textarea>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Tóm tắt đơn hàng -->
+                    <div class="border-t pt-4 mb-6">
+                        <h2 class="text-lg font-semibold mb-2">Tóm tắt đơn hàng</h2>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Tổng cộng:</span>
+                                <span
+                                    class="font-semibold">{{ number_format($subtotal = array_sum(array_column($items, 'total_price'))) }}
+                                    VND</span>
+                            </div>
+                            <div class="border-t my-2"></div>
+                            <div class="flex justify-between text-sm">
+                                <span>Phí vận chuyển:</span>
+                                <span class="font-semibold" id="shipping-fee">Đang tính...</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Thời gian giao hàng dự kiến:</span>
+                                <span class="font-semibold" id="expected-delivery-time"></span>
+                            </div>
+                            <div class="border-t my-2"></div>
+                            <div class="flex justify-between text-lg font-bold">
+                                <span>Tổng đơn:</span>
+                                <span id="total-amount">{{ number_format($subtotal) }} VND</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col lg:flex-row gap-[20px] justify-between">
+                        <div class="flex">
+                            <!-- Mã giảm giá -->
+                            <form action="" class="flex">
+                                <input type="text" placeholder="Mã giảm giá"
+                                    class="flex-1 border border-[#000] p-2 focus:outline-none focus:none" />
+                                <button
+                                    class="w-[100px] bg-black text-white border border-[#000] px-4 py-2 hover:bg-transparent hover:text-black hover:border hover:border-[#000]">
+                                    Áp dụng
+                                </button>
+                            </form>
+                        </div>
+                        <div class="flex justify-start">
+                            <!-- Nút đặt hàng -->
+                            <button type="submit" class="bg-[#F1416C] text-white px-4 py-3 hover:bg-pink-600"
+                                form="checkout-form">
+                                Đặt hàng
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -301,18 +293,13 @@
             const createAddressForm = document.querySelector('.create-address-form');
 
             showAddressFormBtn.addEventListener('click', function() {
-                // Kiểm tra trạng thái hiển thị thực tế của form
                 const isHidden = window.getComputedStyle(createAddressForm).display === 'none';
 
-                // Thay đổi trạng thái hiển thị của form
                 createAddressForm.style.display = isHidden ? 'block' : 'none';
 
-                // Thay đổi nội dung và biểu tượng của nút
                 if (isHidden) {
-                    // Form hiển thị -> đổi nút thành "Đóng"
                     showAddressFormBtn.innerHTML = '<i class="fa fa-times"></i> Đóng';
                 } else {
-                    // Form ẩn -> đổi nút thành "Thêm địa chỉ"
                     showAddressFormBtn.innerHTML = '<i class="fa fa-plus"></i> Thêm địa chỉ';
                 }
             });
@@ -402,6 +389,91 @@
             });
 
             fetchCities();
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addressSelect = document.querySelector('select[name="address"]');
+            if (addressSelect) {
+                calculateShippingFee(addressSelect.value);
+
+                addressSelect.addEventListener('change', function() {
+                    calculateShippingFee(this.value);
+                });
+            }
+
+            function calculateShippingFee(addressId) {
+                if (!addressId) return;
+
+                document.getElementById('shipping-fee').textContent = '0 VND';
+                fetch('/calculate-shipping-fee', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            address_id: addressId,
+                            _token: '{{ csrf_token() }}'
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.shipping_fee && typeof data.shipping_fee === 'number') {
+                            const shippingFee = data.shipping_fee;
+                            const subtotal = {{ $subtotal ?? 0 }};
+                            const total = subtotal + shippingFee;
+
+                            document.getElementById('shipping-fee').textContent =
+                                new Intl.NumberFormat('vi-VN').format(shippingFee) + ' VND';
+                            document.getElementById('expected-delivery-time').textContent = data
+                                .expected_delivery_time;
+                            document.getElementById('total-amount').textContent =
+                                new Intl.NumberFormat('vi-VN').format(total) + ' VND';
+                        } else {
+                            document.getElementById('shipping-fee').textContent = data.error ||
+                                'Không thể tính phí vận chuyển';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('shipping-fee').textContent = 'Không thể tính phí vận chuyển';
+                    });
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            event.preventDefault();
+            const checkoutForm = document.getElementById('checkout-form');
+            const shopNotesInput = document.getElementById('shop_notes');
+
+            function collectShopNotes() {
+                const notes = {};
+                document.querySelectorAll('textarea[name^="note_for_shop"]').forEach(textarea => {
+                    const shopId = textarea.getAttribute('data-shop-id');
+                    const note = textarea.value.trim();
+
+                    if (note) {
+                        if (!notes[shopId]) {
+                            notes[shopId] = {};
+                        }
+                        notes[shopId] = note;
+                    }
+                });
+                return notes;
+            }
+
+            // Cập nhật shop_notes khi submit form
+            checkoutForm.addEventListener('submit', function(event) {
+                const notes = collectShopNotes();
+                shopNotesInput.value = JSON.stringify(notes);
+            });
         });
     </script>
 @endpush

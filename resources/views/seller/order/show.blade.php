@@ -6,8 +6,17 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="container mx-auto py-5">
-        <h1 class="text-2xl font-bold mb-6">Chi tiết đơn hàng #{{ $order->order_code }}</h1>
-
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Chi tiết đơn hàng #{{ $order->order_code }}</h1>
+            @if($order->order_status == 'pending')
+            <form action="{{ route('seller.order.update-status', $order->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="status" value="processing">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded-md" type="submit">Nhận đơn</button>
+            </form>
+            @endif
+        </div>
         <!-- Thông tin đơn hàng -->
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -21,6 +30,9 @@
                     <p><strong>Tên người nhận:</strong> {{ $order->address->receiver_name }}</p>
                     <p><strong>Số điện thoại:</strong> {{ $order->address->receiver_phone }}</p>
                     <p><strong>Địa chỉ:</strong> {{ $order->address->address }}, {{ $order->address->ward }}, {{ $order->address->district }}, {{ $order->address->province }}</p>
+                </div>
+                <div>
+                    <p><strong>Lời nhắn của khách hàng:</strong> {{ $order->shop_order->first()->note ?? 'Không có lời nhắn' }}</p>
                 </div>
             </div>
         </div>
@@ -41,13 +53,13 @@
                         <tr class="border-b border-gray-200">
                             <td class="py-4 px-4">
                                 <div class="flex items-center">
-                                    <img src="{{ $item->product_image ?? 'https://via.placeholder.com/150' }}"
-                                         alt="{{ $item->product_name }}"
+                                    <img src="{{ $item->product->image_url ?? 'https://via.placeholder.com/150' }}"
+                                         alt="{{ $item->product->title }}"
                                          class="w-[100px] h-[100px] object-contain mr-4">
                                     <div>
-                                        <p class="text-gray-700">{{ $item->product_name }}</p>
-                                        @if ($item->variant_name)
-                                            <p class="text-sm text-gray-500">{{ $item->variant_name }} ({{ $item->color ?? '' }} {{ $item->size ? '/' . $item->size : '' }})</p>
+                                        <p class="text-gray-700">{{ $item->product->title }}</p>
+                                        @if ($item->variant)
+                                            <p class="text-sm text-gray-500">{{ $item->variant->variant_name }} ({{ $item->variant->color ?? '' }} {{ $item->variant->size ? '/' . $item->variant->size : '' }})</p>
                                         @endif
                                     </div>
                                 </div>
@@ -62,37 +74,53 @@
         </div>
 
         <!-- Cập nhật trạng thái -->
+         @if($order->order_status == 'processing')
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-            <h2 class="text-lg font-semibold mb-4">Cập nhật trạng thái đơn hàng</h2>
-            <form id="update-status-form" action="{{ route('seller.order.update-status', $order->id) }}" method="POST">
+            <h2 class="text-lg font-semibold mb-4">Gửi đơn hàng vận chuyển</h2>
+            <form id="update-status-form" action="" method="POST">
                 @csrf
-                @method('PUT')
+
+                <div class="mb-4 flex items-center gap-4">
+                    <div class="flex-1">
+                        <label for="shipping_provider" class="block text-sm font-medium text-gray-700">Đơn vị vận chuyển</label>
+                        <select name="shipping_provider" id="shipping_provider" class="mt-1 block w-full h-10 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="GHN">Giao Hàng Nhanh (GHN)</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="required_note" class="block text-sm font-medium text-gray-700">Hình thức kiểm hàng</label>
+                        <select name="required_note" id="required_note" class="mt-1 block w-full h-10 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="CHOTHUHANG">Cho xem hàng thử</option>
+                        <option value="CHOXEMHANGKHONGTHU">Cho xem hàng không thử</option>
+                            <option value="KHONGCHOXEMHANG">Không cho xem hàng</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="payment_type" class="block text-sm font-medium text-gray-700">Chịu phí vận chuyển</label>
+                        <select name="payment_type" id="payment_type" class="mt-1 block w-full h-10 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="2">Khách hàng</option>
+                        <option value="1">Shop</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="mb-4">
-                    <label for="status" class="block text-sm font-medium text-gray-700">Trạng thái</label>
-                    <select name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="pending" {{ $order->order_status === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="processing" {{ $order->order_status === 'processing' ? 'selected' : '' }}>Processing</option>
-                        <option value="shipped" {{ $order->order_status === 'shipped' ? 'selected' : '' }}>Shipped</option>
-                        <option value="delivered" {{ $order->order_status === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                        <option value="cancelled" {{ $order->order_status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                        <option value="refunded" {{ $order->order_status === 'refunded' ? 'selected' : '' }}>Refunded</option>
+                    <label for="shop_address" class="block text-sm font-medium text-gray-700">Địa chỉ shop</label>
+                    <select name="shop_address" id="shop_address" class="mt-1 block w-full h-10 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        @foreach ($shop->addresses as $address)
+                            <option value="{{ $address->id }}">{{ $address->shop_address }}, {{ $address->shop_ward }}, {{ $address->shop_district }}, {{ $address->shop_province }}</option>
+                        @endforeach
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label for="description" class="block text-sm font-medium text-gray-700">Mô tả</label>
-                    <textarea name="description" id="description" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="shipping_provider" class="block text-sm font-medium text-gray-700">Đơn vị vận chuyển</label>
-                    <input type="text" name="shipping_provider" id="shipping_provider" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
+
                 <div class="mb-4">
                     <label for="note" class="block text-sm font-medium text-gray-700">Ghi chú</label>
                     <textarea name="note" id="note" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
                 </div>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Cập nhật trạng thái</button>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Gửi đơn</button>
             </form>
         </div>
+        @endif
 
         <!-- Lịch sử trạng thái -->
         <div class="bg-white shadow-sm rounded-lg p-6">
@@ -122,27 +150,5 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-
-        $('#update-status-form').on('submit', function (e) {
-            e.preventDefault();
-            $.ajax({
-                url: $(this).attr('action'),
-                method: 'PUT',
-                data: $(this).serialize(),
-                success: function (response) {
-                    alert(response.message);
-                    location.reload();
-                },
-                error: function (xhr) {
-                    alert('Có lỗi xảy ra, vui lòng thử lại!');
-                }
-            });
-        });
-    </script>
+    
 @endsection

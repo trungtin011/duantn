@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coupon extends Model
 {
+    protected $table = 'coupon';
     protected $fillable = [
         'code',
         'name',
         'description',
+        'image',
         'discount_value',
         'discount_type',
         'max_discount_amount',
@@ -27,7 +29,8 @@ class Coupon extends Model
         'is_public',
         'created_by',
         'shop_id',
-        'status'
+        'status',
+        'used_count'
     ];
 
     protected $casts = [
@@ -97,4 +100,4 @@ class Coupon extends Model
 
         return $discount;
     }
-} 
+}
