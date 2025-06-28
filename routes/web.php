@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\RegisterController;
@@ -27,6 +27,9 @@ use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\LoginQRController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\QrLoginController;
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -254,8 +257,54 @@ Route::get('/san-pham/{slug}', [ProductController::class, 'show'])->name('produc
 Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.profile');
 Route::post('/shop/{shop}/follow', [ShopController::class, 'follow'])->middleware('auth')->name('shop.follow');
 Route::post('/shop/{shop}/unfollow', [ShopController::class, 'unfollow'])->name('shop.unfollow');
-// web.php
-Route::get('/login/qr', [LoginQRController::class, 'showQR'])->name('login.qr');
-Route::post('/login/qr/scan', [LoginQRController::class, 'handleScan']);
-Route::post('/login/qr/check', [LoginQRController::class, 'checkLogin'])->name('login.qr.check');
+
+Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
+Route::get('/login/qr/generate', [QrLoginController::class, 'generate']);
+Route::get('/qr-confirm', function () {
+    return view('auth.qr-confirm');
+})->name('qr.confirm.form');
+
+Route::post('/qr-confirm', [QrLoginController::class, 'confirm'])->name('qr.confirm.submit');
+Route::get('/login/qr/waiting/{token}', [LoginController::class, 'showQrWaiting'])->name('login.qr.waiting');
+Route::get('/login/qr/confirm', function (Request $request) {
+    $token = $request->input('token');
+    $userId = Cache::pull("qr_login_confirm_{$token}");
+
+    if ($userId) {
+        Auth::loginUsingId($userId);
+        return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
+    }
+
+    return redirect()->route('login')->with('error', 'Xác thực QR thất bại hoặc đã hết hạn.');
+})->name('qr.confirm.login');
+
+
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showEmailForm'])->name('password.email.form');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('password.code.send');
+
+Route::get('/verify-code', [ForgotPasswordController::class, 'showVerifyForm'])->name('password.code.verify.form');
+Route::post('/verify-code', [ForgotPasswordController::class, 'verifyCode'])->name('password.code.verify');
+
+Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
+Route::middleware('auth')->group(function () {
+Route::get('/account/password/send-code', [UserController::class, 'changePasswordForm'])->name('account.password.code.form');
+Route::post('/account/password/send-code', [UserController::class, 'requestChangePasswordWithCode'])->name('account.password.request.code');
+
+Route::get('/account/password/verify', [UserController::class, 'showVerifyCodeForm'])->name('account.password.verify.form');
+Route::post('/account/password/verify', [UserController::class, 'verifyPasswordCode'])->name('account.password.verify.code');
+
+Route::get('/account/password/reset', [UserController::class, 'showPasswordResetForm'])->name('account.password.reset.form');
+Route::post('/account/password/reset', [UserController::class, 'confirmNewPassword'])->name('account.password.reset.confirm');
+});
+Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])->name('account.password.code.verify.form');
+Route::post('/account/password/request-confirm', [UserController::class, 'requestPasswordChangeConfirm'])->name('account.password.request.confirm');
+Route::post('/account/password/confirm-code', [UserController::class, 'confirmPasswordChangeCode'])->name('account.password.confirm.code');
+Route::post('/account/password/verify-code', [UserController::class, 'confirmPasswordChangeCode'])
+    ->name('account.password.code.verify');
+Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])
+    ->name('account.password.code.verify.form');
+
+
 

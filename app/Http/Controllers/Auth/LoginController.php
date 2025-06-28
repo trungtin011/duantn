@@ -9,7 +9,7 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
-
+use Illuminate\Support\Facades\Cache;
 class LoginController extends Controller
 {
     public function showLoginForm()
@@ -18,44 +18,45 @@ class LoginController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $request->validate([
-            'login' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) {
-                    if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^0[0-9]{9}$/', $value)) {
-                        $fail('Vui lòng nhập email hoặc số điện thoại hợp lệ.');
-                    }
-                },
-            ],
-            'password' => 'required|string',
-        ], [
-            'login.required' => 'Vui lòng nhập email hoặc số điện thoại',
-            'password.required' => 'Vui lòng nhập mật khẩu',
-        ]);
+{
+    $request->validate([
+        'login' => [
+            'required',
+            'string',
+            function ($attribute, $value, $fail) {
+                if (!filter_var($value, FILTER_VALIDATE_EMAIL) && !preg_match('/^0[0-9]{9}$/', $value)) {
+                    $fail('Vui lòng nhập email hoặc số điện thoại hợp lệ.');
+                }
+            },
+        ],
+        'password' => 'required|string',
+    ], [
+        'login.required' => 'Vui lòng nhập email hoặc số điện thoại',
+        'password.required' => 'Vui lòng nhập mật khẩu',
+    ]);
 
-        $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+    $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
-        $credentials = [
-            $loginType => strtolower($request->login),
-            'password' => $request->password
-        ];
+    $credentials = [
+        $loginType => strtolower($request->login),
+        'password' => $request->password
+    ];
 
-        $key = 'login-attempt:' . strtolower($request->login) . ':' . $request->ip();
+    $key = 'login-attempt:' . strtolower($request->login) . ':' . $request->ip();
 
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
-            $request->session()->regenerate();
-            RateLimiter::clear($key);
-            return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
-        }
+    if (Auth::attempt($credentials, $request->filled('remember'))) {
+        $request->session()->regenerate();
+        RateLimiter::clear($key);
 
-        RateLimiter::hit($key, 300);
-        return back()->withErrors([
-            'login' => 'Tài khoản hoặc mật khẩu không đúng.',
-        ])->withInput($request->only('login', 'remember'))
-            ->withInput($request->only('login'));
+        // ✅ Bỏ xác thực QR – Cho đăng nhập luôn
+        return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
     }
+
+    RateLimiter::hit($key, 300);
+    return back()->withErrors([
+        'login' => 'Tài khoản hoặc mật khẩu không đúng.',
+    ])->withInput($request->only('login', 'remember'));
+}
 
     public function logout(Request $request)
     {
@@ -123,4 +124,15 @@ class LoginController extends Controller
             ->scopes(['email'])
             ->redirect();
     }
+    public function showQrWaiting($token)
+{
+    $qrConfirmUrl = route('qr.confirm.login', ['token' => $token]);
+    $qr_svg = \QrCode::format('svg')->size(200)->generate($qrConfirmUrl);
+
+    return view('auth.waiting-qr', [
+        'qr_svg' => $qr_svg,
+        'token' => $token,
+    ]);
+}
+
 }
