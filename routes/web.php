@@ -328,7 +328,8 @@ Route::prefix('customer')->group(function () {
             Route::post('/orders/{orderID}/cancel', [OrderController::class, 'cancel'])->name('user.orders.cancel');
             Route::post('/orders/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.orders.reorder');
             Route::get('/reviews/create', [UserReviewController::class, 'create'])->name('reviews.create');
-            Route::post('/reviews/store', [UserReviewController::class, 'store'])->name('reviews.store');
+
+
         });
 
         // Route báo cáo sản phẩm
@@ -390,3 +391,7 @@ Route::post('/calculate-shipping-fee', [ShippingFeeController::class, 'calculate
 Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');
 Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.order.show');
+Route::post('/reviews', [ProductReviewController::class, 'store'])->name('reviews.store');
+
+
+
