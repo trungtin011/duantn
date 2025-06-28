@@ -101,4 +101,11 @@ class UserController extends Controller
 
         return redirect()->route('account.password')->with('success', 'Đổi mật khẩu thành công!');
     }
+    public function showProfile()
+{
+    return view('user.account.profile', [
+        'user' => auth()->user(), // hoặc Auth::user()
+    ]);
+}
+
 }

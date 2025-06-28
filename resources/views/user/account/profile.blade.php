@@ -35,10 +35,9 @@
                         <label class="block text-gray-400 text-sm">Giới tính</label>
                     </div>
                     <div class="flex flex-col gap-[20px] w-[500px]">
-                        <!-- Tên đăng nhập -->
                         <div class="">
-                            <input type="text" name="username" value="{{ old('username', $user->username) }}"
-                                class="w-full border rounded px-3 py-2" required>
+                            <input type="text" name="username" value="{{ old('username', auth()->user()->username) }}"
+                        class="w-full border rounded px-3 py-2" required>
                             @error('username')
                                 <p class="text-red-600 text-sm">{{ $message }}</p>
                             @enderror
