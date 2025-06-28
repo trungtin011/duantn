@@ -42,7 +42,7 @@
         <div class="tab-content h-full" id="orderStatusTabsContent">
             <!-- Tab Pane: Tất cả (All) -->
             <div class="tab-pane" id="all" role="tabpanel" aria-labelledby="all-tab">
-                @forelse ($allOrders as $order)
+                @forelse ($sub_orders as $order)
                     <div class="order-block bg-white shadow-sm rounded-lg">
                         <div class="flex items-center justify-between py-4 px-4 sm:px-6 border-b border-gray-200">
                             <div class="flex items-center">
@@ -69,6 +69,7 @@
                                 </button>
                             </div>
                         </div>
+            
                         <div class="order-body px-4 sm:px-6 py-4">
                             @forelse ($order->items as $item)
                                 <div
@@ -719,36 +720,5 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const tabs = document.querySelectorAll('#orderStatusTabs button');
-                const tabContents = document.querySelectorAll('.tab-content .tab-pane');
 
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        tabs.forEach(t => t.classList.remove('text-black', 'border-b-2',
-                            'border-black'));
-                        this.classList.add('text-black', 'border-b-2', 'border-black');
-                        tabContents.forEach(content => content.classList.add('hidden'));
-                        const target = document.querySelector(this.getAttribute('data-target'));
-                        if (target) {
-                            target.classList.remove('hidden');
-                        }
-                    });
-                });
-
-                // Kích hoạt tab mặc định (Tất cả)
-                const defaultTab = document.querySelector('#all-tab');
-                if (defaultTab) {
-                    defaultTab.classList.add('text-black', 'border-b-2', 'border-black');
-                    const defaultContent = document.querySelector(defaultTab.getAttribute('data-target'));
-                    if (defaultContent) {
-                        defaultContent.classList.remove('hidden');
-                    }
-                }
-            });
-        </script>
-    @endpush
 @endsection

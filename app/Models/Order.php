@@ -61,6 +61,8 @@ class Order extends Model
         return $this->hasOne(OrderAddress::class);
     }
 
+
+
     public function statusHistory()
     {
         return $this->hasMany(OrderStatusHistory::class, 'order_id', 'id');
@@ -206,4 +208,5 @@ class Order extends Model
         $order->save();
         return true;
     }
+
 }

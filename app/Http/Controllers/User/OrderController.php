@@ -49,57 +49,18 @@ class OrderController extends Controller
         $userId = Auth::id();
 
         // Lấy tất cả đơn hàng
-        $allOrders = Order::with(['items', 'shop'])
+        $Orders = Order::with(['items', 'shop_order'])
             ->where('userID', $userId)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
 
-        // Lấy đơn hàng theo từng trạng thái
-        $processingOrders = Order::with(['items'])
-            ->where('userID', $userId)
-            ->where('order_status', 'processing')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $sub_orders = [];
+        
+        foreach ($Orders as $order) {
+            $sub_orders[] = $order->shop_order;
+        }
 
-        $pendingOrders = Order::with(['items'])
-            ->where('userID', $userId)
-            ->where('order_status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $shippedOrders = Order::with(['items'])
-            ->where('userID', $userId)
-            ->where('order_status', 'shipped')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $deliveredOrders = Order::with(['items'])
-            ->where('userID', $userId)
-            ->where('order_status', 'delivered')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $cancelledOrders = Order::with(['items'])
-            ->where('userID', $userId)
-            ->where('order_status', 'cancelled')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $refundedOrders = Order::with(['items'])
-            ->where('userID', $userId)
-            ->where('order_status', 'refunded')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        return view('user.order.history', compact(
-            'allOrders',
-            'processingOrders',
-            'pendingOrders',
-            'shippedOrders',
-            'deliveredOrders',
-            'cancelledOrders',
-            'refundedOrders'
-        ));
+        return view('user.order.order_history', compact('Orders', 'sub_orders'));
     }
 
     public function cancelOrder($id)
