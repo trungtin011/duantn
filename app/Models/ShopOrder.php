@@ -13,6 +13,7 @@ class ShopOrder extends Model
     protected $fillable = [
         'shopID',
         'orderID',
+        'code',
         'shipping_provider',
         'shipping_fee',
         'tracking_code',

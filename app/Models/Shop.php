@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\ShopStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ShopAddress;
+use App\Models\ShopShippingOption;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shop extends Model
@@ -33,9 +35,19 @@ class Shop extends Model
         return $this->belongsTo(User::class, 'ownerID');
     }
 
+    public function shopAddress()
+    {
+        return $this->hasOne(ShopAddress::class, 'shopID')->where('is_default', 1);
+    }
+
+    public function shopShippingOptions()
+    {
+        return $this->hasMany(ShopShippingOption::class, 'shopID');
+    }
+
     public function addresses()
     {
-        return $this->hasMany(ShopAddress::class, 'shopID', 'id');
+        return $this->belongsTo(ShopAddress::class, 'shop_address_id');
     }
 
     public function followers()

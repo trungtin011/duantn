@@ -17,8 +17,7 @@ class OrderItem extends Model
         'product_name',
         'brand',
         'category',
-        'attribute_value', // Thay color và size
-        'attribute_name', // Thay color và size
+        'variant_name',
         'product_image',
         'quantity',
         'unit_price',

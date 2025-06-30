@@ -125,7 +125,7 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('userID')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('verified_by')->references('id')->on('users')->onDelete('set null');
-            $table->index(['status', 'identity_number'], 'identity_verifications_status_identity_number_index');
+            $table->index(['status', 'identity_number']);
         });
 
         // Bảng seller_registrations
@@ -387,8 +387,24 @@ return new class extends Migration
             $table->decimal('coupon_discount', 12, 2)->default(0.00);
             $table->string('payment_method', 100);
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded']);
-            $table->enum('order_status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']);
-            $table->text('order_note')->nullable();
+            $table->enum('order_status', [
+                'pending',
+                'partially_confirmed',
+                'confirmed',
+                'partially_ready_to_pick',
+                'ready_to_pick',
+                'partially_picked',
+                'picked',
+                'partially_shipping',
+                'shipping',
+                'partially_delivered',
+                'delivered',
+                'cancelled',
+                'shipping_failed',
+                'returned',
+                'completed'
+            ])->default('pending');            
+            $table->text('order_note')->nullable();  
             $table->text('cancel_reason')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
@@ -421,16 +437,49 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('shopID');
             $table->unsignedBigInteger('orderID');
+            $table->string('code', 255)->nullable();
             $table->string('shipping_provider', 255)->nullable();
             $table->string('shipping_fee', 255)->nullable();
             $table->string('tracking_code', 255)->nullable();
             $table->dateTime('expected_delivery_date')->nullable();
             $table->dateTime('actual_delivery_date')->nullable();
-            $table->enum('status', ['pending', 'confirmed', 'preparing', 'shipping', 'delivered', 'cancelled_by_shop', 'cancelled_by_customer', 'cancelled_by_admin', 'shipping_failed', 'returned'])->default('pending');
+            $table->enum('status', [
+                'pending',
+                'confirmed',
+                'ready_to_pick',
+                'picked',
+                'shipping',
+                'delivered',
+                'cancelled',
+                'shipping_failed',
+                'returned',
+                'completed'
+            ])->default('pending');
             $table->text('note')->nullable();
             $table->timestamps();
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('orderID')->references('id')->on('orders')->onDelete('cascade');
+        });
+
+        Schema::create('history_order_shop', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('shop_order_id');
+            $table->enum('status', [
+                'pending',
+                'confirmed',
+                'ready_to_pick',
+                'picked',
+                'shipping',
+                'delivered',
+                'cancelled',
+                'shipping_failed',
+                'returned',
+                'completed'
+            ])->default('pending');
+            $table->string('description')->nullable();
+            $table->string('note')->nullable();
+            $table->foreign('shop_order_id')->references('id')->on('shop_order')->onDelete('cascade');
+            $table->timestamps();
         });
 
         // Bảng items_order
@@ -443,8 +492,7 @@ return new class extends Migration
             $table->string('product_name', 255)->nullable();
             $table->string('brand', 255)->nullable();
             $table->string('category', 255)->nullable();
-            $table->string('attribute_value', 255)->nullable();
-            $table->string('attribute_name', 255)->nullable();
+            $table->string('variant_name', 255)->nullable();
             $table->text('product_image')->nullable();
             $table->integer('quantity')->nullable();
             $table->decimal('unit_price', 12, 2)->nullable();
@@ -462,9 +510,24 @@ return new class extends Migration
         Schema::create('order_status_history', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('order_id');
-            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']);
-            $table->text('description')->nullable();
-            $table->string('shipping_provider', 255)->nullable();
+            $table->enum('order_status', [
+                'pending',
+                'partially_confirmed',
+                'confirmed',
+                'partially_ready_to_pick',
+                'ready_to_pick',
+                'partially_picked',
+                'picked',
+                'partially_shipping',
+                'shipping',
+                'partially_delivered',
+                'delivered',
+                'cancelled',
+                'shipping_failed',
+                'returned',
+                'completed'
+            ])->default('pending');
+            $table->string('description')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
@@ -571,8 +634,6 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('shop_id')->nullable();
             $table->unsignedBigInteger('sender_id')->nullable();
-            $table->unsignedBigInteger('receiver_user_id')->nullable();
-            $table->unsignedBigInteger('receiver_shop_id')->nullable();
             $table->string('title', 100);
             $table->text('content');
             $table->string('type', 100);
@@ -580,17 +641,20 @@ return new class extends Migration
             $table->enum('receiver_type', ['user', 'shop', 'all', 'admin', 'employee']);
             $table->enum('priority', ['low', 'normal', 'high'])->default('normal');
             $table->enum('status', ['pending', 'active', 'inactive', 'failed'])->default('pending');
-            $table->boolean('is_read')->default(false);
-            $table->timestamp('read_at')->nullable();
-            $table->timestamp('expired_at')->nullable();
             $table->timestamps();
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('receiver_user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('receiver_shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->index(['type', 'status', 'priority', 'receiver_type', 'created_at'], 'notif_type_status_idx');
-            $table->index(['receiver_user_id', 'status'], 'notif_user_status_idx');
-            $table->index(['receiver_shop_id', 'status'], 'notif_shop_status_idx');
+        });
+
+        Schema::create('notification_receiver', function (Blueprint $table) {
+            $table->unsignedBigInteger('notification_id');
+            $table->unsignedBigInteger('receiver_id');
+            $table->enum('receiver_type', ['user', 'shop', 'all', 'admin', 'employee']);
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('read_at')->nullable();
+            $table->foreign('notification_id')->references('id')->on('notifications')->onDelete('cascade');
+            $table->primary(['notification_id', 'receiver_id']);
         });
 
         // Bảng stock_transactions
@@ -680,13 +744,12 @@ return new class extends Migration
         // Bảng jobs
         Schema::create('jobs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('queue', 255);
+            $table->string('queue')->index();
             $table->longText('payload');
             $table->unsignedTinyInteger('attempts');
             $table->unsignedInteger('reserved_at')->nullable();
             $table->unsignedInteger('available_at');
             $table->unsignedInteger('created_at');
-            $table->index('queue');
         });
 
         // Bảng job_batches
@@ -748,6 +811,7 @@ return new class extends Migration
         Schema::dropIfExists('items_order');
         Schema::dropIfExists('order_addresses');
         Schema::dropIfExists('shop_order');
+        Schema::dropIfExists('history_order_shop');
         Schema::dropIfExists('orders');
         Schema::dropIfExists('cart');
         Schema::dropIfExists('product_dimensions');
