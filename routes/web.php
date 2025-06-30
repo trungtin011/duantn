@@ -32,22 +32,28 @@ use App\Http\Controllers\Admin\PostCategoryController;
 use App\Http\Controllers\Admin\PostTagController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
+use App\Http\Controllers\Admin\AdminShopController;
 
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
-use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 use App\Http\Controllers\Seller\ComboController;
 use App\Http\Controllers\Seller\ReviewController;
+use App\Http\Controllers\Seller\ChatSettingsController;
+use App\Http\Controllers\Seller\SellerSettingsController;
 
 //user
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
+
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\OcrController;
+
 use App\Http\Controllers\User\WishlistController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ReviewLikeController;
@@ -67,7 +73,6 @@ Route::get('/403', function () {
     return view('error.403');
 })->name('403');
 
-// trang đăng ký, đăng nhập, quên mật khẩu
 Route::get('/signup', function () {
     return view('auth.register');
 })->name('signup');
@@ -141,7 +146,21 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/report', [AdminOrderController::class, 'report'])->name('admin.orders.report');
     });
 
-    // categories
+
+    // notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/edit/{id}', [NotificationController::class, 'edit'])->name('admin.notifications.edit');
+        Route::get('/create', [NotificationController::class, 'create'])->name('admin.notifications.create');
+        Route::get('/', [NotificationController::class, 'index'])->name('admin.notifications.index');
+        Route::post('/', [NotificationController::class, 'store'])->name('admin.notifications.store');
+        Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
+        Route::get('/{id}', [NotificationController::class, 'show'])->name('admin.notifications.show');
+        Route::put('/{id}', [NotificationController::class, 'update'])->name('admin.notifications.update');
+        
+    });
+    
+    // products categories
     Route::prefix('categories')->group(function () {
         Route::get('/', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
         Route::post('/', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
@@ -210,6 +229,14 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::resource('help-category', HelpCategoryController::class);
     Route::resource('help-article', HelpArticleController::class);
     Route::resource('logo', LogoController::class);
+
+    // Shop Approval (Admin)
+    Route::prefix('shops')->group(function () {
+        Route::get('/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
+        Route::get('/{shop}', [AdminShopController::class, 'show'])->name('admin.shops.show');
+        Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
+        Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
+    });
 });
 
 // seller routes
@@ -222,11 +249,16 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.profile');
     })->name('seller.profile');
 
-    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
-    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-    // seller.order.shipping
-    Route::get('/order/{id}/shipping/create', [SellerOrderController::class, 'createShipping'])->name('seller.order.shipping.create');
-    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
+
+    Route::prefix('orders')->group(function () {
+    Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
+    Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+    Route::put('/{id}/{shop_id}', [SellerOrderController::class, 'confirmOrder'])->name('seller.order.update-status');
+    Route::post('/{id}/shipping', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
+    Route::get('/order', [SellerOrderController::class, 'order'])->name('seller.orders');
+    Route::put('/cancel', [SellerOrderController::class, 'cancelOrder'])->name('seller.order.cancel');
+    Route::post('/tracking', [SellerOrderController::class, 'trackingOrder'])->name('seller.order.tracking');
+    });
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerSeller::class, 'index'])->name('seller.products.index');
@@ -264,7 +296,8 @@ Route::prefix('customer')->group(function () {
 
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::middleware('CheckRole:customer')->group(function () {
-        Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
+
+    Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
 
         // Trang thông tin người dùng
         Route::prefix('user/account')->group(function () {
@@ -375,20 +408,47 @@ Route::prefix('seller')->group(function () {
     Route::post('/register3', [RegisterShopController::class, 'step4'])->name('seller.register.step4.post');
     Route::get('/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
     Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
-    Route::get('/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'index'])->name('seller.settings');
-    Route::post('/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'update'])->name('seller.settings');
+    Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
+    Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
+    Route::get('/profile', function () {
+        return view('seller.profile');
+    })->name('seller.profile');
+
+    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
+    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+    Route::post('/order/shipping/{id}', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
+    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
+// seller chat routes
+Route::prefix('seller/chat')->middleware('CheckRole:seller')->group(function () {
+    Route::get('/chatautomatically', function () {
+        return view('seller.chat.chatautomatically');
+    })->name('seller.chat.chatautomatically');
+    Route::get('/QA', function () {
+        return view('seller.chat.QA');
+    })->name('seller.chat.QA');
+    Route::get('/A', function () {
+        return view('seller.chat.A');
+    })->name('seller.chat.A');
+
+    // seller chat settings (auto reply)
+    Route::post('/auto-reply-toggle', [ChatSettingsController::class, 'toggleAutoReply'])
+        ->middleware('CheckRole:seller')
+        ->name('seller.chat.auto_reply_toggle');
+});
+
+Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);
+Route::get('/api/chat/messages/{shopId}', [ChatController::class, 'getMessagesByShopId']);
+Route::post('/api/chat/send-message', [ChatController::class, 'sendMessage']);
+
 // API OCR CCCD cho frontend JS
-Route::post('/seller/ocr/scan-cccd', [OcrController::class, 'upload'])->name('seller.ocr.scancccd');
-Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
-Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
+
 Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
 
 
 Route::post('/update-session', [App\Http\Controllers\SessionController::class, 'updateSession'])->name('update-session');
 Route::post('/calculate-shipping-fee', [ShippingFeeController::class, 'calculateShippingFee'])->name('calculate-shipping-fee');
 // API - VNPAY   
-Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');
+Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');  
 Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
-Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.order.show');

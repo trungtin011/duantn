@@ -227,8 +227,8 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
-        <div class="container mx-auto px-[10px] sm:px-0 flex items-center gap-[180px]">
+<header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
+    <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
             <!-- Logo -->
             @if (empty($settings->logo))
                 <a class="w-full lg:w-[14%] flex items-center justify-center gap-2 py-2" href="/">
@@ -537,8 +537,15 @@
         </div>
     </footer>
 
+
     @stack('scripts')
+    @include('components.chat')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+    window.Laravel = {
+        user: @json(Auth::user())
+    };
+    </script>
 </body>
 
 </html>

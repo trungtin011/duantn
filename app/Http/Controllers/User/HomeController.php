@@ -15,6 +15,7 @@ use App\Models\Notification;
 use App\Models\ProductVariant;
 use App\Models\PointTransaction;
 use Carbon\Carbon;
+use App\Models\NotificationReceiver;
 
 class HomeController extends Controller
 {
@@ -29,7 +30,6 @@ class HomeController extends Controller
             ->paginate(20);
         $categories = Category::where('status', 'active')->get();
         $cartItems = $user ? Cart::where('userID', $user->id)->get() : [];
-        $notifications = $user ? Notification::where('receiver_user_id', $user->id)->where('status', 'unread')->get() : [];
 
         $now = Carbon::now();
 
@@ -52,6 +52,6 @@ class HomeController extends Controller
             $totalPoints = PointTransaction::where('userID', $user->id)->sum('points');
         }
 
-        return view('user.home', compact('products', 'categories', 'cartItems', 'notifications', 'flashSaleProducts', 'totalPoints'));
+        return view('user.home', compact('products', 'categories', 'cartItems', 'flashSaleProducts', 'totalPoints'));
     }
 }

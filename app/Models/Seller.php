@@ -6,6 +6,7 @@ use App\Enums\CustomerRanking;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Seller extends Model
 {
@@ -20,7 +21,8 @@ class Seller extends Model
         'bank_account',
         'bank_name',
         'bank_account_name',
-        'business_license_id'
+        'business_license_id',
+        'auto_reply_enabled'
     ];
 
     protected $casts = [
@@ -41,6 +43,16 @@ class Seller extends Model
     public function businessLicense(): BelongsTo
     {
         return $this->belongsTo(BusinessLicense::class, 'business_license_id');
+    }
+
+    public function identityVerification(): HasOne
+    {
+        return $this->hasOne(IdentityVerification::class, 'userID', 'userID');
+    }
+
+    public function shop(): HasOne
+    {
+        return $this->hasOne(Shop::class, 'ownerID', 'userID');
     }
 
     // Scopes
@@ -89,5 +101,4 @@ class Seller extends Model
     {
         $this->update(['status' => 'active']);
     }
-
-} 
+}

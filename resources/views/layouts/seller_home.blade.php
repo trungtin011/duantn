@@ -148,9 +148,8 @@
             </div>
         </div>
     </header>
-    <div class="flex">
-        <nav class="w-56 bg-white border-r border-gray-200 px-4 py-4 text-xs text-gray-500 select-none overflow-y-auto"
-            style="max-height: calc(100vh - 40px)">
+    <div class="flex flex-1">
+        <nav class="w-56 bg-white border-r border-gray-200 px-4 py-4 text-xs text-gray-500 select-none overflow-y-auto">
             <ul class="space-y-4">
                 <li>
                     <button aria-expanded="true" class="flex flex-col items-start w-full font-semibold text-gray-400"
@@ -210,7 +209,7 @@
                         <i class="fas fa-chevron-down ml-auto mt-1 text-xs"></i>
                     </button>
                     <ul class="mt-2 space-y-1 pl-3 text-gray-700 font-normal">
-                        <li><a class="block hover:text-orange-500" href="#">Quản lý Chat</a></li>
+                        <li><a class="block hover:text-orange-500" href="{{ route('seller.chat.chatautomatically') }}">Quản lý Chat</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Quản lý Đánh Giá</a></li>
                     </ul>
                 </li>
@@ -226,7 +225,7 @@
                 </li>
             </ul>
         </nav>
-        <main class="flex-1 min-h-screen px-4 py-4 mx-auto">
+        <main class="flex-1 px-4 py-4 mx-auto flex flex-col h-full">
             @yield('content')
         </main>
     </div>

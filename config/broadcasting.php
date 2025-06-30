@@ -22,24 +22,26 @@ return [
     | Broadcast Connections
     |--------------------------------------------------------------------------
     |
-    | Here you may define all of the broadcast connections that will be used
-    | to broadcast events to other systems or over WebSockets. Samples of
-    | each available type of connection are provided inside this array.
+    | Here you may define the connection details for each broadcaster that
+    | will be used by your application. Should you choose to use Pusher, Ably
+    | or Redis, you may configure them here to connect to your service.
     |
     */
 
     'connections' => [
+
         'pusher' => [
             'driver' => 'pusher',
             'key' => env('PUSHER_APP_KEY'),
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
             'options' => [
-                'cluster' => 'ap1',
-                'useTLS' => true,
+                'cluster' => env('PUSHER_APP_CLUSTER'),
+                'forceTLS' => true,
             ],
             'client_options' => [
-                // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
+                'cluster' => 'ap1',
+                'useTLS' => true,
             ],
         ],
 
