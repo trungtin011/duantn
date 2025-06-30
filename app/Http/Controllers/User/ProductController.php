@@ -8,7 +8,7 @@ use App\Models\Shop;
 use App\Models\Category;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
-use App\Models\Review;
+use App\Models\ProductReview;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +21,7 @@ class ProductController extends Controller
     public function show(Request $request, $slug)
     {
         $ratingFilter = $request->input('rating');
-        $reviews = Review::with('user')->whereHas('product', function ($query) use ($slug) {
+        $reviews = ProductReview::with('user')->whereHas('product', function ($query) use ($slug) {
             $query->where('slug', $slug);
         })->get();
 
@@ -29,7 +29,7 @@ class ProductController extends Controller
             'images',
             'reviews.user',
             'variants.attributeValues.attribute',
-            'variants.images',
+            'variants.images',  
             'reviews.likes',
             'shop.coupons',
         ])->where('slug', $slug)->firstOrFail();

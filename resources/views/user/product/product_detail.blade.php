@@ -430,405 +430,272 @@
                 </div>
 
                 <!-- Đánh giá -->
-                <div class="bg-white rounded-lg p-6 mt-6 shadow">
-                    <div class="flex justify-between">
-                        <div class="flex flex-col w-[25%]">
-                            <h3 class="text-xl font-semibold mb-4">Khách hàng đánh giá</h3>
-                            <div class="flex items-center gap-4 mb-4">
-                                <span class="text-2xl text-red-600">
-                                    {{ number_format($product->reviews->avg('rating'), 1) }}/5
-                                </span>
-                                <div class="flex gap-1">
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <i
-                                            class="{{ $i <= round($product->reviews->avg('rating')) ? 'fas' : 'far' }} fa-star text-yellow-400"></i>
-                                    @endfor
-                                </div>
-                            </div>
-                            <div class="flex flex-col">
-                                @php
-                                    $ratingSummary = $product->reviews->groupBy('rating')->map->count();
-                                    $totalReviews = $product->reviews->count();
-                                    $maxCount = 5;
-                                @endphp
+                 <div class="mt-10 bg-white p-6 rounded shadow-md border border-gray-200">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">Đánh giá sản phẩm</h3>
 
-                                <div class="mb-6">
-                                    @for ($i = 5; $i >= 1; $i--)
-                                        @php
-                                            $count = $ratingSummary->get($i, 0);
-                                            $percent = min(($count / $maxCount) * 100, 100);
-                                        @endphp
-                                        <div class="flex items-center gap-3 mb-1 cursor-pointer">
-                                            <a href="{{ request()->fullUrlWithQuery(['filter' => 'star-' . $i]) }}"
-                                                class="flex items-center gap-2 group w-full">
-                                                <div class="w-fit flex gap-1">
-                                                    @for ($j = 1; $j <= 5; $j++)
-                                                        <i
-                                                            class="{{ $j <= $i ? 'fas' : 'far' }} fa-star text-yellow-400 text-xs"></i>
-                                                    @endfor
-                                                </div>
-                                                <div class="flex bg-gray-200 h-2 rounded w-[152px]">
-                                                    <div class="bg-[#0A68FF] h-2 rounded"
-                                                        style="width: {{ $percent }}%"></div>
-                                                </div>
-                                                <div
-                                                    class="w-fit text-right text-sm text-gray-600 ml-2 group-hover:text-blue-600">
-                                                    {{ $count }}
-                                                </div>
-                                            </a>
-                                        </div>
-                                    @endfor
-                                </div>
-                            </div>
+            @php
+            $userReview = auth()->check() ? $product->reviews->where('user_id', auth()->id())->first() : null;
+            @endphp
+
+            <!-- Form đánh giá -->
+            @if (!auth()->check())
+            <p class="text-sm text-gray-600">
+                <a href="{{ route('login') }}" class="text-blue-600 underline">Đăng nhập</a> để gửi đánh giá cho sản phẩm này.
+            </p>
+            @elseif (!$userReview)
+            <form action="{{ route('product.review', $product->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+
+                <!-- Chọn sao -->
+                <label class="block mb-2">Đánh giá sao:</label>
+                <div class="flex items-center space-x-1 mb-4">
+                    @for ($i = 1; $i <= 5; $i++)
+                        <svg data-value="{{ $i }}" xmlns="http://www.w3.org/2000/svg"
+                        class="star w-7 h-7 cursor-pointer text-gray-300 transition duration-150 ease-in-out"
+                        fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 0 0 .95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 0 0-.364 1.118l1.286 3.966c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 0 0-1.176 0l-3.385 2.46c-.784.57-1.838-.197-1.54-1.118l1.286-3.966a1 1 0 0 0-.364-1.118L2.045 9.393c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 0 0 .95-.69l1.286-3.966z" />
+                        </svg>
+                        @endfor
+                        <input type="hidden" name="rating" id="ratingInput" required>
+                </div>
+
+                <!-- Nhận xét -->
+                <textarea name="comment" rows="3" class="w-full border p-2 rounded mb-4" placeholder="Viết nhận xét..."></textarea>
+
+                <!-- Tải ảnh -->
+                <label class="block mb-2">Hình ảnh:</label>
+                <input type="file" name="images[]" multiple accept="image/*" class="mb-4 block w-full">
+
+                <!-- Tải video -->
+                <label class="block mb-2">Video:</label>
+                <input type="file" name="video" accept="video/*" class="mb-4 block w-full">
+
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Gửi đánh giá</button>
+            </form>
+            @endif
+
+            <!-- Danh sách tất cả đánh giá -->
+            <section class="border border-[#f5f0eb] bg-[#fffaf5] rounded-md p-6 mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-6 mb-6">
+                    <div class="flex items-center space-x-3 mb-4 sm:mb-0">
+                        <div class="text-[#f15a29] text-3xl font-light leading-none">
+                            {{ number_format($product->reviews->avg('rating'), 1) }}
                         </div>
-                        <div class="flex items-center justify-center gap-2 w-[75%]" id="review-filters">
-                            <button data-filter=""
-                                class="review-filter-btn text-sm px-3 py-1 rounded border text-gray-700">
-                                Mới nhất
-                            </button>
-                            <button data-filter="images"
-                                class="review-filter-btn text-sm px-3 py-1 rounded border text-gray-700">
-                                Có hình ảnh
-                            </button>
-                            @for ($i = 5; $i >= 1; $i--)
-                                <button data-filter="star-{{ $i }}"
-                                    class="review-filter-btn text-sm px-3 py-1 rounded border text-gray-700">
-                                    {{ $i }} sao
-                                </button>
-                            @endfor
+                        <div class="text-[#f15a29] text-xs font-normal leading-none pt-1">
+                            trên 5
                         </div>
                     </div>
+                    <!-- Bộ lọc -->
+                    <div class="flex flex-wrap gap-2 text-xs font-normal text-[#1a1a1a]">
+                        <a href="{{ route('product.show', $product->slug) }}"
+                            class="border {{ !$ratingFilter ? 'border-[#f15a29] text-[#f15a29]' : 'border-[#e5e5e5] text-[#1a1a1a]' }} rounded px-3 py-1 leading-none">
+                            Tất cả
+                        </a>
+                        @for ($i = 5; $i >= 1; $i--)
+                        <a href="{{ route('product.show', [$product->slug, 'rating' => $i]) }}"
+                            class="border {{ $ratingFilter == $i ? 'border-[#f15a29] text-[#f15a29]' : 'border-[#e5e5e5] text-[#1a1a1a]' }} rounded px-3 py-1 leading-none">
+                            {{ $i }} Sao ({{ $product->reviews->where('rating', $i)->count() }})
+                        </a>
+                        @endfor
+                    </div>
 
-                    <!-- Form đánh giá nếu người dùng đã mua hàng -->
-                    @if (auth()->check() && $hasPurchased)
-                        <form action="{{ route('product.review', $product->id) }}" method="POST"
-                            enctype="multipart/form-data" class="mb-6">
-                            @csrf
-                            <label class="block mb-2 text-sm">Đánh giá sao:</label>
-                            <div class="flex gap-1 mb-4">
-                                @for ($i = 1; $i <= 5; $i++)
-                                    <svg data-value="{{ $i }}"
-                                        class="star w-6 h-6 cursor-pointer text-gray-300 hover:text-yellow-400"
-                                        fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 0 0 .95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 0 0-.364 1.118l1.286 3.966c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 0 0-1.176 0l-3.385 2.46c-.784.57-1.838-.197-1.54-1.118l1.286-3.966a1 1 0 0 0-.364-1.118L2.045 9.393c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 0 0 .95-.69l1.286-3.966z" />
-                                    </svg>
+                    <div class="flex items-center mt-4 sm:mt-0 text-[#f15a29] text-xl leading-none">
+                        @for ($i = 1; $i <= 5; $i++)
+                            @if ($i <=round($product->reviews->avg('rating')))
+                            <i class="fas fa-star"></i>
+                            @elseif ($i - $product->reviews->avg('rating') < 1)
+                                <i class="fas fa-star-half-alt"></i>
+                                @else
+                                <i class="far fa-star"></i>
+                                @endif
                                 @endfor
-                                <input type="hidden" name="rating" id="ratingInput" required>
-                            </div>
-                            <textarea name="comment" rows="3" class="w-full border p-2 rounded mb-4 text-sm"
-                                placeholder="Viết nhận xét..."></textarea>
-                            <input type="file" name="images[]" multiple accept="image/*"
-                                class="mb-4 block w-full text-sm">
-                            <input type="file" name="video" accept="video/*" class="mb-4 block w-full text-sm">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Gửi đánh
-                                giá</button>
-                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section class="divide-y divide-[#e5e5e5]">
+                @forelse ($filteredReviews->sortByDesc('created_at') as $review)
+                <article class="py-6">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <img class="w-8 h-8 rounded-full" src="{{ asset('images/default-avatar.png') }}" alt="avatar">
+                        <span class="text-xs font-normal text-[#666666]">{{ $review->user->fullname ?? 'Ẩn danh' }}</span>
+                    </div>
+                    <div class="text-[#f15a29] text-xs mb-1">
+                        @for ($i = 1; $i <= 5; $i++)
+                            <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star"></i>
+                            @endfor
+                    </div>
+                    <div class="text-xs text-[#666666] mb-3">
+                        {{ $review->created_at->format('Y-m-d H:i') }} | Phân loại: {{ $review->variant_info ?? 'N/A' }}
+                    </div>
+                    @if($review->comment)
+                    <div class="text-xs text-[#1a1a1a] font-semibold mb-2">
+                        {{ $review->comment }}
+                    </div>
+                    @endif
+                    @if ($review->images)
+                    <div class="flex gap-2 mt-2">
+                        @foreach ($review->images as $img)
+                        <img src="{{ asset('storage/' . $img->image_path) }}"
+                            class="w-20 h-20 object-cover rounded shadow cursor-pointer review-media"
+                            data-full="{{ asset('storage/' . $img->image_path) }}">
+                        @endforeach
+                    </div>
                     @endif
 
-                    <!-- Hiển thị danh sách đánh giá bằng partial -->
-                    <div id="review-list">
-                        @include('partials.review_list', ['reviews' => $filteredReviews])
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cột bên phải (Thông tin shop) -->
-            <div class="lg:col-span-1">
-                <div class="sticky top-5">
-                    <div class="bg-white rounded-lg p-6 shadow mb-6">
-                        <h2 class="text-xl mb-4 italic border-b pb-2 border-dashed">Cửa hàng</h2>
-                        <div class="flex items-center gap-4 mb-4">
-                            <img src="{{ $product->shop ? ($product->shop->shop_logo ? Storage::url($product->shop->shop_logo) : Storage::url('shop_logos/default_shop_logo.png')) : Storage::url('shop_logos/default_shop_logo.png') }}"
-                                alt="Logo Shop" class="w-16 h-16 rounded-full object-cover">
-                            <div>
-                                <h3 class="text-lg font-semibold">
-                                    {{ $product->shop ? $product->shop->shop_name : 'Tên Shop Không Xác Định' }}</h3>
-                                <p class="text-sm text-gray-600">
-                                    @if ($product->shop)
-                                        @php
-                                            $lastActivity = DB::table('sessions')
-                                                ->where('user_id', $product->shop->ownerID)
-                                                ->max('last_activity');
-                                            $lastOnline = $lastActivity
-                                                ? \Carbon\Carbon::createFromTimestamp($lastActivity)
-                                                    ->locale('vi')
-                                                    ->diffForHumans()
-                                                : 'Không xác định';
-                                        @endphp
-                                        {{ $lastActivity ? "Online $lastOnline" : 'Hoạt động từ: ' . \Carbon\Carbon::parse($product->shop->created_at)->locale('vi')->diffForHumans() }}
-                                    @else
-                                        Chưa có thông tin
-                                    @endif
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex justify-center gap-2">
-                            <button
-                                class="bg-red-100 text-red-600 px-4 py-2 rounded hover:bg-red-200 flex items-center gap-2">
-                                <i class="fa-solid fa-comment"></i> Nhắn tin
-                            </button>
-                            <a href="#" class="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100">Xem cửa
-                                hàng</a>
-                        </div>
-                    </div>
-                    {{-- Voucher shop --}}
-                    @if ($shop && $shop->coupons->where('status', 'active')->count() > 0)
-                        <div class="bg-white rounded-lg p-6 shadow">
-                            <h2 class="text-xl mb-4 italic border-b pb-2 border-dashed">Voucher Cửa hàng</h2>
-
-                            <div class="flex flex-col gap-4 mb-4">
-                                @foreach ($shop->coupons->where('status', 'active') as $coupon)
-                                    <div
-                                        class="flex justify-between items-center border border-dashed px-4 py-3 rounded text-sm">
-                                        <div>
-                                            <div class="text-red-600 font-semibold">
-                                                Giảm
-                                                {{ $coupon->discount_type === 'percentage' ? $coupon->discount_value . '%' : number_format($coupon->discount_value) . 'đ' }}
-                                            </div>
-                                            @if ($coupon->min_order_amount)
-                                                <div>Đơn tối thiểu {{ number_format($coupon->min_order_amount) }}đ</div>
-                                            @endif
-                                            <div class="text-gray-500 italic">HSD:
-                                                {{ \Carbon\Carbon::parse($coupon->end_date)->format('d/m/Y') }}</div>
-                                        </div>
-                                        <button class="bg-black text-white px-4 py-1.5 rounded hover:bg-gray-800">
-                                            Lưu
-                                        </button>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <div class="flex justify-end gap-2">
-                                <button class="bg-black text-white rounded hover:bg-gray-800 flex items-center gap-2">
-                                    <div class="border-r border-white border-dashed px-4 h-full flex items-center">
-                                        <i class="fa-solid fa-ticket"></i>
-                                    </div>
-                                    <div class="pr-4 pl-2 py-2">
-                                        Lưu tất cả
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
+                    @if ($review->video_path)
+                    <video class="w-20 h-20 mt-2 rounded shadow cursor-pointer review-media" muted data-full="{{ asset('storage/' . $review->video_path) }}">
+                        <source src="{{ asset('storage/' . $review->video_path) }}" type="video/mp4">
+                    </video>
                     @endif
+                    @auth
+                    <div class="text-xs text-blue-600 flex items-center space-x-1 mt-2 cursor-pointer like-review"
+                        data-id="{{ $review->id }}">
+                        <i class="fas fa-thumbs-up"></i>
+                        <span>{{ $review->likes->count() }} Hữu Ích</span>
+                    </div>
+                    @else
+                    <div class="text-xs text-gray-500 flex items-center space-x-1 mt-2 cursor-not-allowed">
+                        <i class="fas fa-thumbs-up"></i>
+                        <span>{{ $review->likes->count() }} Hữu Ích</span>
+                    </div>
+                    @endauth
 
+                </article>
+                @empty
+                <p class="text-gray-600">Chưa có đánh giá nào cho sản phẩm này.</p>
+                @endforelse
+                <div id="mediaModal" class="fixed inset-0 z-50 bg-black bg-opacity-80 hidden items-center justify-center">
+                    <span id="closeModal" class="absolute top-4 right-6 text-white text-3xl cursor-pointer">&times;</span>
+                    <div id="mediaContent" class="max-w-3xl max-h-[80vh] mx-auto"></div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Modal báo cáo sản phẩm -->
-        <div id="reportProductModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <h3 class="text-lg font-semibold mb-4">Báo cáo sản phẩm</h3>
-                <form action="{{ route('product.report', $product->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                    <input type="hidden" name="shop_id" value="{{ $product->shopID }}">
-                    <div class="mb-4">
-                        <label for="report_type" class="block text-sm font-medium">Loại vi phạm</label>
-                        <select name="report_type" id="report_type"
-                            class="mt-1 block w-full border-gray-300 rounded-md text-sm">
-                            <option value="fake_product">Sản phẩm giả nhái</option>
-                            <option value="product_violation">Vi phạm chính sách sản phẩm</option>
-                            <option value="copyright">Vi phạm bản quyền</option>
-                            <option value="other">Khác</option>
-                        </select>
+                @if ($recentProducts->count())
+                <div class="mt-10">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Sản phẩm bạn đã xem gần đây</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @foreach ($recentProducts as $item)
+                        <a href="{{ route('product.show', $item->slug) }}" class="block border rounded hover:shadow p-2">
+                            <img src="{{ asset($item->images->first()->image_path ?? 'images/default.jpg') }}"
+                                class="h-40 w-full object-cover rounded mb-2">
+                            <div class="text-sm font-medium text-gray-700 truncate">{{ $item->name }}</div>
+                            <div class="text-red-600 font-bold text-sm">
+                                {{ number_format($item->sale_price ?? $item->price, 0, ',', '.') }}đ
+                            </div>
+                        </a>
+                        @endforeach
                     </div>
-                    <div class="mb-4">
-                        <label for="report_content" class="block text-sm font-medium">Nội dung báo cáo</label>
-                        <textarea name="report_content" id="report_content" rows="4"
-                            class="mt-1 block w-full border-gray-300 rounded-md text-sm" placeholder="Mô tả chi tiết vi phạm"></textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label for="evidence" class="block text-sm font-medium">Bằng chứng</label>
-                        <input type="file" name="evidence[]" id="evidence" multiple
-                            class="mt-1 block w-full text-sm">
-                    </div>
-                    <div class="mb-4 flex items-center">
-                        <input type="checkbox" name="is_anonymous" id="is_anonymous" class="h-4 w-4">
-                        <label for="is_anonymous" class="ml-2 text-sm">Báo cáo ẩn danh</label>
-                    </div>
-                    <div class="flex justify-end gap-3">
-                        <button type="button" id="cancelReportBtn" class="px-4 py-2 bg-gray-200 rounded">Hủy</button>
-                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">Gửi</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Đánh giá -->
-        <div class="mt-6 bg-white rounded-lg">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Đánh giá người dùng</h3>
-            @forelse($reviews as $review)
-                <div class="review mb-4 border-b pb-2">
-                    <strong>{{ $review->user->fullname ?? 'Người dùng ẩn danh' }}</strong>
-                    <span class="text-yellow-500">{{ $review->rating }} sao</span>
-                    <p>{{ $review->comment }}</p>
-                    <small class="text-gray-500">{{ $review->created_at->diffForHumans() }}</small>
                 </div>
-            @empty
-                <p>Chưa có đánh giá nào.</p>
-            @endforelse
-        </div>
-    </div>
-    <!-- JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Thay đổi ảnh chính
-            function changeMainImage(imagePath) {
-                document.getElementById('main-image').src = imagePath;
-            }
-            window.changeMainImage = changeMainImage;
+                @endif
+            </section>
 
-            // Tăng/giảm số lượng
-            const decreaseBtn = document.getElementById('decreaseQty');
-            const increaseBtn = document.getElementById('increaseQty');
-            const quantityInput = document.getElementById('quantity');
-            decreaseBtn.addEventListener('click', () => {
-                let value = parseInt(quantityInput.value);
-                if (value > 1) quantityInput.value = value - 1;
-            });
-            increaseBtn.addEventListener('click', () => {
-                let value = parseInt(quantityInput.value);
-                quantityInput.value = value + 1;
-            });
-            // Modal báo cáo
-            const reportButton = document.getElementById('reportProductBtn');
-            const reportModal = document.getElementById('reportProductModal');
-            const cancelReportBtn = document.getElementById('cancelReportBtn');
-            reportButton.addEventListener('click', () => reportModal.classList.remove('hidden'));
-            cancelReportBtn.addEventListener('click', () => reportModal.classList.add('hidden'));
-            reportModal.addEventListener('click', (e) => {
-                if (e.target === reportModal) reportModal.classList.add('hidden');
-            });
 
-            // Chọn sao đánh giá
-            const stars = document.querySelectorAll('.star');
-            const ratingInput = document.getElementById('ratingInput');
-            stars.forEach(star => {
-                star.addEventListener('click', () => {
-                    const value = star.getAttribute('data-value');
-                    ratingInput.value = value;
-                    stars.forEach(s => {
-                        s.classList.toggle('text-yellow-400', s.getAttribute(
-                            'data-value') <= value);
-                        s.classList.toggle('text-gray-300', s.getAttribute('data-value') >
-                            value);
+
+
+            <!-- JavaScript để thay đổi ảnh chính -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const stars = document.querySelectorAll('.star');
+                    const ratingInput = document.getElementById('ratingInput');
+
+                    let selectedRating = 0;
+
+                    stars.forEach(star => {
+                        star.addEventListener('mouseover', () => {
+                            const val = parseInt(star.getAttribute('data-value'));
+                            highlightStars(val);
+                        });
+
+                        star.addEventListener('mouseout', () => {
+                            highlightStars(selectedRating);
+                        });
+
+                        star.addEventListener('click', () => {
+                            selectedRating = parseInt(star.getAttribute('data-value'));
+                            ratingInput.value = selectedRating;
+                            highlightStars(selectedRating);
+                        });
+                    });
+
+                    function highlightStars(rating) {
+                        stars.forEach(s => {
+                            const val = parseInt(s.getAttribute('data-value'));
+                            if (val <= rating) {
+                                s.classList.remove('text-gray-300');
+                                s.classList.add('text-yellow-400');
+                            } else {
+                                s.classList.remove('text-yellow-400');
+                                s.classList.add('text-gray-300');
+                            }
+                        });
+                    }
+
+                    // Chặn người dùng gửi cả ảnh và video
+                    const imageInput = document.getElementById('imageInput');
+                    const videoInput = document.getElementById('videoInput');
+
+                    if (imageInput && videoInput) {
+                        imageInput.addEventListener('change', () => {
+                            if (imageInput.files.length > 0) {
+                                videoInput.value = '';
+                            }
+                        });
+
+                        videoInput.addEventListener('change', () => {
+                            if (videoInput.files.length > 0) {
+                                imageInput.value = '';
+                            }
+                        });
+                    }
+                });
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.querySelectorAll('.like-review').forEach(el => {
+                        el.addEventListener('click', function() {
+                            const reviewId = el.getAttribute('data-id');
+
+                            fetch(`/review/${reviewId}/like`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        'Accept': 'application/json'
+                                    },
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    el.querySelector('span').innerText = data.likes_count + ' Hữu Ích';
+                                    el.classList.toggle('text-blue-600', data.liked);
+                                    el.classList.toggle('text-gray-500', !data.liked);
+                                });
+                        });
                     });
                 });
-            });
-        });
+                document.addEventListener('DOMContentLoaded', function() {
+                    const modal = document.getElementById('mediaModal');
+                    const content = document.getElementById('mediaContent');
+                    const close = document.getElementById('closeModal');
 
-        // Hiển thị mô tả sản phẩm
-        document.addEventListener('DOMContentLoaded', () => {
-            const readMore = document.getElementById('readMore');
-            const shortDescription = document.getElementById('shortDescription');
-            const fullDescription = document.getElementById('fullDescription');
-            const descriptionContent = document.querySelector('.description-content');
+                    document.querySelectorAll('.review-media').forEach(media => {
+                        media.addEventListener('click', () => {
+                            const src = media.getAttribute('data-full');
+                            let html = '';
 
-            readMore.addEventListener('click', () => {
-                if (readMore.textContent.trim() === 'Xem thêm') {
-                    // Hiển thị toàn bộ mô tả
-                    shortDescription.style.display = 'none';
-                    const fullDescClone = fullDescription.cloneNode(true);
-                    fullDescClone.classList.remove('hidden');
-                    descriptionContent.innerHTML = '';
-                    descriptionContent.appendChild(fullDescClone);
-                    readMore.textContent = 'Thu gọn';
-                } else {
-                    // Thu gọn lại
-                    shortDescription.style.display = 'block';
-                    fullDescription.classList.add('hidden');
-                    descriptionContent.innerHTML = shortDescription.outerHTML;
-                    readMore.textContent = 'Xem thêm';
-                }
-            });
-        });
-
-        // Hiển thị menu khi nhấn nút
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuButton = document.getElementById('menuButton');
-            const menuDropdown = document.getElementById('menuDropdown');
-            const reportBtn = document.getElementById('reportBtn');
-            const favoriteBtn = document.getElementById('favoriteBtn');
-
-            menuButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                menuDropdown.classList.toggle('hidden');
-            });
-
-            // Ẩn dropdown khi nhấp ra ngoài
-            document.addEventListener('click', function(e) {
-                if (!menuButton.contains(e.target) && !menuDropdown.contains(e.target)) {
-                    menuDropdown.classList.add('hidden');
-                }
-            });
-
-            // Xử lý yêu thích sản phẩm
-            favoriteBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                alert('Thêm vào danh sách yêu thích!');
-                menuDropdown.classList.add('hidden');
-            });
-
-            // Xử lý báo cáo sản phẩm (mở modal nếu cần)
-            reportBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('reportProductModal').classList.remove('hidden');
-                menuDropdown.classList.add('hidden');
-            });
-        });
-
-        // Xử lý ajax lọc
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterButtons = document.querySelectorAll('.review-filter-btn');
-            const reviewList = document.getElementById('review-list');
-            let activeFilter = null;
-
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault(); // Ngăn hành vi mặc định của nút
-
-                    const selected = this.getAttribute('data-filter'); // Lấy giá trị data-filter
-                    // Nếu bấm lại bộ lọc đang chọn, reset về không lọc
-                    const applyFilter = activeFilter === selected ? null : selected;
-
-                    // Cập nhật activeFilter
-                    activeFilter = applyFilter;
-
-                    // Tạo URL cho yêu cầu AJAX
-                    const url = applyFilter ?
-                        `${window.location.pathname}?filter=${encodeURIComponent(applyFilter)}` :
-                        window.location.pathname;
-
-                    fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
+                            if (media.tagName === 'IMG') {
+                                html = `<img src="${src}" class="w-full h-auto rounded shadow">`;
+                            } else if (media.tagName === 'VIDEO') {
+                                html = `<video src="${src}" class="w-full rounded shadow" controls autoplay></video>`;
                             }
-                        })
-                        .then(res => res.text())
-                        .then(html => {
-                            if (reviewList) {
-                                reviewList.innerHTML = html;
 
-                                // Reset trạng thái tất cả các nút
-                                filterButtons.forEach(btn => {
-                                    btn.classList.remove('bg-blue-600', 'text-white');
-                                    btn.classList.add('text-gray-700');
-                                });
+                            content.innerHTML = html;
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex');
+                        });
+                    });
 
-                                // Cập nhật trạng thái nút được chọn
-                                if (applyFilter) {
-                                    this.classList.remove('text-gray-700');
-                                    this.classList.add('bg-blue-600', 'text-white');
-                                }
-                                // Khi applyFilter là null, không tô màu bất kỳ nút nào
-                            }
-                        })
-                        .catch(err => console.error('Lỗi khi tải đánh giá:', err));
+                    close.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        content.innerHTML = '';
+                    });
                 });
-            });
-        });
-    </script>
-    </div>
-@endsection
+            </script>
+
+            @endsection

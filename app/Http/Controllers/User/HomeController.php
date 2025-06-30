@@ -19,7 +19,7 @@ class HomeController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $products = Product::with(['images', 'reviews'])
+        $products = Product::with(['images', 'variants', 'shop'])
             ->orderByDesc('is_new')
             ->orderByDesc('is_best_seller')
             ->orderByDesc('is_hot')

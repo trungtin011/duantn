@@ -39,7 +39,7 @@ use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 use App\Http\Controllers\Seller\ComboController;
-use App\Http\Controllers\Seller\ReviewController;
+use App\Http\Controllers\Seller\ReviewController as SellerReviewController;
 
 //user
 use App\Http\Controllers\User\HomeController;
@@ -55,7 +55,7 @@ use App\Http\Controllers\User\CheckinController;
 use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
 use App\Http\Controllers\User\FrontendController;
-use App\Http\Controllers\User\UserReviewController;
+use App\Http\Controllers\OrderReviewController;
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -391,7 +391,10 @@ Route::post('/calculate-shipping-fee', [ShippingFeeController::class, 'calculate
 Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');
 Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.order.show');
-Route::post('/reviews', [ProductReviewController::class, 'store'])->name('reviews.store');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/order-review/store', [OrderReviewController::class, 'store'])->name('reviews.store');
+});
+
 
 
 
