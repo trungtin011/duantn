@@ -406,7 +406,7 @@
                                             <i class="fa-solid fa-star"></i>
                                         @endfor
                                     </div>
-                                    <div class="text-[#7F7F7F] font-bold">({{ $product->reviews->count() }})</div>
+                                    {{-- <div class="text-[#7F7F7F] font-bold">({{ $product->reviews->count() }})</div> --}}
                                 </div>
                             </div>
                         </div>

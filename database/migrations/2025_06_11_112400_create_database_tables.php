@@ -529,7 +529,18 @@ return new class extends Migration
             $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
         });
+ Schema::create('product_reviews', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->tinyInteger('rating')->comment('1-5 sao');
+            $table->text('comment')->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('video_path')->nullable();
+            $table->timestamps();
 
+            $table->unique(['user_id', 'product_id']);
+        });
         // Bảng review_images
         Schema::create('review_images', function (Blueprint $table) {
             $table->bigIncrements('id');

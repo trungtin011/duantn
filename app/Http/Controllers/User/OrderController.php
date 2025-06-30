@@ -12,11 +12,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\OrderReview;
 class OrderController extends Controller
 {
     public function index()
     {
+        $reviewedProductIds = OrderReview::where('user_id', auth()->id())
+    ->pluck('product_id')
+    ->toArray();
         $userId = Auth::id();
         $orders = Order::with(['items', 'shop_order'])
             ->where('userID', $userId)
@@ -57,15 +60,17 @@ class OrderController extends Controller
             ->paginate(10);
 
         return view('user.order.history', compact(
-            'orders',
-            'allOrders',
-            'processingOrders',
-            'pendingOrders',
-            'shippedOrders',
-            'deliveredOrders',
-            'cancelledOrders',
-            'refundedOrders'
-        ));
+    'orders',
+    'allOrders',
+    'processingOrders',
+    'pendingOrders',
+    'shippedOrders',
+    'deliveredOrders',
+    'cancelledOrders',
+    'refundedOrders',
+    'reviewedProductIds'
+));
+
     }
 
     public function show($orderID)
