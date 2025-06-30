@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/user/post.css') }}">
     @stack('styles')
 </head>
 
@@ -442,7 +443,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="bg-[#F5F5F5] pb-10">
+    <main class="bg-[#F5F5F5] pb-10 min-h-screen">
         @yield('content')
     </main>
 
@@ -502,7 +503,8 @@
             <!-- Liên kết nhanh -->
             <div>
                 <h4 class="font-bold mb-2">Liên kết nhanh</h4>
-                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Chính sách bảo mật</a>
+                <a href="{{ route('help.center') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Chính
+                    sách bảo mật</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Điều khoản sử dụng</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Câu hỏi thường gặp</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Liên hệ</a>

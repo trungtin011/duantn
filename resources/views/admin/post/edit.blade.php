@@ -11,18 +11,18 @@
                 {{-- Title --}}
                 <div class="form-group">
                     <label for="inputTitle" class="col-form-label">Tiêu đề <span class="text-danger">*</span></label>
-                    <input id="inputTitle" type="text" name="title" placeholder="Nhập tiêu đề" value="{{old('title')}}"
-                        class="form-control">
-                    @error('title')ass="
+                    <input id="inputTitle" type="text" name="title" placeholder="Nhập tiêu đề"
+                        value="{{ old('title', $post->title) }}" class="form-control">
+                    @error('title')
+                        ass="
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
 
                 {{-- Quote --}}
                 <div class="form-group">
-                    label for="quote" class="col-form-label">Trích dẫn</label>
-                    <textarea class="form-control summernote-short" id="quote"
-                        name="quote">{{ old('quote', $post->quote) }}</textarea>
+                    <label for="quote" class="col-form-label">Trích dẫn</label>
+                    <textarea class="form-control summernote-short" id="quote" name="quote">{{ old('quote', $post->quote) }}</textarea>
                     @error('quote')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -31,8 +31,7 @@
                 {{-- Summary --}}
                 <div class="form-group">
                     <label for="summary" class="col-form-label">Bản tóm tắt <span class="text-danger">*</span></label>
-                    <textarea class="form-control summernote-short" id="summary"
-                        name="summary">{{ old('summary', $post->summary) }}</textarea>
+                    <textarea class="form-control summernote-short" id="summary" name="summary">{{ old('summary', $post->summary) }}</textarea>
                     @error('summary')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -41,8 +40,7 @@
                 {{-- Description --}}
                 <div class="form-group">
                     <label for="description" class="col-form-label">Miêu tả nội dung </label>
-                    <textarea class="form-control summernote" id="description"
-                        name="description">{{ old('description', $post->description) }}</textarea>
+                    <textarea class="form-control summernote" id="description" name="description">{{ old('description', $post->description) }}</textarea>
                     @error('description')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -53,8 +51,10 @@
                     <label for="post_cat_id">Loại<span class="text-danger">*</span></label>
                     <select name="post_cat_id" class="form-control">
                         <option value="">--Chọn bất kỳ doanh mục nào-</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}" {{ old('post_cat_id', $post->post_cat_id) == $cat->id ? 'selected' : '' }}>{{ $cat->title }}
+                        @foreach ($categories as $cat)
+                            <option value="{{ $cat->id }}"
+                                {{ old('post_cat_id', $post->post_cat_id) == $cat->id ? 'selected' : '' }}>
+                                {{ $cat->title }}
                             </option>
                         @endforeach
                     </select>
@@ -68,8 +68,9 @@
                     <label for="tags">Tags</label>
                     <select name="tags[]" multiple data-live-search="true" class="form-control selectpicker">
                         <option value="">--Chọn bất kỳ tag--</option>
-                        @foreach($tags as $tag)
-                            <option value="{{ $tag->title }}" {{ in_array($tag->title, $selectedTags) ? 'selected' : '' }}>
+                        @foreach ($tags as $tag)
+                            <option value="{{ $tag->title }}"
+                                {{ in_array($tag->title, $selectedTags) ? 'selected' : '' }}>
                                 {{ $tag->title }}
                             </option>
                         @endforeach
@@ -81,8 +82,9 @@
                     <label for="added_by">Tác giả</label>
                     <select name="added_by" class="form-control">
                         <option value="">--Chọn bất kỳ tác giả--</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ old('added_by', $post->added_by) == $user->id ? 'selected' : '' }}>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->id }}"
+                                {{ old('added_by', $post->added_by) == $user->id ? 'selected' : '' }}>
                                 {{ $user->username }}
                             </option>
                         @endforeach
@@ -92,7 +94,7 @@
                 {{-- Photo Upload --}}
                 <div class="bg-white p-3 rounded-lg shadow-sm mb-4">
                     <p class="font-weight-bold">Tải ảnh chính lên</p>
-                    @if($post->photo)
+                    @if ($post->photo)
                         <div class="mb-2">
                             <img src="{{ asset($post->photo) }}" id="uploadIcon1" class="w-25" alt="current photo">
                         </div>
@@ -112,7 +114,8 @@
                     <select name="status" class="form-control">
                         <option value="active" {{ old('status', $post->status) == 'active' ? 'selected' : '' }}>Active
                         </option>
-                        <option value="inactive" {{ old('status', $post->status) == 'inactive' ? 'selected' : '' }}>Inactive
+                        <option value="inactive" {{ old('status', $post->status) == 'inactive' ? 'selected' : '' }}>
+                            Inactive
                         </option>
                     </select>
                     @error('status')
@@ -135,7 +138,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             $('.summernote-short').summernote({
                 height: 150,
                 minHeight: 100,
@@ -162,5 +165,4 @@
             });
         });
     </script>
-
 @endsection

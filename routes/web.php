@@ -247,7 +247,6 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.orders');
     })->name('seller.orders');
 
-
     Route::get('/combos', [ComboController::class, 'index'])->name('seller.combo.index');
     Route::get('/combos/create', [ComboController::class, 'create'])->name('seller.combo.create');
     Route::post('/combos', [ComboController::class, 'store'])->name('seller.combo.store');
@@ -255,7 +254,6 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
     Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
 });
-
 
 
 Route::prefix('customer')->group(function () {
@@ -333,21 +331,6 @@ Route::prefix('customer')->group(function () {
         Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
     });
 
-    // Blog
-    Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
-    Route::get('/blog-detail/{slug}', [FrontendController::class, 'blogDetail'])->name('blog.detail');
-    Route::get('/blog/search', [FrontendController::class, 'blogSearch'])->name('blog.search');
-    Route::post('/blog/filter', [FrontendController::class, 'blogFilter'])->name('blog.filter');
-    Route::get('blog-cat/{slug}', [FrontendController::class, 'blogByCategory'])->name('blog.category');
-    Route::get('blog-tag/{slug}', [FrontendController::class, 'blogByTag'])->name('blog.tag');
-
-    // Help
-    Route::get('/help', [FrontendController::class, 'helpCenter'])->name('help.center');
-    Route::get('/help/{slug}', [FrontendController::class, 'helpCategory'])->name('help.category');
-    Route::get('/help/article/{slug}', [FrontendController::class, 'helpDetail'])->name('help.detail');
-    Route::get('/help/ajax/category/{slug}', [FrontendController::class, 'ajaxHelpByCategory'])->name('help.category.ajax');
-    Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
-
     //checkout
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
@@ -358,6 +341,27 @@ Route::prefix('customer')->group(function () {
     Route::get('/checkout/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
     Route::post('/checkout/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
 });
+
+Route::get('/danh-muc/{slug}', function ($slug) {
+    // Logic để lấy danh sách sản phẩm dựa trên slug của danh mục
+    // Ví dụ: Truy vấn từ bảng categories và sản phẩm liên quan
+    return view('product-list', ['categorySlug' => $slug]);
+})->name('category.products');
+
+// Blog
+Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
+Route::get('/blog-detail/{slug}', [FrontendController::class, 'blogDetail'])->name('blog.detail');
+Route::get('/blog/search', [FrontendController::class, 'blogSearch'])->name('blog.search');
+Route::post('/blog/filter', [FrontendController::class, 'blogFilter'])->name('blog.filter');
+Route::get('blog-cat/{slug}', [FrontendController::class, 'blogByCategory'])->name('blog.category');
+Route::get('blog-tag/{slug}', [FrontendController::class, 'blogByTag'])->name('blog.tag');
+
+// Help
+Route::get('/help', [FrontendController::class, 'helpCenter'])->name('help.center');
+Route::get('/help/{slug}', [FrontendController::class, 'helpCategory'])->name('help.category');
+Route::get('/help/article/{slug}', [FrontendController::class, 'helpDetail'])->name('help.detail');
+Route::get('/help/ajax/category/{slug}', [FrontendController::class, 'ajaxHelpByCategory'])->name('help.category.ajax');
+Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
 
 // seller registration routes
 Route::prefix('seller')->group(function () {
