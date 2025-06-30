@@ -13,11 +13,7 @@
         "laravel/reverb": "^1.5",
         "laravel/socialite": "^5.21",
         "laravel/tinker": "^2.10.1",
-<<<<<<< HEAD
-        "pusher/pusher-php-server": "~7.0"
-=======
         "pusher/pusher-php-server": "^7.2"
->>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

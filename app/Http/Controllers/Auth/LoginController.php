@@ -46,7 +46,9 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            $request->session()->put('user_id', Auth::user()->id);
+            if (Auth::user()) {
+                $request->session()->put('user_id', Auth::user()->id);
+            }
             RateLimiter::clear($key);
             return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
         }

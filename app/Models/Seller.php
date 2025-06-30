@@ -22,7 +22,15 @@ class Seller extends Model
         'bank_name',
         'bank_account_name',
         'business_license_id',
-        'auto_reply_enabled'
+        'auto_reply_enabled',
+        'birth_date',
+        'gender',
+        'nationality',
+        'identity_card_image',
+        'identity_card_holding_image',
+        'privacy_policy_agreed',
+        'identity_card_type',
+        'dac_diem_nhan_dang',
     ];
 
     protected $casts = [
