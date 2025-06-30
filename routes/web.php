@@ -4,15 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
-use App\Http\Controllers\User\NotificationControllers as UserNotificationControllers;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\User\WishlistController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\User\UserAddressController;
-use App\Http\Controllers\User\SuggestedProductController;
-use App\Http\Controllers\User\CheckoutController;
-use App\Http\Controllers\VNPayController;
 // admin
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AttributeController;
@@ -20,6 +11,7 @@ use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\UserControllerAdmin;
 use App\Http\Controllers\Admin\AdminShopController;
+use App\Http\Controllers\Admin\NotificationsControllers;
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -29,13 +21,11 @@ use App\Http\Controllers\Seller\SellerSettingsController;
 //user
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
-<<<<<<< HEAD
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\User\WishlistController;
 
-=======
->>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
 
 // trang chủ
 Route::get('/', function () {
@@ -101,7 +91,6 @@ Route::get('/auth/facebook', [LoginController::class, 'redirectToFacebook'])->na
 Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCallback']);
 
 
-
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/dashboard', function () {
@@ -121,15 +110,6 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/{id}', [ProductController::class, 'show'])->name('admin.products.show');
         Route::get('/get-sub-brands', [ProductController::class, 'getSubBrands'])->name('admin.get-sub-brands');
         Route::get('/get-sub-categories', [ProductController::class, 'getSubCategories'])->name('admin.get-sub-categories');
-    });
-
-    // notifications
-    Route::prefix('notifications')->group(function () {
-        Route::get('/', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
-        Route::post('/', [AdminNotificationsControllers::class, 'store'])->name('admin.notifications.store');
-        Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
-        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');        Route::get('/create', [AdminNotificationsControllers::class, 'create'])->name('admin.notifications.create');
-        Route::get('/{id}/edit', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
     });
 
     // attributes
@@ -187,6 +167,10 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
         Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
     });
+
+    Route::resource('notifications', NotificationsControllers::class, [
+        'as' => 'admin'
+    ]);
 });
 
 // seller routes
@@ -217,10 +201,9 @@ Route::middleware('CheckRole:customer')->group(function () {
     Route::get('/order-history', function () {
         return view('user.order.order_history');
     })->name('order_history');
-
-    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
-    Route::post('/wishlist/store', [WishlistController::class, 'store'])->name('wishlist.store');
-    Route::post('/wishlist/destroy', [WishlistController::class, 'destroy'])->name('wishlist.remove');
+    Route::get('/wishlist', function () {
+        return view('client.wishlist');
+    })->name('wishlist');
 
 
     
@@ -243,20 +226,8 @@ Route::middleware('CheckRole:customer')->group(function () {
         Route::post('/', [UserAddressController::class, 'store'])->name('account.addresses.store');
         Route::get('/{address}/edit', [UserAddressController::class, 'edit'])->name('account.addresses.edit');
         Route::put('/{address}', [UserAddressController::class, 'update'])->name('account.addresses.update');
-
         Route::delete('/{address}', [UserAddressController::class, 'destroy'])->name('account.addresses.delete');
-
     });
-
-    //checkout
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
-    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
-    Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
-    Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
-    Route::get('/checkout/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
-    Route::post('/checkout/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
 });
 
 // seller registration routes
@@ -283,13 +254,13 @@ Route::prefix('seller')->group(function () {
         return view('seller.profile');
     })->name('seller.profile');
 
+
+
     Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
     Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-    Route::post('/order/shipping/{id}', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
     Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
-<<<<<<< HEAD
 // seller chat routes
 Route::prefix('seller/chat')->middleware('CheckRole:seller')->group(function () {
     Route::get('/chatautomatically', function () {
@@ -312,19 +283,5 @@ Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);
 Route::get('/api/chat/messages/{shopId}', [ChatController::class, 'getMessagesByShopId']);
 Route::post('/api/chat/send-message', [ChatController::class, 'sendMessage']);
 
-=======
-// API OCR CCCD cho frontend JS
-Route::post('/seller/ocr/scan-cccd', [OcrController::class, 'upload'])->name('seller.ocr.scancccd');
-Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
-Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
-Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
-Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
-Route::put('/cancel-order/{id}', [UserOrderController::class, 'cancelOrder'])->name('cancel_order');
-
-// Shipping fee calculation
-Route::post('/calculate-shipping-fee', [App\Http\Controllers\User\ShippingFeeController::class, 'calculateShippingFee'])->name('calculate.shipping.fee');
-
-// API - VNPAY   
-Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');  
-Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
->>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
+// Sau các route user khác, thêm:
+Route::resource('wishlist', WishlistController::class)->only(['store', 'destroy']);

@@ -14,7 +14,7 @@ return new class extends Migration
             $table->unsignedBigInteger('userID');
             $table->string('full_name', 100);
             $table->string('identity_number', 20)->unique();
-            $table->date('birth_date');
+            $table->date('birth_date')->nullable();
             $table->string('nationality', 100)->default('Vietnam');
             $table->enum('gender', ['male', 'female', 'other']);
             $table->string('hometown', 255);
