@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/user/notifications.css') }}">
     @vite('resources/js/echo.js')
     @stack('styles')
 </head>
@@ -75,51 +76,151 @@
                             @endif
                         @endauth
                     </div>
-                    <div class="absolute dropdown-notification-content z-10 right-0 bg-white w-[350px] max-h-[400px] overflow-y-auto shadow-lg rounded-lg border">
+                    <div class="absolute dropdown-notification-content z-10 right-0 bg-white w-[400px] max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden">
                         <!-- Thêm phần nhô lên -->
                         <div class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle">
                         </div>
                         
                         @auth
                             @if(isset($groupedNotifications) && $groupedNotifications->count() > 0)
-                                <div class="p-3">
-                                    <div class="flex items-center justify-between mb-3">
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between mb-4">
                                         <span class="text-sm font-semibold text-gray-700">Thông báo mới</span>
                                         <a href="#" class="text-xs text-blue-600 hover:text-blue-800">Xem tất cả</a>
                                     </div>
                                     
                                     @foreach($groupedNotifications as $type => $notifications)
-                                        @foreach($notifications as $notification)
-                                            <div class="flex items-start gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer {{ $notification->status === 'unread' ? 'bg-blue-50' : '' }}">
-                                                <div class="flex-shrink-0">
-                                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                                                        </svg>
-                                                    </div>
+                                        <!-- Notification Type Header -->
+                                        <div class="mb-3">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <div class="w-2 h-2 rounded-full 
+                                                    @switch($type)
+                                                        @case('order')
+                                                            bg-blue-500
+                                                            @break
+                                                        @case('promotion')
+                                                            bg-green-500
+                                                            @break
+                                                        @case('system')
+                                                            bg-purple-500
+                                                            @break
+                                                        @case('security')
+                                                            bg-red-500
+                                                            @break
+                                                        @default
+                                                            bg-gray-500
+                                                    @endswitch">
                                                 </div>
-                                                <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">
-                                                        {{ $notification->title }}
-                                                    </p>
-                                                    <p class="text-xs text-gray-500 mt-1 line-clamp-2">
-                                                        {{ $notification->content }}
-                                                    </p>
-                                                    <p class="text-xs text-gray-400 mt-1">
-                                                        {{ $notification->created_at->diffForHumans() }}
-                                                    </p>
-                                                </div>
-                                                @if($notification->status === 'unread')
-                                                    <div class="flex-shrink-0">
-                                                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                                    </div>
-                                                @endif
+                                                <h4 class="text-xs font-medium text-gray-500 uppercase">
+                                                    @switch($type)
+                                                        @case('order')
+                                                            Đơn hàng
+                                                            @break
+                                                        @case('promotion')
+                                                            Khuyến mãi
+                                                            @break
+                                                        @case('system')
+                                                            Hệ thống
+                                                            @break
+                                                        @case('security')
+                                                            Bảo mật
+                                                            @break
+                                                        @default
+                                                            {{ ucfirst($type) }}
+                                                    @endswitch
+                                                </h4>
+                                                <span class="text-xs text-gray-400">({{ $notifications->count() }})</span>
                                             </div>
-                                        @endforeach
+                                            
+                                            @foreach($notifications->take(3) as $notification)
+                                                <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ $notification->status === 'unread' ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
+                                                     data-notification-id="{{ $notification->id }}"
+                                                     data-notification-type="{{ $notification->type }}">
+                                                    <div class="flex-shrink-0">
+                                                        <div class="w-10 h-10 rounded-full flex items-center justify-center
+                                                            @switch($notification->type)
+                                                                @case('order')
+                                                                    bg-blue-100
+                                                                    @break
+                                                                @case('promotion')
+                                                                    bg-green-100
+                                                                    @break
+                                                                @case('system')
+                                                                    bg-purple-100
+                                                                    @break
+                                                                @case('security')
+                                                                    bg-red-100
+                                                                    @break
+                                                                @default
+                                                                    bg-gray-100
+                                                            @endswitch">
+                                                            @switch($notification->type)
+                                                                @case('order')
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                                                    </svg>
+                                                                    @break
+                                                                @case('promotion')
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-green-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.732.699 2.431 0l4.318-4.318c.699-.699.699-1.732 0-2.431L9.568 3z" />
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+                                                                    </svg>
+                                                                    @break
+                                                                @case('system')
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-purple-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+                                                                    </svg>
+                                                                    @break
+                                                                @case('security')
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-red-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                                                                    </svg>
+                                                                    @break
+                                                                @default
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                                                    </svg>
+                                                            @endswitch
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-center justify-between">
+                                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                                                {{ $notification->title }}
+                                                            </p>
+                                                            @if($notification->priority === 'high')
+                                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                    Quan trọng
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                            {{ $notification->content }}
+                                                        </p>
+                                                        <div class="flex items-center justify-between mt-2">
+                                                            <p class="text-xs text-gray-400">
+                                                                {{ $notification->created_at->diffForHumans() }}
+                                                            </p>
+                                                            @if($notification->status === 'unread')
+                                                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            
+                                            @if($notifications->count() > 3)
+                                                <div class="text-center py-2">
+                                                    <a href="{{ route('notifications.index', ['type' => $type]) }}" class="text-xs text-blue-600 hover:text-blue-800">
+                                                        Xem thêm {{ $notifications->count() - 3 }} thông báo {{ strtolower($type) }}
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </div>
                                     @endforeach
                                 </div>
                             @else
-                                <div class="p-6 text-center">
+                                <div class="p-8 text-center">
                                     <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-gray-400">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
@@ -540,7 +641,7 @@
         </footer>
 
         @stack('scripts') 
-        @include('components.chat')
+        
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script>
         window.Laravel = {

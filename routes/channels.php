@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Broadcast;
 use App\Models\Shop;
 use App\Models\User;
 use App\Enums\UserRole;
-
+use Illuminate\Support\Facades\Log;
 /*
 |--------------------------------------------------------------------------
 | Broadcast Channels
@@ -49,18 +49,17 @@ Broadcast::channel('seller.shop.notifications.{shopId}', function ($user, $shopI
     }
     return false;
 }); 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
-Broadcast::channel('user.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+Broadcast::channel('user.{role}', function ($user, $role) {
+    Log::info('Log tại channel user.' . $role);
+    return (int) $user->role === (int) $role;
 });
 
-Broadcast::channel('shop.{shop_id}', function ($user, $shop_id) {
-    return (int) $user->shop->id === (int) $shop_id;
+Broadcast::channel('shop.{role}', function ($user, $role) {
+    return (int) $user->role === (int) $role;
 });
 
-Broadcast::channel('notifications.all', function ($user) {
+Broadcast::channel('notifications.all', function () {
     return true;    
 });
 

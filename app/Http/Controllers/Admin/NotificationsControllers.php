@@ -17,8 +17,7 @@ use App\Models\NotificationReceiver;
 class NotificationsControllers extends Controller
 {
     public function index(Request $request){
-
-        $notifications = Notification::paginate(10);
+        $notifications = Notification::orderBy('created_at', 'desc')->paginate(10);
         return view('admin.notifications.index', compact('notifications'));
     }
 
@@ -111,34 +110,38 @@ class NotificationsControllers extends Controller
     }
     
     public function storeNotification($receiver_type, $title, $content, $priority, $expireDate, $getGroupType, $type){
-        $notifications = [];
+        // Tạo notification chỉ 1 lần
+        $notificationData = [
+            'sender_id' => Auth::user()->id,
+            'title' => $title,
+            'content' => $content,
+            'receiver_type' => $receiver_type,
+            'type' => $type,
+            'priority' => $priority,
+            'expired_at' => $expireDate,
+            'status' => 'pending',
+        ];
+        
+        $notification = Notification::create($notificationData);
+        
+        // Loop tạo notification_receiver cho từng user
         foreach($getGroupType as $group){
-            $notificationData = [
-                'sender_id' => Auth::user()->id,
-                'title' => $title,
-                'content' => $content,
+            $notification_receiver = NotificationReceiver::create([
+                'notification_id' => $notification->id,
+                'receiver_id' => $group,
                 'receiver_type' => $receiver_type,
-                'type' => $type,
-                'priority' => $priority,
-                'expired_at' => $expireDate,
-                'status' => 'pending',
-            ];
-                $notification = Notification::create($notificationData);
-                $notification_receiver = NotificationReceiver::create([
-                    'notification_id' => $notification->id,
-                    'receiver_id' => $group,
-                    'receiver_type' => $receiver_type,
-                ]);
-                $notifications[] = $notification;
-                event(new NotificationEvent($notification));
-            }
-        return $notifications;
+            ]);
+        }
+        
+        event(new NotificationEvent($notification));
+        return $notification;
     }
 
     public function destroy($id){
         $notification = Notification::find($id);
         if($notification){
             Notification::where('title', $notification->title)->delete();
+            NotificationReceiver::where('notification_id', $notification->id)->delete();
             return redirect()->route('admin.notifications.index')->with('success', 'Notification deleted successfully');
         }
         return redirect()->route('admin.notifications.index')->with('error', 'Notification deleted failed');

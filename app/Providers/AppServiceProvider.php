@@ -52,6 +52,7 @@ class AppServiceProvider extends ServiceProvider
                 ->groupBy('type');
             
                 $view->with('groupedNotifications', $notifications);
+                
             } else if (Auth::check() && Auth::user()->role === UserRole::CUSTOMER) {
                 $receiver = NotificationReceiver::where(function ($query) {
                     $query->where('receiver_id', Auth::id())

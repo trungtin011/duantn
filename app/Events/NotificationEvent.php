@@ -10,6 +10,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;  
+use Illuminate\Support\Facades\Log;
 
 class NotificationEvent implements ShouldBroadcast
 {
@@ -23,11 +24,13 @@ class NotificationEvent implements ShouldBroadcast
     }
 
     public function broadcastOn()
-    {
+    {   
         if ($this->notification->receiver_type === 'shop') {
-            return new PrivateChannel('shop.' . $this->notification->receiver_id);
+            $shop_noti = 'seller';
+            return new Channel('shop.' . $shop_noti);
         } else if ($this->notification->receiver_type === 'user') {
-            return new PrivateChannel('user.' . $this->notification->receiver_id);
+            $customer_noti = 'customer';
+            return new Channel('user.' . $customer_noti);
         } else {
             return new Channel('notifications.all');
         }
@@ -40,6 +43,7 @@ class NotificationEvent implements ShouldBroadcast
         }
     
         if ($this->notification->receiver_type === 'user') {
+            Log::info('tạo event mới : customer-notification.event');
             return 'customer-notification.event';
         }
 
@@ -52,6 +56,7 @@ class NotificationEvent implements ShouldBroadcast
     
     public function broadcastWith()
     {
+        Log::info('tạo data mới : ' . $this->notification->title);
         return [
             'id' => $this->notification->id,
             'title' => $this->notification->title,
