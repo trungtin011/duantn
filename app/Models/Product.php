@@ -56,7 +56,18 @@ class Product extends Model
         return $this->hasMany(Coupon::class);
     }
 
-    public function variants(): HasMany
+    public function variantAttributeValues()
+    {
+        return $this->hasMany(ProductVariantAttributeValue::class, 'product_id');
+    }
+
+    // App/Models/Product.php
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'product_attribute', 'product_id', 'attribute_id');
+    }
+
+    public function variants()
     {
         return $this->hasMany(ProductVariant::class, 'productID');
     }
@@ -66,9 +77,9 @@ class Product extends Model
         return $this->hasMany(ProductImage::class, 'productID');
     }
 
-    public function dimension(): HasOne
+    public function dimension()
     {
-        return $this->hasOne(ProductDimension::class, 'productID');
+        return $this->hasMany(ProductDimension::class, 'productID');
     }
 
     public function reviews(): HasMany
@@ -81,8 +92,12 @@ class Product extends Model
         return $this->hasOne(ProductImage::class, 'productID')->where('is_default', true);
     }
 
-    public function attributes()
+    // Mối quan hệ với bảng orders thông qua bảng trung gian items_order
+    public function orders()
     {
+        return $this->belongsToMany(Order::class, 'items_order', 'productID', 'orderID')
+            ->withPivot('variantID', 'quantity', 'unit_price', 'total_price', 'discount_amount')
+            ->withTimestamps();
         return $this->hasMany(ProductVariantAttributeValue::class, '', 'id');
     }
 
@@ -96,14 +111,6 @@ class Product extends Model
             'id',
             'id'
         )->join('product_variant_attribute_values', 'attribute_values.id', '=', 'product_variant_attribute_values.attribute_value_id');
-    }
-
-    // Mối quan hệ với bảng orders thông qua bảng trung gian items_order
-    public function orders()
-    {
-        return $this->belongsToMany(Order::class, 'items_order', 'productID', 'orderID')
-            ->withPivot('variantID', 'quantity', 'unit_price', 'total_price', 'discount_amount')
-            ->withTimestamps();
     }
 
     // Scopes
@@ -135,7 +142,7 @@ class Product extends Model
 
     public function dimensions()
     {
-        return $this->hasOne(ProductDimension::class, 'productID', 'id')->where('variantID', null);
+        return $this->hasMany(ProductDimension::class, 'productID');
     }
 
     // Nếu cần mối quan hệ với tất cả kích thước (bao gồm biến thể)
@@ -180,5 +187,12 @@ class Product extends Model
             return Storage::url($mainImage->image_path);
         }
         return Storage::url('product_images/default.png');
+    }
+
+    protected $dates = ['flash_sale_end_at'];
+
+    public function isFlashSaleActive()
+    {
+        return $this->flash_sale_price && now()->lt($this->flash_sale_end_at);
     }
 }

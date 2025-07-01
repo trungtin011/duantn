@@ -26,12 +26,20 @@
                 <button class="bg-red-500 text-white px-4 py-2 rounded-md" type="submit">Huỷ đơn hàng</button>
             </form>
             @endif
+
+            @if($shop_order->status === 'shipping')
             <form action="{{ route('seller.order.tracking') }}" method="POST">
                 @csrf
                 <input type="hidden" name="tracking_code" value="{{ $shop_order->code }}">
                 <input type="hidden" name="method_request" value="status_update">
                 <button class="bg-red-500 text-white px-4 py-2 rounded-md" type="submit">Cập nhật đơn hàng</button>
             </form>
+            <form action="{{ route('seller.order.refund') }}" method="POST">
+                @csrf
+                <input type="hidden" name="code" value="{{ $shop_order->tracking_code }}">
+                <button class="bg-red-500 text-white px-4 py-2 rounded-md" type="submit">Trả đơn hàng</button>
+            </form>
+            @endif
         </div>
 
         <!-- Thông tin đơn hàng -->
@@ -41,7 +49,7 @@
                     <h2 class="text-lg font-semibold mb-4">Thông tin đơn hàng</h2>
                     <p><strong>Mã đơn hàng:</strong> {{ $shop_order->code  ?? ''}}</p>
                     <p><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y') ?? ''  }}</p>
-                    <p><strong>Mã vận đơn:</strong> {{ $shop_order->tracking_code ?? '' }}</p>
+                    <p><strong>Mã vận đơn </strong><small>(Mã vận đơn của đơn vị vận chuyển) : </small> {{ $shop_order->tracking_code ?? '' }}</p>
                     <p><strong>Lời nhắn của khách hàng:</strong> {{ $order->shop_order->first()->note ?? '' }}</p>
 
                 </div>
@@ -73,8 +81,8 @@
                         <tr class="border-b border-gray-200">
                             <td class="py-4 px-4">
                                 <div class="flex items-center">
-                                    <img src="{{ $item->product->image_url ?? 'https://via.placeholder.com/150' }}"
-                                         alt="{{ $item->product->title }}"
+                                    <img src="{{ $item->product_image ?? 'https://via.placeholder.com/150' }}"
+                                         alt="{{ $item->product_name }}"
                                          class="w-[100px] h-[100px] object-contain mr-4">
                                     <div>
                                         <p class="text-gray-700">{{ $item->product_name}}</p>
@@ -95,7 +103,7 @@
          @if($shop_order->status === 'confirmed')
         <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
             <h2 class="text-lg font-semibold mb-4">Gửi đơn hàng vận chuyển</h2>
-            <form id="update-status-form" action="{{ route('seller.order.shipping', $order->id) }}" method="POST">
+            <form id="update-status-form" action="" method="POST">
                 @csrf
 
                 <div class="mb-4 flex items-center gap-4">

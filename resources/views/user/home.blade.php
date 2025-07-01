@@ -358,7 +358,7 @@
                                             <div
                                                 class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
                                                 <span class="text-white px-2 py-1">
-                                                    -{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%
+                                                    {{-- -{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}% --}}
                                                 </span>
                                             </div>
                                             <div class="flex flex-col items-center gap-[8px]">

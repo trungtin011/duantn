@@ -16,7 +16,7 @@ class NotificationsControllers extends Controller
 {
     public function index(Request $request){
         $query = Notification::query();
-
+        
         if ($request->receiver_type && $request->receiver_type !== 'all') {
             $query->where('receiver_type', $request->receiver_type);
         }

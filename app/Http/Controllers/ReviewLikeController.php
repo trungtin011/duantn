@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Review;
 use App\Models\ReviewLike;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReviewLikeController extends Controller
 {
     public function toggle(Review $review)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $existingLike = ReviewLike::where('review_id', $review->id)
                                   ->where('user_id', $user->id)

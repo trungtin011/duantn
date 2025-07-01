@@ -12,11 +12,13 @@ use App\Models\ProductDimension;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantAttributeValue;
+use App\Models\ProductAttribute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ProductControllerAdmin extends Controller
 {
@@ -65,7 +67,7 @@ class ProductControllerAdmin extends Controller
                 'request_data' => $request->except(['images', 'variant_images']),
                 'has_images' => $request->hasFile('images'),
                 'has_variants' => $request->filled('variants'),
-                'user_id' => auth()->id() ?? 'guest'
+                'user_id' => Auth::id() ?? 'guest'
             ]);
 
             $rules = [
