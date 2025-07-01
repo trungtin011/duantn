@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Broadcast;
 use App\Models\Shop;
 use App\Models\User;
 use App\Enums\UserRole;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,9 +50,7 @@ Broadcast::channel('seller.shop.notifications.{shopId}', function ($user, $shopI
         return $shop && $shop->id == $shopId;
     }
     return false;
-}); 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+});
 
 Broadcast::channel('user.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
