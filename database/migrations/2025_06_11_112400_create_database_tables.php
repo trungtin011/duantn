@@ -403,8 +403,8 @@ return new class extends Migration
                 'shipping_failed',
                 'returned',
                 'completed'
-            ])->default('pending');            
-            $table->text('order_note')->nullable();  
+            ])->default('pending');
+            $table->text('order_note')->nullable();
             $table->text('cancel_reason')->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
@@ -593,6 +593,19 @@ return new class extends Migration
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
         });
 
+        // Bảng product_reviews
+        Schema::create('product_reviews', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->tinyInteger('rating')->comment('1-5 sao');
+            $table->text('comment')->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('video_path')->nullable();
+            $table->timestamps();
+
+            $table->unique(['user_id', 'product_id']);
+        });
         // Bảng review_images
         Schema::create('review_images', function (Blueprint $table) {
             $table->bigIncrements('id');

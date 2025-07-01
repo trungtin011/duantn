@@ -8,36 +8,44 @@ use App\Models\Shop;
 use App\Models\Category;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
-use App\Models\Review;
+use App\Models\ProductReview;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-
+use App\Models\OrderReview;
 class ProductController extends Controller
 {
     public function show(Request $request, $slug)
     {
         $ratingFilter = $request->input('rating');
-        $reviews = Review::with('user')->whereHas('product', function ($query) use ($slug) {
+        $reviews = ProductReview::with('user')->whereHas('product', function ($query) use ($slug) {
             $query->where('slug', $slug);
         })->get();
-
         $product = Product::with([
             'images',
             'reviews.user',
             'variants.attributeValues.attribute',
-            'variants.images',
+            'variants.images',  
             'reviews.likes',
             'shop.coupons',
+            'orderReviews.user',
+            'orderReviews.images',
+            'orderReviews.videos'
         ])->where('slug', $slug)->firstOrFail();
-
+         $reviews = $product->orderReviews->sortByDesc('created_at');
         // Gán hình ảnh, giá, và số lượng của biến thể
         $colorImages = [];
         $variantData = [];
+        $hasReviewed = false;
         $selectedVariant = null;
+        if (Auth::check()) {
+    $hasReviewed = $product->orderReviews()
+        ->where('user_id', Auth::id())
+        ->exists();
+}
         if ($request->has('variant_id')) {
             $selectedVariant = $product->variants->find($request->variant_id); // Lấy biến thể từ request nếu có
         } elseif ($product->variants->isNotEmpty()) {
@@ -100,6 +108,7 @@ class ProductController extends Controller
             'colorImages' => $colorImages,
             'variantData' => $variantData,
             'selectedVariant' => $selectedVariant, // Truyền biến selectedVariant
+            'hasReviewed' => $hasReviewed, // Kiểm tra xem người dùng đã đánh giá hay chưa
         ]);
     }
 

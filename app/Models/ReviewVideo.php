@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// app/Models/ReviewImage.php
-class ReviewImage extends Model
+class ReviewVideo extends Model
 {
-    protected $fillable = ['review_id', 'image_path'];
+    protected $fillable = ['review_id', 'video_path'];
 
     public function review()
     {
