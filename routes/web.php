@@ -19,8 +19,6 @@ use App\Http\Controllers\Admin\HelpArticleController;
 use App\Http\Controllers\Admin\HelpCategoryController;
 use App\Http\Controllers\Admin\LogoController;
 use App\Http\Controllers\Admin\AdminSettingsController;
-
-//post
 use App\Http\Controllers\Admin\PostCategoryController;
 use App\Http\Controllers\Admin\PostTagController;
 use App\Http\Controllers\Admin\PostController;
@@ -33,9 +31,9 @@ use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 use App\Http\Controllers\Seller\ComboController;
-use App\Http\Controllers\Seller\ReviewController;
-use App\Http\Controllers\Seller\ChatSettingsController;
+use App\Http\Controllers\Seller\ReviewController as SellerReviewController;
 use App\Http\Controllers\Seller\SellerSettingsController;
+use App\Http\Controllers\Seller\ChatSettingsController;
 
 //user
 use App\Http\Controllers\User\HomeController;
@@ -50,6 +48,8 @@ use App\Http\Controllers\User\FrontendController;
 use App\Http\Controllers\User\CheckinController;
 use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\OrderReviewController;
 use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NotificationController as UserNotificationController;
@@ -95,11 +95,11 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
     //quản lý review
-    Route::get('/seller/review', [ReviewController::class, 'index'])->name('seller.reviews.index');
-    Route::get('/seller/review/{review}', [ReviewController::class, 'show'])->name('seller.reviews.show');
-    Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('seller.reviews.create');
-    Route::post('/seller/review', [ReviewController::class, 'store'])->name('seller.reviews.store');
-    Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('seller.reviews.destroy');
+    // Route::get('/seller/review', [ReviewController::class, 'index'])->name('seller.reviews.index');
+    // Route::get('/seller/review/{review}', [ReviewController::class, 'show'])->name('seller.reviews.show');
+    // Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('seller.reviews.create');
+    // Route::post('/seller/review', [ReviewController::class, 'store'])->name('seller.reviews.store');
+    // Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('seller.reviews.destroy');
 
     //quản lý review
     Route::get('/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
@@ -357,6 +357,7 @@ Route::prefix('customer')->group(function () {
             Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
             Route::post('/orders/{orderID}/cancel', [OrderController::class, 'cancel'])->name('user.orders.cancel');
             Route::post('/orders/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.orders.reorder');
+            Route::get('/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
         });
 
         // Route báo cáo sản phẩm
@@ -444,3 +445,12 @@ Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('paymen
 Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
 
 Route::resource('wishlist', WishlistController::class)->only(['store', 'destroy']);
+
+Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.order.show');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/order-review/store', [OrderReviewController::class, 'store'])->name('reviews.store');
+});
+
+
+
+

@@ -21,7 +21,7 @@ Chuyển sang nhánh của mình
 ``` bash
 git switch (Tên nhánh của mình).
 ```
-Push code 
+Push code php artisan serve
 ``` bash
 git add .
 git commit -m "( commit )" 
@@ -32,12 +32,6 @@ refresh lại seedder
 ``` bash
 php artisan migrate:fresh --seed
 ```
-Tạo Policy: Chạy lệnh sau để tạo Policy
-``` bash
-php artisan make:policy ReportPolicy --model=Report
-```
+php artisan serve
 
-Chạy migrate mỗi file đó
-``` bash
-php artisan migrate --path=database/migrations/dan_ten_migration.php
-```
+
