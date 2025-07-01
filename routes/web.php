@@ -284,6 +284,10 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/combos/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
     Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
     Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
+
+    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
+    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
 Route::prefix('customer')->group(function () {
@@ -316,8 +320,7 @@ Route::prefix('customer')->group(function () {
     })->name('about');
 
     Route::middleware('CheckRole:customer')->group(function () {
-
-        Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
+        Route::get('/seller/index/', [RegisterShopController::class, 'index'])->name('seller.index');
 
         // Trang thông tin người dùng
         Route::prefix('user/account')->group(function () {
@@ -400,7 +403,7 @@ Route::get('/help/ajax/category/{slug}', [FrontendController::class, 'ajaxHelpBy
 Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
 
 // seller registration routes
-Route::prefix('seller')->group(function () {
+Route::prefix('seller')->middleware('auth')->group(function () {
     Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
     Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
     Route::get('/register1', [RegisterShopController::class, 'showStep2'])->name('seller.register.step2');
@@ -416,12 +419,6 @@ Route::prefix('seller')->group(function () {
     Route::get('/profile', function () {
         return view('seller.profile');
     })->name('seller.profile');
-
-
-
-    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
-    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
 // seller chat routes

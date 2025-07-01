@@ -41,7 +41,7 @@
             @auth
                 @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
                     <div>
-                        <a href="{{ route('seller.register') }}" class="text-[#EF3248] capitalize hover:text-orange-600">
+                        <a href="{{ route('seller.index') }}" class="text-[#EF3248] capitalize hover:text-orange-600">
                             Kênh người bán
                         </a>
                     </div>

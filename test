@@ -30,6 +30,12 @@ class RegisterShopController extends Controller
         return null;
     }
 
+    public function index()
+    {
+        if ($redirect = $this->checkAlreadySeller()) return $redirect;
+        return redirect()->route('seller.index');
+    }
+
     /**
      * Hiển thị Trang 1: Thông tin shop
      */
