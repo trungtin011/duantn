@@ -45,6 +45,11 @@ class Shop extends Model
         return $this->hasMany(ShopShippingOption::class, 'shopID');
     }
 
+    public function address()
+    {
+        return $this->hasOne(ShopAddress::class, 'shopID', 'id');
+    }
+
     public function addresses()
     {
         return $this->belongsTo(ShopAddress::class, 'shop_address_id');
@@ -55,7 +60,6 @@ class Shop extends Model
         return $this->belongsToMany(User::class, 'shop_followers', 'shopID', 'followerID')
             ->withTimestamps();
     }
-
     public function employees()
     {
         return $this->hasMany(Employee::class, 'shopID');
@@ -88,5 +92,16 @@ class Shop extends Model
     public function seller()
     {
         return $this->belongsTo(Seller::class, 'ownerID', 'id');
+    }
+
+    public function orderReviews()
+    {
+        return $this->hasMany(OrderReview::class, 'shop_id');
+    }
+
+    public function followedShops()
+    {
+        return $this->belongsToMany(User::class, 'shop_followers', 'shopID', 'followerID')
+            ->withTimestamps();
     }
 }

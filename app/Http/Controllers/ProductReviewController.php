@@ -19,6 +19,7 @@ class ProductReviewController extends Controller
             'video' => 'nullable|mimetypes:video/mp4,video/quicktime,video/x-msvideo|max:10240',
         ]);
 
+        // Chỉ đánh giá 1 lần
         if (ProductReview::where('user_id', Auth::id())->where('product_id', $product->id)->exists()) {
             return back()->with('error', 'Bạn đã đánh giá sản phẩm này.');
         }

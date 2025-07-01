@@ -10,6 +10,6 @@ class ReviewVideo extends Model
 
     public function review()
     {
-        return $this->belongsTo(Review::class);
+        return $this->belongsTo(OrderReview::class, 'review_id');
     }
 }

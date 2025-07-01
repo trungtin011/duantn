@@ -41,9 +41,9 @@ class ProductVariant extends Model
     }
 
     public function dimensions()
-{
-    return $this->hasOne(ProductDimension::class, 'variantID');
-}
+    {
+        return $this->hasOne(ProductDimension::class, 'variantID');
+    }
 
     public function images(): HasMany
     {
@@ -52,7 +52,8 @@ class ProductVariant extends Model
 
     public function attributeValues()
     {
-        return $this->belongsToMany(AttributeValue::class, 'product_variant_attribute_values', 'product_variant_id', 'attribute_value_id');
+        return $this->belongsToMany(AttributeValue::class, 'product_variant_attribute_values', 'product_variant_id', 'attribute_value_id')
+            ->with('attribute');
     }
 
     // Scopes

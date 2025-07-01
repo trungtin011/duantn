@@ -15,11 +15,12 @@
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/post.css') }}">
+    @vite('resources/js/echo.js')
     @stack('styles')
 </head>
 
@@ -227,8 +228,8 @@
     </div>
 
     <!-- Header -->
-<header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
-    <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
+    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
+        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
             <!-- Logo -->
             @if (empty($settings->logo))
                 <a class="w-full lg:w-[14%] flex items-center justify-center gap-2 py-2" href="/">
@@ -540,9 +541,9 @@
     @stack('scripts')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
-    window.Laravel = {
-        user: @json(Auth::user())
-    };
+        window.Laravel = {
+            user: @json(Auth::user())
+        };
     </script>
 </body>
 

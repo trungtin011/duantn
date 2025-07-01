@@ -580,20 +580,19 @@ return new class extends Migration
         });
 
         // Bảng review
-        Schema::create('review', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->unsignedBigInteger('userID');
-            $table->unsignedBigInteger('productID');
-            $table->unsignedBigInteger('shopID');
-            $table->integer('rating');
-            $table->text('comment')->nullable();
-            $table->timestamps();
-            $table->foreign('userID')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
-            $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
-        });
+        // Schema::create('reviews', function (Blueprint $table) {
+        //     $table->bigIncrements('id');
+        //     $table->unsignedBigInteger('userID');
+        //     $table->unsignedBigInteger('productID');
+        //     $table->unsignedBigInteger('shopID');
+        //     $table->integer('rating');
+        //     $table->text('comment')->nullable();
+        //     $table->timestamps();
+        //     $table->foreign('userID')->references('id')->on('users')->onDelete('cascade');
+        //     $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
+        //     $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
+        // });
 
-        // Bảng product_reviews
         Schema::create('product_reviews', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -609,11 +608,14 @@ return new class extends Migration
         // Bảng review_images
         Schema::create('review_images', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('reviewID');
+            $table->unsignedBigInteger('review_id');
             $table->text('image_path');
             $table->timestamps();
-            $table->foreign('reviewID')->references('id')->on('review')->onDelete('cascade');
+
+            // Sửa lại tên bảng được tham chiếu đúng
+            $table->foreign('review_id')->references('id')->on('product_reviews')->onDelete('cascade');
         });
+
 
         // Bảng wishlist
         Schema::create('wishlist', function (Blueprint $table) {
@@ -654,7 +656,11 @@ return new class extends Migration
             $table->enum('receiver_type', ['user', 'shop', 'all', 'admin', 'employee']);
             $table->enum('priority', ['low', 'normal', 'high'])->default('normal');
             $table->enum('status', ['pending', 'active', 'inactive', 'failed'])->default('pending');
+            $table->boolean('is_read')->default(false);
+            $table->timestamp('read_at')->nullable();
+            $table->timestamp('expired_at')->nullable();
             $table->timestamps();
+
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
             $table->index(['type', 'status', 'priority', 'receiver_type', 'created_at'], 'notif_type_status_idx');
@@ -684,6 +690,7 @@ return new class extends Migration
             $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
         });
+
 
         // Bảng report
         Schema::create('report', function (Blueprint $table) {

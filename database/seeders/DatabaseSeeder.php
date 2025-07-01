@@ -268,20 +268,6 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Bảng employees
-        DB::table('employees')->insert([
-            [
-                'shopID' => 1,
-                'userID' => 2,
-                'position' => 'Manager',
-                'salary' => 10000000,
-                'hire_date' => '2023-01-01',
-                'status' => 'active',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
         // Bảng products
         DB::table('products')->insert([
             [
@@ -532,19 +518,18 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Bảng review
-        DB::table('review')->insert([
-            [
-                'userID' => 3,
-                'productID' => 1,
-                'shopID' => 1,
-                'rating' => 5,
-                'comment' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
+        // // Bảng review
+        // DB::table('review')->insert([
+        //     [
+        //         'userID' => 3,
+        //         'productID' => 1,
+        //         'shopID' => 1,
+        //         'rating' => 5,
+        //         'comment' => null,
+        //         'created_at' => Carbon::now(),
+        //         'updated_at' => Carbon::now(),
+        //     ],
+        // ]);
 
         // Bảng wishlist
         DB::table('wishlist')->insert([
