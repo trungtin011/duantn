@@ -24,7 +24,13 @@ class NotificationEvent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('notifications.all');
+        if ($this->notification->receiver_type === 'shop') {
+            return new PrivateChannel('shop.' . $this->notification->receiver_id);
+        } else if ($this->notification->receiver_type === 'user') {
+            return new PrivateChannel('user.' . $this->notification->receiver_id);
+        } else {
+            return new Channel('notifications.all');
+        }
     }
 
     public function broadcastAs()
