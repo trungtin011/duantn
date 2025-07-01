@@ -6,19 +6,27 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use App\Enums\UserRole;
 use App\Models\NotificationReceiver;
+use Illuminate\Support\Facades\DB;
 
 class AppServiceProvider extends ServiceProvider
 {
- 
+
     public function register(): void
     {
         //
-    } 
+    }
 
     public function boot(): void
     {
+        View::composer('layouts.app', function ($view) {
+            $settings = DB::table('settings')->first();
+            $view->with('settings', $settings);
+        });
+
+        Blade::component('order-block', 'user.order.components.order-block');
         view()->composer('*', function ($view) {
             if (Auth::check() && Auth::user()->role === UserRole::SELLER) {
                 // Lấy danh sách receiver_id từ NotificationReceiver

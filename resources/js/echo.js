@@ -51,13 +51,11 @@ function addNotificationToList(notification) {
   const notificationList = document.getElementById('notification-list');
   if (!notificationList) return;
 
-  // Xóa thông báo "Không có thông báo mới" nếu có
-  const emptyMessage = notificationList.querySelector('.text-center');
+ const emptyMessage = notificationList.querySelector('.text-center');
   if (emptyMessage) {
       emptyMessage.remove();
   }
 
-  // Kiểm tra xem thông báo đã tồn tại chưa
   const existing = notificationList.querySelector(
       `[data-notification-title="${escapeHtml(notification.title)}"][data-notification-type="${notification.type}"][data-notification-receiver-type="${notification.receiver_type}"]`
   );

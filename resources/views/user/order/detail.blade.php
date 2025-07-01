@@ -1,11 +1,32 @@
-@extends('layouts.app')
+@extends('user.account.layout')
 
-@section('content')
+@section('account-content')
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <div class="container mx-auto py-5">
+
+        <!-- Thông báo thành công/lỗi -->
+        @if (session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                {{ session('success') }}
+                {{-- Button cancel X --}}
+                <button onclick="this.parentElement.style.display='none'" class="float-right text-green-700">
+                    &times;
+                </button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ session('error') }}
+                {{-- Button cancel X --}}
+                <button onclick="this.parentElement.style.display='none'" class="float-right text-green-700">
+                    &times;
+                </button>
+            </div>
+        @endif
+
         <!-- Breadcrumb -->
-        <div class="flex flex-wrap items-center gap-2 mb-10 px-[10px] sm:px-0 md:mb-20 text-sm md:text-base">
-            <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
+        <div class="flex flex-wrap items-center gap-2 mb-10 px-[10px] sm:px-0 md:mb-10 text-sm md:text-base">
+            <a href="{{ route('order_history') }}" class="text-gray-500 hover:underline">Đơn hàng</a>
             <span>/</span>
             <span>Chi tiết đơn hàng</span>
         </div>
@@ -15,10 +36,64 @@
             <div class="bg-gray-100 shadow-sm rounded-lg p-4 flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-bold text-gray-800 mb-1">Chi tiết đơn hàng</h2>
-                    <p class="text-gray-600 text-sm">Đơn hàng {{ $order->order_code ?? 'N/A' }} | Order Created: {{ $order->created_at->format('d/m/Y H:i') }}</p>
+                    <p class="text-gray-600 text-sm">Đơn hàng {{ $order->order_code ?? 'N/A' }} | Order Created:
+                        {{ $order->created_at->format('d/m/Y H:i') }}</p>
+                    <p class="text-gray-600 text-sm">
+                        <strong>Trạng thái:</strong>
+                        <span
+                            class="{{ $order->order_status === 'delivered' ? 'text-green-600' : ($order->order_status === 'cancelled' || $order->order_status === 'refunded' ? 'text-red-600' : 'text-blue-600') }}">
+                            {{ __('order_status.' . $order->order_status) }}
+                        </span>
+                    </p>
+                    @if ($order->cancel_reason)
+                        <p class="text-gray-600 text-sm"><strong>Lý do hủy:</strong> {{ e($order->cancel_reason) }}</p>
+                    @endif
+                </div>
+                <!-- Nút hành động: Hủy đơn hàng hoặc Mua lại -->
+                <div class="flex space-x-2">
+                    @if (in_array($order->order_status, ['pending', 'processing']))
+                        <button onclick="document.getElementById('cancel-form').classList.toggle('hidden')"
+                            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">
+                            Hủy đơn hàng
+                        </button>
+                    @endif
+                    @if (in_array($order->order_status, ['cancelled', 'refunded']))
+                        <form action="{{ route('user.orders.reorder', $order->id) }}" method="POST">
+                            @csrf
+                            @method('POST')
+                            <button type="submit"
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
+                                Mua lại
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>
+
+        <!-- Form hủy đơn hàng -->
+        @if (in_array($order->order_status, ['pending', 'processing']))
+            <div id="cancel-form" class="hidden mb-4">
+                <div class="bg-white shadow-sm rounded-lg p-4">
+                    <h5 class="font-semibold text-gray-800 mb-3">Hủy đơn hàng</h5>
+                    <form action="{{ route('user.orders.cancel', $order->id) }}" method="POST" class="space-y-4">
+                        @csrf
+                        @method('POST')
+                        <div>
+                            <label for="cancel_reason" class="block text-sm font-medium text-gray-700">Lý do hủy:</label>
+                            <textarea id="cancel_reason" name="cancel_reason"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required></textarea>
+                            @error('cancel_reason')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">
+                            Xác nhận hủy
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @endif
 
         <!-- Thông tin khách hàng, thanh toán, giao hàng -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
@@ -65,8 +140,15 @@
                     Thông tin giao hàng
                 </h5>
                 <p class="text-gray-600 text-sm">
-                    <strong>Phương thức vận chuyển:</strong> {{ $orderAddress->shipping_provider ?? 'GHN' }}<br>
-                    <strong>Địa chỉ:</strong> {{ $orderAddress->full_address ?? 'Không có thông tin' }}
+                    <strong>Phương thức vận chuyển:</strong> {{ $order->shopOrder->shipping_provider ?? 'GHN' }}<br>
+                    <strong>Địa chỉ:</strong> {{ $orderAddress->address ?? 'Không có thông tin' }},
+                    {{ $orderAddress->ward ?? '' }}, {{ $orderAddress->district ?? '' }},
+                    {{ $orderAddress->province ?? '' }}<br>
+                    <strong>Tên người nhận:</strong> {{ $orderAddress->receiver_name ?? 'Không có thông tin' }}<br>
+                    <strong>Số điện thoại:</strong> {{ $orderAddress->receiver_phone ?? 'Không có thông tin' }}
+                    @if ($orderAddress->note)
+                        <br><strong>Ghi chú:</strong> {{ e($orderAddress->note) }}
+                    @endif
                 </p>
             </div>
         </div>
@@ -88,25 +170,36 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if(isset($orderItems) && $orderItems->isNotEmpty())
-                                    @foreach($orderItems as $item)
+                                @if (isset($orderItems) && $orderItems->isNotEmpty())
+                                    @foreach ($orderItems as $item)
                                         <tr class="border-b border-gray-200 hover:bg-gray-50">
                                             <td class="p-3">
                                                 <div class="flex items-center">
-                                                    <img src="{{ $item->product->images->first()->image_path ?? 'https://via.placeholder.com/40' }}"
-                                                        alt="{{ $item->product_name ?? $item->variant_name ?? ($item->product->name ?? 'Sản phẩm') }}"
+                                                    <img src="{{ $item->product_image ?? ($item->product->images->first()->image_path ?? 'https://via.placeholder.com/40') }}"
+                                                        alt="{{ e($item->product_name ?? ($item->variant->variant_name ?? ($item->product->name ?? 'Sản phẩm'))) }}"
                                                         class="w-10 h-10 rounded mr-3 object-cover">
-                                                    <span>{{ $item->product_name ?? $item->variant_name ?? ($item->product->name ?? 'Sản phẩm không còn tồn tại') }}</span>
+                                                    <div>
+                                                        <span>{{ e($item->product_name ?? ($item->variant->variant_name ?? ($item->product->name ?? 'Sản phẩm không còn tồn tại'))) }}</span>
+                                                        @if ($item->variant)
+                                                            <p class="text-xs text-gray-500">Biến thể:
+                                                                {{ e($item->variant->variant_name) }}</p>
+                                                        @endif
+                                                        <p class="text-xs text-gray-500">Shop:
+                                                            {{ e($item->shopOrder->shop->shop_name ?? 'N/A') }}</p>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td class="p-3 text-gray-600">{{ number_format($item->unit_price, 0, ',', '.') }} VND</td>
+                                            <td class="p-3 text-gray-600">
+                                                {{ number_format($item->unit_price, 0, ',', '.') }} VND</td>
                                             <td class="p-3 text-gray-600">{{ $item->quantity }}</td>
-                                            <td class="p-3 text-gray-600">{{ number_format($item->total_price, 0, ',', '.') }} VND</td>
+                                            <td class="p-3 text-gray-600">
+                                                {{ number_format($item->total_price, 0, ',', '.') }} VND</td>
                                         </tr>
                                     @endforeach
                                 @else
                                     <tr>
-                                        <td colspan="4" class="p-3 text-gray-600 text-center">Không có sản phẩm nào trong đơn hàng này.</td>
+                                        <td colspan="4" class="p-3 text-gray-600 text-center">Không có sản phẩm nào trong
+                                            đơn hàng này.</td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -123,19 +216,24 @@
                         <tbody>
                             <tr>
                                 <td class="py-2 text-gray-600">Tổng tiền hàng</td>
-                                <td class="py-2 text-right font-medium text-gray-800">{{ number_format($order->subtotal, 0, ',', '.') }} VND</td>
+                                <td class="py-2 text-right font-medium text-gray-800">
+                                    {{ number_format($order->total_price - ($order->coupon_discount ?? 0), 0, ',', '.') }}
+                                    VND</td>
                             </tr>
                             <tr>
                                 <td class="py-2 text-gray-600">Phí ship</td>
-                                <td class="py-2 text-right font-medium text-gray-800">{{ number_format($order->shipping_fee ?? 0, 0, ',', '.') }} VND</td>
+                                <td class="py-2 text-right font-medium text-gray-800">
+                                    {{ number_format($order->shopOrder->shipping_fee ?? 0, 0, ',', '.') }} VND</td>
                             </tr>
                             <tr>
                                 <td class="py-2 text-gray-600">Giảm giá</td>
-                                <td class="py-2 text-right font-medium text-green-600">{{ number_format($order->coupon_discount ?? 0, 0, ',', '.') }} VND</td>
+                                <td class="py-2 text-right font-medium text-green-600">
+                                    {{ number_format($order->coupon_discount ?? 0, 0, ',', '.') }} VND</td>
                             </tr>
                             <tr class="border-t border-gray-200 pt-2">
                                 <td class="py-2 font-bold text-gray-800">Tổng cộng</td>
-                                <td class="py-2 text-right font-bold text-blue-600">{{ number_format($order->final_price, 0, ',', '.') }} VND</td>
+                                <td class="py-2 text-right font-bold text-blue-600">
+                                    {{ number_format($order->total_price, 0, ',', '.') }} VND</td>
                             </tr>
                         </tbody>
                     </table>

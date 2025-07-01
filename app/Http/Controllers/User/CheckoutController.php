@@ -41,8 +41,7 @@ class CheckoutController extends Controller
                     'total_price' => $item->total_price,
                 ];
             }
-        }
-        else if ($request->flow_type == 'instant_checkout') {
+        } else if ($request->flow_type == 'instant_checkout') {
             $product = Product::where('id', $request->productID)->first();
             $variant = ProductVariant::where('id', $request->variantID)->first();
             $items = [
@@ -62,14 +61,13 @@ class CheckoutController extends Controller
     public function index(Request $request)
     {
         $checkout_items = session('checkout_items');
-        if($checkout_items){
+        if ($checkout_items) {
             $items = $checkout_items;
-        }
-        else{
+        } else {
             $items = $this->getItemsFromFlow($request);
         }
         $products = [];
-        foreach($items as $item){
+        foreach ($items as $item) {
             $products[] = $item['product']->id;
         }
         $products = Product::whereIn('id', $products)->with('variants')->get();
@@ -79,7 +77,7 @@ class CheckoutController extends Controller
             ->get();
         $shops = Shop::whereIn('id', $products->pluck('shopID'))->get();
         $default_address = $shop_addresses->last();
-        return view('client.checkout', compact('user_addresses','items','products','default_address','shops'));
+        return view('client.checkout', compact('user_addresses', 'items', 'products', 'default_address', 'shops'));
     }
 
     public function store(CheckoutRequest $request)
@@ -92,7 +90,7 @@ class CheckoutController extends Controller
             return redirect()->back()->with('error', 'Không có sản phẩm để đặt hàng');
         }
         $products = [];
-        foreach($items as $item){
+        foreach ($items as $item) {
             $products[] = $item['product']->id;
         }
         $products = Product::whereIn('id', $products)->with('variants')->get();
@@ -103,11 +101,11 @@ class CheckoutController extends Controller
             return redirect()->back()->with('error', 'Địa chỉ không tồn tại');
         }
         $order = $this->createOrder($items, $user_address, $request, $products);
-       
+
         switch ($request->payment) {
             case 'COD':
-               return $this->CodPayment($order);
-               break;
+                return $this->CodPayment($order);
+                break;
             case 'MOMO':
                 return $this->MomoPayment($order);
                 break;
@@ -119,10 +117,11 @@ class CheckoutController extends Controller
         return redirect()->route('checkout')->with('message', 'Đặt hàng thành công');
     }
 
+
     private function getTotalPrice($items)
     {
         $total_price = 0;
-        foreach($items as $item){
+        foreach ($items as $item) {
             $total_price += $item['total_price'];
         }
         return $total_price;
@@ -139,12 +138,12 @@ class CheckoutController extends Controller
             'user_address' => $user_address->id,
             'total_price' => $total_price,
             'payment_method' => $request->payment,
-            'order_code' => 'DH'. '-' .strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
+            'order_code' => 'DH' . '-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
             'order_status' => 'pending',
             'note' => $request->order_note,
         ]);
-        
-        foreach($products as $product){
+
+        foreach ($products as $product) {
             $shop_order = ShopOrder::create([
                 'shopID' => $product->shopID,
                 'orderID' => $order->id,
@@ -152,8 +151,8 @@ class CheckoutController extends Controller
                 'note' => $shop_notes[$product->shopID] ?? ''
             ]);
             Log::info($shop_order);
-            foreach($items as $item){
-                if($item['product']->id == $product->id){
+            foreach ($items as $item) {
+                if ($item['product']->id == $product->id) {
                     $quantity = $item['quantity'];
                     $total_price = $item['total_price'];
                 }
@@ -176,8 +175,6 @@ class CheckoutController extends Controller
         ]);
 
         }
-        
-
         $order_address = OrderAddress::create([
             'order_id' => $order->id,
             'receiver_name' => $user_address->receiver_name,
@@ -192,15 +189,17 @@ class CheckoutController extends Controller
             'address_type' => $user_address->address_type,
         ]);
         return $order;
-    } 
-
-    private function CodPayment($order){
-        return redirect()->route('checkout.success' , ['order_code' => $order->order_code]);
     }
 
-    private function MomoPayment($order){
+    private function CodPayment($order)
+    {
+        return redirect()->route('checkout.success', ['order_code' => $order->order_code]);
+    }
+
+    private function MomoPayment($order)
+    {
         try {
-            $partnerCode = 'MOMOBKUN20180529';                  
+            $partnerCode = 'MOMOBKUN20180529';
             $accessKey = 'klm05TvNBzhg7h7j';
             $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
             $endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
@@ -258,14 +257,14 @@ class CheckoutController extends Controller
 
             if ($response->successful()) {
                 $responseData = $response->json();
-                
+
                 if (isset($responseData['payUrl']) && !empty($responseData['payUrl'])) {
                     Log::info('MoMo Payment Success - Redirecting to:', [
                         'pay_url' => $responseData['payUrl']
                     ]);
-                    
+
                     $order->update(['paid_at' => now()]);
-                    
+
                     return redirect()->away($responseData['payUrl']);
                 }
 
@@ -280,7 +279,6 @@ class CheckoutController extends Controller
             ]);
 
             return redirect()->route('checkout')->with('error', $responseData['message'] ?? 'Không thể kết nối với MoMo.');
-
         } catch (\Exception $e) {
             Log::error('MoMo Payment Exception:', [
                 'error' => $e->getMessage(),
@@ -290,7 +288,8 @@ class CheckoutController extends Controller
         }
     }
 
-    public function momoReturn(Request $request){
+    public function momoReturn(Request $request)
+    {
         try {
             $partnerCode = 'MOMOBKUN20180529';
             $accessKey = 'klm05TvNBzhg7h7j';
@@ -325,7 +324,6 @@ class CheckoutController extends Controller
             } else {
                 return redirect()->route('checkout.failed', ['order_code' => $orderCode])->with('error', 'Thanh toán thất bại');
             }
-
         } catch (\Exception $e) {
             Log::error('MoMo Return Exception:', [
                 'error' => $e->getMessage(),
@@ -335,7 +333,8 @@ class CheckoutController extends Controller
         }
     }
 
-    public function momoIpn(Request $request){
+    public function momoIpn(Request $request)
+    {
         try {
             $partnerCode = 'MOMOBKUN20180529';
             $accessKey = 'klm05TvNBzhg7h7j';
@@ -391,7 +390,6 @@ class CheckoutController extends Controller
 
                 return response()->json(['RspCode' => '00', 'Message' => 'Payment failed']);
             }
-
         } catch (\Exception $e) {
             Log::error('MoMo IPN Exception:', [
                 'error' => $e->getMessage(),
@@ -401,8 +399,9 @@ class CheckoutController extends Controller
         }
     }
 
-    public function successPayment($order_code){
-        $order = Order::where('order_code', $order_code)->with('address','items')->first();
+    public function successPayment($order_code)
+    {
+        $order = Order::where('order_code', $order_code)->with('address', 'items')->first();
         if (!$order) {
             return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
@@ -416,12 +415,12 @@ class CheckoutController extends Controller
         ]);
         session()->forget('checkout_items');
 
-        foreach($order->shop_order as $shop_order){
+        foreach ($order->shop_order as $shop_order) {
             Log::info(' /////////////// Create Order Event /////////////// ', [
                 'shop_id' => $shop_order->shopID,
                 'order_id' => $order->id
             ]);
-            event(new CreateOrderEvent($shop_order->shopID ,$order));
+            event(new CreateOrderEvent($shop_order->shopID, $order));
         }
 
         $order_status_history = new OrderStatusHistory();
@@ -429,11 +428,14 @@ class CheckoutController extends Controller
         $order_status_history->order_status = 'pending';
         $order_status_history->save();
 
-
+        Cart::where('userID', Auth::user()->id)->delete();
+        session()->forget('checkout_items');
+        
         return view('user.checkout_status.success_payment', compact('order','product'));
     }
 
-    public function failedPayment($order_code){
+    public function failedPayment($order_code)
+    {
         $order = Order::where('order_code', $order_code)->first();
         if (!$order) {
             return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
@@ -441,11 +443,11 @@ class CheckoutController extends Controller
 
         $orderItems = ItemsOrder::where('orderID', $order->id)->get();
         $items = [];
-        foreach($orderItems as $item) {
-            $product = Product::with(['variants' => function($query) use ($item) {
+        foreach ($orderItems as $item) {
+            $product = Product::with(['variants' => function ($query) use ($item) {
                 $query->where('id', $item->variantID);
             }])->find($item->productID);
-            
+
             $items[] = [
                 'product' => $product,
                 'quantity' => $item->quantity,

@@ -161,20 +161,28 @@ class ShippingController extends Controller
         }
     }
 
-    public function returnOrderGHN($order){
+    public function returnOrderGHN($code){
 
-        $status_orders = $this->getDetailOrder($order->tracking_code);
-        
-        if($status_orders !== 'storing' || $status_orders !== 'picked'){
-            return redirect()->back()->with('error', 'Đơn hàng đã được giao thành công, không thể hoàn trả');
+        $tracking_code = $code;
+
+        if($tracking_code == null){
+            return false;
         }
 
         $url = $this->ghnApiUrl . $this->returnEndpoint;
         $response = Http::withHeaders([
             'Token' => $this->token,
             'Content-Type' => $this->contentType,
-        ])->post($url, ['order_codes' => [$order->order_code]]);
+        ])->post($url, ['order_codes' => [$tracking_code]]);
+
+        if($response->status() == 200){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
+    
 
 }

@@ -2,9 +2,9 @@
 
 @section('title', 'Thanh toán')
 @section('content')
-    <div class="container mx-auto px-[20px] md:px-0 md:py-8 md:mb-[200px]">
+    <div class="container mx-auto px-[20px] md:px-0 md:py-0 md:mb-[200px]">
         <!-- Breadcrumb -->
-        <div class="flex flex-wrap items-center gap-2 my-10 px-[10px] sm:px-0 md:my-20 text-sm md:text-base">
+        <div class="flex flex-wrap items-center gap-2 my-10 px-[10px] sm:px-0 md:my-10 text-sm md:text-base">
             <span>Tài khoản</span>
             <span class="text-gray-300">/</span>
             <span>Tài khoản của tôi</span>
@@ -16,33 +16,30 @@
             <span class="text-black">Thanh toán</span>
         </div>
 
-        <!-- Tiêu đề -->
-        <div class="mb-6">
-            <h1 class="text-[36px] font-bold text-gray-800">Chi tiết hóa đơn</h1>
-        </div>
-        @if($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                <ul class="list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+        <div class="bg-white p-8 rounded-[4px]">
+            <!-- Tiêu đề -->
+            <div class="mb-6">
+                <h1 class="text-[36px] font-bold text-gray-800">Chi tiết hóa đơn</h1>
             </div>
-        @endif
+            @if (session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {{ session('error') }}
+                </div>
+            @endif
 
-        @if(session('message'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('message') }}
-            </div>
-        @endif
-        <!-- Main Container -->
-        <div class="flex flex-col lg:flex-row gap-[100px]">
+            @if (session('message'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {{ session('message') }}
+                </div>
+            @endif
+            <!-- Main Container -->
+            <div class="flex flex-col lg:flex-row gap-[100px]">
 
-            <!-- Thông tin người nhận -->
+                <!-- Thông tin người nhận -->
                 <div class="w-full lg:w-1/2">
 
-                <!-- Form thêm địa chỉ mới -->
-                <div class="create-address-form mt-6 hidden mb-10">
+                    <!-- Form thêm địa chỉ mới -->
+                    <div class="create-address-form mt-6 hidden mb-10">
                         <form action="/create-address-form" method="POST" class="space-y-4">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
@@ -137,18 +134,21 @@
                     </div>
 
                     <!-- Form thanh toán -->
-                    <form action="{{route('checkout.store')}}" method="POST" id="checkout-form" class="space-y-4 mb-6 w-full">
-                    @csrf
+                    <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form"
+                        class="space-y-4 mb-6 w-full">
+                        @csrf
                         <!-- Chọn địa chỉ -->
                         <div class="mb-10">
                             <h2 class="text-lg font-semibold mb-2">Chọn địa chỉ</h2>
                             @if (isset($user_addresses) && $user_addresses->count() > 0)
-                            <select name="address" id="address"
-                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @foreach ($user_addresses as $address)
-                                <option value="{{ $address->id }}">{{ $address->receiver_name }} - {{ $address->address }} - {{ $address->province }} - {{ $address->district }} - {{ $address->ward }} - {{ $address->zip_code }}</option>
-                                @endforeach
-                            </select>
+                                <select name="address" id="address"
+                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    @foreach ($user_addresses as $address)
+                                        <option value="{{ $address->id }}">{{ $address->receiver_name }} -
+                                            {{ $address->address }} - {{ $address->province }} - {{ $address->district }} -
+                                            {{ $address->ward }} - {{ $address->zip_code }}</option>
+                                    @endforeach
+                                </select>
                             @else
                                 <p>Không có địa chỉ nào</p>
                             @endif
@@ -166,119 +166,119 @@
                         <!-- Phương thức thanh toán -->
                         <div class="space-y-4 mb-6">
                             <label class="flex items-center space-x-3">
-                                <input type="radio" name="payment" value="MOMO"
-                                    class="h-4 w-4" />
+                                <input type="radio" name="payment" value="MOMO" class="h-4 w-4" />
                                 <span class="text-sm">Thanh toán bằng MOMO</span>
                                 <div class="flex space-x-2">
-                                    <img src="{{'https://pay2s.vn/blog/wp-content/uploads/2024/11/momo_icon_circle_pinkbg_RGB-1024x1024.png'}}" alt="Momo Icon" class="w-[39px]" />
+                                    <img src="{{ 'https://pay2s.vn/blog/wp-content/uploads/2024/11/momo_icon_circle_pinkbg_RGB-1024x1024.png' }}"
+                                        alt="Momo Icon" class="w-[39px]" />
                                 </div>
                             </label><label class="flex items-center space-x-3">
-                                <input type="radio" name="payment" value="VNPAY"
-                                    class="h-4 w-4" />
+                                <input type="radio" name="payment" value="VNPAY" class="h-4 w-4" />
                                 <span class="text-sm">Thanh toán bằng vnpay</span>
                                 <div class="flex space-x-2">
-                                    <img src="{{'https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg'}}" alt="Momo Icon" class="w-[39px]" />
+                                    <img src="{{ 'https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg' }}"
+                                        alt="Momo Icon" class="w-[39px]" />
                                 </div>
                             </label>
                             <label class="flex items-center space-x-3">
-                                <input type="radio" name="payment" value="COD"
-                                    class="h-4 w-4" />
+                                <input type="radio" name="payment" value="COD" class="h-4 w-4" />
                                 <span class="text-sm">Thanh toán bằng tiền mặt</span>
                             </label>
                         </div>
-                    </form>               
+                    </form>
 
                     <!-- Form thêm địa chỉ mới -->
                 </div>
-            
+
                 <!-- Danh sách sản phẩm và thanh toán -->
                 <div class="w-full lg:w-1/2">
                     <!-- Danh sách sản phẩm -->
                     <div class="space-y-4 mb-6">
-                    <!-- Nhóm sản phẩm theo shop -->
-                    @php
-                        // Nhóm items theo shopID
-                        $itemsByShop = collect($items)->groupBy('product.shopID')->sortKeys();
-                    @endphp
+                        <!-- Nhóm sản phẩm theo shop -->
+                        @php
+                            // Nhóm items theo shopID
+                            $itemsByShop = collect($items)->groupBy('product.shopID')->sortKeys();
+                        @endphp
 
-                    @foreach ($itemsByShop as $shopId => $shopItems)
-                        <!-- Tiêu đề shop -->
-                        <div class="border-b pb-2 mb-4">
-                            <h3 class="text-lg font-semibold">
-                                Shop: {{ \App\Models\Shop::find($shopId)->name ?? 'Shop ' . $shopId }}
-                            </h3>
-                        </div>
+                        @foreach ($itemsByShop as $shopId => $shopItems)
+                            <!-- Tiêu đề shop -->
+                            <div class="border-b pb-2 mb-4">
+                                <h3 class="text-lg font-semibold">
+                                    Shop: {{ \App\Models\Shop::find($shopId)->name ?? 'Shop ' . $shopId }}
+                                </h3>
+                            </div>
 
-                        <!-- Danh sách sản phẩm trong shop -->
-                        <div class="space-y-4">
-                            @foreach ($shopItems as $item)
-                                <div class="flex items-center space-x-4">
-                                    <img 
-                                        src="{{ $item['product']->image ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGh5WFH8TOIfRKxUrIgJZoDCs1yvQ4hIcppw&s' }}" 
-                                        alt="Product Image" 
-                                        class="w-16 h-16 object-cover rounded-md" 
-                                    />
-                                    <div class="flex-1">
-                                        <span class="block text-sm font-medium">{{ $item['product']->name }}</span>
-                                        <span class="text-sm text-gray-500">x{{ $item['quantity'] }}</span>
-                                        <span class="text-sm text-gray-500">Loại: {{ $item['product']->variants->first()->variant_name ?? 'N/A' }}</span>
+                            <!-- Danh sách sản phẩm trong shop -->
+                            <div class="space-y-4">
+                                @foreach ($shopItems as $item)
+                                    <div class="flex items-center space-x-4">
+                                        <img src="{{ $item['product']->image ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGh5WFH8TOIfRKxUrIgJZoDCs1yvQ4hIcppw&s' }}"
+                                            alt="Product Image" class="w-16 h-16 object-cover rounded-md" />
+                                        <div class="flex-1">
+                                            <span class="block text-sm font-medium">{{ $item['product']->name }}</span>
+                                            <span class="text-sm text-gray-500">x{{ $item['quantity'] }}</span>
+                                            <span class="text-sm text-gray-500">Loại:
+                                                {{ $item['product']->variants->first()->variant_name ?? 'N/A' }}</span>
+                                        </div>
+                                        <span class="text-sm font-semibold">{{ number_format($item['product']->price) }}
+                                            VND</span>
                                     </div>
-                                    <span class="text-sm font-semibold">{{ number_format($item['product']->price) }} VND</span>
-                                </div>
-                            @endforeach
-                            <textarea 
-                                            name="note_for_shop[{{ $shopId }}][{{ $item['product']->id }}]" 
-                                            id="note-{{ $shopId }}-{{ $item['product']->id }}" 
-                                            class="w-full h-[40px] border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                            placeholder="Lời nhắn cho người bán"
-                                            data-shop-id="{{ $shopId }}"
-                                        ></textarea>
-                        </div>
-                    @endforeach
-                </div>
+                                @endforeach
+                                <textarea name="note_for_shop[{{ $shopId }}][{{ $item['product']->id }}]"
+                                    id="note-{{ $shopId }}-{{ $item['product']->id }}"
+                                    class="w-full h-[40px] border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Lời nhắn cho người bán" data-shop-id="{{ $shopId }}">
+                                </textarea>
+                            </div>
+                        @endforeach
+                    </div>
 
                     <!-- Tóm tắt đơn hàng -->
                     <div class="border-t pt-4 mb-6">
-                    <h2 class="text-lg font-semibold mb-2">Tóm tắt đơn hàng</h2>
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span>Tổng cộng:</span> 
-                            <span class="font-semibold">{{ number_format($subtotal = array_sum(array_column($items, 'total_price'))) }} VND</span>
-                        </div>
-                        <div class="border-t my-2"></div>
-                        <div class="flex justify-between text-sm">
-                            <span>Phí vận chuyển:</span>
-                            <span class="font-semibold" id="shipping-fee">Đang tính...</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span>Thời gian giao hàng dự kiến:</span>
-                            <span class="font-semibold" id="expected-delivery-time"></span>
-                        </div>
-                        <div class="border-t my-2"></div>
-                        <div class="flex justify-between text-lg font-bold">
-                            <span>Tổng đơn:</span>
-                            <span id="total-amount">{{ number_format($subtotal) }} VND</span>
+                        <h2 class="text-lg font-semibold mb-2">Tóm tắt đơn hàng</h2>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Tổng cộng:</span>
+                                <span
+                                    class="font-semibold">{{ number_format($subtotal = array_sum(array_column($items, 'total_price'))) }}
+                                    VND</span>
+                            </div>
+                            <div class="border-t my-2"></div>
+                            <div class="flex justify-between text-sm">
+                                <span>Phí vận chuyển:</span>
+                                <span class="font-semibold" id="shipping-fee">Đang tính...</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>Thời gian giao hàng dự kiến:</span>
+                                <span class="font-semibold" id="expected-delivery-time"></span>
+                            </div>
+                            <div class="border-t my-2"></div>
+                            <div class="flex justify-between text-lg font-bold">
+                                <span>Tổng đơn:</span>
+                                <span id="total-amount">{{ number_format($subtotal) }} VND</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="flex flex-col lg:flex-row gap-[20px] justify-between">
-                    <div class="flex">
-                        <!-- Mã giảm giá -->
-                        <form action="" class="flex">
-                            <input type="text" placeholder="Mã giảm giá"
-                                class="flex-1 border border-[#000] p-2 focus:outline-none focus:none" />
-                            <button
-                                class="w-[100px] bg-black text-white border border-[#000] px-4 py-2 hover:bg-transparent hover:text-black hover:border hover:border-[#000]">
-                                Áp dụng
+                    <div class="flex flex-col lg:flex-row gap-[20px] justify-between">
+                        <div class="flex">
+                            <!-- Mã giảm giá -->
+                            <form action="" class="flex">
+                                <input type="text" placeholder="Mã giảm giá"
+                                    class="flex-1 border border-[#000] p-2 focus:outline-none focus:none" />
+                                <button
+                                    class="w-[100px] bg-black text-white border border-[#000] px-4 py-2 hover:bg-transparent hover:text-black hover:border hover:border-[#000]">
+                                    Áp dụng
+                                </button>
+                            </form>
+                        </div>
+                        <div class="flex justify-start">
+                            <!-- Nút đặt hàng -->
+                            <button type="submit" class="bg-[#F1416C] text-white px-4 py-3 hover:bg-pink-600"
+                                form="checkout-form">
+                                Đặt hàng
                             </button>
-                        </form>
-                    </div>
-                    <div class="flex justify-start">
-                        <!-- Nút đặt hàng -->
-                        <button type="submit" class="bg-[#F1416C] text-white px-4 py-3 hover:bg-pink-600" form="checkout-form">
-                            Đặt hàng
-                        </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -393,60 +393,62 @@
     </script>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const addressSelect = document.querySelector('select[name="address"]');
-        if (addressSelect) {
-            calculateShippingFee(addressSelect.value);
-            
-            addressSelect.addEventListener('change', function() {
-                calculateShippingFee(this.value);
-            });
-        }
-        
-        function calculateShippingFee(addressId) {
-            if (!addressId) return;
-        
-            document.getElementById('shipping-fee').textContent = '0 VND';
-            fetch('/calculate-shipping-fee', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    address_id: addressId,
-                    _token: '{{ csrf_token() }}'
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.shipping_fee && typeof data.shipping_fee === 'number') {
-                    const shippingFee = data.shipping_fee;
-                    const subtotal = {{ $subtotal ?? 0 }};
-                    const total = subtotal + shippingFee;
-                    
-                    document.getElementById('shipping-fee').textContent = 
-                        new Intl.NumberFormat('vi-VN').format(shippingFee) + ' VND';
-                    document.getElementById('expected-delivery-time').textContent = data.expected_delivery_time;
-                    document.getElementById('total-amount').textContent = 
-                        new Intl.NumberFormat('vi-VN').format(total) + ' VND';
-                } else {
-                    document.getElementById('shipping-fee').textContent = data.error || 'Không thể tính phí vận chuyển';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('shipping-fee').textContent = 'Không thể tính phí vận chuyển';
-            });
-        }
-    });
+        document.addEventListener('DOMContentLoaded', function() {
+            const addressSelect = document.querySelector('select[name="address"]');
+            if (addressSelect) {
+                calculateShippingFee(addressSelect.value);
+
+                addressSelect.addEventListener('change', function() {
+                    calculateShippingFee(this.value);
+                });
+            }
+
+            function calculateShippingFee(addressId) {
+                if (!addressId) return;
+
+                document.getElementById('shipping-fee').textContent = '0 VND';
+                fetch('/calculate-shipping-fee', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            address_id: addressId,
+                            _token: '{{ csrf_token() }}'
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.shipping_fee && typeof data.shipping_fee === 'number') {
+                            const shippingFee = data.shipping_fee;
+                            const subtotal = {{ $subtotal ?? 0 }};
+                            const total = subtotal + shippingFee;
+
+                            document.getElementById('shipping-fee').textContent =
+                                new Intl.NumberFormat('vi-VN').format(shippingFee) + ' VND';
+                            document.getElementById('expected-delivery-time').textContent = data
+                                .expected_delivery_time;
+                            document.getElementById('total-amount').textContent =
+                                new Intl.NumberFormat('vi-VN').format(total) + ' VND';
+                        } else {
+                            document.getElementById('shipping-fee').textContent = data.error ||
+                                'Không thể tính phí vận chuyển';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('shipping-fee').textContent = 'Không thể tính phí vận chuyển';
+                    });
+            }
+        });
     </script>
     <script>
-         document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             const checkoutForm = document.getElementById('checkout-form');
             const shopNotesInput = document.getElementById('shop_notes');
