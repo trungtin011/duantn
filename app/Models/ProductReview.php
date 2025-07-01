@@ -29,10 +29,8 @@ class ProductReview extends Model
     {
         return $this->hasMany(ReviewImage::class, 'review_id');
     }
-public function product()
-{
-    return $this->belongsTo(Product::class, 'product_id'); // Đúng chuẩn Laravel
-}
-
-
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id'); // Đúng chuẩn Laravel
+    }
 }

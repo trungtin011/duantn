@@ -28,9 +28,7 @@ class RegisterController extends Controller
         ], [
          'username.required' => 'Tên đăng nhập là bắt buộc.',
             'username.required' => 'Tên đăng nhập là bắt buộc.',
-            
             'username.unique' => 'Tên đăng nhập đã tồn tại.',
-
             'fullname.required' => 'Họ và tên là bắt buộc.',
             'phone.required' => 'Số điện thoại là bắt buộc.',
             'phone.unique' => 'Số điện thoại đã tồn tại.',
