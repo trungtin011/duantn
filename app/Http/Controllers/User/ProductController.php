@@ -17,12 +17,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
+
     public function show(Request $request, $slug)
     {
-        $ratingFilter = $request->input('rating');
         $product = Product::with([
             'images',
             'reviews.user',
@@ -34,7 +35,40 @@ class ProductController extends Controller
             'orderReviews.images',
             'orderReviews.videos'
         ])->where('slug', $slug)->firstOrFail();
-        $reviews = $product->orderReviews->sortByDesc('created_at');
+
+        // Tính trung bình rating và số lượng đánh giá
+        $averageRating = Cache::remember("product_{$product->id}_average_rating", 3600, function () use ($product) {
+            return $product->orderReviews()->avg('rating') ?? 0;
+        });
+        $totalReviews = $product->orderReviews()->count();
+        $ratingCounts = [
+            '5' => $product->orderReviews()->where('rating', 5)->count(),
+            '4' => $product->orderReviews()->where('rating', 4)->count(),
+            '3' => $product->orderReviews()->where('rating', 3)->count(),
+            '2' => $product->orderReviews()->where('rating', 2)->count(),
+            '1' => $product->orderReviews()->where('rating', 1)->count(),
+        ];
+        $commentCount = $product->orderReviews()->whereNotNull('comment')->count();
+        $mediaCount = $product->orderReviews()->whereHas('images')->orWhereHas('videos')->count();
+
+        // Xử lý bộ lọc
+        $filter = $request->input('filter');
+        $query = $product->orderReviews()->with(['user', 'images', 'videos']);
+
+        // Áp dụng bộ lọc trước khi phân trang
+        if ($filter === 'images') {
+            $query->where(function ($q) {
+                $q->whereHas('images')->orWhereHas('videos');
+            });
+        } elseif ($filter === 'comments') {
+            $query->whereNotNull('comment');
+        } elseif (Str::startsWith($filter, 'star-')) {
+            $rating = (int) Str::after($filter, 'star-');
+            $query->where('rating', $rating);
+        }
+
+        // Lấy danh sách đánh giá với phân trang
+        $filteredReviews = $query->orderBy('created_at', 'desc')->paginate(10);
 
         // Gán hình ảnh, giá, và số lượng của biến thể
         $attributeImages = [];
@@ -54,6 +88,11 @@ class ProductController extends Controller
             ];
         }
 
+        Log::info('Variants for product ID: ' . $product->id . ', count: ' . $product->variants->count());
+        foreach ($product->variants as $variant) {
+            Log::info('Variant ID: ' . $variant->id . ', images count: ' . $variant->images->count() . ', attributeValues count: ' . $variant->attributeValues->count());
+        }
+
         $hasReviewed = false;
         $selectedVariant = null;
         if (Auth::check()) {
@@ -71,7 +110,34 @@ class ProductController extends Controller
         $viewed = array_unique(array_merge([$product->id], $viewed));
         session()->put('viewed_products', array_slice($viewed, 0, 10));
 
-        $recentProducts = Product::whereIn('id', $viewed)->where('id', '!=', $product->id)->with('images')->get();
+        // Lấy sản phẩm liên quan theo danh mục
+        $recentProducts = Cache::remember("related_products_{$product->id}", 3600, function () use ($product) {
+            Log::info('Fetching related products for product ID: ' . $product->id . ', category: ' . $product->category);
+
+            $products = Product::where('category', $product->category)
+                ->where('id', '!=', $product->id)
+                ->where('status', 'active')
+                ->with('images')
+                ->take(8)
+                ->get();
+
+            Log::info('Found ' . $products->count() . ' related products by category');
+
+            // Nếu không tìm thấy sản phẩm cùng danh mục, lấy sản phẩm ngẫu nhiên
+            if ($products->count() < 4) {
+                $additionalProducts = Product::where('id', '!=', $product->id)
+                    ->where('status', 'active')
+                    ->with('images')
+                    ->take(8 - $products->count())
+                    ->inRandomOrder()
+                    ->get();
+                Log::info('Added ' . $additionalProducts->count() . ' random products');
+                $products = $products->merge($additionalProducts);
+            }
+
+            return $products;
+        });
+
         $logoPath = $product->shop ? Storage::url($product->shop->logo) : asset('images/default_shop_logo.png');
 
         // Kiểm tra trạng thái yêu thích
@@ -110,17 +176,6 @@ class ProductController extends Controller
                 ->exists();
         }
 
-        $filter = $request->input('filter');
-        $filteredReviews = $reviews;
-        if ($filter === 'images') {
-            $filteredReviews = $reviews->filter(fn($r) => $r->images && $r->images->count() > 0);
-        } elseif (Str::startsWith($filter, 'star-')) {
-            $rating = (int) Str::after($filter, 'star-');
-            $filteredReviews = $reviews->where('rating', $rating);
-        }
-
-        $filteredReviews = $filteredReviews->sortByDesc('created_at');
-
         if ($request->ajax()) {
             return view('partials.review_list', ['reviews' => $filteredReviews]);
         }
@@ -128,18 +183,23 @@ class ProductController extends Controller
         return view('user.product.product_detail', [
             'product' => $product,
             'filteredReviews' => $filteredReviews,
-            'ratingFilter' => $ratingFilter,
+            'filter' => $filter,
             'recentProducts' => $recentProducts,
             'shop' => $product->shop,
             'logoPath' => $logoPath,
             'hasPurchased' => $hasPurchased,
-            'reviews' => $reviews,
+            'reviews' => $filteredReviews,
             'attributeImages' => $attributeImages,
             'variantData' => $variantData,
             'selectedVariant' => $selectedVariant,
             'hasReviewed' => $hasReviewed,
             'isWishlisted' => $isWishlisted,
             'savedCoupons' => $savedCoupons,
+            'averageRating' => number_format($averageRating, 1),
+            'totalReviews' => $totalReviews,
+            'ratingCounts' => $ratingCounts,
+            'commentCount' => $commentCount,
+            'mediaCount' => $mediaCount,
         ]);
     }
 

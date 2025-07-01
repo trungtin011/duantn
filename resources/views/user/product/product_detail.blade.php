@@ -247,102 +247,94 @@
                         </form>
                     @endif
 
-                    @if ($product->orderReviews->isEmpty())
+                    @if ($filteredReviews->isEmpty())
                         <p class="text-gray-600">Chưa có đánh giá nào cho sản phẩm này.</p>
                     @else
                         <div class="flex bg-red-100/50 p-4 py-10 rounded-lg gap-10">
                             <div class="flex flex-wrap items-center justify-center gap-3 w-[200px]">
                                 <div class="flex flex-col items-center">
                                     <div class="flex items-baseline space-x-1">
-                                        <span class="text-red-600 text-[28px] font-light leading-none">4.9</span>
+                                        <span
+                                            class="text-red-600 text-[28px] font-light leading-none">{{ $averageRating }}</span>
                                         <span class="text-red-500 text-[16px] font-light leading-none">trên 5</span>
                                     </div>
                                     <div class="flex space-x-[2px] mt-1">
-                                        <i class="fas fa-star text-[#e94e1b] text-[18px]"></i>
-                                        <i class="fas fa-star text-[#e94e1b] text-[18px]"></i>
-                                        <i class="fas fa-star text-[#e94e1b] text-[18px]"></i>
-                                        <i class="fas fa-star text-[#e94e1b] text-[18px]"></i>
-                                        <i class="fas fa-star text-[#e94e1b] text-[18px]"></i>
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <i
+                                                class="fas fa-star {{ $i <= round($averageRating) ? 'text-[#e94e1b]' : 'text-gray-300' }} text-[18px]"></i>
+                                        @endfor
                                     </div>
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <button
-                                    class="text-[#e94e1b] border border-[#e94e1b] rounded px-3 py-1 text-[13px] leading-none font-normal">
-                                    Tất Cả
+                                    class="filter-btn {{ !$filter ? 'text-[#e94e1b] border-[#e94e1b]' : 'text-[#333] border-[#ddd]' }} border rounded px-3 py-1 text-[13px] leading-none font-normal"
+                                    data-filter="all">
+                                    Tất Cả ({{ number_format($totalReviews, 0, ',', '.') }})
+                                </button>
+                                @foreach ([5, 4, 3, 2, 1] as $star)
+                                    <button
+                                        class="filter-btn {{ $filter == 'star-' . $star ? 'text-[#e94e1b] border-[#e94e1b]' : 'text-[#333] border-[#ddd]' }} border rounded px-3 py-1 text-[13px] leading-none font-normal"
+                                        data-filter="star-{{ $star }}">
+                                        {{ $star }} Sao ({{ number_format($ratingCounts[$star], 0, ',', '.') }})
+                                    </button>
+                                @endforeach
+                                <button
+                                    class="filter-btn {{ $filter == 'comments' ? 'text-[#e94e1b] border-[#e94e1b]' : 'text-[#333] border-[#ddd]' }} border rounded px-3 py-1 text-[13px] leading-none font-normal"
+                                    data-filter="comments">
+                                    Có Bình Luận ({{ number_format($commentCount, 0, ',', '.') }})
                                 </button>
                                 <button
-                                    class="text-[#333] border border-[#ddd] rounded px-3 py-1 text-[13px] leading-none font-normal">
-                                    5 Sao (5,5k)
-                                </button>
-                                <button
-                                    class="text-[#333] border border-[#ddd] rounded px-3 py-1 text-[13px] leading-none font-normal">
-                                    4 Sao (464)
-                                </button>
-                                <button
-                                    class="text-[#333] border border-[#ddd] rounded px-3 py-1 text-[13px] leading-none font-normal">
-                                    3 Sao (97)
-                                </button>
-                                <button
-                                    class="text-[#333] border border-[#ddd] rounded px-3 py-1 text-[13px] leading-none font-normal">
-                                    2 Sao (24)
-                                </button>
-                                <button
-                                    class="text-[#333] border border-[#ddd] rounded px-3 py-1 text-[13px] leading-none font-normal">
-                                    1 Sao (33)
-                                </button>
-                                <button
-                                    class="text-[#333] border border-[#ddd] rounded px-3 py-1 text-[13px] leading-none font-normal">
-                                    Có Bình Luận (2,7k)
-                                </button>
-                                <button
-                                    class="text-[#333] border border-[#ddd] rounded px-3 py-1 text-[13px] leading-none font-normal">
-                                    Có Hình Ảnh / Video (1,4k)
+                                    class="filter-btn {{ $filter == 'images' ? 'text-[#e94e1b] border-[#e94e1b]' : 'text-[#333] border-[#ddd]' }} border rounded px-3 py-1 text-[13px] leading-none font-normal"
+                                    data-filter="images">
+                                    Có Hình Ảnh / Video ({{ number_format($mediaCount, 0, ',', '.') }})
                                 </button>
                             </div>
                         </div>
-                        @foreach ($product->orderReviews->sortByDesc('created_at') as $review)
-                            <div class="border-b py-4 mt-5">
-                                <div class="flex items-center mb-2">
-                                    <img src="{{ $review->user->avatar ? Storage::url($review->user->avatar) : asset('storage/user_avatars/default_avatar.png') }}"
-                                        alt="Avatar" class="w-10 h-10 rounded-full object-cover mr-3" loading="lazy">
-                                    <h4 class="mr-2 text-gray-800 text-sm">
-                                        {{ $review->user->fullname ?? 'Người dùng ẩn danh' }}
-                                    </h4>
-                                </div>
-                                <div class="ml-10">
-                                    <div class="text-yellow-400 flex">
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star text-sm"></i>
-                                        @endfor
-                                    </div>
-                                    <p class="text-sm text-gray-700 mb-2">{{ $review->comment }}</p>
-                                    <div class="flex items-center gap-2">
-                                        @if ($review->images && $review->images->count())
-                                            <div class="flex gap-2 mb-2">
-                                                @foreach ($review->images as $img)
-                                                    <img src="{{ Storage::url($img->image_path) }}" alt="Ảnh đánh giá"
-                                                        class="w-20 h-20 object-cover rounded border" loading="lazy">
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                        @if ($review->videos && $review->videos->count())
-                                            <div class="mb-2">
-                                                @foreach ($review->videos as $vid)
-                                                    <video controls class="w-28 h-20 rounded">
-                                                        <source src="{{ Storage::url($vid->video_path) }}" type="video/mp4">
-                                                        Trình duyệt của bạn không hỗ trợ video.
-                                                    </video>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="text-xs text-gray-500">{{ $review->created_at->diffForHumans() }}</div>
-                                </div>
-                            </div>
-                        @endforeach
+                        <div id="reviewList" class="mt-5">
+                            @include('partials.review_list', ['reviews' => $filteredReviews])
+                            {{ $filteredReviews->appends(['filter' => $filter])->links() }}
+                        </div>
                     @endif
                 </div>
+
+                <!-- Sản phẩm liên quan -->
+                @if ($recentProducts->isNotEmpty())
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Sản phẩm liên quan</h3>
+                        <div class="swiper related-products-slider">
+                            <div class="swiper-wrapper">
+                                @foreach ($recentProducts as $relatedProduct)
+                                    <div class="swiper-slide">
+                                        <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                                            <a href="{{ route('product.show', $relatedProduct->slug) }}">
+                                                <img src="{{ $relatedProduct->images->first() ? Storage::url($relatedProduct->images->first()->image_path) : asset('images/default_product_image.png') }}"
+                                                    alt="{{ $relatedProduct->name }}"
+                                                    class="w-full h-48 object-cover rounded mb-2" loading="lazy">
+                                                <h4 class="text-sm font-medium text-gray-800 truncate">
+                                                    {{ $relatedProduct->name }}
+                                                </h4>
+                                                <div class="flex items-center justify-between mt-2">
+                                                    <span class="text-red-600 font-semibold">
+                                                        {{ number_format($relatedProduct->getCurrentPriceAttribute(), 0, ',', '.') }}
+                                                        ₫
+                                                    </span>
+                                                    @if ($relatedProduct->getDiscountPercentageAttribute() > 0)
+                                                        <span class="text-xs text-gray-500 line-through">
+                                                            {{ number_format($relatedProduct->price, 0, ',', '.') }} ₫
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- Cột bên phải (Thông tin shop) -->
@@ -1003,6 +995,89 @@
                         });
                     });
                 });
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                // Khởi tạo Swiper cho sản phẩm liên quan
+                new Swiper('.related-products-slider', {
+                    slidesPerView: 2,
+                    spaceBetween: 10,
+                    breakpoints: {
+                        640: {
+                            slidesPerView: 3
+                        },
+                        1024: {
+                            slidesPerView: 4
+                        }
+                    },
+                    navigation: {
+                        nextEl: '.swiper-button-next',
+                        prevEl: '.swiper-button-prev',
+                    }
+                });
+
+                // Xử lý bộ lọc đánh giá
+                const updateReviewList = (url) => {
+                    fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html',
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Lỗi khi tải đánh giá');
+                            return response.text();
+                        })
+                        .then(html => {
+                            document.getElementById('reviewList').innerHTML = html;
+                            attachPaginationEvents();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: 'Không thể tải danh sách đánh giá!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        });
+                };
+
+                const attachFilterEvents = () => {
+                    const filterButtons = document.querySelectorAll('.filter-btn');
+                    filterButtons.forEach(button => {
+                        button.addEventListener('click', () => {
+                            const filter = button.getAttribute('data-filter');
+                            const url =
+                                `{{ route('product.show', $product->slug) }}?filter=${filter}`;
+                            updateReviewList(url);
+                            filterButtons.forEach(btn => {
+                                btn.classList.remove('text-[#e94e1b]', 'border-[#e94e1b]');
+                                btn.classList.add('text-[#333]', 'border-[#ddd]');
+                            });
+                            button.classList.remove('text-[#333]', 'border-[#ddd]');
+                            button.classList.add('text-[#e94e1b]', 'border-[#e94e1b]');
+                        });
+                    });
+                };
+
+                const attachPaginationEvents = () => {
+                    const paginationLinks = document.querySelectorAll('.pagination a');
+                    paginationLinks.forEach(link => {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const url = e.target.href;
+                            updateReviewList(url);
+                        });
+                    });
+                };
+
+                // Khởi tạo sự kiện
+                attachFilterEvents();
+                attachPaginationEvents();
             });
         </script>
     @endpush
