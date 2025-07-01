@@ -63,31 +63,25 @@ class User extends Authenticatable
         return $this->hasOne(Employee::class);
     }
 
-    public function seller(): HasOne
+    public function seller()
     {
-        // Sửa lại khóa ngoại thành 'userID' thay vì mặc định 'user_id'
-        return $this->hasOne(Seller::class, 'userID');
-    }
-
-    public function autoChatSetting()
-    {
-        return $this->hasOne(\App\Models\AutoChatSetting::class, 'user_id');
-    }
-
-    public function shop(): HasOne
-    {
-        return $this->hasOne(Shop::class, 'ownerID', 'id');
+        return $this->hasOne(\App\Models\Seller::class, 'userID', 'id');
     }
 
     public function reviews()
     {
         return $this->hasMany(ProductReview::class);
     }
-    
+
     public function followedShops()
     {
         return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
             ->withTimestamps();
+    }
+
+    public function shop(): HasOne
+    {
+        return $this->hasOne(Shop::class, 'ownerID', 'id');
     }
 
     // Scopes
@@ -145,4 +139,5 @@ class User extends Authenticatable
             default => 'Không xác định',
         };
     }
+    
 }

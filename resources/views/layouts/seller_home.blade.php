@@ -32,11 +32,7 @@
     </style>
 </head>
 
-<<<<<<< HEAD
-<body class="bg-[#f5f5f7] text-[#222222] text-sm leading-relaxed font-[Inter] min-h-screen flex flex-col">
-=======
 <body class="bg-[#f5f5f7] text-[#222222] text-sm leading-relaxed font-[Inter]" x-data="{ notificationDropdownOpen: false }">
->>>>>>> bd658a28a89dcbbe87205b492b7250294d4890ad
     <header class="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white sticky top-0 z-30">
         <div class="flex items-center space-x-1">
             <img alt="Logo orange square with white S letter" class="w-6 h-6" height="24"
@@ -193,6 +189,7 @@
                         <i class="fas fa-chevron-down ml-auto mt-1 text-xs"></i>
                     </button>
                     <ul class="mt-2 space-y-1 pl-3 text-gray-700 font-normal">
+                         <li><a class="block hover:text-orange-500" href="{{ route('seller.combo.index') }}">Tạo combo</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Kênh Marketing</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Đấu Giá Rẻ Vô Địch</a></li>
                         <li><a class="block hover:text-orange-500" href="#">Quảng Cáo Shopee</a></li>
