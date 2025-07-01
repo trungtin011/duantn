@@ -40,6 +40,11 @@ class ProductVariant extends Model
         return $this->hasOne(ProductDimension::class, 'variantID');
     }
 
+    public function dimensions()
+{
+    return $this->hasOne(ProductDimension::class, 'variantID');
+}
+
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class, 'variantID');
