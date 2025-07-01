@@ -188,8 +188,10 @@
                         <select name="type" id="type" class="form-select">
                             <option value="promotion">Khuyến mãi</option>
                             <option value="system">Tin hệ thống</option>
-                            
+                            <option value="order">Đơn hàng</option>
+                            <option value="security">Bảo mật</option>
                         </select>
+                        <div class="form-note">Chọn loại thông báo phù hợp với nội dung</div>
                     </div>
                 </div>
                 

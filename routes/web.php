@@ -450,5 +450,13 @@ Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->na
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.order.show');
 Route::post('/reviews', [ProductReviewController::class, 'store'])->name('reviews.store');
 
+// User Notifications Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+});
+
 
 

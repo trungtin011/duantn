@@ -22,12 +22,12 @@ class NotificationsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required',
-            'content' => 'required',
+            'title' => 'required|string|max:100',
+            'content' => 'required|string|max:500',
             'sender_id' => 'required|exists:users,id',
             'receiver_type' => 'required|in:user,shop,admin,all,employee',
             'direct_to' => 'nullable|exists:users,id|exists:shops,id',
-            'type' => 'required|in:promotion,system',
+            'type' => 'required|in:promotion,system,order,security',
             'priority' => 'required|in:low,normal,high',
             'status' => 'nullable|in:pending,active,inactive,failed',
         ];
