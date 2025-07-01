@@ -90,7 +90,6 @@ Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCa
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::get('/notification', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
 
     //quản lý user
     Route::get('/user', [UserController::class, 'index'])->name('admin.users.index');
@@ -150,14 +149,14 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
 
     // notifications
     Route::prefix('notifications')->group(function () {
-        Route::get('/edit/{id}', [NotificationController::class, 'edit'])->name('admin.notifications.edit');
-        Route::get('/create', [NotificationController::class, 'create'])->name('admin.notifications.create');
-        Route::get('/', [NotificationController::class, 'index'])->name('admin.notifications.index');
-        Route::post('/', [NotificationController::class, 'store'])->name('admin.notifications.store');
-        Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
-        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
-        Route::get('/{id}', [NotificationController::class, 'show'])->name('admin.notifications.show');
-        Route::put('/{id}', [NotificationController::class, 'update'])->name('admin.notifications.update');
+        Route::get('/edit/{id}', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
+        Route::get('/create', [AdminNotificationsControllers::class, 'create'])->name('admin.notifications.create');
+        Route::get('/', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
+        Route::post('/', [AdminNotificationsControllers::class, 'store'])->name('admin.notifications.store');
+        Route::post('/mark-all-as-read', [AdminNotificationsControllers::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
+        Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
+        Route::get('/{id}', [AdminNotificationsControllers::class, 'show'])->name('admin.notifications.show');
+        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
         
     });
     // products categories

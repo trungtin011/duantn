@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
+    @vite('resources/js/echo.js')
     @stack('styles')
 </head>
 
@@ -58,25 +59,81 @@
                                 d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
                         </svg>
                         <span class="capitalize text-sm">Thông báo</span>
+                        @auth
+                            @php
+                                $unreadCount = 0;
+                                if (isset($groupedNotifications)) {
+                                    foreach ($groupedNotifications as $type => $notifications) {
+                                        $unreadCount += $notifications->where('status', 'unread')->count();
+                                    }
+                                }
+                            @endphp
+                            @if($unreadCount > 0)
+                                <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                                    {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                                </span>
+                            @endif
+                        @endauth
                     </div>
-                    <div class="absolute dropdown-notification-content z-10 right-0 bg-white w-[300px] p-3 shadow">
+                    <div class="absolute dropdown-notification-content z-10 right-0 bg-white w-[350px] max-h-[400px] overflow-y-auto shadow-lg rounded-lg border">
                         <!-- Thêm phần nhô lên -->
                         <div class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle">
                         </div>
-                        <div class="">
-                            <span class="text-sm text-gray-500">Thông báo tin nhắn mới</span>
-                        </div>
-                        <div class="border-t border-gray-200 my-2"></div>
-                        <div class="flex items-center gap-1 text-black">
-                            <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
-                                alt="phone" class="w-[50px] h-[50px] rounded-[5px]">
-                            <div class="flex flex-col gap-1 overflow-hidden">
-                                <h6 class="uppercase text-sm w-full truncate">
-                                    LIVESTREAMING: Giảm giá 50% cho tất cả đồ bơi và giao hàng nhanh miễn phí!
-                                </h6>
-                                <span class="text-xs text-gray-500">1 phút trước</span>
+                        
+                        @auth
+                            @if(isset($groupedNotifications) && $groupedNotifications->count() > 0)
+                                <div class="p-3">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="text-sm font-semibold text-gray-700">Thông báo mới</span>
+                                        <a href="#" class="text-xs text-blue-600 hover:text-blue-800">Xem tất cả</a>
+                                    </div>
+                                    
+                                    @foreach($groupedNotifications as $type => $notifications)
+                                        @foreach($notifications as $notification)
+                                            <div class="flex items-start gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer {{ $notification->status === 'unread' ? 'bg-blue-50' : '' }}">
+                                                <div class="flex-shrink-0">
+                                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-blue-600">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $notification->title }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                        {{ $notification->content }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-400 mt-1">
+                                                        {{ $notification->created_at->diffForHumans() }}
+                                                    </p>
+                                                </div>
+                                                @if($notification->status === 'unread')
+                                                    <div class="flex-shrink-0">
+                                                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="p-6 text-center">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-gray-400">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Không có thông báo mới</p>
+                                </div>
+                            @endif
+                        @else
+                            <div class="p-6 text-center">
+                                <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
+                                <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng nhập</a>
                             </div>
-                        </div>
+                        @endauth
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -271,128 +328,6 @@
                     <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
                     <a href="{{ route('wishlist.index') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
 
-
-                    @auth
-                        <!-- Notification Bell -->
-                        <a href="#" id="notification-bell" class="relative" @click="notificationDropdownOpen = !notificationDropdownOpen" @click.away="notificationDropdownOpen = false">
-                            <i class="fa fa-bell text-gray-700 hover:text-orange-500"></i>
-                            <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                                {{ $groupedNotifications->flatten()->count() }}
-                            </span>
-                        </a>
-
-                        <!-- Notification Dropdown -->
-                        <div x-show="notificationDropdownOpen" 
-                            x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95"
-                            class="absolute top-20 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
-                            <div class="py-2">
-                                <div class="px-4 py-2 border-b border-gray-100">
-                                    <h3 class="text-sm font-semibold text-gray-900">Thông báo</h3>
-                                </div>
-                                
-                                <div class="max-h-96 overflow-y-auto" id="notification-list">
-                                    @forelse($groupedNotifications as $type => $notifications)
-                                        <!-- Notification Group -->
-                                        <div class="notification-type" data-type="{{ $type }}">
-                                            <div class="px-4 py-2 bg-gray-50">
-                                                <h4 class="text-xs font-medium text-gray-500 uppercase">
-                                                    @switch($type)
-                                                        @case('order')
-                                                            Đơn hàng
-                                                            @break
-                                                        @case('promotion')
-                                                            Khuyến mãi
-                                                            @break
-                                                        @case('system')
-                                                            Hệ thống
-                                                            @break
-                                                        @default
-                                                            {{ $type }}
-                                                    @endswitch
-                                                </h4>
-                                            </div>
-                                            <div class="notification-items">
-                                                @foreach($notifications as $notification)
-                                                    <a href="{{ $notification->link ?? '#' }}" 
-                                                    class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100"
-                                                    data-notification-id="{{ $notification->id }}"
-                                                    data-notification-title="{{ $notification->title }}"
-                                                    data-notification-type="{{ $notification->type }}"
-                                                    data-notification-receiver-type="{{ $notification->receiver_type }}">
-                                                        <div class="flex items-start">
-                                                            <div class="flex-shrink-0">
-                                                                <span class="inline-block h-2 w-2 rounded-full {{ $notification->read_at ? 'bg-gray-300' : 'bg-red-500' }}"></span>
-                                                            </div>
-                                                            <div class="ml-3 w-0 flex-1">
-                                                                <p class="text-sm font-medium text-gray-900">{{ $notification->title }}</p>
-                                                                <p class="text-sm text-gray-500">{{ $notification->content }}</p>
-                                                                <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                                                            </div>
-                                                        </div>
-                                                    </a>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @empty
-                                        <div class="px-4 py-3 text-center text-gray-500">
-                                            <p>Không có thông báo mới</p>
-                                        </div>
-                                    @endforelse
-                                </div> 
-                                <!-- View All Link -->
-                                <div class="px-4 py-2 bg-gray-50">
-                                    <a href="#" class="text-sm font-medium text-orange-500 hover:text-orange-600">Xem tất cả thông báo</a>
-                                </div>
-                            </div>
-                            <div class="border-t border-gray-200 my-2"></div>
-                            <div class="flex items-center gap-1 text-black">
-                                <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
-                                    alt="phone" class="w-[50px] h-[50px] rounded-[5px]">
-                                <div class="flex flex-col gap-1 overflow-hidden">
-                                    <h6 class="uppercase text-sm w-full truncate">
-                                        LIVESTREAMING: Giảm giá 50% cho tất cả đồ bơi và giao hàng nhanh miễn phí!
-                                    </h6>
-                                    <span class="text-xs text-gray-500">1 phút trước</span>
-                                </div>
-                            </div>
-                        </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <select class="bg-transparent border border-none text-white px-2 py-1 rounded text-sm">
-                                <option class="text-black">Tiếng Việt</option>
-                                <option class="text-black">English</option>
-                            </select>
-                        </div>
-                    @endauth
-                        <div class="flex items-center gap-2">
-                            <div class="relative dropdown-parent">
-                            @guest
-                                <div class="flex items-center gap-2 text-sm">
-                                    <a href="{{ route('signup') }}" class="hover:text-[#EF3248]">
-                                        Đăng ký
-                                    </a>
-                                    |
-                                    <a href="{{ route('login') }}" class="hover:text-[#EF3248]">
-                                        Đăng nhập
-                                    </a>
-                                </div>
-                            @endguest
-                            @auth
-                                <div class="flex items-center gap-1 w-auto">
-                                    <div class="w-6 h-6 rounded-full flex items-center justify-center">
-                                        <!-- Avatar placeholder -->
-                                        <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
-                                            alt="avatar" class="w-full h-full rounded-full">
-                                    </div>
-                                        <span
-                                            class="text-sm font-semibold text-white hover:text-[#EF3248] cursor-pointer">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
-                                </div>
-                            @endauth
                             <!-- Dropdown Menu (Desktop) -->
                             <div class="absolute dropdown-content w-[250px] shadow bg-white">
                                 @auth

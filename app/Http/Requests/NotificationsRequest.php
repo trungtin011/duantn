@@ -29,14 +29,14 @@ class NotificationsRequest extends FormRequest
             'direct_to' => 'nullable|exists:users,id|exists:shops,id',
             'type' => 'required|in:promotion,system',
             'priority' => 'required|in:low,normal,high',
-            'status' => 'nullable|in:unread,read,archived',
+            'status' => 'nullable|in:pending,active,inactive,failed',
         ];
     }
 
     protected function prepareForValidation()
     {
         $this->merge([
-            'status' => 'unread',
+            'status' => 'pending',
         ]);
     }
 

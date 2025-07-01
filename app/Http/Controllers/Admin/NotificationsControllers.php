@@ -11,55 +11,14 @@ use App\Models\Shop;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Events\NotificationEvent;   
+use App\Models\NotificationReceiver;
+
 
 class NotificationsControllers extends Controller
 {
     public function index(Request $request){
-        $query = Notification::query();
-        
-        if ($request->receiver_type && $request->receiver_type !== 'all') {
-            $query->where('receiver_type', $request->receiver_type);
-        }
 
-        $rawNotifications = $query
-            ->select('id', 'title', 'content', 'sender_id', 'receiver_type', 'priority', 'type', 'status', 'created_at', 'updated_at', 'receiver_user_id', 'receiver_shop_id')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $grouped = $rawNotifications->groupBy('title')
-            ->map(function ($group) {
-                return [
-                    'id' => $group->first()->id,
-                    'title' => $group->first()->title,
-                    'content' => $group->first()->content,
-                    'sender' => $group->first()->sender,
-                    'receiver_type' => $group->first()->receiver_type,
-                    'priority' => $group->first()->priority,
-                    'type' => $group->first()->type,
-                    'status' => $group->first()->status,
-                    'created_at' => $group->first()->created_at,
-                    'updated_at' => $group->first()->updated_at,
-                    'receiver_ids' => $group->map(function ($notification) {
-                        return $notification->receiver_user_id ?? $notification->receiver_shop_id;
-                    })->filter()->unique()->values(),
-                    'first_id' => $group->first()->id
-                ];
-            })
-            ->values();
-
-        $perPage = 10;
-        $currentPage = $request->input('page', 1);
-        $offset = ($currentPage - 1) * $perPage;
-        $total = $grouped->count();
-        $paginatedItems = $grouped->slice($offset, $perPage);
-        $notifications = new LengthAwarePaginator(
-            $paginatedItems,
-            $total,
-            $perPage,
-            $currentPage,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-
+        $notifications = Notification::paginate(10);
         return view('admin.notifications.index', compact('notifications'));
     }
 
@@ -137,19 +96,16 @@ class NotificationsControllers extends Controller
             'type' => $type,
             'priority' => $priority,
             'expired_at' => $expireDate,
+            'status' => 'pending',
         ];
-    
-        if ($receiver_type == 'user') {
-            $notificationData['receiver_user_id'] = $receiverId;
-        } elseif ($receiver_type == 'shop') {
-            $notificationData['receiver_shop_id'] = $receiverId;
-        } elseif ($receiver_type == 'admin') {
-            $notificationData['receiver_user_id'] = $receiverId;
-        } elseif ($receiver_type == 'employee') {
-            $notificationData['receiver_user_id'] = $receiverId;
-        }
-    
+
         $notification = Notification::create($notificationData);
+        $notification_receiver = NotificationReceiver::create([
+            'notification_id' => $notification->id,
+            'receiver_id' => $receiverId,
+            'receiver_type' => $receiver_type,
+        ]);
+        
         event(new NotificationEvent($notification));
         return $notification;
     }
@@ -165,19 +121,14 @@ class NotificationsControllers extends Controller
                 'type' => $type,
                 'priority' => $priority,
                 'expired_at' => $expireDate,
+                'status' => 'pending',
             ];
-    
-            if ($receiver_type == 'user') {
-                $notificationData['receiver_user_id'] = $group;
-            } elseif ($receiver_type == 'shop') {
-                $notificationData['receiver_shop_id'] = $group;
-            } elseif ($receiver_type == 'admin') {
-                $notificationData['receiver_user_id'] = $group;
-            } elseif ($receiver_type == 'employee') {
-                $notificationData['receiver_user_id'] = $group;
-            }
-            
                 $notification = Notification::create($notificationData);
+                $notification_receiver = NotificationReceiver::create([
+                    'notification_id' => $notification->id,
+                    'receiver_id' => $group,
+                    'receiver_type' => $receiver_type,
+                ]);
                 $notifications[] = $notification;
                 event(new NotificationEvent($notification));
             }
