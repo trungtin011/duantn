@@ -195,4 +195,9 @@ class Product extends Model
     {
         return $this->flash_sale_price && now()->lt($this->flash_sale_end_at);
     }
+    public function orderReviews()
+{
+    return $this->hasMany(OrderReview::class, 'product_id');
+}
+
 }

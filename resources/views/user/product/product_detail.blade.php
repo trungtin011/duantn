@@ -430,109 +430,95 @@
                 </div>
 
                 <!-- Đánh giá -->
-                <div class="bg-white rounded-lg p-6 mt-6 shadow">
-                    <div class="flex justify-between">
-                        <div class="flex flex-col w-[25%]">
-                            <h3 class="text-xl font-semibold mb-4">Khách hàng đánh giá</h3>
-                            <div class="flex items-center gap-4 mb-4">
-                                <span class="text-2xl text-red-600">
-                                    {{ number_format($product->reviews->avg('rating'), 1) }}/5
-                                </span>
-                                <div class="flex gap-1">
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <i
-                                            class="{{ $i <= round($product->reviews->avg('rating')) ? 'fas' : 'far' }} fa-star text-yellow-400"></i>
-                                    @endfor
-                                </div>
-                            </div>
-                            <div class="flex flex-col">
-                                @php
-                                    $ratingSummary = $product->reviews->groupBy('rating')->map->count();
-                                    $totalReviews = $product->reviews->count();
-                                    $maxCount = 5;
-                                @endphp
+               <!-- ĐÁNH GIÁ SẢN PHẨM -->
+<div class="bg-white rounded-lg p-6 mt-6 shadow">
+    <h3 class="text-xl font-semibold mb-4">Đánh giá sản phẩm</h3>
 
-                                <div class="mb-6">
-                                    @for ($i = 5; $i >= 1; $i--)
-                                        @php
-                                            $count = $ratingSummary->get($i, 0);
-                                            $percent = min(($count / $maxCount) * 100, 100);
-                                        @endphp
-                                        <div class="flex items-center gap-3 mb-1 cursor-pointer">
-                                            <a href="{{ request()->fullUrlWithQuery(['filter' => 'star-' . $i]) }}"
-                                                class="flex items-center gap-2 group w-full">
-                                                <div class="w-fit flex gap-1">
-                                                    @for ($j = 1; $j <= 5; $j++)
-                                                        <i
-                                                            class="{{ $j <= $i ? 'fas' : 'far' }} fa-star text-yellow-400 text-xs"></i>
-                                                    @endfor
-                                                </div>
-                                                <div class="flex bg-gray-200 h-2 rounded w-[152px]">
-                                                    <div class="bg-[#0A68FF] h-2 rounded"
-                                                        style="width: {{ $percent }}%"></div>
-                                                </div>
-                                                <div
-                                                    class="w-fit text-right text-sm text-gray-600 ml-2 group-hover:text-blue-600">
-                                                    {{ $count }}
-                                                </div>
-                                            </a>
-                                        </div>
-                                    @endfor
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-center gap-2 w-[75%]" id="review-filters">
-                            <button data-filter=""
-                                class="review-filter-btn text-sm px-3 py-1 rounded border text-gray-700">
-                                Mới nhất
-                            </button>
-                            <button data-filter="images"
-                                class="review-filter-btn text-sm px-3 py-1 rounded border text-gray-700">
-                                Có hình ảnh
-                            </button>
-                            @for ($i = 5; $i >= 1; $i--)
-                                <button data-filter="star-{{ $i }}"
-                                    class="review-filter-btn text-sm px-3 py-1 rounded border text-gray-700">
-                                    {{ $i }} sao
-                                </button>
-                            @endfor
-                        </div>
-                    </div>
+    @if (auth()->check() && $hasPurchased && !$hasReviewed)
+        <form action="{{ route('product.review', $product->id) }}" method="POST" enctype="multipart/form-data" class="mb-6">
+            @csrf
+            <label class="block mb-2 text-sm">Đánh giá sao:</label>
+            <div class="flex gap-1 mb-4">
+                @for ($i = 1; $i <= 5; $i++)
+                    <svg data-value="{{ $i }}"
+                         class="star w-6 h-6 cursor-pointer text-gray-300 hover:text-yellow-400"
+                         fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 0 0 .95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 0 0-.364 1.118l1.286 3.966c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 0 0-1.176 0l-3.385 2.46c-.784.57-1.838-.197-1.54-1.118l1.286-3.966a1 1 0 0 0-.364-1.118L2.045 9.393c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 0 0 .95-.69l1.286-3.966z" />
+                    </svg>
+                @endfor
+                <input type="hidden" name="rating" id="ratingInput" required>
+            </div>
+            <textarea name="comment" rows="3" class="w-full border p-2 rounded mb-4 text-sm" placeholder="Viết nhận xét..."></textarea>
+            <input type="file" name="images[]" multiple accept="image/*" class="mb-4 block w-full text-sm">
+            <input type="file" name="video" accept="video/*" class="mb-4 block w-full text-sm">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Gửi đánh giá</button>
+        </form>
+    @endif
 
-                    <!-- Form đánh giá nếu người dùng đã mua hàng -->
-                    @if (auth()->check() && $hasPurchased)
-                        <form action="{{ route('product.review', $product->id) }}" method="POST"
-                            enctype="multipart/form-data" class="mb-6">
-                            @csrf
-                            <label class="block mb-2 text-sm">Đánh giá sao:</label>
-                            <div class="flex gap-1 mb-4">
-                                @for ($i = 1; $i <= 5; $i++)
-                                    <svg data-value="{{ $i }}"
-                                        class="star w-6 h-6 cursor-pointer text-gray-300 hover:text-yellow-400"
-                                        fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 0 0 .95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 0 0-.364 1.118l1.286 3.966c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 0 0-1.176 0l-3.385 2.46c-.784.57-1.838-.197-1.54-1.118l1.286-3.966a1 1 0 0 0-.364-1.118L2.045 9.393c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 0 0 .95-.69l1.286-3.966z" />
-                                    </svg>
-                                @endfor
-                                <input type="hidden" name="rating" id="ratingInput" required>
-                            </div>
-                            <textarea name="comment" rows="3" class="w-full border p-2 rounded mb-4 text-sm"
-                                placeholder="Viết nhận xét..."></textarea>
-                            <input type="file" name="images[]" multiple accept="image/*"
-                                class="mb-4 block w-full text-sm">
-                            <input type="file" name="video" accept="video/*" class="mb-4 block w-full text-sm">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Gửi đánh
-                                giá</button>
-                        </form>
-                    @endif
-
-                    <!-- Hiển thị danh sách đánh giá bằng partial -->
-                    <div id="review-list">
-                        @include('partials.review_list', ['reviews' => $filteredReviews])
+    <!-- HIỂN THỊ DANH SÁCH ĐÁNH GIÁ -->
+    @if ($product->orderReviews->isEmpty())
+        <p class="text-gray-500">Chưa có đánh giá nào cho sản phẩm này.</p>
+    @else
+        @foreach ($product->orderReviews->sortByDesc('created_at') as $review)
+            <div class="border-b pb-4 mb-4">
+                <div class="flex items-center mb-2">
+                    <strong class="mr-2">{{ $review->user->fullname ?? 'Người dùng' }}</strong>
+                    <div class="text-yellow-400">
+                        @for ($i = 1; $i <= 5; $i++)
+                            <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star"></i>
+                        @endfor
                     </div>
                 </div>
-            </div>
+                <p class="text-sm text-gray-700 mb-2">{{ $review->comment }}</p>
 
+                <!-- Hình ảnh đánh giá -->
+                @if ($review->images && $review->images->count())
+                    <div class="flex gap-2 mb-2">
+                        @foreach ($review->images as $img)
+                            <img src="{{ Storage::url($img->image_path) }}" alt="Ảnh đánh giá"
+                                 class="w-24 h-24 object-cover rounded border" />
+                        @endforeach
+                    </div>
+                @endif
+
+                <!-- Video đánh giá -->
+                @if ($review->videos && $review->videos->count())
+                    <div class="mb-2">
+                        @foreach ($review->videos as $vid)
+                            <video controls class="w-64 rounded">
+                                <source src="{{ Storage::url($vid->video_path) }}" type="video/mp4">
+                                Trình duyệt của bạn không hỗ trợ video.
+                            </video>
+                        @endforeach
+                    </div>
+                @endif
+
+                <div class="text-xs text-gray-400">{{ $review->created_at->diffForHumans() }}</div>
+            </div>
+        @endforeach
+    @endif
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('ratingInput');
+
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                const value = star.dataset.value;
+                ratingInput.value = value;
+                stars.forEach(s => {
+                    s.classList.toggle('text-yellow-400', s.dataset.value <= value);
+                    s.classList.toggle('text-gray-300', s.dataset.value > value);
+                });
+            });
+        });
+    });
+</script>
+@endpush
             <!-- Cột bên phải (Thông tin shop) -->
             <div class="lg:col-span-1">
                 <div class="sticky top-5">
