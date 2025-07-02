@@ -27,20 +27,43 @@ class ProductControllerSeller extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['variants', 'images']);
+        $seller = Auth::user()->seller;
+        $shop = $seller->shops->first(); // Hoặc dùng session('current_shop_id') nếu bạn có hỗ trợ đa shop
 
-        // Tìm kiếm theo tên hoặc SKU
+        if (!$shop) {
+            return back()->with('error', 'Bạn chưa có shop để quản lý sản phẩm.');
+        }
+
+        $query = Product::with(['variants', 'images'])
+            ->where('shopID', $shop->id); // 🔐 Lọc sản phẩm đúng shop
+
+        // Tìm kiếm
         if ($request->filled('search')) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('sku', 'LIKE', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                    ->orWhere('sku', 'like', "%{$searchTerm}%");
+            });
         }
 
-        // Lọc theo trạng thái nếu có chọn
+        // Lọc trạng thái
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            switch ($request->status) {
+                case 'low_stock':
+                    $query->where('stock_total', '<=', 5)->where('stock_total', '>', 0);
+                    break;
+                case 'out_of_stock':
+                    $query->where('stock_total', 0);
+                    break;
+                case 'scheduled':
+                case 'active':
+                case 'inactive':
+                    $query->where('status', $request->status);
+                    break;
+            }
         }
 
-        $products = $query->paginate(5);
+        $products = $query->latest()->paginate(10);
 
         return view('seller.products.index', compact('products'));
     }
@@ -60,6 +83,10 @@ class ProductControllerSeller extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate(
+            $this->validationRules(), // Không truyền gì là store
+            $this->validationMessages()
+        );
         try {
             DB::beginTransaction();
 
@@ -106,42 +133,9 @@ class ProductControllerSeller extends Controller
                 Log::info('Found existing shop for seller via relationship', ['shop_id' => $shop->id, 'ownerID' => $userId]);
             }
 
-            $rules = [
-                'name' => 'required|string|max:100',
-                'description' => 'nullable|string',
-                'brand' => 'required|string|max:100',
-                'category' => 'required|string|max:100',
-                'sku' => 'required|string|max:100|unique:products,sku',
-                'price' => 'required|numeric|min:0',
-                'purchase_price' => 'required|numeric|min:0',
-                'sale_price' => 'required|numeric|min:0',
-                'stock_total' => 'required|integer|min:0',
-                'length' => 'nullable|numeric|min:0',
-                'width' => 'nullable|numeric|min:0',
-                'height' => 'nullable|numeric|min:0',
-                'weight' => 'nullable|numeric|min:0',
-                'meta_title' => 'nullable|string|max:255',
-                'meta_description' => 'nullable|string|max:320',
-                'meta_keywords' => 'nullable|string|max:255',
-                'attributes' => 'nullable|array',
-                'attributes.*.name' => 'nullable|string|max:100',
-                'attributes.*.values' => 'nullable|string',
-                'variants' => 'nullable|array',
-                'variants.*.name' => 'required|string|max:255',
-                'variants.*.price' => 'required|numeric|min:0',
-                'variants.*.purchase_price' => 'required|numeric|min:0',
-                'variants.*.sale_price' => 'required|numeric|min:0',
-                'variants.*.sku' => 'required|string|max:100|unique:product_variants,sku',
-                'variants.*.stock_total' => 'required|integer|min:0',
-                'variants.*.length' => 'nullable|numeric|min:0',
-                'variants.*.width' => 'nullable|numeric|min:0',
-                'variants.*.height' => 'nullable|numeric|min:0',
-                'variants.*.weight' => 'nullable|numeric|min:0',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-                'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            ];
-
-            $request->validate($rules);
+            if ($request->sale_price < $request->purchase_price) {
+                return back()->withErrors(['sale_price' => 'Giá bán không được nhỏ hơn giá nhập.'])->withInput();
+            }
 
             // Xử lý meta_keywords
             $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
@@ -371,37 +365,15 @@ class ProductControllerSeller extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate(
+            $this->validationRules(true, $id), // truyền true + id khi update
+            $this->validationMessages()
+        );
         try {
             DB::beginTransaction();
 
             $product = Product::findOrFail($id);
             Log::info('Updating product', ['product_id' => $id, 'request_data' => $request->except(['images', 'variant_images'])]);
-
-            $rules = [
-                'name' => 'required|string|max:100',
-                'description' => 'nullable|string',
-                'brand' => 'required|string|max:100',
-                'category' => 'required|string|max:100',
-                'sku' => 'required|string|max:100|unique:products,sku,' . $id,
-                'price' => 'required|numeric|min:0',
-                'purchase_price' => 'required|numeric|min:0',
-                'sale_price' => 'required|numeric|min:0',
-                'stock_total' => 'required|integer|min:0',
-                'meta_title' => 'nullable|string|max:255',
-                'meta_description' => 'nullable|string|max:320',
-                'meta_keywords' => 'nullable|string|max:255',
-                'attributes' => 'nullable|array',
-                'attributes.*.name' => 'nullable|string|max:100',
-                'attributes.*.values' => 'nullable|string',
-                'variants' => 'nullable|array',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-                'variants.*.length' => 'nullable|numeric|min:0', // Thêm validation cho kích thước biến thể
-                'variants.*.width' => 'nullable|numeric|min:0',
-                'variants.*.height' => 'nullable|numeric|min:0',
-                'variants.*.weight' => 'nullable|numeric|min:0',
-            ];
-
-            $request->validate($rules);
 
             $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
 
@@ -686,7 +658,7 @@ class ProductControllerSeller extends Controller
                 'variants.*.shipping_cost' => 'nullable|numeric|min:0',
                 'variants.*.attributes.*.attribute_name' => 'required|string|max:100',
                 'variants.*.attributes.*.value' => 'required|string|max:100',
-                'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+                'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
             ];
 
             $request->validate($rules);
@@ -786,5 +758,97 @@ class ProductControllerSeller extends Controller
             Log::error('Lỗi khi thêm biến thể: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm biến thể: ' . $e->getMessage())->withInput();
         }
+    }
+
+
+
+    // Tái sử dụng cho store & update
+    protected function validationRules($isUpdate = false, $productId = null)
+    {
+        $skuRule = $isUpdate
+            ? 'required|string|max:100|unique:products,sku,' . $productId
+            : 'required|string|max:100|unique:products,sku';
+
+        $variantSkuRule = $isUpdate
+            ? 'required|string|max:100|distinct' // Không validate unique ở update
+            : 'required|string|max:100|unique:product_variants,sku';
+
+        return [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'brand' => 'required|string|max:100',
+            'category' => 'required|string|max:100',
+            'sku' => $skuRule,
+            'price' => 'required|numeric|min:0',
+            'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0',
+            'stock_total' => 'required|integer|min:0',
+            'length' => 'nullable|numeric|min:0',
+            'width' => 'nullable|numeric|min:0',
+            'height' => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:320',
+            'meta_keywords' => 'nullable|string|max:255',
+            'attributes' => 'nullable|array',
+            'attributes.*.name' => 'nullable|string|max:100',
+            'attributes.*.values' => 'nullable|string',
+
+            'variants' => 'nullable|array',
+            'variants.*.name' => 'required|string|max:255',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.purchase_price' => 'required|numeric|min:0',
+            'variants.*.sale_price' => 'required|numeric|min:0',
+            'variants.*.sku' => $variantSkuRule,
+            'variants.*.stock_total' => 'required|integer|min:0',
+            'variants.*.length' => 'nullable|numeric|min:0',
+            'variants.*.width' => 'nullable|numeric|min:0',
+            'variants.*.height' => 'nullable|numeric|min:0',
+            'variants.*.weight' => 'nullable|numeric|min:0',
+
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+            'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+        ];
+    }
+
+    protected function validationMessages()
+    {
+        return [
+            'name.required' => 'Vui lòng nhập tên sản phẩm.',
+            'name.max' => 'Tên sản phẩm không được vượt quá :max ký tự.',
+            'sku.required' => 'Vui lòng nhập mã SKU.',
+            'sku.unique' => 'Mã SKU này đã tồn tại.',
+            'brand.required' => 'Vui lòng chọn thương hiệu.',
+            'category.required' => 'Vui lòng chọn danh mục.',
+            'price.required' => 'Vui lòng nhập giá gốc.',
+            'price.numeric' => 'Giá gốc phải là số.',
+            'price.min' => 'Giá gốc không được nhỏ hơn 0.',
+            'purchase_price.required' => 'Vui lòng nhập giá nhập.',
+            'sale_price.required' => 'Vui lòng nhập giá bán.',
+            'stock_total.required' => 'Vui lòng nhập số lượng tồn kho.',
+            'stock_total.integer' => 'Số lượng tồn kho phải là số nguyên.',
+            'stock_total.min' => 'Tồn kho không được nhỏ hơn 0.',
+
+            'meta_title.max' => 'Tiêu đề SEO không vượt quá :max ký tự.',
+            'meta_description.max' => 'Mô tả SEO không vượt quá :max ký tự.',
+            'meta_keywords.max' => 'Từ khóa SEO không vượt quá :max ký tự.',
+
+            'variants.*.name.required' => 'Vui lòng nhập tên phiên bản.',
+            'variants.*.sku.required' => 'Vui lòng nhập mã SKU cho phiên bản.',
+            'variants.*.sku.unique' => 'Mã SKU phiên bản đã tồn tại.',
+            'variants.*.price.required' => 'Vui lòng nhập giá gốc cho phiên bản.',
+            'variants.*.purchase_price.required' => 'Vui lòng nhập giá nhập cho phiên bản.',
+            'variants.*.sale_price.required' => 'Vui lòng nhập giá bán cho phiên bản.',
+            'variants.*.stock_total.required' => 'Vui lòng nhập tồn kho cho phiên bản.',
+            'variants.*.stock_total.integer' => 'Tồn kho phiên bản phải là số nguyên.',
+            'variants.*.stock_total.min' => 'Tồn kho phiên bản không được nhỏ hơn 0.',
+
+            'images.*.image' => 'Mỗi tệp tải lên phải là hình ảnh.',
+            'images.*.mimes' => 'Chỉ chấp nhận ảnh định dạng: jpeg, png, jpg, webp, svg.',
+            'images.*.max' => 'Ảnh không được vượt quá 5MB.',
+            'variant_images.*.*.image' => 'Ảnh phiên bản phải là hình ảnh.',
+            'variant_images.*.*.mimes' => 'Ảnh phiên bản chỉ chấp nhận định dạng jpeg, png, jpg, webp, svg.',
+            'variant_images.*.*.max' => 'Ảnh phiên bản không được vượt quá 5MB.',
+        ];
     }
 }

@@ -25,6 +25,16 @@ class Brand extends Model
     // Mối quan hệ với SubBrand
     public function subBrands()
     {
-        return $this->hasMany(SubBrand::class, 'brandID');
+        return $this->hasMany(Brand::class, 'parent_id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Brand::class, 'parent_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'brand');
     }
 }

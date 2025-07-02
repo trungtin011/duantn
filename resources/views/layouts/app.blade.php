@@ -270,12 +270,14 @@
             </button>
 
             <!-- Search & Icons -->
-            <div class="hidden md:flex items-center gap-10 w-5/6 py-3">
-                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+            <div class="hidden md:flex items-center gap-10 w-5/6">
+                <form action="{{ route('search') }}" method="GET"
                     class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
-                    @csrf
-                    <input type="text" placeholder="Bạn muốn tìm kiếm gì ?" class="text-sm focus:outline-none" />
-                    <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                    <input type="text" name="query" placeholder="Bạn muốn tìm kiếm gì ?"
+                        class="text-sm focus:outline-none w-full" value="{{ request('query') }}" />
+                    <button type="submit">
+                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                    </button>
                 </form>
                 <div class="relative">
                     <div
