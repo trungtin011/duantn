@@ -291,8 +291,12 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 });
 
 Route::prefix('customer')->group(function () {
+    Route::get('/search', [ProductController::class, 'search'])->name('search');
+    // Route Hồ sơ người dùng
     Route::get('/profile/{id}', [ShopController::class, 'show'])->name('shop.profile');
+    // Route follow shop
     Route::post('/shop/follow/{shop}', [ShopController::class, 'follow'])->name('shop.follow');
+    // Route unfollow shop
     Route::post('/shop/unfollow/{shop}', [ShopController::class, 'unfollow'])->name('shop.unfollow');
     // customer routes
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
@@ -320,6 +324,7 @@ Route::prefix('customer')->group(function () {
     })->name('about');
 
     Route::middleware('CheckRole:customer')->group(function () {
+        // Trang đăng ký người dùng
         Route::get('/seller/index/', [RegisterShopController::class, 'index'])->name('seller.index');
 
         // Trang thông tin người dùng

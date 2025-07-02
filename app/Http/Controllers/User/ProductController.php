@@ -12,6 +12,8 @@ use App\Models\CouponUser;
 use App\Models\Shop;
 use App\Models\Order;
 use App\Models\OrderReview;
+use App\Models\Brand;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -21,6 +23,108 @@ use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
+
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $categoryIds = $request->input('category', []);
+        $brandIds = $request->input('brand', []);
+        $priceMin = $request->input('price_min');
+        $priceMax = $request->input('price_max');
+        $sort = $request->input('sort', 'relevance');
+
+        // Lấy tên các danh mục cha + con
+        $categoryNames = collect();
+        if (!empty($categoryIds)) {
+            $categories = Category::whereIn('id', $categoryIds)->with('subCategories')->get();
+            $categoryNames = $categories->flatMap(function ($cat) {
+                return collect([$cat->name])->merge($cat->subCategories->pluck('name'));
+            });
+        }
+
+        // Tương tự cho thương hiệu (chưa cần lấy sub-brand)
+        $brandNames = collect();
+        if (!empty($brandIds)) {
+            $brandNames = Brand::whereIn('id', $brandIds)->pluck('name');
+        }
+
+        // Truy vấn sản phẩm
+        $products = Product::query()
+            ->when($query, function ($q) use ($query) {
+                $q->where('name', 'like', "%$query%");
+            })
+            ->when($categoryNames->isNotEmpty(), function ($q) use ($categoryNames) {
+                $q->whereIn('category', $categoryNames);
+            })
+            ->when($brandNames->isNotEmpty(), function ($q) use ($brandNames) {
+                $q->whereIn('brand', $brandNames);
+            })
+            ->when($priceMin, fn($q) => $q->where('sale_price', '>=', $priceMin))
+            ->when($priceMax, fn($q) => $q->where('sale_price', '<=', $priceMax))
+            ->when($sort, function ($q) use ($sort) {
+                switch ($sort) {
+                    case 'price_asc':
+                        $q->orderBy('sale_price', 'asc');
+                        break;
+                    case 'price_desc':
+                        $q->orderBy('sale_price', 'desc');
+                        break;
+                    case 'sold':
+                        $q->orderBy('sold_quantity', 'desc');
+                        break;
+                    case 'newest':
+                        $q->orderBy('created_at', 'desc');
+                        break;
+                    default:
+                        $q->orderBy('id', 'desc');
+                        break;
+                }
+            })
+            ->where('status', 'active')
+            ->with(['category', 'brand']) // nếu bạn dùng quan hệ thật
+            ->paginate(20);
+
+        // Đếm sản phẩm theo danh mục cha + con
+        $categories = Category::whereNull('parent_id')->with('subCategories')->get()->map(function ($category) {
+            $category->product_count = Product::where('category', $category->name)->count();
+
+            foreach ($category->subCategories as $sub) {
+                $sub->product_count = Product::where('category', $sub->name)->count();
+                $category->product_count += $sub->product_count;
+            }
+
+            return $category;
+        });
+
+        // Đếm sản phẩm theo thương hiệu cha + con
+        $brands = Brand::whereNull('parent_id')->with('subBrands')->get()->map(function ($brand) {
+            $brand->product_count = Product::where('brand', $brand->name)->count();
+
+            foreach ($brand->subBrands as $sub) {
+                $sub->product_count = Product::where('brand', $sub->name)->count();
+                $brand->product_count += $sub->product_count;
+            }
+
+            return $brand;
+        });
+
+        // Gắn lại đường dẫn ảnh nếu thiếu
+        $products->getCollection()->transform(function ($product) {
+            if ($product->image_path && !Str::startsWith($product->image_path, 'product_images/')) {
+                $product->image_path = 'product_images/' . $product->image_path;
+            }
+            return $product;
+        });
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('partials.product_list', compact('products'))->render()
+            ]);
+        }
+
+        return view('user.search.results', compact('products', 'query', 'categories', 'brands'));
+    }
+
 
     public function show(Request $request, $slug)
     {

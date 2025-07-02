@@ -61,6 +61,16 @@ class Product extends Model
         return $this->hasMany(ProductVariantAttributeValue::class, 'product_id');
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+    
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
     // App/Models/Product.php
     public function attributes()
     {
