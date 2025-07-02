@@ -11,10 +11,27 @@ use Illuminate\Support\Facades\Auth;
 
 class ComboController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $shopID = Auth::user()->seller->shops->first()->id;
-        $combos = Combo::where('shopID', $shopID)->with('products.product')->get();
+        $user = Auth::user();
+
+        // Kiểm tra xem seller có shop hay không
+        $shop = $user->seller->shops->first();
+        if (!$shop) {
+            return redirect()->back()->with('error', 'Bạn chưa có shop nào để quản lý combo.');
+        }
+
+        $query = Combo::where('shopID', $shop->id)->with('products.product');
+
+        if ($request->filled('search')) {
+            $query->where('combo_name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $combos = $query->latest()->paginate(10);
 
         return view('seller.combo.index', compact('combos'));
     }
@@ -68,7 +85,7 @@ class ComboController extends Controller
     public function edit($id)
     {
         $shopID = Auth::user()->seller->shops->first()->id;
-        $combo = Combo::where('shopID', $shopID)->with('products.product')->findOrFail($id);
+        $combo = Combo::where('id', $id)->where('shopID', $shopID)->with('products.product')->firstOrFail();
         $products = Product::where('shopID', $shopID)->where('status', 'active')->get();
 
         return view('seller.combo.edit', compact('combo', 'products'));
@@ -88,7 +105,7 @@ class ComboController extends Controller
         ]);
 
         $shopID = Auth::user()->seller->shops->first()->id;
-        $combo = Combo::where('shopID', $shopID)->findOrFail($id);
+        $combo = Combo::where('id', $id)->where('shopID', $shopID)->firstOrFail();
 
         // Cập nhật combo
         $combo->update([
@@ -114,10 +131,10 @@ class ComboController extends Controller
         return redirect()->route('seller.combo.index')->with('success', 'Combo updated successfully.');
     }
 
-     public function destroy($id)
+    public function destroy($id)
     {
         $shopID = Auth::user()->seller->shops->first()->id;
-        $combo = Combo::where('shopID', $shopID)->findOrFail($id);
+        $combo = Combo::where('id', $id)->where('shopID', $shopID)->firstOrFail();
 
         // Xóa các sản phẩm liên quan trong ComboProduct
         ComboProduct::where('comboID', $combo->id)->delete();
@@ -128,6 +145,3 @@ class ComboController extends Controller
         return redirect()->route('seller.combo.index')->with('success', 'Combo deleted successfully.');
     }
 }
-
-
-

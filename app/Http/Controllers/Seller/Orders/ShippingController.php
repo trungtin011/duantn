@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Seller\Orders;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use App\Models\ShopAddress;
 use Illuminate\Support\Facades\Log;
+
+use App\Models\Order;
+use App\Models\ShopAddress;
+use App\Models\ShopOrderHistory;
+
 use Carbon\Carbon;
 
 class ShippingController extends Controller
@@ -18,6 +22,8 @@ class ShippingController extends Controller
     protected $contentType;
     protected $trackingEndpoint;
     protected $cancelEndpoint;
+    protected $detailOrderEndpoint;
+    protected $returnEndpoint;
 
     public function __construct(){
         $this->token = config('services.ghn.token');
@@ -27,15 +33,16 @@ class ShippingController extends Controller
         $this->contentType = 'application/json';
         $this->trackingEndpoint = config('services.ghn.tracking');
         $this->cancelEndpoint = config('services.ghn.cancel');
+        $this->detailOrderEndpoint = config('services.ghn.detail_order');
+        $this->returnEndpoint = config('services.ghn.return');
     }
 
-    public function createShippingOrder($orders, $id_shop_address, $payment_type_id, $note, $required_note){
+    public function createShippingOrder($shop_order, $orders, $id_shop_address, $payment_type_id, $note, $required_note){
 
         if(!$orders){
            return redirect()->back()->with('error', 'Không tìm thấy đơn hàng');
         }
-        $shop_address = ShopAddress::find($id_shop_address);
-
+        $shop_address = ShopAddress::where('id', $id_shop_address)->first();
         $shop_province_name = $shop_address->shop_province;
         $shop_district_name = $shop_address->shop_district;
         $shop_ward_name = $shop_address->shop_ward;
@@ -46,9 +53,7 @@ class ShippingController extends Controller
         $receiver_ward_name =  $orders->address->ward;
         $receiver_street_address = $orders->address->address;
 
-        
         $url = $this->ghnApiUrl . $this->createEndpoint;
-    
         $response = Http::withHeaders([
             'Token' => $this->token,
             'Content-Type' => $this->contentType,
@@ -58,13 +63,13 @@ class ShippingController extends Controller
             'payment_type_id' => (int)$payment_type_id,
             'note' => $note,
             'required_note' => $required_note,
-            'from_name' => $orders->shop->shop_name,
-            'from_phone' => $orders->shop->shop_phone,
+            'from_name' => $shop_order->shop->shop_name,
+            'from_phone' => $shop_order->shop->shop_phone,
             'from_address' => $shop_street_address,
             'from_ward_name' => $shop_ward_name,
             'from_district_name' => $shop_district_name,
             'from_province_name' => $shop_province_name,
-            'client_order_code' => $orders->order_code,
+            'client_order_code' => $shop_order->code,
             'to_name' => $orders->address->receiver_name,
             'to_phone' => $orders->address->receiver_phone,
             'to_address' => $receiver_street_address,
@@ -91,16 +96,23 @@ class ShippingController extends Controller
         ]);
         $responseData = $response->json();
         if ($response->status() == 200) {
-            $orders->shop_order->first()->update(['status' => 'shipping']);
-            $expectedDateTime = $responseData['data']['expected_delivery_time']; // "2025-06-17T16:59:59Z"
+            $shop_order->update(['status' => 'ready_to_pick']);
+            $expectedDateTime = $responseData['data']['expected_delivery_time']; 
             $expectedDate = Carbon::parse($expectedDateTime)->format('Y-m-d H:i');
             $data = [
                 'tracking_code' => $responseData['data']['order_code'],
                 'expected_delivery_date' => $expectedDate,
             ];
-            $orders->shop_order->first()->update($data);
-            $orders->update(['order_status' => 'shipped']);
-            Log::info('status: ' . $orders->order_status);
+            $shop_order->update($data);
+
+            $shop_order_history = new ShopOrderHistory();
+            $shop_order_history->shop_order_id = $shop_order->id;
+            $shop_order_history->status = 'ready_to_pick';
+            $shop_order_history->description = 'Người bán đã giao cho đơn vị vận chuyển';
+            $shop_order_history->note = $note;
+            $shop_order_history->save();
+
+            $orders = Order::orderStatusUpdate($orders->id);
             return true;
         } else {
             return false;
@@ -115,18 +127,16 @@ class ShippingController extends Controller
         return view('seller.orders.shipping.create', compact('orders'));
     }
 
-    public function cancelOrderGHN($orders){
+    public function cancelOrderGHN($order){
         $url = $this->ghnApiUrl . $this->cancelEndpoint;
-
         $response = Http::withHeaders([
             'Token' => $this->token,
             'Content-Type' => $this->contentType,
             'shopId' => $this->shopId,
         ])
         ->post($url, [
-            'order_code' => $orders->shop_order->first()->tracking_code,
+            'order_codes' => [$order->tracking_code],
         ]);
-
         if($response->status() == 200){
             return true;
         }
@@ -134,4 +144,37 @@ class ShippingController extends Controller
             return false;
         }
     }
+
+    public function getDetailOrder($tracking_code){
+        $url = $this->ghnApiUrl . $this->detailOrderEndpoint;
+        $response = Http::withHeaders([
+            'Token' => $this->token,
+            'Content-Type' => $this->contentType,
+        ])->get($url, ['client_order_code' => $tracking_code]);
+
+        $responseData = $response->json();
+        if($response->status() == 200){
+            return $responseData;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public function returnOrderGHN($order){
+
+        $status_orders = $this->getDetailOrder($order->tracking_code);
+        
+        if($status_orders !== 'storing' || $status_orders !== 'picked'){
+            return redirect()->back()->with('error', 'Đơn hàng đã được giao thành công, không thể hoàn trả');
+        }
+
+        $url = $this->ghnApiUrl . $this->returnEndpoint;
+        $response = Http::withHeaders([
+            'Token' => $this->token,
+            'Content-Type' => $this->contentType,
+        ])->post($url, ['order_codes' => [$order->order_code]]);
+    }
+
+
 }

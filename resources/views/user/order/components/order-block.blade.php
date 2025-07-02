@@ -1,33 +1,17 @@
+<!-- Hiển thị đơn hàng (thêm nút hủy) -->
 <div class="order-block bg-white shadow-sm rounded-lg mb-4">
     <div class="flex items-center justify-between py-4 px-4 sm:px-6 border-b border-gray-200">
         <div class="flex items-center">
             <h6 class="font-bold text-base sm:text-lg mr-3 mb-0">
                 {{ $order->shop ? $order->shop->shop_name : 'Unknown Shop' }}
             </h6>
-            <button
-                class="bg-black border border-gray-500 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm flex items-center mr-2 hover:bg-white hover:text-black">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-5 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                </svg>
-                Chat
-            </button>
-            <button
-                class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm flex items-center hover:bg-[#DB4444] hover:text-white hover:border-none">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-5 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
-                </svg>
-                Xem Shop
-            </button>
         </div>
         <span
             class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $order->status_classes }}">
             {{ $order->status_label }}
         </span>
     </div>
+
     <div
         class="order-body px-4 sm:px-6 py-4 {{ $order->order_status === 'cancelled' ? 'filter grayscale opacity-75' : '' }}">
         @forelse ($order->items as $item)
@@ -56,7 +40,7 @@
                         class="font-bold text-sm sm:text-base flex items-center gap-2 {{ $order->order_status === 'cancelled' ? 'text-gray-400' : 'text-black' }}">
                         <span
                             class="font-thin line-through {{ $order->order_status === 'cancelled' ? 'text-gray-300' : 'text-gray-400' }}">
-                            {{ number_format($item->product->price, 0, ',', '.') }}đ
+                            {{ number_format($item->product->price ?? 0, 0, ',', '.') }}đ
                         </span>
                         <span
                             class="font-thin {{ $order->order_status === 'cancelled' ? 'text-gray-400' : 'text-red-500' }}">
@@ -65,33 +49,168 @@
                     </span>
                 </div>
             </div>
+
+            @if ($order->order_status === 'delivered' && !in_array($item->productID, $reviewedProductIds))
+                <div class="text-right mt-2">
+                    <button
+                        class="open-review-modal bg-[#DB4444] text-white px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-[#CF4343]"
+                        data-order-id="{{ $order->id }}" data-shop-id="{{ $order->shop->id }}"
+                        data-product-id="{{ $item->productID }}" data-product-name="{{ $item->product_name }}">
+                        Đánh giá sản phẩm
+                    </button>
+                </div>
+            @endif
         @empty
             <p class="text-gray-500 text-center">Không có sản phẩm trong đơn hàng.</p>
         @endforelse
     </div>
-    <div class="order-footer bg-[#EF3248]/5 py-3 px-4 sm:px-6 flex flex-col items-end gap-4">
-        <span class="font-bold text-sm sm:text-base font-thin mr-4">
-            Thành tiền:
-            <span class="text-red-500 text-2xl font-thin">{{ number_format($order->total_price, 0, ',', '.') }}đ</span>
+
+    <div class="order-footer bg-gray-50 py-3 px-4 sm:px-6 flex justify-end items-center">
+        <span class="font-bold text-sm sm:text-base mr-4">Thành tiền:
+            <span class="text-red-500">{{ number_format($order->total_price, 0, ',', '.') }}đ</span>
         </span>
-        <div class="flex items-center">
-            @if ($order->order_status === 'delivered')
-                <button
-                    class="bg-[#DB4444] text-white px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-[#CF4343]">Mua
-                    Lại</button>
-                <button
-                    class="border border-black text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-black hover:text-white rounded-[4px]">Liên
-                    hệ người bán</button>
-            @elseif ($order->order_status === 'cancelled' || $order->order_status === 'refunded')
-            @else
-                <button
-                    class="border border-black text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm mr-2 hover:bg-black hover:text-white rounded-[4px]">Liên
-                    hệ người bán</button>
-            @endif
-            <a href="{{ route('user.orders.show', $order->id) }}"
-                class="border border-black text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white rounded-[4px]">Xem
-                chi tiết</a>
-        </div>
+        @if (in_array($order->order_status, ['pending', 'processing']))
+            <button
+                class="open-cancel-modal bg-red-500 text-white px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-red-600 mr-4"
+                data-order-id="{{ $order->id }}">
+                Hủy đơn hàng
+            </button>
+        @endif
+        <a href="{{ route('user.order.show', $order->id) }}"
+            class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">
+            Xem chi tiết
+        </a>
     </div>
 </div>
-<br>
+
+<!-- Modal hủy đơn -->
+<div id="cancelModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white w-full max-w-lg p-6 rounded shadow relative">
+        <button id="closeCancelModalBtn"
+            class="absolute top-2 right-2 text-gray-600 hover:text-black text-xl">×</button>
+        <h2 class="text-lg font-bold mb-4">Hủy đơn hàng</h2>
+
+        <form id="cancelForm" method="POST" action="{{ route('user.order.cancel', ':id') }}">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="orderID" id="modalOrderIdCancel">
+
+            <label class="block mb-2 font-semibold">Lý do hủy đơn:</label>
+            <textarea name="cancel_reason" class="w-full border p-2 mb-4" rows="3" placeholder="Nhập lý do hủy đơn..."
+                required></textarea>
+
+            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Xác nhận
+                hủy</button>
+            <button type="button" id="closeCancelModalBtnSubmit"
+                class="bg-gray-300 text-black px-4 py-2 rounded ml-2 hover:bg-gray-400">Hủy</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal đánh giá -->
+<div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white w-full max-w-lg p-6 rounded shadow relative">
+        <button id="closeModalBtn"
+            class="absolute top-2 right-2 text-gray-600 hover:text-black text-xl">&times;</button>
+        <h2 id="modalProductName" class="text-lg font-bold mb-4">Đánh giá sản phẩm</h2>
+
+        <form id="reviewForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="orderID" id="modalOrderId">
+            <input type="hidden" name="shopID" id="modalShopId">
+            <input type="hidden" name="productID" id="modalProductId">
+
+            <label class="block mb-2 font-semibold">Đánh giá sao:</label>
+            <div class="flex mb-4" id="modalStarRating">
+                @for ($i = 1; $i <= 5; $i++)
+                    <i class="bi bi-star-fill text-3xl text-gray-400 cursor-pointer mx-1 transition-colors duration-150"
+                        data-value="{{ $i }}"></i>
+                @endfor
+                <input type="hidden" name="rating" id="modalRating" value="0">
+            </div>
+
+            <label class="block mb-2 font-semibold">Bình luận:</label>
+            <textarea name="comment" class="w-full border p-2 mb-4" rows="4"></textarea>
+
+            <label class="block mb-2 font-semibold">Hình ảnh:</label>
+            <input type="file" name="images[]" accept="image/*" multiple class="mb-4">
+
+            <label class="block mb-2 font-semibold">Video:</label>
+            <input type="file" name="video" accept="video/*" class="mb-4">
+
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Gửi đánh
+                giá</button>
+        </form>
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Logic cho đánh giá (giữ nguyên)
+            const stars = document.querySelectorAll('#modalStarRating i');
+            const ratingInput = document.getElementById('modalRating');
+            const reviewModal = document.getElementById('reviewModal');
+            const reviewForm = document.getElementById('reviewForm');
+
+            const orderIdInput = document.getElementById('modalOrderId');
+            const shopIdInput = document.getElementById('modalShopId');
+            const productIdInput = document.getElementById('modalProductId');
+            const productNameEl = document.getElementById('modalProductName');
+
+            document.querySelectorAll('.open-review-modal').forEach(button => {
+                button.addEventListener('click', function() {
+                    orderIdInput.value = this.dataset.orderId;
+                    shopIdInput.value = this.dataset.shopId;
+                    productIdInput.value = this.dataset.productId;
+                    productNameEl.innerText = `Đánh giá: ${this.dataset.productName}`;
+
+                    ratingInput.value = 0;
+                    stars.forEach(s => {
+                        s.classList.remove('text-yellow-500');
+                        s.classList.add('text-gray-400');
+                    });
+
+                    const actionUrl = "{{ route('reviews.store', ':id') }}".replace(':id', this
+                        .dataset.orderId);
+                    reviewForm.setAttribute('action', actionUrl);
+
+                    reviewModal.classList.remove('hidden');
+                    reviewModal.classList.add('flex');
+                });
+            });
+
+            document.getElementById('closeModalBtn').addEventListener('click', function() {
+                reviewModal.classList.add('hidden');
+                reviewModal.classList.remove('flex');
+            });
+
+            // Logic cho hủy đơn
+            const cancelModal = document.getElementById('cancelModal');
+            const cancelForm = document.getElementById('cancelForm');
+            const orderIdInputCancel = document.getElementById('modalOrderIdCancel');
+
+            document.querySelectorAll('.open-cancel-modal').forEach(button => {
+                button.addEventListener('click', function() {
+                    orderIdInputCancel.value = this.dataset.orderId;
+                    const actionUrl = "{{ route('user.order.cancel', ':id') }}".replace(':id', this
+                        .dataset.orderId);
+                    cancelForm.setAttribute('action', actionUrl);
+                    cancelModal.classList.remove('hidden');
+                    cancelModal.classList.add('flex');
+                });
+            });
+
+            document.querySelectorAll('#closeCancelModalBtn, #closeCancelModalBtnSubmit').forEach(button => {
+                button.addEventListener('click', function() {
+                    cancelModal.classList.add('hidden');
+                    cancelModal.classList.remove('flex');
+                });
+            });
+        });
+    </script>
+@endpush
+<!-- End of order-block -->

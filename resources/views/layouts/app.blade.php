@@ -15,10 +15,12 @@
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/user/post.css') }}">
+    @vite('resources/js/echo.js')
     @stack('styles')
 </head>
 
@@ -39,7 +41,7 @@
             @auth
                 @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
                     <div>
-                        <a href="{{ route('seller.register') }}" class="text-[#EF3248] capitalize hover:text-orange-600">
+                        <a href="{{ route('seller.index') }}" class="text-[#EF3248] capitalize hover:text-orange-600">
                             Kênh người bán
                         </a>
                     </div>
@@ -226,11 +228,24 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false }">
-        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex items-center gap-[180px]">
+    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
+        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
             <!-- Logo -->
-            <a class="text-xl font-bold text-gray-900" href="/">Exclusive</a>
-
+            @if (empty($settings->logo))
+                <a class="w-full lg:w-[14%] flex items-center justify-center gap-2 py-2" href="/">
+                    <div class="bg-black flex items-center gap-2 py-1 px-2 rounded lg:w-[175px]">
+                        <img src="{{ asset('images/logo.svg') }}" alt="logo" class="w-[30%] h-[30%]">
+                        <div class="text-white grid">
+                            <h5 class="m-0 text-xl">ZynoxMall</h5>
+                            <span class="text-xs text-right">zynoxmall.xyz</span>
+                        </div>
+                    </div>
+                </a>
+            @else
+                <a href="{{ route('home') }}" class="flex items-center">
+                    <img src="{{ asset('storage/' . $settings->logo) }}" alt="logo" class="w-20">
+                </a>
+            @endif
             <!-- Menu cho desktop -->
             {{-- <ul class="hidden md:flex gap-6 text-sm font-medium text-gray-700">
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
@@ -256,14 +271,17 @@
 
             <!-- Search & Icons -->
             <div class="hidden md:flex items-center gap-10 w-5/6">
-                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                <form action="{{ route('search') }}" method="GET"
                     class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
-                    @csrf
-                    <input type="text" placeholder="Bạn muốn tìm kiếm gì ?" class="text-sm focus:outline-none" />
-                    <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                    <input type="text" name="query" placeholder="Bạn muốn tìm kiếm gì ?"
+                        class="text-sm focus:outline-none w-full" value="{{ request('query') }}" />
+                    <button type="submit">
+                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                    </button>
                 </form>
                 <div class="relative">
-                    <div class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
+                    <div
+                        class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
                         <span class="text-center text-xs text-white">3</span>
                     </div>
                     <a href="{{ route('cart') }}">
@@ -428,7 +446,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="bg-[#F5F5F5] pb-10">
+    <main class="bg-[#F5F5F5] pb-10 min-h-screen">
         @yield('content')
     </main>
 
@@ -488,7 +506,8 @@
             <!-- Liên kết nhanh -->
             <div>
                 <h4 class="font-bold mb-2">Liên kết nhanh</h4>
-                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Chính sách bảo mật</a>
+                <a href="{{ route('help.center') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Chính
+                    sách bảo mật</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Điều khoản sử dụng</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Câu hỏi thường gặp</a>
                 <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Liên hệ</a>
@@ -523,6 +542,11 @@
 
     @stack('scripts')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        window.Laravel = {
+            user: @json(Auth::user())
+        };
+    </script>
 </body>
 
 </html>

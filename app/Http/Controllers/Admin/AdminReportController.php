@@ -4,65 +4,75 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Report;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Thêm trait này
+use Illuminate\Support\Facades\Log; // Thêm thư viện 
 
 class AdminReportController extends Controller
 {
-    public function index()
+    use AuthorizesRequests; // Sử dụng trait
+
+    /**
+     * Hiển thị danh sách báo cáo với tìm kiếm và lọc.
+     */
+    public function index(Request $request)
     {
-        $reports = Report::all();
-        return view('admin.reports.index' , compact('reports'));
+        $query = Report::query();
+
+        // Tìm kiếm
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                    ->orWhereHas('product', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('reporter', function ($q) use ($search) {
+                        $q->where('fullname', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Lọc theo trạng thái
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        $reports = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('admin.reports.index', compact('reports'));
     }
 
-    public function show($id)
+    /**
+     * Hiển thị chi tiết báo cáo.
+     */
+    public function show(Report $report)
     {
-        $report = Report::with(['reporter', 'reportedUser', 'product', 'shop', 'order', 'resolvedBy'])->findOrFail($id);
         return view('admin.reports.show', compact('report'));
     }
 
-    public function destroy(Report $report)
+    /**
+     * Cập nhật trạng thái báo cáo.
+     */
+    public function updateStatus(Request $request, Report $report)
     {
-        $report->delete();
-        return redirect()->back();
-    }
+        $request->validate([
+            'status' => 'required|in:pending,under_review,processing,resolved,rejected',
+            'resolution_note' => 'nullable|string|max:1000',
+        ]);
 
-    public function updateStatus(Request $request, $id)
-    {
-        $report = Report::findOrFail($id);
-        $status = $request->input('status');
-
-        $report->status = $status;
-
-        $statusToResolution = [
-            'resolved' => 'accepted',
-            'rejected' => 'rejected',
-            'under_review' => null,
-            'processing' => null,
-            'pending' => null,
-        ];
-
-        if (!$report->resolved_by && in_array($status, ['under_review', 'processing', 'resolved', 'rejected'])) {
+        $report->status = $request->status;
+        if ($request->status == 'resolved' || $request->status == 'rejected') {
             $report->resolved_by = Auth::id();
-        }
-
-        if (in_array($status, ['resolved', 'rejected'])) {
             $report->resolved_at = now();
-            $report->resolution = $statusToResolution[$status];
-
-            if (!$report->resolved_by) {
-                $report->resolved_by = Auth::id();
-            }
-
-            if ($status === 'rejected') {
-                $report->resolution_note = $request->input('resolution_note');
-            }
+        } else {
+            $report->resolved_by = null;
+            $report->resolved_at = null;
         }
-
+        $report->resolution_note = $request->resolution_note;
         $report->save();
 
-        return back()->with('success', 'Cập nhật trạng thái thành công');
+        return redirect()->back()->with('success', 'Trạng thái báo cáo đã được cập nhật.');
     }
-
 }

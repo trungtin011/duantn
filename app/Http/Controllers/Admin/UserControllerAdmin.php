@@ -50,12 +50,12 @@ class UserControllerAdmin extends Controller
      */
     public function edit($id): View
     {
-        return view('admin.users.edit', [
-            'user' => $user,
-            'roles' => UserRole::cases(),
-            'statuses' => UserStatus::cases(),
-            'genders' => UserGender::cases(),
-        ]);
+        $user = User::findOrFail($id);
+        $roles = ['admin' => 'Quản trị viên', 'customer' => 'Khách hàng'];
+        $statuses = ['active' => 'Hoạt động', 'inactive' => 'Không hoạt động', 'banned' => 'Bị khóa'];
+        $genders = ['male' => 'Nam', 'female' => 'Nữ'];
+
+        return view('admin.users.edit', compact('user', 'roles', 'statuses', 'genders'));
     }
 
     /**

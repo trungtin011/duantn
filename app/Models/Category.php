@@ -28,14 +28,26 @@ class Category extends Model
     // {
     //     return $this->hasMany(SubCategory::class, 'categoryID', 'id');
     // }
+
+
+
+    // public function parentCategory()
+    // {
+    //     return $this->belongsTo(Category::class, 'parent_id');
+    // }
     
     public function subCategories()
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
 
-    public function parentCategory()
+    public function parent()
     {
         return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'category', 'id');
     }
 }

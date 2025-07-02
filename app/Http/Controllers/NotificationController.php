@@ -24,7 +24,6 @@ class NotificationController extends Controller
         $notification->is_read = 'read';
         $notification->read_at = now();
         $notification->save();
-
         return back();
     }
 
