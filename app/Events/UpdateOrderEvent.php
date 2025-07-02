@@ -19,18 +19,26 @@ class UpdateOrderEvent
      */
     public function __construct()
     {
-        //
+        $this->shop_id = $shop_id;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
+    public function broadcastAs()
+    {
+        return 'update-order';
+    }
+
+    public function broadcastWith()
+    {
+        return [
+            'shop_id' => $this->shop_id,
+            'order' => $this->order
+        ];
+    }
+
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('channel-name'),
+            new PrivateChannel('order.updated.' . $this->shop_id)
         ];
     }
 }

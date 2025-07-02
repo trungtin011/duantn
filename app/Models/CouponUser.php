@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CouponUser extends Model
 {
+    protected $table = 'coupon_user';
     protected $fillable = [
         'coupon_id',
         'user_id',

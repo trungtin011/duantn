@@ -6,9 +6,13 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Database\Seeders\IdentityVerificationSeeder;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
         // Bảng users
@@ -75,7 +79,7 @@ class DatabaseSeeder extends Seeder
                 'address' => '13 Lý Thái Tổ',
                 'province' => 'Thành phố Hồ Chí Minh',
                 'district' => 'Quận 1',
-                'ward' => 'Tự Đức',
+                'ward' => 'Cầu Kho',
                 'zip_code' => null,
                 'address_type' => 'home',
                 'note' => null,
@@ -161,7 +165,7 @@ class DatabaseSeeder extends Seeder
         DB::table('shops')->insert([
             [
                 'id' => 1,
-                'ownerID' => 2,
+                'ownerID' => 2, // Seller
                 'shop_name' => 'Seller One Shop',
                 'shop_phone' => '0901234568',
                 'shop_email' => 'shop@seller1.com',
@@ -264,20 +268,6 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Bảng employees
-        DB::table('employees')->insert([
-            [
-                'shopID' => 1,
-                'userID' => 2,
-                'position' => 'Manager',
-                'salary' => 10000000,
-                'hire_date' => '2023-01-01',
-                'status' => 'active',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
         // Bảng products
         DB::table('products')->insert([
             [
@@ -350,6 +340,37 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
+        // Bảng attributes
+        DB::table('attributes')->insert([
+            [
+                'id' => 1,
+                'name' => 'Color',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng attribute_values
+        DB::table('attribute_values')->insert([
+            [
+                'id' => 1,
+                'attribute_id' => 1,
+                'value' => 'Black',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
+        // Bảng product_variant_attribute_values
+        DB::table('product_variant_attribute_values')->insert([
+            [
+                'product_variant_id' => 1,
+                'attribute_value_id' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
+
         // Bảng cart
         DB::table('cart')->insert([
             [
@@ -377,7 +398,7 @@ class DatabaseSeeder extends Seeder
                 'coupon_discount' => 0,
                 'payment_method' => 'cod',
                 'payment_status' => 'pending',
-                'order_status' => 'processing',
+                'order_status' => 'pending',
                 'order_note' => null,
                 'cancel_reason' => null,
                 'paid_at' => null,
@@ -434,8 +455,7 @@ class DatabaseSeeder extends Seeder
                 'product_name' => 'Smartphone X',
                 'brand' => 'Brand A',
                 'category' => 'Electronics',
-                'attribute_value' => 'Black',
-                'attribute_name' => 'Color',
+                'variant_name' => 'Black 128GB',
                 'product_image' => '/products/smartphone-x-black.png',
                 'quantity' => 1,
                 'unit_price' => 8500000,
@@ -450,9 +470,7 @@ class DatabaseSeeder extends Seeder
         DB::table('order_status_history')->insert([
             [
                 'order_id' => 1,
-                'status' => 'processing',
-                'description' => 'Order is being processed',
-                'shipping_provider' => null,
+                'order_status' => 'pending',
                 'note' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -500,28 +518,18 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Bảng review
-        DB::table('review')->insert([
-            [
-                'userID' => 3,
-                'productID' => 1,
-                'shopID' => 1,
-                'rating' => 5,
-                'comment' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
-        // Bảng review_images
-        DB::table('review_images')->insert([
-            [
-                'reviewID' => 1,
-                'image_path' => '/reviews/review1.png',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
+        // // Bảng review
+        // DB::table('review')->insert([
+        //     [
+        //         'userID' => 3,
+        //         'productID' => 1,
+        //         'shopID' => 1,
+        //         'rating' => 5,
+        //         'comment' => null,
+        //         'created_at' => Carbon::now(),
+        //         'updated_at' => Carbon::now(),
+        //     ],
+        // ]);
 
         // Bảng wishlist
         DB::table('wishlist')->insert([
@@ -550,10 +558,8 @@ class DatabaseSeeder extends Seeder
         // Bảng notifications
         DB::table('notifications')->insert([
             [
-                'shop_id' => 1,
+                'shop_id' => null,
                 'sender_id' => 1,
-                'receiver_user_id' => 3,
-                'receiver_shop_id' => null,
                 'title' => 'Order Confirmation',
                 'content' => 'Your order ORD001 has been confirmed.',
                 'type' => 'order',
@@ -561,13 +567,21 @@ class DatabaseSeeder extends Seeder
                 'receiver_type' => 'user',
                 'priority' => 'normal',
                 'status' => 'pending',
-                'is_read' => false,
-                'read_at' => null,
-                'expired_at' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
         ]);
+        
+        DB::table('notification_receiver')->insert([
+            [
+                'notification_id' => 1,
+                'receiver_id' => 3,
+                'receiver_type' => 'user',
+                'is_read' => false,
+                'read_at' => null,
+            ],
+        ]);
+
 
         // Bảng report
         DB::table('report')->insert([

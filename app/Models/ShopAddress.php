@@ -15,7 +15,10 @@ class ShopAddress extends Model
         'shop_province',
         'shop_district',
         'shop_ward',
+        'note',
         'is_default',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
@@ -26,4 +29,4 @@ class ShopAddress extends Model
     {
         return $this->belongsTo(Shop::class, 'shopID', 'id');
     }
-} 
+}

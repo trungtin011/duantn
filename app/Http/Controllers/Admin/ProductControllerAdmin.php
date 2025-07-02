@@ -566,9 +566,7 @@ class ProductControllerAdmin extends Controller
     }
 
 
-    /**
-     * Xóa sản phẩm (soft delete)
-     */
+
     public function destroy($id)
     {
         try {
@@ -576,12 +574,13 @@ class ProductControllerAdmin extends Controller
 
             // Tìm sản phẩm cần xóa
             $product = Product::findOrFail($id);
+            $variantIds = ProductVariant::where('productID', $product->id)->pluck('id');
 
             // Xóa tất cả liên kết: biến thể, ảnh, thuộc tính, kích thước
             ProductVariant::where('productID', $product->id)->delete();
             ProductImage::where('productID', $product->id)->delete();
-            ProductAttribute::where('product_id', $product->id)->delete();
             ProductDimension::where('productID', $product->id)->delete();
+            ProductVariantAttributeValue::whereIn('product_variant_id', $variantIds)->delete();
 
             // Xóa sản phẩm chính
             $product->delete();
@@ -594,9 +593,7 @@ class ProductControllerAdmin extends Controller
         }
     }
 
-    /**
-     * Hiển thị chi tiết sản phẩm
-     */
+
     public function show($id)
     {
         $product = Product::with(['variants', 'images', 'dimensions'])->findOrFail($id);

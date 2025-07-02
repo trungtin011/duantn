@@ -65,7 +65,18 @@ class User extends Authenticatable
 
     public function seller()
     {
-        return $this->hasOne(\App\Models\Seller::class, 'userID', 'id');
+        // Sửa lại khóa ngoại thành 'userID' thay vì mặc định 'user_id'
+        return $this->hasOne(Seller::class, 'userID');
+    }
+
+    public function autoChatSetting()
+    {
+        return $this->hasOne(\App\Models\AutoChatSetting::class, 'user_id');
+    }
+
+    public function shop(): HasOne
+    {
+        return $this->hasOne(Shop::class, 'ownerID', 'id');
     }
 
     public function reviews()
@@ -77,11 +88,6 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
             ->withTimestamps();
-    }
-
-    public function shop(): HasOne
-    {
-        return $this->hasOne(Shop::class, 'ownerID', 'id');
     }
 
     // Scopes

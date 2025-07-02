@@ -1,15 +1,13 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
-use App\Http\Controllers\User\NotificationControllers as UserNotificationControllers;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\User\SuggestedProductController;
-use App\Http\Controllers\User\CheckoutController;
-use App\Http\Controllers\VNPayController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\QrLoginController;
 
 // admin
 use App\Http\Controllers\Admin\DashboardController;
@@ -22,14 +20,25 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\HelpArticleController;
+use App\Http\Controllers\Admin\HelpCategoryController;
+use App\Http\Controllers\Admin\LogoController;
+use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\Admin\PostCategoryController;
+use App\Http\Controllers\Admin\PostTagController;
+use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\HelpController;
+use App\Http\Controllers\Admin\AdminShopController;
+use App\Http\Controllers\Admin\NotificationsControllers;
 
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
-use App\Http\Controllers\Seller\OcrController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 use App\Http\Controllers\Seller\ComboController;
-use App\Http\Controllers\Seller\ReviewController;
+use App\Http\Controllers\Seller\ReviewController as SellerReviewController;
+use App\Http\Controllers\Seller\SellerSettingsController;
+use App\Http\Controllers\Seller\ChatSettingsController;
 
 //user
 use App\Http\Controllers\User\HomeController;
@@ -39,11 +48,20 @@ use App\Http\Controllers\User\OrderController as UserOrderController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\User\WishlistController;
-use App\Http\Controllers\ProductReviewController;
-use App\Http\Controllers\ReviewLikeController;
+use App\Http\Controllers\User\NotificationController;
+use App\Http\Controllers\User\FrontendController;
 use App\Http\Controllers\User\CheckinController;
 use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
+use App\Http\Controllers\User\CheckoutController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\OrderReviewController;
+use App\Http\Controllers\VNPayController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\NotificationController as UserNotificationController;
+use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\ReviewLikeController;
+use App\Http\Controllers\ShopController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -56,7 +74,6 @@ Route::get('/403', function () {
     return view('error.403');
 })->name('403');
 
-// trang đăng ký, đăng nhập, quên mật khẩu
 Route::get('/signup', function () {
     return view('auth.register');
 })->name('signup');
@@ -73,28 +90,28 @@ Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCa
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::get('/notification', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
+    // Route::get('/notification', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
 
     //quản lý user
-    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.users.index');
-    Route::get('/admin/user/create', [UserController::class, 'create'])->name('admin.users.create');
-    Route::post('/admin/user', [UserController::class, 'store'])->name('admin.users.store');
-    Route::get('/admin/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
-    Route::put('/admin/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
-    Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::get('/user', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/user/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/user', [UserController::class, 'store'])->name('admin.users.store');
+    Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
     //quản lý review
-    Route::get('/seller/review', [ReviewController::class, 'index'])->name('seller.reviews.index');
-    Route::get('/seller/review/{review}', [ReviewController::class, 'show'])->name('seller.reviews.show');
-    Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('seller.reviews.create');
-    Route::post('/seller/review', [ReviewController::class, 'store'])->name('seller.reviews.store');
-    Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('seller.reviews.destroy');
+    // Route::get('/seller/review', [ReviewController::class, 'index'])->name('seller.reviews.index');
+    // Route::get('/seller/review/{review}', [ReviewController::class, 'show'])->name('seller.reviews.show');
+    // Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('seller.reviews.create');
+    // Route::post('/seller/review', [ReviewController::class, 'store'])->name('seller.reviews.store');
+    // Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('seller.reviews.destroy');
 
     //quản lý review
-    Route::get('/admin/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
-    Route::get('/admin/report/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
+    Route::get('/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/report/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
     Route::put('/reports/{id}/status', [AdminReportController::class, 'updateStatus'])->name('report.updateStatus');
-    Route::delete('/admin/report/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
+    Route::get('/reports/{report}/edit', [AdminReportController::class, 'edit'])->name('admin.reports.edit');
 
     // products admin
     Route::prefix('products')->group(function () {
@@ -121,13 +138,26 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::delete('/{id}', [AttributeController::class, 'destroy'])->name('admin.attributes.destroy');
     });
 
-    // products orders
+    // orders
     Route::prefix('orders')->group(function () {
         Route::get('/', [AdminOrderController::class, 'index'])->name('admin.orders.index');
         Route::get('/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
         Route::put('/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
         Route::post('/{id}/refund', [AdminOrderController::class, 'refund'])->name('admin.orders.refund');
         Route::get('/report', [AdminOrderController::class, 'report'])->name('admin.orders.report');
+    });
+
+
+    // notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/edit/{id}', [UserNotificationController::class, 'edit'])->name('admin.notifications.edit');
+        Route::get('/create', [UserNotificationController::class, 'create'])->name('admin.notifications.create');
+        Route::get('/', [UserNotificationController::class, 'index'])->name('admin.notifications.index');
+        Route::post('/', [UserNotificationController::class, 'store'])->name('admin.notifications.store');
+        Route::post('/mark-all-as-read', [UserNotificationController::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
+        Route::delete('/{id}', [UserNotificationController::class, 'destroy'])->name('admin.notifications.destroy');
+        Route::get('/{id}', [UserNotificationController::class, 'show'])->name('admin.notifications.show');
+        Route::put('/{id}', [UserNotificationController::class, 'update'])->name('admin.notifications.update');
     });
 
     // products categories
@@ -140,15 +170,20 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/remove-sub/{id}', [AdminCategoryController::class, 'removeSubCategory'])->name('admin.categories.removeSubCategory');
     });
 
-    // products reviews
+    // reviews
     Route::get('/reviews', function () {
         return view('admin.reviews.index');
     })->name('admin.reviews.index');
 
-    // products settings
-    Route::get('/settings', function () {
-        return view('admin.settings.index');
-    })->name('admin.settings.index');
+    // settings
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
+        Route::get('/create', [AdminSettingsController::class, 'create'])->name('admin.settings.create');
+        Route::put('/', [AdminSettingsController::class, 'update'])->name('admin.settings.update');
+        Route::delete('/logo', [AdminSettingsController::class, 'destroyLogo'])->name('admin.settings.destroyLogo');
+        Route::delete('/banner', [AdminSettingsController::class, 'destroyBanner'])->name('admin.settings.destroyBanner');
+        Route::delete('/favicon', [AdminSettingsController::class, 'destroyFavicon'])->name('admin.settings.destroyFavicon');
+    });
 
     // users
     Route::prefix('users')->group(function () {
@@ -184,6 +219,28 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('admin.brands.edit');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('admin.brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('admin.brands.destroy');
+    // Post Category
+    Route::resource('post-categories', PostCategoryController::class);
+    // Post Tag
+    Route::resource('post-tags', PostTagController::class);
+    // Post
+    Route::resource('post', PostController::class);
+    // Help
+    Route::resource('help-category', HelpCategoryController::class);
+    Route::resource('help-article', HelpArticleController::class);
+    Route::resource('logo', LogoController::class);
+
+    // Shop Approval (Admin)
+    Route::prefix('shops')->group(function () {
+        Route::get('/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
+        Route::get('/{shop}', [AdminShopController::class, 'show'])->name('admin.shops.show');
+        Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
+        Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
+    });
+
+    Route::resource('notifications', NotificationsControllers::class, [
+        'as' => 'admin'
+    ]);
 });
 
 // seller routes
@@ -192,15 +249,15 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.home');
     })->name('seller.dashboard');
 
-    Route::get('/profile', function () {
-        return view('seller.profile');
-    })->name('seller.profile');
-
-    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
-    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-    // seller.order.shipping
-    Route::get('/order/{id}/shipping/create', [SellerOrderController::class, 'createShipping'])->name('seller.order.shipping.create');
-    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
+        Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
+        Route::put('/{id}/{shop_id}', [SellerOrderController::class, 'confirmOrder'])->name('seller.order.update-status');
+        Route::post('/{id}/shipping', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
+        Route::get('/order', [SellerOrderController::class, 'order'])->name('seller.orders');
+        Route::put('/cancel', [SellerOrderController::class, 'cancelOrder'])->name('seller.order.cancel');
+        Route::post('/tracking', [SellerOrderController::class, 'trackingOrder'])->name('seller.order.tracking');
+    });
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerSeller::class, 'index'])->name('seller.products.index');
@@ -221,7 +278,6 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.orders');
     })->name('seller.orders');
 
-
     Route::get('/combos', [ComboController::class, 'index'])->name('seller.combo.index');
     Route::get('/combos/create', [ComboController::class, 'create'])->name('seller.combo.create');
     Route::post('/combos', [ComboController::class, 'store'])->name('seller.combo.store');
@@ -234,17 +290,42 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/reviews/{id}', [ReviewController::class, 'show'])->name('seller.reviews.show');
 });
 
-
-
 Route::prefix('customer')->group(function () {
+    Route::get('/search', [ProductController::class, 'search'])->name('search');
+    // Route Hồ sơ người dùng
+    Route::get('/profile/{id}', [ShopController::class, 'show'])->name('shop.profile');
+    // Route follow shop
+    Route::post('/shop/follow/{shop}', [ShopController::class, 'follow'])->name('shop.follow');
+    // Route unfollow shop
+    Route::post('/shop/unfollow/{shop}', [ShopController::class, 'unfollow'])->name('shop.unfollow');
     // customer routes
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
-    Route::post('/product/{product}/review', [ProductReviewController::class, 'store'])->name('product.review')->middleware('auth');
+    // Route bình luận sản phẩm
+    Route::post('/product/{productId}/review', [ProductController::class, 'storeReview'])->name('product.review');
+    // Route yêu thích sản phẩm
+    Route::post('/product/{productId}/toggle-wishlist', [ProductController::class, 'toggleWishlist'])->name('product.toggleWishlist');
+    // Route báo cáo sản phẩm
+    Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
+    // Route Lưu coupon
+    Route::post('/coupon/{couponId}/save', [ProductController::class, 'saveCoupon'])->name('coupon.save');
+    // Route Lưu tất cả coupon
+    Route::post('/shop/{shopId}/save-all-coupons', [ProductController::class, 'saveAllCoupons'])->name('shop.saveAllCoupons');
+    // Route like sản phẩm
     Route::post('/review/{review}/like', [ReviewLikeController::class, 'toggle'])->middleware('auth');
 
-    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    // Trang liên hệ
+    Route::get('/contact', function () {
+        return view('user.contact');
+    })->name('contact');
+
+    // Trang giới thiệu
+    Route::get('/about', function () {
+        return view('user.about');
+    })->name('about');
+
     Route::middleware('CheckRole:customer')->group(function () {
-        Route::get('/seller/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
+        // Trang đăng ký người dùng
+        Route::get('/seller/index/', [RegisterShopController::class, 'index'])->name('seller.index');
 
         // Trang thông tin người dùng
         Route::prefix('user/account')->group(function () {
@@ -285,45 +366,49 @@ Route::prefix('customer')->group(function () {
             Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
         });
 
-        // Trang liên hệ
-        Route::get('/contact', function () {
-            return view('user.contact');
-        })->name('contact');
-
-        // Trang giới thiệu
-        Route::get('/about', function () {
-            return view('user.about');
-        })->name('about');
-
-        // Trang thanh toán
-        Route::get('/client/checkout', function () {
-            return view('client.checkout');
-        })->name('checkout');
+        //checkout
+        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+        Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+        Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+        Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+        Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
+        Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
+        Route::get('/checkout/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
+        Route::post('/checkout/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
 
         Route::prefix('user/order')->group(function () {
-            Route::get('/order-history', [OrderController::class, 'index'])->name('order_history');
-            Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
-            Route::post('/orders/{orderID}/cancel', [OrderController::class, 'cancel'])->name('user.orders.cancel');
-            Route::post('/orders/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.orders.reorder');
+            Route::get('/orders', [OrderController::class, 'index'])->name('order_history');
+            Route::get('/order/{orderID}', [OrderController::class, 'show'])->name('user.order.detail');
+            Route::patch('/user/order/{order}/cancel', [OrderController::class, 'cancel'])->name('user.order.cancel');
+            Route::get('/order/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.order.reorder');
+            Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
         });
-
-        // Route báo cáo sản phẩm
-        Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
     });
-
-    //checkout
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
-    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
-    Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
-    Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
-    Route::get('/checkout/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
-    Route::post('/checkout/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
 });
 
+Route::get('/danh-muc/{slug}', function ($slug) {
+    // Logic để lấy danh sách sản phẩm dựa trên slug của danh mục
+    // Ví dụ: Truy vấn từ bảng categories và sản phẩm liên quan
+    return view('product-list', ['categorySlug' => $slug]);
+})->name('category.products');
+
+// Blog
+Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
+Route::get('/blog-detail/{slug}', [FrontendController::class, 'blogDetail'])->name('blog.detail');
+Route::get('/blog/search', [FrontendController::class, 'blogSearch'])->name('blog.search');
+Route::post('/blog/filter', [FrontendController::class, 'blogFilter'])->name('blog.filter');
+Route::get('blog-cat/{slug}', [FrontendController::class, 'blogByCategory'])->name('blog.category');
+Route::get('blog-tag/{slug}', [FrontendController::class, 'blogByTag'])->name('blog.tag');
+
+// Help
+Route::get('/help', [FrontendController::class, 'helpCenter'])->name('help.center');
+Route::get('/help/{slug}', [FrontendController::class, 'helpCategory'])->name('help.category');
+Route::get('/help/article/{slug}', [FrontendController::class, 'helpDetail'])->name('help.detail');
+Route::get('/help/ajax/category/{slug}', [FrontendController::class, 'ajaxHelpByCategory'])->name('help.category.ajax');
+Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
+
 // seller registration routes
-Route::prefix('seller')->group(function () {
+Route::prefix('seller')->middleware('auth')->group(function () {
     Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
     Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
     Route::get('/register1', [RegisterShopController::class, 'showStep2'])->name('seller.register.step2');
@@ -334,14 +419,37 @@ Route::prefix('seller')->group(function () {
     Route::post('/register3', [RegisterShopController::class, 'step4'])->name('seller.register.step4.post');
     Route::get('/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
     Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
-    Route::get('/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'index'])->name('seller.settings');
-    Route::post('/settings', [\App\Http\Controllers\Seller\SellerSettingsController::class, 'update'])->name('seller.settings');
+    Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
+    Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
+    Route::get('/profile', function () {
+        return view('seller.profile');
+    })->name('seller.profile');
 });
 
+// seller chat routes
+Route::prefix('seller/chat')->middleware('CheckRole:seller')->group(function () {
+    Route::get('/chatautomatically', function () {
+        return view('seller.chat.chatautomatically');
+    })->name('seller.chat.chatautomatically');
+    Route::get('/QA', function () {
+        return view('seller.chat.QA');
+    })->name('seller.chat.QA');
+    Route::get('/A', function () {
+        return view('seller.chat.A');
+    })->name('seller.chat.A');
+
+    // seller chat settings (auto reply)
+    Route::post('/auto-reply-toggle', [ChatSettingsController::class, 'toggleAutoReply'])
+        ->middleware('CheckRole:seller')
+        ->name('seller.chat.auto_reply_toggle');
+});
+
+Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);
+Route::get('/api/chat/messages/{shopId}', [ChatController::class, 'getMessagesByShopId']);
+Route::post('/api/chat/send-message', [ChatController::class, 'sendMessage']);
+
 // API OCR CCCD cho frontend JS
-Route::post('/seller/ocr/scan-cccd', [OcrController::class, 'upload'])->name('seller.ocr.scancccd');
-Route::get('/ocr', [OcrController::class, 'index'])->name('ocr.index');
-Route::post('/ocr', [OcrController::class, 'upload'])->name('ocr.upload');
+
 Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
 
 
@@ -350,4 +458,58 @@ Route::post('/calculate-shipping-fee', [ShippingFeeController::class, 'calculate
 // API - VNPAY   
 Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');
 Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
+
+Route::resource('wishlist', WishlistController::class)->only(['store', 'destroy']);
+
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.order.show');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/order-review/store', [OrderReviewController::class, 'store'])->name('reviews.store');
+});
+
+Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
+Route::get('/login/qr/generate', [QrLoginController::class, 'generate']);
+Route::get('/qr-confirm', function () {
+    return view('auth.qr-confirm');
+})->name('qr.confirm.form');
+
+Route::post('/qr-confirm', [QrLoginController::class, 'confirm'])->name('qr.confirm.submit');
+Route::get('/login/qr/waiting/{token}', [LoginController::class, 'showQrWaiting'])->name('login.qr.waiting');
+Route::get('/login/qr/confirm', function (Request $request) {
+    $token = $request->input('token');
+    $userId = Cache::pull("qr_login_confirm_{$token}");
+
+    if ($userId) {
+        Auth::loginUsingId($userId);
+        return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
+    }
+
+    return redirect()->route('login')->with('error', 'Xác thực QR thất bại hoặc đã hết hạn.');
+})->name('qr.confirm.login');
+
+
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showEmailForm'])->name('password.email.form');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('password.code.send');
+
+Route::get('/verify-code', [ForgotPasswordController::class, 'showVerifyForm'])->name('password.code.verify.form');
+Route::post('/verify-code', [ForgotPasswordController::class, 'verifyCode'])->name('password.code.verify');
+
+Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
+Route::middleware('auth')->group(function () {
+    Route::get('/account/password/send-code', [UserController::class, 'changePasswordForm'])->name('account.password.code.form');
+    Route::post('/account/password/send-code', [UserController::class, 'requestChangePasswordWithCode'])->name('account.password.request.code');
+
+    Route::get('/account/password/verify', [UserController::class, 'showVerifyCodeForm'])->name('account.password.verify.form');
+    Route::post('/account/password/verify', [UserController::class, 'verifyPasswordCode'])->name('account.password.verify.code');
+
+    Route::get('/account/password/reset', [UserController::class, 'showPasswordResetForm'])->name('account.password.reset.form');
+    Route::post('/account/password/reset', [UserController::class, 'confirmNewPassword'])->name('account.password.reset.confirm');
+});
+Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])->name('account.password.code.verify.form');
+Route::post('/account/password/request-confirm', [UserController::class, 'requestPasswordChangeConfirm'])->name('account.password.request.confirm');
+Route::post('/account/password/confirm-code', [UserController::class, 'confirmPasswordChangeCode'])->name('account.password.confirm.code');
+Route::post('/account/password/verify-code', [UserController::class, 'confirmPasswordChangeCode'])
+    ->name('account.password.code.verify');
+Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])
+    ->name('account.password.code.verify.form');

@@ -27,6 +27,7 @@ class RegisterController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ], [
          'username.required' => 'Tên đăng nhập là bắt buộc.',
+            'username.required' => 'Tên đăng nhập là bắt buộc.',
             'username.unique' => 'Tên đăng nhập đã tồn tại.',
             'fullname.required' => 'Họ và tên là bắt buộc.',
             'phone.required' => 'Số điện thoại là bắt buộc.',

@@ -13,27 +13,13 @@ class Notification extends Model
     protected $fillable = [
         'shop_id',
         'sender_id',
-        'receiver_user_id',
-        'receiver_shop_id',
         'title',
         'content',
         'type',
         'reference_id',
-        'reference_type',
+        'receiver_type',
         'priority',
         'status',
-        'receiver_type',
-        'read_at',
-        'expired_at',
-        'is_read'
-    ];
-
-    protected $casts = [
-        'data' => 'array',
-        'is_read' => 'boolean',
-        'read_at' => 'datetime',
-        'priority' => 'integer',
-        'expired_at' => 'datetime'
     ];
 
     // Relationships
@@ -42,9 +28,8 @@ class Notification extends Model
         return $this->belongsTo(Shop::class);
     }
 
-    public function sender(): BelongsTo 
+    public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
-   
-} 
+}

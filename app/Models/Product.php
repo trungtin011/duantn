@@ -61,13 +61,23 @@ class Product extends Model
         return $this->hasMany(ProductVariantAttributeValue::class, 'product_id');
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+    
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
     // App/Models/Product.php
     public function attributes()
     {
         return $this->belongsToMany(Attribute::class, 'product_attribute', 'product_id', 'attribute_id');
     }
 
-    public function variants(): HasMany
+    public function variants()
     {
         return $this->hasMany(ProductVariant::class, 'productID');
     }
@@ -82,11 +92,15 @@ class Product extends Model
         return $this->hasMany(ProductDimension::class, 'productID');
     }
 
-
     public function reviews(): HasMany
     {
-        return $this->hasMany(Review::class, 'productID');
+        return $this->hasMany(Review::class, 'product_id');
     }
+
+    // public function reviews()
+    // {
+    //     return $this->hasMany(\App\Models\ProductReview::class)->with('user');
+    // }
 
     public function defaultImage(): HasOne
     {
@@ -153,6 +167,7 @@ class Product extends Model
     }
 
     // Methods
+
     public function getCurrentPriceAttribute()
     {
         return $this->sale_price ?? $this->price;
@@ -188,5 +203,16 @@ class Product extends Model
             return Storage::url($mainImage->image_path);
         }
         return Storage::url('product_images/default.png');
+    }
+
+    protected $dates = ['flash_sale_end_at'];
+
+    public function isFlashSaleActive()
+    {
+        return $this->flash_sale_price && now()->lt($this->flash_sale_end_at);
+    }
+    public function orderReviews()
+    {
+        return $this->hasMany(OrderReview::class, 'product_id');
     }
 }

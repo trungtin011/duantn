@@ -3,7 +3,7 @@
 @section('account-content')
     <div class="container mx-auto bg-white">
         <!-- Tabs for Order Status -->
-        <ul class="flex items-center justify-between border border-gray-200 px-4 py-4 mb-8 overflow-x-auto"
+        {{-- <ul class="flex items-center justify-between border border-gray-200 px-4 py-4 mb-8 overflow-x-auto"
             id="orderStatusTabs" role="tablist">
             <li class="mr-4" role="presentation">
                 <button class="px-2 font-bold text-gray-500 hover:text-black focus:outline-none" id="all-tab"
@@ -34,18 +34,22 @@
                     data-target="#refunded" type="button" role="tab" aria-controls="refunded">Trả hàng/Hoàn
                     tiền</button>
             </li>
-        </ul>
+        </ul> --}}
 
         <div class="tab-content h-full" id="orderStatusTabsContent">
             <!-- Tab Pane: Tất cả -->
             <div class="tab-pane" id="all" role="tabpanel" aria-labelledby="all-tab">
                 @forelse ($allOrders as $order)
-                    @include('user.order.components.order-block', ['order' => $order])
+                   @include('user.order.components.order-block', [
+                    'order' => $order,
+                    'reviewedProductIds' => $reviewedProductIds
+                ])
+
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
-                        <div class="p-4">
+                        <div class="p-4 flex flex-col gap-2 items-center">
                             <h5 class="text-gray-500 text-base sm:text-lg">Bạn chưa có đơn hàng nào.</h5>
-                            <a href="{{ route('home') }}" class="btn btn-dark mt-3">Quay lại mua sắm</a>
+                            <a href="{{ route('home') }}" class="btn btn-dark">Quay lại mua sắm</a>
                         </div>
                     </div>
                 @endforelse
@@ -55,7 +59,11 @@
             <!-- Tab Pane: Đang chờ xử lý -->
             <div class="tab-pane hidden" id="pending" role="tabpanel" aria-labelledby="pending-tab">
                 @forelse ($pendingOrders as $order)
-                    @include('user.order.components.order-block', ['order' => $order])
+                   @include('user.order.components.order-block', [
+                    'order' => $order,
+                    'reviewedProductIds' => $reviewedProductIds
+                ])
+
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
                         <div class="p-4">
@@ -69,7 +77,11 @@
             <!-- Tab Pane: Đang xử lý -->
             <div class="tab-pane hidden" id="processing" role="tabpanel" aria-labelledby="processing-tab">
                 @forelse ($processingOrders as $order)
-                    @include('user.order.components.order-block', ['order' => $order])
+                    @include('user.order.components.order-block', [
+                    'order' => $order,
+                    'reviewedProductIds' => $reviewedProductIds
+                ])
+
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
                         <div class="p-4">
@@ -83,7 +95,11 @@
             <!-- Tab Pane: Đang giao hàng -->
             <div class="tab-pane hidden" id="shipped" role="tabpanel" aria-labelledby="shipped-tab">
                 @forelse ($shippedOrders as $order)
-                    @include('user.order.components.order-block', ['order' => $order])
+                    @include('user.order.components.order-block', [
+                    'order' => $order,
+                    'reviewedProductIds' => $reviewedProductIds
+                ])
+
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
                         <div class="p-4">
@@ -97,7 +113,11 @@
             <!-- Tab Pane: Hoàn thành -->
             <div class="tab-pane hidden" id="delivered" role="tabpanel" aria-labelledby="delivered-tab">
                 @forelse ($deliveredOrders as $order)
-                    @include('user.order.components.order-block', ['order' => $order])
+                    @include('user.order.components.order-block', [
+                    'order' => $order,
+                    'reviewedProductIds' => $reviewedProductIds
+                ])
+
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
                         <div class="p-4">
@@ -111,7 +131,11 @@
             <!-- Tab Pane: Đã hủy -->
             <div class="tab-pane hidden" id="cancelled" role="tabpanel" aria-labelledby="cancelled-tab">
                 @forelse ($cancelledOrders as $order)
-                    @include('user.order.components.order-block', ['order' => $order])
+                    @include('user.order.components.order-block', [
+                        'order' => $order,
+                        'reviewedProductIds' => $reviewedProductIds
+                    ])
+
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
                         <div class="p-4">
@@ -125,7 +149,11 @@
             <!-- Tab Pane: Trả hàng/Hoàn tiền -->
             <div class="tab-pane hidden" id="refunded" role="tabpanel" aria-labelledby="refunded-tab">
                 @forelse ($refundedOrders as $order)
-                    @include('user.order.components.order-block', ['order' => $order])
+                    @include('user.order.components.order-block', [
+                            'order' => $order,
+                            'reviewedProductIds' => $reviewedProductIds
+                        ])
+
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
                         <div class="p-4">
@@ -134,7 +162,7 @@
                         </div>
                     </div>
                 @endforelse
-                {{ $refundedOrders->links() }}
+                {{ $refundedOrders->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>
