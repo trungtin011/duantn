@@ -14,12 +14,10 @@
             <aside class="w-full lg:w-1/5 bg-white p-4 border rounded-lg shadow-sm">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-800">Bộ Lọc</h2>
-                    @if ($hasFilter)
-                        <button type="button" id="reset-filters"
-                            class="text-sm text-black hover:text-red-600 transition-colors underline">
-                            Xóa lọc
-                        </button>
-                    @endif
+                    <button type="button" id="reset-filters"
+                        class="text-sm text-black hover:text-red-600 transition-colors underline {{ $hasFilter ? '' : 'hidden' }}">
+                        Xóa lọc
+                    </button>
                 </div>
 
                 <form method="GET" action="{{ route('search') }}" id="filter-form">
@@ -33,19 +31,16 @@
                                 <div class="category-group relative">
                                     <div
                                         class="flex w-full justify-between items-center bg-white rounded-md overflow-hidden">
-                                        <!-- Bấm vào phần này sẽ lọc -->
                                         <button type="button"
                                             class="filter-link text-left text-sm text-black hover:text-red-500 px-3 py-2 w-full"
                                             data-value="{{ $cat->id }}" data-type="category">
                                             {{ $cat->name }}
                                             <span class="text-gray-500">({{ $cat->product_count }})</span>
                                         </button>
-
                                         @if ($cat->subCategories->isNotEmpty())
-                                            <!-- Nút mũi tên để mở dropdown -->
                                             <button type="button" class="toggle-dropdown px-2"
                                                 data-toggle="dropdown-{{ $cat->id }}">
-                                                <svg class="w-4 h-4 text-gray-400 transition-transform"
+                                                <svg class="dropdown-icon w-4 h-4 text-gray-400 transition-transform duration-300"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                     stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -54,8 +49,6 @@
                                             </button>
                                         @endif
                                     </div>
-
-                                    <!-- Subcategory dropdown -->
                                     @if ($cat->subCategories->isNotEmpty())
                                         <div id="dropdown-{{ $cat->id }}"
                                             class="dropdown hidden mt-1 ml-4 rounded-md bg-white p-2 space-y-1">
@@ -82,19 +75,16 @@
                                 <div class="brand-group relative">
                                     <div
                                         class="flex w-full justify-between items-center bg-white rounded-md overflow-hidden">
-                                        <!-- Bấm để lọc thương hiệu cha -->
                                         <button type="button"
                                             class="filter-link text-left text-sm text-black hover:text-red-500 px-3 py-2 w-full"
                                             data-value="{{ $brand->id }}" data-type="brand">
                                             {{ $brand->name }}
                                             <span class="text-gray-500">({{ $brand->product_count }})</span>
                                         </button>
-
                                         @if ($brand->subBrands->isNotEmpty())
-                                            <!-- Nút mũi tên để mở subBrand -->
                                             <button type="button" class="toggle-dropdown px-2"
                                                 data-toggle="brand-dropdown-{{ $brand->id }}">
-                                                <svg class="w-4 h-4 text-gray-400 transition-transform"
+                                                <svg class="dropdown-icon w-4 h-4 text-gray-400 transition-transform duration-300"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                     stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -103,7 +93,6 @@
                                             </button>
                                         @endif
                                     </div>
-
                                     @if ($brand->subBrands->isNotEmpty())
                                         <div id="brand-dropdown-{{ $brand->id }}"
                                             class="dropdown hidden mt-1 ml-4 rounded-md bg-white p-2 space-y-1">
@@ -125,8 +114,6 @@
                     <!-- Khoảng giá -->
                     <div class="mb-4">
                         <h3 class="font-semibold text-sm mb-2 text-gray-700">Khoảng Giá</h3>
-
-                        <!-- Gợi ý mức giá -->
                         <div class="grid grid-cols-2 gap-2 mb-3">
                             <button type="button"
                                 class="price-suggestion border border-gray-300 rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100"
@@ -141,8 +128,6 @@
                                 class="price-suggestion border border-gray-300 rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100"
                                 data-min="3000000" data-max="">Trên 3 triệu</button>
                         </div>
-
-                        <!-- Input tự chọn -->
                         <div class="flex gap-2">
                             <input type="number" name="price_min" id="price_min" placeholder="Từ"
                                 value="{{ request('price_min') }}"
@@ -153,7 +138,6 @@
                         </div>
                     </div>
 
-                    <!-- Nút áp dụng -->
                     <button type="submit"
                         class="w-full mt-4 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg shadow-md transition-colors duration-200">
                         Áp dụng
@@ -198,71 +182,112 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('filter-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            applyFilterAJAX();
-        });
-
-        document.querySelectorAll('.filter-link').forEach(link => {
-            link.addEventListener('click', (e) => {
+    @push('scripts')
+        <script>
+            document.getElementById('filter-form').addEventListener('submit', function(e) {
                 e.preventDefault();
-
-                const value = link.getAttribute('data-value');
-                const type = link.getAttribute('data-type');
-                const form = document.getElementById('filter-form');
-
-                // Reset query
-                const queryInput = form.querySelector('input[name="query"]');
-                if (queryInput) queryInput.value = '';
-
-                form.querySelectorAll(`input[name="${type}[]"]`).forEach(i => i.remove());
-
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = `${type}[]`;
-                input.value = value;
-                form.appendChild(input);
-
                 applyFilterAJAX();
             });
-        });
 
-        document.querySelectorAll('.price-suggestion').forEach(button => {
-            button.addEventListener('click', () => {
-                document.getElementById('price_min').value = button.getAttribute('data-min') || '';
-                document.getElementById('price_max').value = button.getAttribute('data-max') || '';
-                const queryInput = document.querySelector('input[name="query"]');
-                if (queryInput) queryInput.value = '';
-                applyFilterAJAX();
-            });
-        });
-
-        document.getElementById('reset-filters')?.addEventListener('click', () => {
-            const form = document.getElementById('filter-form');
-            const queryInput = form.querySelector('input[name="query"]');
-            if (queryInput) queryInput.value = '';
-            document.getElementById('price_min').value = '';
-            document.getElementById('price_max').value = '';
-            form.querySelectorAll('input[name="category[]"], input[name="brand[]"]').forEach(el => el.remove());
-            applyFilterAJAX();
-        });
-
-        function applyFilterAJAX() {
-            const form = document.getElementById('filter-form');
-            const url = form.getAttribute('action');
-            const formData = new FormData(form);
-
-            fetch(url + '?' + new URLSearchParams(formData).toString(), {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+            document.querySelectorAll('.toggle-dropdown').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const dropdownId = this.getAttribute('data-toggle');
+                    const dropdown = document.getElementById(dropdownId);
+                    const icon = this.querySelector('svg');
+                    if (dropdown) {
+                        dropdown.classList.toggle('hidden');
+                        if (icon) icon.classList.toggle('rotate-180');
                     }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('product-results').innerHTML = data.html;
-                    window.history.replaceState({}, '', url + '?' + new URLSearchParams(formData).toString());
                 });
-        }
-    </script>
+            });
+
+            document.querySelectorAll('.filter-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const value = this.getAttribute('data-value');
+                    const type = this.getAttribute('data-type');
+                    const form = document.getElementById('filter-form');
+
+                    form.querySelectorAll(`input[name="category[]"], input[name="brand[]"]`).forEach(el => el
+                        .remove());
+
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `${type}[]`;
+                    input.value = value;
+                    form.appendChild(input);
+
+                    applyFilterAJAX();
+                });
+            });
+
+
+            document.querySelectorAll('.price-suggestion').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.getElementById('price_min').value = button.getAttribute('data-min') || '';
+                    document.getElementById('price_max').value = button.getAttribute('data-max') || '';
+                    applyFilterAJAX();
+                });
+            });
+
+            document.getElementById('reset-filters')?.addEventListener('click', () => {
+                const form = document.getElementById('filter-form');
+                document.getElementById('price_min').value = '';
+                document.getElementById('price_max').value = '';
+                form.querySelectorAll('input[name="category[]"], input[name="brand[]"]').forEach(el => el.remove());
+
+                applyFilterAJAX();
+
+                // Ẩn nút sau khi xóa lọc
+                const resetBtn = document.getElementById('reset-filters');
+                if (resetBtn) {
+                    resetBtn.classList.add('hidden');
+                }
+            });
+
+            function applyFilterAJAX() {
+                const form = document.getElementById('filter-form');
+                const url = form.getAttribute('action');
+                const formData = new FormData(form);
+
+                fetch(url + '?' + new URLSearchParams(formData).toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        const resultContainer = document.getElementById('product-results');
+                        if (resultContainer) {
+                            resultContainer.innerHTML = data.html;
+
+                            // Kiểm tra lại có filter không
+                            const hasFilter = form.querySelector(
+                                'input[name="category[]"], input[name="brand[]"], #price_min[value], #price_max[value]');
+                            const resetBtn = document.getElementById('reset-filters');
+                            if (resetBtn) {
+                                if (
+                                    form.querySelector('input[name="category[]"]') ||
+                                    form.querySelector('input[name="brand[]"]') ||
+                                    document.getElementById('price_min').value ||
+                                    document.getElementById('price_max').value
+                                ) {
+                                    resetBtn.classList.remove('hidden');
+                                } else {
+                                    resetBtn.classList.add('hidden');
+                                }
+                            }
+                        }
+                    })
+                    .catch(err => console.error('Lỗi khi gọi AJAX:', err));
+            }
+        </script>
+        <style>
+            .rotate-180 {
+                transform: rotate(180deg);
+            }
+        </style>
+    @endpush
 @endsection

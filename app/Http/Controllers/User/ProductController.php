@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
-
     public function search(Request $request)
     {
         $query = $request->input('query');
@@ -48,17 +47,18 @@ class ProductController extends Controller
             $brandNames = Brand::whereIn('id', $brandIds)->pluck('name');
         }
 
+        Log::info('Filtering with', [
+            'category' => $categoryNames->toArray(),
+            'brand' => $brandNames->toArray(),
+            'price_min' => $priceMin,
+            'price_max' => $priceMax,
+        ]);
+
         // Truy vấn sản phẩm
         $products = Product::query()
-            ->when($query, function ($q) use ($query) {
-                $q->where('name', 'like', "%$query%");
-            })
-            ->when($categoryNames->isNotEmpty(), function ($q) use ($categoryNames) {
-                $q->whereIn('category', $categoryNames);
-            })
-            ->when($brandNames->isNotEmpty(), function ($q) use ($brandNames) {
-                $q->whereIn('brand', $brandNames);
-            })
+            ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
+            ->when($categoryNames->isNotEmpty(), fn($q) => $q->whereIn('category', $categoryNames))
+            ->when($brandNames->isNotEmpty(), fn($q) => $q->whereIn('brand', $brandNames))
             ->when($priceMin, fn($q) => $q->where('sale_price', '>=', $priceMin))
             ->when($priceMax, fn($q) => $q->where('sale_price', '<=', $priceMax))
             ->when($sort, function ($q) use ($sort) {
@@ -125,9 +125,12 @@ class ProductController extends Controller
         return view('user.search.results', compact('products', 'query', 'categories', 'brands'));
     }
 
-
     public function show(Request $request, $slug)
     {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->guest(route('login'))->with('error', 'Bạn cần đăng nhập để xem chi tiết sản phẩm');
+        }
         $product = Product::with([
             'images',
             'reviews.user',

@@ -43,7 +43,7 @@ class AdminSettingsController extends Controller
         $validatedData = $request->validate([
             'site_title' => 'required|string|max:255',
             'tagline' => 'nullable|string|max:255',
-            'logo' => 'nullable|image|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'banner_image' => 'nullable|image|max:2048',
             'favicon' => 'nullable|image|max:2048',
         ]);

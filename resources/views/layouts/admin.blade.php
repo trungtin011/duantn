@@ -143,7 +143,7 @@
                     </svg>
                     Báo cáo
                 </a>
-                <a href="#" class="link_admin">
+                <a href="{{ route('admin.coupon.index') }}" class="link_admin">
                     <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"
                         height="16">
                         <path fill="currentColor"
@@ -163,9 +163,12 @@
                     </svg>
                     Người dùng
                 </a>
-                <a href="{{ route('admin.shops.pending') }}" class="{{ request()->routeIs('admin.shops.pending') ? 'active' : '' }} link_admin">
-                    <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
-                        <path fill="currentColor" d="M20 7H4V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3zM21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zm-7 4h-4v4h4v-4z"/>
+                <a href="{{ route('admin.shops.pending') }}"
+                    class="{{ request()->routeIs('admin.shops.pending') ? 'active' : '' }} link_admin">
+                    <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"
+                        height="16">
+                        <path fill="currentColor"
+                            d="M20 7H4V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3zM21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zm-7 4h-4v4h4v-4z" />
                     </svg>
                     Duyệt cửa hàng
                 </a>

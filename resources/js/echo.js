@@ -41,11 +41,6 @@ if (window.Laravel.user.role === 'customer') {
         });
 }
 
-window.Echo.private(`order.updated.${window.Laravel.shop}`)
-    .listen('.update-order.event', (e) => {
-        console.log('Order updated:', e);
-        addNotificationToList(e);
-    });
 
 function addNotificationToList(notification) {
   const notificationList = document.getElementById('notification-list');
