@@ -130,7 +130,7 @@
             </div>
             <div x-show="!selectedConversation" class="flex-1 bg-gray-100 flex flex-col justify-center items-center px-6">
                 <img alt="Illustration of a laptop with a blue chat bubble and a red chat bubble with three white dots" class="mb-4" draggable="false" height="120" src="https://storage.googleapis.com/a1aa/image/0ed79df3-c2cf-4dc0-2a97-e1c61b1597a1.jpg" width="150"/>
-                <p class="text-sm font-semibold text-gray-900 mb-1 select-none">Chào mừng bạn đến với Shopee Chat</p>
+                <p class="text-sm font-semibold text-gray-900 mb-1 select-none">Chào mừng bạn đến với ZynoxMall Chat</p>
                 <p class="text-xs text-gray-700 select-none">Chọn một cuộc trò chuyện để bắt đầu!</p>
             </div>
         </div>
@@ -138,7 +138,7 @@
    </div>
    <div class="mt-6 max-w-xl">
     <div class="flex items-center space-x-2">
-     <img alt="Shopee logo icon in red square" class="w-5 h-5" height="20" src="https://storage.googleapis.com/a1aa/image/6a99512d-aea7-48c7-172f-0fa94513a0cb.jpg" width="20"/>
+     <img alt="ZynoxMall logo icon in red square" class="w-5 h-5" height="20" src="https://storage.googleapis.com/a1aa/image/6a99512d-aea7-48c7-172f-0fa94513a0cb.jpg" width="20"/>
      <span class="text-xs text-gray-700">
       VNshopeeseller
      </span>

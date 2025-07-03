@@ -23,7 +23,7 @@
                         <img id="main-image"
                             src="{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
                             alt="{{ $product->name }}"
-                            class="w-full h-[400px] object-cover rounded-lg transform transition-transform duration-300 hover:scale-105"
+                            class="w-full object-cover rounded-lg transform transition-transform duration-300 hover:scale-105"
                             loading="lazy">
                         <div class="flex gap-2 mt-4 overflow-x-auto">
                             @foreach ($product->images as $image)
@@ -648,7 +648,7 @@
                             return;
                         }
 
-                        fetch('/customer/customer/cart/add', {
+                        fetch('/customer/cart/add', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
