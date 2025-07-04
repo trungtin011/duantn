@@ -43,6 +43,7 @@ class Product extends Model
         'stock_total' => 'integer',
         'is_featured' => 'boolean',
         'is_variant' => 'boolean',
+        'flash_sale_end_at' => 'datetime',
     ];
 
     // Relationships
@@ -65,7 +66,7 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
-    
+
     public function brand()
     {
         return $this->belongsTo(Brand::class);

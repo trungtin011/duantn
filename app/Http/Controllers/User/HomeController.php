@@ -69,11 +69,13 @@ class HomeController extends Controller
             ->take(8) // Lấy 8 sản phẩm
             ->get();
 
-        // Sản phẩm mới cho "New Products" section
-        $newProducts = Product::with('defaultImage')
-            ->where('created_at', '>=', Carbon::now()->subDays(7))
-            ->orderByDesc('created_at')
+        // Sản phẩm nổi bật
+        $featuredProducts = Product::with('defaultImage')
+            ->where('is_featured', 1)
+            ->where('status', 'active')
+            ->orderByDesc('updated_at')
             ->get();
+
 
         // Sản phẩm trending (bán nhiều nhất)
         $trendingProducts = Product::with('defaultImage')
@@ -83,18 +85,19 @@ class HomeController extends Controller
 
         // Sản phẩm đánh giá cao nhất
         $topRatedProducts = Product::with(['defaultImage', 'reviews'])
-            ->withAvg('reviews', 'rating') // Tính điểm trung bình đánh giá
-            ->orderByDesc('reviews_avg_rating') // Sắp xếp theo đánh giá
+            ->withAvg('reviews', 'rating')
+            ->whereHas('reviews') // Chắc chắn có ít nhất 1 review
+            ->orderByDesc('reviews_avg_rating')
             ->take(10)
             ->get();
 
-
-        // Deal trong ngày (ví dụ: có giảm giá nhiều nhất)
-        $dealOfTheDay = Product::with('defaultImage')
-            ->whereNotNull('sale_price')
-            ->whereColumn('sale_price', '<', 'price')
-            ->orderByRaw('(price - sale_price) DESC') // Giảm giá nhiều nhất
-            ->take(2)
+        // Flash sale
+        $flashSaleProducts = Product::with(['defaultImage', 'reviews'])
+            ->whereNotNull('flash_sale_price')
+            ->where('flash_sale_end_at', '>', Carbon::now())
+            ->where('status', 'active')
+            ->orderBy('flash_sale_end_at', 'asc') // sắp xếp theo thời gian kết thúc gần nhất
+            ->take(10)
             ->get();
 
         return view('user.home', compact(
@@ -110,8 +113,8 @@ class HomeController extends Controller
             'bestSellers',
             'trendingProducts',
             'topRatedProducts',
-            'dealOfTheDay',
-            'newProducts',
+            'flashSaleProducts',
+            'featuredProducts',
             'user',
         ));
     }

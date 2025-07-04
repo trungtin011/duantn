@@ -62,9 +62,50 @@ use App\Http\Controllers\NotificationController as UserNotificationController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use App\Http\Controllers\ShopController;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Log;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Thông báo
+Route::get('/notifications/navbar', function () {
+    $user = Auth::user();
+
+    Log::info('Notification check', [
+        'user_id' => $user->id,
+        'role' => $user->role,
+        'shop_id' => $user->shop_id,
+    ]);
+
+    $query = Notification::query();
+
+    // Nếu là user bình thường (customer)
+    if ($user->role === 'customer') {
+        $query->where(function ($q) {
+            $q->where('receiver_type', 'user')
+                ->orWhere('receiver_type', 'all');
+        });
+    }
+
+    // Nếu là chủ shop (seller)
+    if ($user->role === 'seller') {
+        $query->where(function ($q) use ($user) {
+            $q->where('receiver_type', 'shop')
+                ->orWhere('receiver_type', 'all');
+        })->where(function ($q) use ($user) {
+            $q->whereNull('shop_id')
+                ->orWhere('shop_id', $user->shop_id);
+        });
+    }
+
+    $notifications = $query->where('status', 'active')
+        ->orderByDesc('created_at')
+        ->limit(5)
+        ->get();
+
+    return response()->json($notifications);
+})->middleware('auth');
 
 // trang lỗi
 Route::get('/404', function () {
@@ -298,7 +339,7 @@ Route::prefix('customer')->group(function () {
     Route::post('/shop/follow/{shop}', [ShopController::class, 'follow'])->name('shop.follow');
     // Route unfollow shop
     Route::post('/shop/unfollow/{shop}', [ShopController::class, 'unfollow'])->name('shop.unfollow');
-    // customer routes
+    // Route chi tiết sản phẩm
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
     // Route bình luận sản phẩm
     Route::post('/product/{productId}/review', [ProductController::class, 'storeReview'])->name('product.review');

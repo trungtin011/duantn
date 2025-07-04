@@ -3,7 +3,7 @@
 @section('account-content')
     <div class="container mx-auto bg-white">
         <!-- Tabs for Order Status -->
-        {{-- <ul class="flex items-center justify-between border border-gray-200 px-4 py-4 mb-8 overflow-x-auto"
+        <ul class="flex items-center justify-between border border-gray-200 px-4 py-4 mb-8 overflow-x-auto"
             id="orderStatusTabs" role="tablist">
             <li class="mr-4" role="presentation">
                 <button class="px-2 font-bold text-gray-500 hover:text-black focus:outline-none" id="all-tab"
@@ -34,16 +34,16 @@
                     data-target="#refunded" type="button" role="tab" aria-controls="refunded">Trả hàng/Hoàn
                     tiền</button>
             </li>
-        </ul> --}}
+        </ul>
 
         <div class="tab-content h-full" id="orderStatusTabsContent">
             <!-- Tab Pane: Tất cả -->
             <div class="tab-pane" id="all" role="tabpanel" aria-labelledby="all-tab">
                 @forelse ($allOrders as $order)
-                   @include('user.order.components.order-block', [
-                    'order' => $order,
-                    'reviewedProductIds' => $reviewedProductIds
-                ])
+                    @include('user.order.components.order-block', [
+                        'order' => $order,
+                        'reviewedProductIds' => $reviewedProductIds,
+                    ])
 
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
@@ -59,10 +59,10 @@
             <!-- Tab Pane: Đang chờ xử lý -->
             <div class="tab-pane hidden" id="pending" role="tabpanel" aria-labelledby="pending-tab">
                 @forelse ($pendingOrders as $order)
-                   @include('user.order.components.order-block', [
-                    'order' => $order,
-                    'reviewedProductIds' => $reviewedProductIds
-                ])
+                    @include('user.order.components.order-block', [
+                        'order' => $order,
+                        'reviewedProductIds' => $reviewedProductIds,
+                    ])
 
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
@@ -78,9 +78,9 @@
             <div class="tab-pane hidden" id="processing" role="tabpanel" aria-labelledby="processing-tab">
                 @forelse ($processingOrders as $order)
                     @include('user.order.components.order-block', [
-                    'order' => $order,
-                    'reviewedProductIds' => $reviewedProductIds
-                ])
+                        'order' => $order,
+                        'reviewedProductIds' => $reviewedProductIds,
+                    ])
 
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
@@ -96,9 +96,9 @@
             <div class="tab-pane hidden" id="shipped" role="tabpanel" aria-labelledby="shipped-tab">
                 @forelse ($shippedOrders as $order)
                     @include('user.order.components.order-block', [
-                    'order' => $order,
-                    'reviewedProductIds' => $reviewedProductIds
-                ])
+                        'order' => $order,
+                        'reviewedProductIds' => $reviewedProductIds,
+                    ])
 
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
@@ -114,9 +114,9 @@
             <div class="tab-pane hidden" id="delivered" role="tabpanel" aria-labelledby="delivered-tab">
                 @forelse ($deliveredOrders as $order)
                     @include('user.order.components.order-block', [
-                    'order' => $order,
-                    'reviewedProductIds' => $reviewedProductIds
-                ])
+                        'order' => $order,
+                        'reviewedProductIds' => $reviewedProductIds,
+                    ])
 
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
@@ -133,7 +133,7 @@
                 @forelse ($cancelledOrders as $order)
                     @include('user.order.components.order-block', [
                         'order' => $order,
-                        'reviewedProductIds' => $reviewedProductIds
+                        'reviewedProductIds' => $reviewedProductIds,
                     ])
 
                 @empty
@@ -150,9 +150,9 @@
             <div class="tab-pane hidden" id="refunded" role="tabpanel" aria-labelledby="refunded-tab">
                 @forelse ($refundedOrders as $order)
                     @include('user.order.components.order-block', [
-                            'order' => $order,
-                            'reviewedProductIds' => $reviewedProductIds
-                        ])
+                        'order' => $order,
+                        'reviewedProductIds' => $reviewedProductIds,
+                    ])
 
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">

@@ -20,19 +20,19 @@
             </button>
 
             <div class="newsletter-img">
-                <img src="./assets/images/newsletter.png" alt="subscribe newsletter" width="400" height="400">
+                <img src="./assets/images/newsletter.png" alt="Đăng ký nhận tin" width="400" height="400">
             </div>
 
             <div class="newsletter">
                 <form action="#">
                     <div class="newsletter-header">
-                        <h3 class="newsletter-title">Subscribe Newsletter.</h3>
+                        <h3 class="newsletter-title">Đăng ký nhận tin.</h3>
                         <p class="newsletter-desc">
-                            Subscribe the <b>Anon</b> to get latest products and discount update.
+                            Hãy đăng ký <b>Anon</b> để nhận thông tin sản phẩm mới và cập nhật khuyến mãi.
                         </p>
                     </div>
-                    <input type="email" name="email" class="email-field" placeholder="Email Address" required>
-                    <button type="submit" class="btn-newsletter">Subscribe</button>
+                    <input type="email" name="email" class="email-field" placeholder="Địa chỉ Email" required>
+                    <button type="submit" class="btn-newsletter">Đăng ký</button>
                 </form>
             </div>
         </div>
@@ -570,12 +570,12 @@
                     <div class="product-minimal">
                         <div class="product-showcase">
                             @php
-                                $firstFour = $newProducts->take(4);
-                                $others = $newProducts->slice(4);
+                                $firstFour = $featuredProducts->take(4);
+                                $others = $featuredProducts->slice(4);
                             @endphp
-                            <h2 class="title">Sản phẩm mới</h2>
-                            @if ($newProducts->isEmpty())
-                                <p>Hiện chưa có sản phẩm mới trong 7 ngày qua.</p>
+                            <h2 class="title">Sản phẩm nổi bật</h2>
+                            @if ($featuredProducts->isEmpty())
+                                <p>Hiện chưa có sản phẩm nổi bật nào.</p>
                             @else
                                 <div class="showcase-wrapper has-scrollbar">
                                     {{-- BÊN TRÁI: 3 sản phẩm đầu --}}
@@ -743,7 +743,7 @@
                                                     {{-- Hiển thị sao --}}
                                                     <div class="showcase-rating">
                                                         @php
-                                                            $avg = round($product->reviews_avg_rating);
+                                                            $avg = round($product->reviews_avg_rating ?? 0);
                                                         @endphp
                                                         @for ($i = 1; $i <= 5; $i++)
                                                             <ion-icon
@@ -784,7 +784,7 @@
                                                     {{-- Sao đánh giá --}}
                                                     <div class="showcase-rating">
                                                         @php
-                                                            $avg = round($product->reviews_avg_rating);
+                                                            $avg = round($product->reviews_avg_rating ?? 0);
                                                         @endphp
                                                         @for ($i = 1; $i <= 5; $i++)
                                                             <ion-icon
@@ -810,45 +810,90 @@
                         </div>
                     </div>
                     <div class="product-featured">
-                        <h2 class="title">Deal trong ngày</h2>
+                        <h2 class="title">Flash Sale</h2>
                         <div class="showcase-wrapper has-scrollbar">
-                            @foreach ($dealOfTheDay as $product)
-                                <div class="showcase-container" style="min-width: 100%;">
+                            @foreach ($flashSaleProducts as $product)
+                                <div class="showcase-container">
                                     <div class="showcase">
-                                        <div class="showcase-banner flex justify-center">
+
+                                        {{-- Hình ảnh --}}
+                                        <div class="showcase-banner">
                                             <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                width="300" class=" default">
+                                                class="showcase-img">
                                         </div>
 
                                         <div class="showcase-content">
-                                            <div class="showcase-rating flex">
+
+                                            {{-- Đánh giá sao --}}
+                                            <div class="showcase-rating">
+                                                @php
+                                                    $avg = round($product->reviews->avg('rating') ?? 0);
+                                                @endphp
                                                 @for ($i = 1; $i <= 5; $i++)
                                                     <ion-icon
-                                                        name="{{ $i <= round($product->reviews->avg('rating')) ? 'star' : 'star-outline' }}"></ion-icon>
+                                                        name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
                                                 @endfor
                                             </div>
 
-                                            <h3 class="showcase-title">
-                                                <a
-                                                    href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a>
-                                            </h3>
+                                            {{-- Tên sản phẩm --}}
+                                            <a href="{{ route('product.show', $product->slug) }}">
+                                                <h3 class="showcase-title">{{ $product->name }}</h3>
+                                            </a>
 
+                                            {{-- Mô tả ngắn --}}
                                             <p class="showcase-desc">
                                                 {{ Str::limit(strip_tags($product->description), 100) }}
                                             </p>
 
+                                            {{-- Giá flash sale --}}
                                             <div class="price-box">
-                                                <p class="price">{{ number_format($product->sale_price) }}₫</p>
+                                                <p class="price">{{ number_format($product->flash_sale_price) }}₫</p>
                                                 <del>{{ number_format($product->price) }}₫</del>
                                             </div>
 
                                             <button class="add-cart-btn">Thêm vào giỏ</button>
 
-                                            {{-- Nếu có flash sale --}}
-                                            @if ($product->flash_sale_end_at && now()->lt($product->flash_sale_end_at))
-                                                <p class="text-xs mt-2 text-red-600">Kết thúc sau:
-                                                    {{ $product->flash_sale_end_at->diffForHumans() }}</p>
+                                            {{-- Trạng thái số lượng --}}
+                                            <div class="showcase-status">
+                                                <div class="wrapper">
+                                                    <p>Đã bán: <b>{{ $product->sold_quantity ?? 0 }}</b></p>
+                                                    <p>Còn lại:
+                                                        <b>{{ $product->stock_total - $product->sold_quantity }}</b>
+                                                    </p>
+                                                </div>
+                                                <div class="showcase-status-bar"></div>
+                                            </div>
+
+                                            {{-- Countdown Flash Sale --}}
+                                            @if ($product->flash_sale_end_at)
+                                                <div class="countdown-box">
+                                                    <p class="countdown-desc">Nhanh tay! Kết thúc sau:</p>
+
+                                                    <div class="countdown"
+                                                        data-end-time="{{ $product->flash_sale_end_at->timestamp }}">
+
+                                                        {{-- Placeholder: sẽ cập nhật qua JS --}}
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Ngày</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Giờ</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Phút</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Giây</p>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
                                             @endif
+
                                         </div>
                                     </div>
                                 </div>

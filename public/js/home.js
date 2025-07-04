@@ -86,3 +86,32 @@ for (let i = 0; i < accordionBtn.length; i++) {
   });
 
 }
+
+
+
+
+
+document.querySelectorAll('.countdown').forEach(function (el) {
+  const end = parseInt(el.dataset.endTime) * 1000;
+
+  function updateCountdown() {
+    const now = new Date().getTime();
+    let diff = end - now;
+
+    if (diff < 0) diff = 0;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    const spans = el.querySelectorAll('.display-number');
+    spans[0].innerText = days;
+    spans[1].innerText = hours;
+    spans[2].innerText = minutes;
+    spans[3].innerText = seconds;
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+});
