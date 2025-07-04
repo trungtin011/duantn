@@ -1499,8 +1499,8 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .product-featured .showcase-img {
-    width: 100%;
-    height: 100%;
+    width: 450px;
+    height: 400px;
     -o-object-fit: cover;
     object-fit: cover;
 }

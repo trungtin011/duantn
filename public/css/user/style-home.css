@@ -1202,8 +1202,8 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .product-featured .showcase-img {
-    width: 100%;
-    height: 100%;
+    width: 450px;
+    height: 400px;
     object-fit: cover;
 }
 
@@ -2311,6 +2311,11 @@ footer {
 
     .category-img-box {
         padding: 20px;
+    }
+
+    .product-showcase .showcase-rating {
+        display: flex;
+        color: var(--sandy-brown);
     }
 
 
