@@ -16,10 +16,10 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/notifications.css') }}">
+    @vite('resources/css/user/home.css')
+    @vite('resources/css/user/client-wishlist.css')
+    @vite('resources/css/user/orderDetail.css')
+    @vite('resources/css/user/notifications.css')
     @vite('resources/js/echo.js')
     @stack('styles')
 </head>
@@ -242,6 +242,12 @@
                         <option class="text-black">Tiếng Việt</option>
                         <option class="text-black">English</option>
                     </select>
+                </div>
+
+                <div class="cart-icon">
+                    <a href="{{ route('cart') }}">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </a>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="relative dropdown-parent">
@@ -641,7 +647,7 @@
         </footer>
 
         @stack('scripts') 
-        
+        @vite('resources/js/home.js')
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script>
         window.Laravel = {

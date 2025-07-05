@@ -62,6 +62,8 @@ use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
 use App\Http\Controllers\User\FrontendController;
 use App\Http\Controllers\User\UserReviewController;
+use App\Http\Controllers\User\CouponController as UserCouponController;
+
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -337,6 +339,7 @@ Route::prefix('customer')->group(function () {
             Route::post('/add', [CartController::class, 'addToCart'])->name('cart.add');
             Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
             Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
+            Route::post('/selected', [CartController::class, 'updateSelectedProducts'])->name('cart.selected');
         });
 
         // Trang liên hệ
@@ -350,18 +353,13 @@ Route::prefix('customer')->group(function () {
         })->name('about');
 
         // Trang thanh toán
-        Route::get('/client/checkout', function () {
-            return view('client.checkout');
-        })->name('checkout');
-
         Route::prefix('user/order')->group(function () {
             Route::get('/order-history', [OrderController::class, 'index'])->name('order_history');
             Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.orders.show');
-            Route::post('/orders/{orderID}/cancel', [OrderController::class, 'cancel'])->name('user.orders.cancel');
+            Route::post('/orders/{orderID}/cancel', [OrderController::class, 'cancel'])->name('cancel.order');
             Route::post('/orders/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.orders.reorder');
+            
             Route::get('/reviews/create', [UserReviewController::class, 'create'])->name('reviews.create');
-
-
         });
 
         // Route báo cáo sản phẩm
@@ -411,8 +409,6 @@ Route::prefix('seller')->group(function () {
     Route::get('/profile', function () {
         return view('seller.profile');
     })->name('seller.profile');
-
-
 });
 
 // seller chat routes
@@ -459,4 +455,6 @@ Route::middleware('auth')->group(function () {
 });
 
 
+Route::post('/customer/cart/add-multi', [CartController::class, 'addMultiToCart'])->name('cart.addMulti');
+Route::post('/customer/apply-app-discount', [UserCouponController::class, 'applyAppDiscount'])->name('customer.apply-app-discount');
 

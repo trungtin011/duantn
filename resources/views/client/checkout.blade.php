@@ -1,283 +1,399 @@
 @extends('layouts.app')
-
 @section('title', 'Thanh toán')
+@push('styles')
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .breadcrumb-item:not(:last-child)::after {
+            content: '>';
+            margin: 0 10px;
+            color: #9CA3AF;
+        }
+        
+        .payment-card {
+            transition: all 0.3s ease;
+            border: 2px solid #E5E7EB;
+        }
+        
+        .payment-card:hover, .payment-card.selected {
+            border-color: #4F46E5;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+        
+        .product-card {
+            transition: transform 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .discount-input:focus {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        
+        .expand-enter {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.5s ease;
+        }
+        
+        .expand-enter-active {
+            max-height: 1000px;
+            opacity: 1;
+        }
+    </style>
+@endpush
 @section('content')
-    <div class="container mx-auto px-[20px] md:px-0 md:py-0 md:mb-[200px]">
+    <div class="container mx-auto px-4 py-8 max-w-12xl">
         <!-- Breadcrumb -->
-        <div class="flex flex-wrap items-center gap-2 my-10 px-[10px] sm:px-0 md:my-10 text-sm md:text-base">
-            <span>Tài khoản</span>
+        <div class="flex flex-wrap items-center gap-2 my-6 md:my-10 text-sm md:text-base text-gray-600">
+            <a href="#" class="hover:text-primary transition-colors">Tài khoản</a>
             <span class="text-gray-300">/</span>
-            <span>Tài khoản của tôi</span>
+            <a href="#" class="hover:text-primary transition-colors">Tài khoản của tôi</a>
             <span class="text-gray-300">/</span>
-            <span>Sản phẩm</span>
+            <a href="#" class="hover:text-primary transition-colors">Sản phẩm</a>
             <span class="text-gray-300">/</span>
-            <span>Xem giỏ hàng</span>
+            <a href="#" class="hover:text-primary transition-colors">Xem giỏ hàng</a>
             <span class="text-gray-300">/</span>
-            <span class="text-black">Thanh toán</span>
+            <span class="text-primary font-medium">Thanh toán</span>
         </div>
 
-        <div class="bg-white p-8 rounded-[4px]">
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
             <!-- Tiêu đề -->
-            <div class="mb-6">
-                <h1 class="text-[36px] font-bold text-gray-800">Chi tiết hóa đơn</h1>
+            <div class="mb-8 text-center md:text-left">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Chi tiết hóa đơn</h1>
+                <p class="text-gray-600">Kiểm tra thông tin đơn hàng và thanh toán</p>
             </div>
-            @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {{ session('error') }}
+            
+            <!-- Thông báo -->
+            <div class="mb-8">
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-4 hidden" id="error-notification">
+                    <p>Mã giảm giá không hợp lệ. Vui lòng kiểm tra lại.</p>
                 </div>
-            @endif
+                
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded mb-4 hidden" id="success-notification">
+                    <p>Áp dụng mã giảm giá thành công! Bạn được giảm 50,000 VND.</p>
+                </div>
+            </div>
 
-            @if (session('message'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    {{ session('message') }}
-                </div>
-            @endif
             <!-- Main Container -->
-            <div class="flex flex-col lg:flex-row gap-[100px]">
-
+            <div class="flex flex-col lg:flex-row gap-8">
                 <!-- Thông tin người nhận -->
                 <div class="w-full lg:w-1/2">
-
-                    <!-- Form thêm địa chỉ mới -->
-                    <div class="create-address-form mt-6 hidden mb-10">
-                        <form action="/create-address-form" method="POST" class="space-y-4">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">
-                                        Tên Người Nhận <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text"
-                                        class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">
-                                        Số điện thoại <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text"
-                                        class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Loại Địa chỉ <span class="text-red-500">*</span>
+                    <div class="bg-gray-50 p-6 rounded-xl mb-8">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-user-circle mr-2 text-primary"></i>
+                            Thông tin người nhận
+                        </h2>
+                        
+                        <!-- Chọn địa chỉ -->
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold mb-3">Địa chỉ giao hàng</h3>
+                            
+                            <div class="space-y-3 mb-4">
+                                @foreach ($user_addresses as $address)
+                                <label class="address-card bg-white p-4 rounded-lg border border-gray-200 cursor-pointer hover:border-primary transition-colors flex items-start">
+                                    <input type="radio" name="receiver_address_id" id="address2" class="mt-1 mr-3" value="{{ $address->id }}">
+                                    <div>
+                                        <p class="block font-medium">{{ $address->receiver_name }}</p>
+                                        <p class="text-gray-600 text-sm">(+84) {{ $address->receiver_phone }}</p>
+                                        <p class="text-gray-600">{{ $address->address }}, {{ $address->ward }}, {{ $address->district }}, {{ $address->province }}</p>
+                                    </div>
                                 </label>
-                                <select name="address-type"
-                                    class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none">
-                                    <option value="home">Nhà</option>
-                                    <option value="office">Văn phòng</option>
-                                    <option value="other">Khác</option>
-                                </select>
+                                @endforeach
                             </div>
+                            
+                            <!-- Nút Thêm địa chỉ -->
+                            <button id="showAddressForm" class="w-full text-center py-3 text-primary border-2 border-dashed border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">
+                                <i class="fas fa-plus mr-2"></i> Thêm địa chỉ mới
+                            </button>
+                        </div>
+                        
+                        <!-- Form thêm địa chỉ mới -->
+                        <div id="createAddressForm" class="hidden bg-white p-5 rounded-xl border border-gray-200 mt-6 mb-8">
+                            <h3 class="text-lg font-semibold mb-4">Thêm địa chỉ mới</h3>
+                            <form class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Tên Người Nhận <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Số điện thoại <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    </div>
+                                </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">
-                                        Thành Phố, Tỉnh <span class="text-red-500">*</span>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Loại Địa chỉ <span class="text-red-500">*</span>
                                     </label>
-                                    <select name="city" id="city"
-                                        class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none">
-                                        <option value="">Chọn Tỉnh/Thành phố</option>
-                                    </select>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <button type="button" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Nhà</button>
+                                        <button type="button" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Văn phòng</button>
+                                        <button type="button" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Khác</button>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">
-                                        Quận, Huyện <span class="text-red-500">*</span>
-                                    </label>
-                                    <select name="district" id="district"
-                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:none"
-                                        disabled>
-                                        <option value="">Chọn Quận/Huyện</option>
-                                    </select>
-                                </div>
-                            </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">
-                                        Phường, Xã <span class="text-red-500">*</span>
-                                    </label>
-                                    <select name="ward" id="ward"
-                                        class="w-full border bg-[#F5F5F5] rounded-md p-2 focus:outline-none focus:none"
-                                        disabled>
-                                        <option value="">Chọn Phường/Xã</option>
-                                    </select>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Tỉnh/Thành phố <span class="text-red-500">*</span>
+                                        </label>
+                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            <option value="">Chọn tỉnh/thành phố</option>
+                                            <option>Hồ Chí Minh</option>
+                                            <option>Hà Nội</option>
+                                            <option>Đà Nẵng</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Quận/Huyện <span class="text-red-500">*</span>
+                                        </label>
+                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            <option value="">Chọn quận/huyện</option>
+                                            <option>Quận 1</option>
+                                            <option>Quận 3</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Phường/Xã <span class="text-red-500">*</span>
+                                        </label>
+                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            <option value="">Chọn phường/xã</option>
+                                            <option>Phường Bến Nghé</option>
+                                            <option>Phường Bến Thành</option>
+                                        </select>
+                                    </div>
                                 </div>
+
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
                                         Địa chỉ cụ thể <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="text" name="street"
-                                        class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
+                                    <input type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                                 </div>
-                            </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Mã bưu điện
-                                </label>
-                                <input type="text"
-                                    class="mt-1 w-full bg-[#F5F5F5] border-none rounded-md p-2 focus:outline-none focus:none" />
-                            </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="default-address" class="h-4 w-4 text-primary focus:ring-primary">
+                                    <label for="default-address" class="ml-2 text-sm text-gray-700">Đặt làm địa chỉ mặc định</label>
+                                </div>
 
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox"
-                                    class="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded" />
-                                <span class="text-sm text-gray-700">Đặt làm địa chỉ mặc định</span>
-                            </label>
-
-                            <button type="button"
-                                class="mt-4 w-full sm:w-auto bg-black text-white px-4 py-2 hover:bg-transparent hover:text-black hover:border hover:border-[#000]">
-                                Thêm địa chỉ
-                            </button>
-                        </form>
+                                <div class="flex gap-3">
+                                    <button type="button" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors" id="cancelAddressForm">
+                                        Hủy bỏ
+                                    </button>
+                                    <button type="button" class="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors">
+                                        Thêm địa chỉ
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-
-                    <!-- Form thanh toán -->
-                    <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form"
-                        class="space-y-4 mb-6 w-full">
-                        @csrf
-                        <!-- Chọn địa chỉ -->
-                        <div class="mb-10">
-                            <h2 class="text-lg font-semibold mb-2">Chọn địa chỉ</h2>
-                            @if (isset($user_addresses) && $user_addresses->count() > 0)
-                                <select name="address" id="address"
-                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    @foreach ($user_addresses as $address)
-                                        <option value="{{ $address->id }}">{{ $address->receiver_name }} -
-                                            {{ $address->address }} - {{ $address->province }} - {{ $address->district }} -
-                                            {{ $address->ward }} - {{ $address->zip_code }}</option>
-                                    @endforeach
-                                </select>
-                            @else
-                                <p>Không có địa chỉ nào</p>
-                            @endif
-                            <!-- Nút Thêm địa chỉ -->
-                            <button type="button" id="showAddressForm"
-                                class="mt-4 w-full text-[14px] sm:w-auto px-4 py-2 hover:bg-[#F5F5F5]"
-                                style="border: 1px dashed #000; border-radius: 4px;">
-                                <i class="fa fa-plus"></i> Thêm địa chỉ
-                            </button>
-                        </div>
-                        <!-- Lời nhắn cho người bán -->
-                        <div class="mb-10">
-                            <input type="hidden" name="shop_notes" id="shop_notes" value="">
-                        </div>
-                        <!-- Phương thức thanh toán -->
-                        <div class="space-y-4 mb-6">
-                            <label class="flex items-center space-x-3">
-                                <input type="radio" name="payment" value="MOMO" class="h-4 w-4" />
-                                <span class="text-sm">Thanh toán bằng MOMO</span>
-                                <div class="flex space-x-2">
-                                    <img src="{{ 'https://pay2s.vn/blog/wp-content/uploads/2024/11/momo_icon_circle_pinkbg_RGB-1024x1024.png' }}"
-                                        alt="Momo Icon" class="w-[39px]" />
+                    
+                    <!-- Phương thức thanh toán -->
+                    <div class="bg-gray-50 p-6 rounded-xl">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-credit-card mr-2 text-secondary"></i>
+                            Phương thức thanh toán
+                        </h2>
+                        
+                        <div class="space-y-3">
+                            <div class="payment-card bg-white p-4 rounded-lg cursor-pointer flex items-center selected">
+                                <input type="radio" name="payment" value="MOMO" class="mr-3" >
+                                <div class="flex-1">
+                                    <div class="font-medium mb-1">Ví điện tử Momo</div>
+                                    <p class="text-sm text-gray-600">Thanh toán nhanh qua ứng dụng Momo</p>
                                 </div>
-                            </label><label class="flex items-center space-x-3">
-                                <input type="radio" name="payment" value="VNPAY" class="h-4 w-4" />
-                                <span class="text-sm">Thanh toán bằng vnpay</span>
-                                <div class="flex space-x-2">
-                                    <img src="{{ 'https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg' }}"
-                                        alt="Momo Icon" class="w-[39px]" />
+                                <img src="https://pay2s.vn/blog/wp-content/uploads/2024/11/momo_icon_circle_pinkbg_RGB-1024x1024.png" alt="Momo" class="w-10 h-10">
+                            </div>
+                            
+                            <div class="payment-card bg-white p-4 rounded-lg cursor-pointer flex items-center">
+                                <input type="radio" name="payment" value="VNPAY" class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium mb-1">Ví VNPay</div>
+                                    <p class="text-sm text-gray-600">Thanh toán qua cổng VNPay</p>
                                 </div>
-                            </label>
-                            <label class="flex items-center space-x-3">
-                                <input type="radio" name="payment" value="COD" class="h-4 w-4" />
-                                <span class="text-sm">Thanh toán bằng tiền mặt</span>
-                            </label>
+                                <img src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="VNPay" class="w-10 h-10">
+                            </div>
+                            
+                            <div class="payment-card bg-white p-4 rounded-lg cursor-pointer flex items-center">
+                                <input type="radio" name="payment" value="COD" class="mr-3">
+                                <div class="flex-1">
+                                    <div class="font-medium mb-1">Thanh toán khi nhận hàng (COD)</div>
+                                    <p class="text-sm text-gray-600">Thanh toán bằng tiền mặt khi nhận hàng</p>
+                                </div>
+                                <i class="fas fa-money-bill-wave text-2xl text-green-500"></i>
+                            </div>
                         </div>
-                    </form>
-
-                    <!-- Form thêm địa chỉ mới -->
+                    </div>
                 </div>
 
                 <!-- Danh sách sản phẩm và thanh toán -->
                 <div class="w-full lg:w-1/2">
                     <!-- Danh sách sản phẩm -->
-                    <div class="space-y-4 mb-6">
-                        <!-- Nhóm sản phẩm theo shop -->
+                    <div class="bg-gray-50 p-6 rounded-xl mb-8">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-shopping-cart mr-2 text-accent"></i>
+                            Đơn hàng của bạn
+                        </h2>
                         @php
-                            // Nhóm items theo shopID
-                            $itemsByShop = collect($items)->groupBy('product.shopID')->sortKeys();
+                            // Nhóm sản phẩm theo shop
+                            $groupedItems = [];
+                            foreach ($items as $item) {
+                                $shopId = $item['product']->shop->id;
+                                if (!isset($groupedItems[$shopId])) {
+                                    $groupedItems[$shopId] = [
+                                        'shop' => $item['product']->shop,
+                                        'items' => []
+                                    ];
+                                }
+                                $groupedItems[$shopId]['items'][] = $item;
+                            }
                         @endphp
-
-                        @foreach ($itemsByShop as $shopId => $shopItems)
-                            <!-- Tiêu đề shop -->
-                            <div class="border-b pb-2 mb-4">
-                                <h3 class="text-lg font-semibold">
-                                    Shop: {{ \App\Models\Shop::find($shopId)->name ?? 'Shop ' . $shopId }}
-                                </h3>
-                            </div>
-
-                            <!-- Danh sách sản phẩm trong shop -->
-                            <div class="space-y-4">
-                                @foreach ($shopItems as $item)
-                                    <div class="flex items-center space-x-4">
-                                        <img src="{{ $item['product']->image ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGh5WFH8TOIfRKxUrIgJZoDCs1yvQ4hIcppw&s' }}"
-                                            alt="Product Image" class="w-16 h-16 object-cover rounded-md" />
-                                        <div class="flex-1">
-                                            <span class="block text-sm font-medium">{{ $item['product']->name }}</span>
-                                            <span class="text-sm text-gray-500">x{{ $item['quantity'] }}</span>
-                                            <span class="text-sm text-gray-500">Loại:
-                                                {{ $item['product']->variants->first()->variant_name ?? 'N/A' }}</span>
+                        
+                        <div class="space-y-5">
+                            @foreach ($groupedItems as $shopId => $shopData)
+                            <!-- Shop {{ $shopData['shop']->name }} -->
+                            <div class="bg-white rounded-xl overflow-hidden shadow-sm">
+                                <div class="bg-gray-100 px-4 py-3 border-b">
+                                    <h3 class="font-semibold text-gray-800  items-center">
+                                        <i class="fas fa-store mr-2 text-gray-600"></i>
+                                          {{$shopData['shop']->shop_name }} - Phí giao hàng : <span id="shipping-fee-shop-{{ $shopData['shop']->id }}">{{ number_format($shopData['shop']->shipping_fee, 0, ',', '.') }}₫</span>
+                                    </h3>
+                                </div>
+                                
+                                <div class="p-6 w-full">
+                                    @foreach ($shopData['items'] as $index => $item)
+                                    <!-- Sản phẩm {{ $index + 1 }} -->
+                                    <div class="product-card  flex flex-row gap-2 items-center py-1 w-full {{ $index < count($shopData['items']) - 1 ? 'border-b border-gray-100' : '' }}" style="align-items: center;">
+                                        <!-- Ảnh sản phẩm - chiếm 1/3 -->
+                                        <div class="w-1/3 pr-4">
+                                            <img
+                                                src="{{ $item['product']->variants->first()->image ?? 'https://www.shutterstock.com/image-vector/no-photo-image-viewer-thumbnail-260nw-2495883211.jpg' }}"
+                                                alt="{{ $item['product']->name }}"
+                                                class="w-full object-contain rounded-lg"
+                                            />                                       
                                         </div>
-                                        <span class="text-sm font-semibold">{{ number_format($item['product']->price) }}
-                                            VND</span>
+                                        
+                                        <!-- Thông tin sản phẩm - chiếm 2/3 -->
+                                        <div class="w-2/3">
+                                            <div class="text-left">
+                                                <div class="font-medium text-gray-800 mb-1">{{ $item['product']->name }}</div>
+                                                <div class="text-sm text-gray-600 mb-1">{{ $item['product']->variants->first()->variant_name }}</div>
+                                                <div class="text-sm text-gray-600">Số lượng: x{{ $item['quantity'] }}</div>
+                                            </div>
+                                            <div class="text-right flex flex-row gap-2 mt-5">
+                                                <div class="font-medium text-gray-800">{{ number_format($item['product']->variants->first()->sale_price, 0, ',', '.') }}₫</div>
+                                                <div class="text-sm text-gray-500 line-through">{{ number_format($item['product']->variants->first()->price, 0, ',', '.') }}₫</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                @endforeach
-                                <textarea name="note_for_shop[{{ $shopId }}][{{ $item['product']->id }}]"
-                                    id="note-{{ $shopId }}-{{ $item['product']->id }}"
-                                    class="w-full h-[40px] border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Lời nhắn cho người bán" data-shop-id="{{ $shopId }}">
-                                </textarea>
+                                    @endforeach
+                                    
+                                    <!-- Lời nhắn cho shop -->
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Lời nhắn cho Shop :  {{ $shopData['shop']->shop_name }}</label>
+                                        <textarea 
+                                            name="note_for_shop_{{ $shopData['shop']->id }}" 
+                                            data-shop-id="{{ $shopData['shop']->id }}"
+                                            class="w-full h-16 bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
+                                            placeholder="Ví dụ: Gói hàng cẩn thận..."
+                                        ></textarea>
+                                    </div>
+                                </div>
                             </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
-
+                    
                     <!-- Tóm tắt đơn hàng -->
-                    <div class="border-t pt-4 mb-6">
-                        <h2 class="text-lg font-semibold mb-2">Tóm tắt đơn hàng</h2>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span>Tổng cộng:</span>
-                                <span
-                                    class="font-semibold">{{ number_format($subtotal = array_sum(array_column($items, 'total_price'))) }}
-                                    VND</span>
+                    <div class="summary-card p-6 mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-receipt mr-2 text-gray-600"></i>
+                            Tóm tắt đơn hàng
+                        </h2>
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Tạm tính:</span>
+                                <span id="subtotal">{{ number_format($subtotal, 0, ',', '.') }}₫</span>
                             </div>
-                            <div class="border-t my-2"></div>
-                            <div class="flex justify-between text-sm">
+                            
+                            <div class="flex justify-between text-gray-600">
+                                <span>Giảm giá:</span>
+                                <span class="text-green-600" id="discount_amount">{{ number_format(0, 0, ',', '.') }}₫</span>
+                            </div>
+                            
+                            <div class="flex justify-between text-gray-600">
                                 <span>Phí vận chuyển:</span>
-                                <span class="font-semibold" id="shipping-fee">Đang tính...</span>
+                                <span id="total_shipping_fee">
+                                    {{ number_format(0, 0, ',', '.') }}₫
+                                </span>
+                                
                             </div>
-                            <div class="flex justify-between text-sm">
+                            
+                            <div class="border-t border-gray-200 my-3 pt-3 flex justify-between text-lg font-bold">
+                                <span>Tổng cộng:</span>
+                                <span class="text-primary" id="total_amount">{{ number_format(0, 0, ',', '.') }}₫</span>
+                            </div>
+                            
+                            <div class="flex justify-between text-sm text-gray-500 mt-2">
                                 <span>Thời gian giao hàng dự kiến:</span>
-                                <span class="font-semibold" id="expected-delivery-time"></span>
-                            </div>
-                            <div class="border-t my-2"></div>
-                            <div class="flex justify-between text-lg font-bold">
-                                <span>Tổng đơn:</span>
-                                <span id="total-amount">{{ number_format($subtotal) }} VND</span>
+                                <span class="font-medium">từ 2 đến 3 ngày</span>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="flex flex-col lg:flex-row gap-[20px] justify-between">
-                        <div class="flex">
-                            <!-- Mã giảm giá -->
-                            <form action="" class="flex">
-                                <input type="text" placeholder="Mã giảm giá"
-                                    class="flex-1 border border-[#000] p-2 focus:outline-none focus:none" />
-                                <button
-                                    class="w-[100px] bg-black text-white border border-[#000] px-4 py-2 hover:bg-transparent hover:text-black hover:border hover:border-[#000]">
-                                    Áp dụng
-                                </button>
-                            </form>
-                        </div>
-                        <div class="flex justify-start">
-                            <!-- Nút đặt hàng -->
-                            <button type="submit" class="bg-[#F1416C] text-white px-4 py-3 hover:bg-pink-600"
-                                form="checkout-form">
-                                Đặt hàng
-                            </button>
+                        
+                        <!-- Mã giảm giá -->
+                         
+                        <form class="mb-6" id="discount-form">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mã giảm giá</label>
+                            <div class="flex gap-2">
+                                <input type="text" name="discount_code" placeholder="Nhập mã giảm giá" class="discount-input flex-1 bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors">Áp dụng</button>
+                            </div>
+                        </form>
+                        
+                        <!-- Form ẩn để lưu trữ dữ liệu -->
+                        <form id="checkout-form" method="POST" action="{{ route('checkout.store') }}" style="display: none;">
+                            @csrf
+                            <input type="hidden" name="selected_address_id" id="address2">
+                            <input type="hidden" name="payment_method" id="payment_method">
+                            <input type="hidden" name="shop_notes" id="shop_notes">
+                            <input type="hidden" name="shipping_fee" id="shipping_fee_input">
+                            <input type="hidden" name="subtotal" id="subtotal">
+                            <input type="hidden" name="discount_amount" id="discount_amount">
+                            <input type="hidden" name="total_amount" id="total_amount">
+                            <input type="hidden" name="discount_code" id="discount_code">
+                        </form>
+                        
+                        <!-- Nút đặt hàng -->
+                        <button type="button" id="place-order-btn" class="w-full bg-primary text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-primary-dark transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-transform">
+                            <i class="fas fa-shopping-bag mr-2"></i> Đặt hàng ({{ number_format(0, 0, ',', '.') }}₫)
+                        </button>
+                        
+                        <div class="text-center mt-4 text-sm text-gray-600">
+                            <p>Bằng cách đặt hàng, bạn đồng ý với <a href="#" class="text-primary hover:underline">Điều khoản dịch vụ</a> của chúng tôi</p>
                         </div>
                     </div>
                 </div>
@@ -287,193 +403,407 @@
 @endsection
 
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const showAddressFormBtn = document.getElementById('showAddressForm');
-            const createAddressForm = document.querySelector('.create-address-form');
-
-            showAddressFormBtn.addEventListener('click', function() {
-                const isHidden = window.getComputedStyle(createAddressForm).display === 'none';
-
-                createAddressForm.style.display = isHidden ? 'block' : 'none';
-
-                if (isHidden) {
-                    showAddressFormBtn.innerHTML = '<i class="fa fa-times"></i> Đóng';
-                } else {
-                    showAddressFormBtn.innerHTML = '<i class="fa fa-plus"></i> Thêm địa chỉ';
-                }
-            });
-
-            const citySelect = document.getElementById('city');
-            const districtSelect = document.getElementById('district');
-            const wardSelect = document.getElementById('ward');
-
-            const API_URL = 'https://provinces.open-api.vn/api/';
-
-            async function fetchCities() {
-                try {
-                    const response = await fetch(API_URL + '?depth=1');
-                    const cities = await response.json();
-
-                    cities.forEach(city => {
-                        const option = document.createElement('option');
-                        option.value = city.code;
-                        option.textContent = city.name;
-                        citySelect.appendChild(option);
-                    });
-                } catch (error) {
-                    console.error('Error fetching cities:', error);
-                }
-            }
-
-            async function fetchDistricts(cityCode) {
-                try {
-                    const response = await fetch(API_URL + `p/${cityCode}?depth=2`);
-                    const city = await response.json();
-
-                    districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-
-                    city.districts.forEach(district => {
-                        const option = document.createElement('option');
-                        option.value = district.code;
-                        option.textContent = district.name;
-                        districtSelect.appendChild(option);
-                    });
-
-                    districtSelect.disabled = false;
-                } catch (error) {
-                    console.error('Error fetching districts:', error);
-                }
-            }
-
-            async function fetchWards(districtCode) {
-                try {
-                    const response = await fetch(API_URL + `d/${districtCode}?depth=2`);
-                    const district = await response.json();
-
-                    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-
-                    district.wards.forEach(ward => {
-                        const option = document.createElement('option');
-                        option.value = ward.code;
-                        option.textContent = ward.name;
-                        wardSelect.appendChild(option);
-                    });
-
-                    wardSelect.disabled = false;
-                } catch (error) {
-                    console.error('Error fetching wards:', error);
-                }
-            }
-
-            citySelect.addEventListener('change', function() {
-                if (this.value) {
-                    fetchDistricts(this.value);
-                    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-                    wardSelect.disabled = true;
-                } else {
-                    districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-                    districtSelect.disabled = true;
-                    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-                    wardSelect.disabled = true;
-                }
-            });
-
-            districtSelect.addEventListener('change', function() {
-                if (this.value) {
-                    fetchWards(this.value);
-                } else {
-                    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-                    wardSelect.disabled = true;
-                }
-            });
-
-            fetchCities();
-        });
-    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const addressSelect = document.querySelector('select[name="address"]');
-            if (addressSelect) {
-                calculateShippingFee(addressSelect.value);
+            let isSubmitting = false;
+            
+            document.getElementById('place-order-btn').addEventListener('click', function() {
+                if (isSubmitting) return;
+                
+                if (validateForm()) {
+                    collectAndSubmitData();
+                }
+            });
 
-                addressSelect.addEventListener('change', function() {
-                    calculateShippingFee(this.value);
-                });
+            function validateForm() {
+                const selectedAddress = document.querySelector('input[name="receiver_address_id"]:checked');
+                if (!selectedAddress) {
+                    showError('Vui lòng chọn địa chỉ giao hàng');
+                    return false;
+                }
+
+                const selectedPayment = document.querySelector('input[name="payment"]:checked');
+                if (!selectedPayment) {
+                    showError('Vui lòng chọn phương thức thanh toán');
+                    return false;
+                }
+                return true;
             }
 
-            function calculateShippingFee(addressId) {
-                if (!addressId) return;
+            function collectFormData() {
+                const formData = {
+                    // Địa chỉ giao hàng
+                    selected_address_id: document.querySelector('input[name="receiver_address_id"]:checked')?.value,
+                    
+                    // Phương thức thanh toán
+                    payment_method: document.querySelector('input[name="payment"]:checked')?.value,
+                    
+                    // Lời nhắn cho các shop
+                    shop_notes: collectShopNotes(),
+                    
+                    // Thông tin đơn hàng
+                    subtotal: document.getElementById('subtotal').textContent.replace(/[^\d]/g, '') || 0,
+                    discount_amount: document.getElementById('discount_amount').textContent.replace(/[^\d]/g, '') || 0,
+                    shipping_fee: document.getElementById('total_shipping_fee').textContent.replace(/[^\d]/g, '') || 0,
+                    total_amount: document.getElementById('total_amount').textContent.replace(/[^\d]/g, '') || 0,
+                    
+                    discount_code: document.querySelector('input[name="discount_code"]')?.value || null,
+                
+                    _token: '{{ csrf_token() }}'
+                };
 
-                document.getElementById('shipping-fee').textContent = '0 VND';
-                fetch('/calculate-shipping-fee', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            address_id: addressId,
-                            _token: '{{ csrf_token() }}'
-                        })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.shipping_fee && typeof data.shipping_fee === 'number') {
-                            const shippingFee = data.shipping_fee;
-                            const subtotal = {{ $subtotal ?? 0 }};
-                            const total = subtotal + shippingFee;
-
-                            document.getElementById('shipping-fee').textContent =
-                                new Intl.NumberFormat('vi-VN').format(shippingFee) + ' VND';
-                            document.getElementById('expected-delivery-time').textContent = data
-                                .expected_delivery_time;
-                            document.getElementById('total-amount').textContent =
-                                new Intl.NumberFormat('vi-VN').format(total) + ' VND';
-                        } else {
-                            document.getElementById('shipping-fee').textContent = data.error ||
-                                'Không thể tính phí vận chuyển';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        document.getElementById('shipping-fee').textContent = 'Không thể tính phí vận chuyển';
-                    });
+                return formData;
             }
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            event.preventDefault();
-            const checkoutForm = document.getElementById('checkout-form');
-            const shopNotesInput = document.getElementById('shop_notes');
 
+            // Thu thập lời nhắn cho các shop
             function collectShopNotes() {
                 const notes = {};
                 document.querySelectorAll('textarea[name^="note_for_shop"]').forEach(textarea => {
                     const shopId = textarea.getAttribute('data-shop-id');
                     const note = textarea.value.trim();
-
+                    
                     if (note) {
-                        if (!notes[shopId]) {
-                            notes[shopId] = {};
-                        }
                         notes[shopId] = note;
                     }
                 });
                 return notes;
             }
 
-            // Cập nhật shop_notes khi submit form
-            checkoutForm.addEventListener('submit', function(event) {
-                const notes = collectShopNotes();
-                shopNotesInput.value = JSON.stringify(notes);
+            // Lấy phí vận chuyển
+            function getShippingFee() {
+                const shippingFeeElement = document.getElementById('total_shipping_fee');
+                if (shippingFeeElement) {
+                    const feeText = shippingFeeElement.textContent;
+                    const fee = parseInt(feeText.replace(/[^\d]/g, ''));
+                    return isNaN(fee) ? 0 : fee;
+                }
+                return 0;
+            }
+
+            // Gửi dữ liệu đến backend
+            function collectAndSubmitData() {
+                isSubmitting = true;
+                
+                // Thay đổi trạng thái nút
+                const submitBtn = document.getElementById('place-order-btn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang xử lý...';
+                submitBtn.disabled = true;
+
+                const formData = collectFormData();
+                
+                console.log('Dữ liệu gửi đi:', formData);
+
+                // Gửi request đến backend
+                fetch('{{ route("checkout.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Phản hồi từ server:', data);
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                    showError('Có lỗi xảy ra khi kết nối đến server ' + error);
+                })
+                .catch(message => {
+                    showError(message);
+                })
+                .finally(() => {
+                    // Khôi phục trạng thái nút
+                    isSubmitting = false;
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            }
+
+            // Hiển thị thông báo lỗi
+            function showError(message) {
+                // Tạo toast notification
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                toast.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                // Tự động ẩn sau 5 giây
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
+            }
+
+            // Hiển thị thông báo thành công
+            function showSuccess(message) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                toast.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
+            }
+
+            // Xử lý form mã giảm giá
+            const discountForm = document.getElementById('discount-form');
+            if (discountForm) {
+                discountForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const discountCode = document.querySelector('input[name="discount_code"]').value;
+                    if (!discountCode.trim()) {
+                        showError('Vui lòng nhập mã giảm giá');
+                        return;
+                    }
+
+                    // Gửi request áp dụng mã giảm giá
+                    fetch('{{ route("customer.apply-app-discount") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            discount_code: discountCode,
+                            _token: '{{ csrf_token() }}'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSuccess('Áp dụng mã giảm giá thành công!');
+                            // Cập nhật lại giá tiền nếu cần
+                            if (data.updated_prices) {
+                                updatePrices(data.updated_prices);
+                            }
+                        } else {
+                            showError(data.message || 'Mã giảm giá không hợp lệ');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi:', error);
+                        showError('Có lỗi xảy ra khi áp dụng mã giảm giá');
+                    });
+                });
+            }
+
+            function updatePrices(updatedPrices) {
+                // Cập nhật các giá trị hiển thị
+                if (updatedPrices.subtotal) {
+                    document.querySelector('[name="subtotal"]').value = updatedPrices.subtotal;
+                }
+                if (updatedPrices.discount_amount) {
+                    document.querySelector('[name="discount_amount"]').value = updatedPrices.discount_amount;
+                }
+                if (updatedPrices.total_amount) {
+                    document.querySelector('[name="total_amount"]').value = updatedPrices.total_amount;
+                    // Cập nhật text trên nút đặt hàng
+                    const orderBtn = document.getElementById('place-order-btn');
+                    orderBtn.innerHTML = `<i class="fas fa-shopping-bag mr-2"></i> Đặt hàng (${new Intl.NumberFormat('vi-VN').format(updatedPrices.total_amount)}₫)`;
+                }
+            }
+        });
+    </script>
+    <script>
+        function parseCurrency(str) {
+            return parseFloat(str.replace(/[^\d]/g, '')) || 0;
+        }
+
+        function updateTotal($params) {
+            const subtotal = parseCurrency(document.getElementById('subtotal')?.textContent ?? '0');
+            const discount_amount = parseCurrency(document.getElementById('discount_amount')?.textContent ?? '0');
+            const total_shipping_fee = parseCurrency(document.getElementById('total_shipping_fee')?.textContent ?? '0');
+
+            const total = subtotal - discount_amount + total_shipping_fee;
+
+            document.getElementById('total_amount').textContent = new Intl.NumberFormat('vi-VN').format(total) + '₫';
+        }
+
+        updateTotal();
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#F1416C',
+                        secondary: '#4F46E5',
+                        accent: '#10B981',
+                        light: '#F9FAFB',
+                        dark: '#1F2937'
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Xử lý hiển thị form thêm địa chỉ
+        document.getElementById('showAddressForm').addEventListener('click', function() {
+            const form = document.getElementById('createAddressForm');
+            form.classList.toggle('hidden');
+            this.textContent = form.classList.contains('hidden') 
+                ? ' Thêm địa chỉ mới' 
+                : ' Hủy thêm địa chỉ';
+        });
+
+        // Xử lý nút hủy form địa chỉ
+        document.getElementById('cancelAddressForm').addEventListener('click', function() {
+            document.getElementById('createAddressForm').classList.add('hidden');
+            document.getElementById('showAddressForm').textContent = ' Thêm địa chỉ mới';
+        });
+
+        // Xử lý chọn phương thức thanh toán
+        const paymentCards = document.querySelectorAll('.payment-card');
+        paymentCards.forEach(card => {
+            card.addEventListener('click', function() {
+                paymentCards.forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+            });
+        });
+
+        // Xử lý chọn loại địa chỉ
+        const addressTypeBtns = document.querySelectorAll('.address-type-btn');
+        addressTypeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                addressTypeBtns.forEach(b => b.classList.remove('bg-primary', 'text-white'));
+                this.classList.add('bg-primary', 'text-white');
+            });
+        });
+
+        // Hiệu ứng cho product card
+        const productCards = document.querySelectorAll('.product-card');
+        productCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.boxShadow = 'none';
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const addresses = @json($user_addresses);
+            const shops = @json($shops);
+
+            const query_count = Object.keys(shops).length;
+            let isFetchingShippingFee = false;
+            let fetchTimeout = null;
+
+            async function fetchShippingFee(addressId, shop) {
+                try {
+                    const response = await fetch('/calculate-shipping-fee', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            address_id: addressId,
+                            shop_id: shop.id,
+                            _token: '{{ csrf_token() }}'
+                        })
+                    });
+                    const data = await response.json();
+                    if (data && !data.error) {
+                        document.getElementById('shipping-fee-shop-' + shop.id).textContent = data.shipping_fee;
+                        return Number(data.shipping_fee) || 0;
+                    } else {
+                        console.error('Không thể tính phí vận chuyển cho shop', shop.id, data.error);
+                        return 0;
+                    }
+                } catch (error) {
+                    console.error('Lỗi:', error);
+                    return 0;
+                }
+            }
+
+            document.querySelectorAll('input[name="receiver_address_id"]').forEach(function (radio) {
+                radio.addEventListener('change', function () {
+                    if (isFetchingShippingFee) return;
+
+                    if (fetchTimeout) clearTimeout(fetchTimeout);
+                    fetchTimeout = setTimeout(async () => {
+                        isFetchingShippingFee = true;
+                        const selectedId = this.value;
+                        const address = addresses.find(addr => addr.id == selectedId);
+                        if (address) {
+                            let total_shipping_fee = 0;
+                            const feePromises = shops.map(shop => fetchShippingFee(address.id, shop));
+                            const fees = await Promise.all(feePromises);
+                            fees.forEach(fee => {
+                                total_shipping_fee += fee;
+                            });
+                            document.getElementById('total_shipping_fee').textContent = total_shipping_fee.toLocaleString('vi-VN') + '₫';
+                            updateTotal();
+                        }
+                        isFetchingShippingFee = false;
+                    }, 200);
+                });
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const discountForm = document.getElementById('discount-form');
+            if (discountForm) {
+                discountForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const codeInput = discountForm.querySelector('input[name="discount_code"]');
+                    const discountCode = codeInput ? codeInput.value.trim() : '';
+                    if (!discountCode) {
+                        return;
+                    }
+                    try {
+                        const response = await fetch('{{ route("customer.apply-app-discount") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                discount_code: discountCode,
+                                subtotal: @json($subtotal),
+                            })
+                        });
+                        const data = await response.json();
+                        console.log(data.discount_amount);
+                        if(data.discount_amount)
+                        {
+                            document.getElementById('discount_amount').textContent = Number(data.discount_amount).toLocaleString('vi-VN');
+                            updateTotal();
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                });
+            }
+        });
+    </script>    
 @endpush

@@ -38,7 +38,8 @@
                             @php $subtotal = $item->price * $item->quantity; @endphp
                             <div class="p-4 flex flex-col sm:flex-row items-center sm:items-center gap-4 h-fit">
                                 <input type="checkbox" name="cart_ids[]" value="{{ $item->id }}" class="cart-checkbox"
-                                    data-id="{{ $item->id }}">
+                                    data-id="{{ $item->id }}" data-product-id="{{ $item->product->id }}"
+                                    data-variant-id="{{ $item->variantID }}" data-quantity="{{ $item->quantity }}">
 
                                 <!-- Hình ảnh -->
                                 @php
@@ -242,14 +243,56 @@
                 });
             });
 
+            // --- Đoạn này là phần xử lý checkbox gửi id sản phẩm và id cart lên server ---
             document.addEventListener("DOMContentLoaded", function() {
                 const selectAllCheckbox = document.getElementById('select-all');
                 const checkboxes = document.querySelectorAll('.cart-checkbox');
                 const totalElement = document.getElementById('cart-total');
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+                // Helper: Lấy danh sách ID sản phẩm và ID cart đã chọn
+                function getSelectedProductAndCartIds() {
+                    let selected = [];
+                    checkboxes.forEach((checkbox) => {
+                        if (checkbox.checked) {
+                            selected.push({
+                                cart_id: checkbox.dataset.id,
+                                product_id: checkbox.dataset.productId,
+                                variant_id: checkbox.dataset.variantId,
+                                quantity: checkbox.dataset.quantity
+                            });
+                        }
+                    });
+                    return selected;
+                }
+
+                // Gửi AJAX để lưu danh sách sản phẩm đã chọn vào session (gửi cả id cart và id sản phẩm)
+                function updateSelectedProductsInSession() {
+                    const selected = getSelectedProductAndCartIds();
+                    fetch('/customer/cart/selected', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ selected: selected })
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Không thể cập nhật session!');
+                        return res.json();
+                    })
+                    .then(data => {
+                        // Thêm console.log sản phẩm được thêm vào session
+                        console.log('Sản phẩm được thêm vào session:', selected);
+                    })
+                    .catch(err => {
+                        console.error('Lỗi cập nhật session:', err);
+                    });
+                }
 
                 function updateTotal() {
                     let total = 0;
-
                     checkboxes.forEach((checkbox) => {
                         if (checkbox.checked) {
                             const row = checkbox.closest('.p-4'); // mỗi sản phẩm
@@ -257,7 +300,6 @@
                             total += parseInt(subtotal || 0);
                         }
                     });
-
                     if (totalElement) {
                         totalElement.textContent = total.toLocaleString('vi-VN') + 'đ';
                     }
@@ -278,6 +320,8 @@
                         }
 
                         updateTotal();
+                        // Khi người dùng tích vào checkbox thì lấy id sản phẩm và id cart gửi lên server
+                        updateSelectedProductsInSession();
                     });
                 });
 
@@ -287,10 +331,12 @@
                         const isChecked = selectAllCheckbox.checked;
                         checkboxes.forEach(cb => cb.checked = isChecked);
                         updateTotal();
+                        updateSelectedProductsInSession();
                     });
                 }
 
                 updateTotal(); // Gọi lần đầu
+                updateSelectedProductsInSession(); // Lưu trạng thái ban đầu vào session
             });
         </script>
     @endpush
