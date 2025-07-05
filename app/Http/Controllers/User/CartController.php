@@ -9,6 +9,7 @@ use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
@@ -160,5 +161,110 @@ class CartController extends Controller
             'message' => 'Đã cập nhật số lượng!',
             'total_price' => number_format($cartItem->total_price, 0, ',', '.'),
         ]);
+    }
+
+    /**
+     * Thêm nhiều variant vào giỏ hàng cùng lúc
+     */
+    public function addMultiToCart(Request $request)
+    {
+        $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.variant_id' => 'required|exists:product_variants,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        $results = [];
+        foreach ($request->items as $item) {
+            $product = Product::find($item['product_id']);
+            $variant = \App\Models\ProductVariant::find($item['variant_id']);
+            $stock = $variant ? $variant->stock : ($product ? $product->stock_total : 0);
+            $price = $variant ? ($variant->sale_price ?? $variant->price) : ($product ? ($product->sale_price ?? $product->price) : 0);
+
+            if (!$product || !$variant) {
+                $results[] = [
+                    'variant_id' => $item['variant_id'],
+                    'status' => 'error',
+                    'message' => 'Sản phẩm hoặc biến thể không tồn tại.'
+                ];
+                continue;
+            }
+
+            if ($item['quantity'] > $stock) {
+                $results[] = [
+                    'variant_id' => $item['variant_id'],
+                    'status' => 'error',
+                    'message' => 'Số lượng vượt quá tồn kho!',
+                    'available' => $stock
+                ];
+                continue;
+            }
+
+            $userID = Auth::check() ? Auth::id() : null;
+            $sessionID = Session::getId();
+            $quantity = $item['quantity'];
+            $total = $price * $quantity;
+
+            $cartQuery = Cart::where('productID', $product->id)
+                ->where('variantID', $variant->id)
+                ->where(function ($query) use ($userID, $sessionID) {
+                    if ($userID) {
+                        $query->where('userID', $userID);
+                    } else {
+                        $query->where('session_id', $sessionID);
+                    }
+                });
+
+            $existingCartItem = $cartQuery->first();
+
+            if ($existingCartItem) {
+                $newQuantity = $existingCartItem->quantity + $quantity;
+                if ($newQuantity > $stock) {
+                    $results[] = [
+                        'variant_id' => $item['variant_id'],
+                        'status' => 'error',
+                        'message' => 'Số lượng vượt quá tồn kho sau khi cộng thêm!',
+                        'available' => $stock
+                    ];
+                    continue;
+                }
+                $existingCartItem->quantity = $newQuantity;
+                $existingCartItem->total_price = $newQuantity * $price;
+                $existingCartItem->save();
+            } else {
+                Cart::create([
+                    'userID' => $userID,
+                    'productID' => $product->id,
+                    'variantID' => $variant->id,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                    'total_price' => $total,
+                    'session_id' => $sessionID,
+                    'buying_flag' => false
+                ]);
+            }
+
+            $results[] = [
+                'variant_id' => $item['variant_id'],
+                'status' => 'success',
+                'message' => 'Đã thêm vào giỏ hàng!'
+            ];
+        }
+
+        // Nếu tất cả thành công
+        if (collect($results)->every(fn($r) => $r['status'] === 'success')) {
+            return response()->json(['message' => 'Đã thêm vào giỏ hàng!', 'results' => $results], 200);
+        }
+        // Nếu có lỗi
+        return response()->json(['message' => 'Một số sản phẩm không thể thêm vào giỏ hàng!', 'results' => $results], 422);
+    }
+
+
+    public function updateSelectedProducts(Request $request)
+    {
+        $selectedIds = $request->input('selected');
+        session(['selected_products' => $selectedIds]);
+        return response()->json(['message' => 'Đã cập nhật sản phẩm đã chọn!']);
     }
 }

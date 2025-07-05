@@ -30,7 +30,6 @@ class Coupon extends Model
         'created_by',
         'shop_id',
         'status',
-        'used_count'
     ];
 
     protected $casts = [

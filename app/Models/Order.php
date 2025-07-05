@@ -17,7 +17,7 @@ class Order extends Model
         'shopID',
         'order_code',
         'total_price',
-        'couponID',
+        'coupon_id',
         'coupon_discount',
         'payment_method',
         'payment_status',

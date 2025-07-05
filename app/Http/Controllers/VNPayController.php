@@ -25,7 +25,7 @@ class VNPayController extends Controller
             $vnp_TxnRef = $order->order_code; //Mã đơn hàng
             $vnp_OrderInfo = "Thanh toan don hang " . $order->order_code;
             $vnp_OrderType = "billpayment";
-            $vnp_Amount = (int)(100000 * 100);
+            $vnp_Amount = (int)($order->total_price * 100);
             $vnp_Locale = 'vn';
             $vnp_IpAddr = request()->ip();
             $vnp_CreateDate = date('YmdHis');

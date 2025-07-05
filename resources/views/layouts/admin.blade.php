@@ -30,8 +30,8 @@
         rel="stylesheet" />
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/product.css') }}">
+    @vite('resources/css/admin.css')
+    @vite('resources/css/admin/product.css')
     @stack('styles')
     @yield('head')
 </head>

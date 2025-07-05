@@ -105,70 +105,45 @@
                         <!-- Màu sắc và kích thước -->
                         <div class="flex flex-col gap-4">
                             @php
-                                $colorValues = $product->variants->isNotEmpty()
-                                    ? $product->variants->flatMap->attributeValues
-                                        ->where('attribute.name', 'Màu sắc')
-                                        ->pluck('value')
-                                        ->unique()
-                                    : collect();
-                                $sizeValues = $product->variants->isNotEmpty()
-                                    ? $product->variants->flatMap->attributeValues
-                                        ->where('attribute.name', 'Kích cỡ')
-                                        ->pluck('value')
-                                        ->unique()
-                                    : collect();
+                                $variants = $product->variants;
                             @endphp
-                            @if ($colorValues->isNotEmpty())
-                                <div class="flex items-center gap-4" id="color-options">
-                                    <span class="text-gray-700">Màu sắc:</span>
-                                    @foreach ($colorValues as $color)
-                                        <button
-                                            class="border border-gray-300 rounded px-3 py-1 flex items-center gap-2 hover:bg-gray-100"
-                                            data-value="{{ $color }}"
-                                            data-price="{{ $variantData[$product->variants->firstWhere(function ($v) use ($color) {return $v->attributeValues->where('attribute.name', 'Màu sắc')->first()->value == $color;})->id]['price'] ?? $product->sale_price }}"
-                                            data-stock="{{ $variantData[$product->variants->firstWhere(function ($v) use ($color) {return $v->attributeValues->where('attribute.name', 'Màu sắc')->first()->value == $color;})->id]['stock'] ?? $product->stock_total }}">
-                                            <img src="{{ isset($colorImages[$color]) ? Storage::url($colorImages[$color]) : asset('images/default_product_image.png') }}"
-                                                width="20" class="rounded">
-                                            <span>{{ $color }}</span>
-                                        </button>
-                                    @endforeach
-                                </div>
-                            @else
-                                <p class="text-gray-500">Không có tùy chọn màu sắc.</p>
-                            @endif
-                            @if ($sizeValues->isNotEmpty())
-                                <div class="flex items-center gap-4" id="size-options">
-                                    <span class="text-gray-700">Kích thước:</span>
-                                    @foreach ($sizeValues as $size)
-                                        <button class="border border-gray-300 rounded px-3 py-1 hover:bg-gray-100"
-                                            data-value="{{ $size }}"
-                                            data-price="{{ $variantData[$product->variants->firstWhere(function ($v) use ($size) {return $v->attributeValues->where('attribute.name', 'Kích cỡ')->first()->value == $size;})->id]['price'] ?? $product->sale_price }}"
-                                            data-stock="{{ $variantData[$product->variants->firstWhere(function ($v) use ($size) {return $v->attributeValues->where('attribute.name', 'Kích cỡ')->first()->value == $size;})->id]['stock'] ?? $product->stock_total }}">
-                                            <span>{{ $size }}</span>
-                                        </button>
-                                    @endforeach
-                                </div>
-                            @else
-                                <p class="text-gray-500">Không có tùy chọn kích thước.</p>
-                            @endif
-                        </div>
 
-                        <!-- Số lượng và biến thể được chọn -->
-                        <div class="flex items-center gap-4">
-                            <span class="text-gray-700">Số lượng:</span>
-                            <form action="{{ route('cart.add') }}" method="POST" class="flex items-center">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="variant_id" id="selected_variant_id" value="">
-                                <button type="button" id="decreaseQty"
-                                    class="border border-gray-300 px-3 py-1 rounded-l hover:bg-gray-100">-</button>
-                                <input type="text" name="quantity" id="quantity" value="1"
-                                    class="w-16 text-center px-3 py-1 border-t border-b border-gray-300 focus:outline-none">
-                                <button type="button" id="increaseQty"
-                                    class="border border-gray-300 px-3 py-1 rounded-r hover:bg-gray-100">+</button>
-                            </form>
-                            <span class="text-sm text-gray-500" id="stock_info">{{ $product->stock_total }} sản phẩm có
-                                sẵn</span>
+                            @if ($variants->isNotEmpty())
+                                <div class="flex flex-col gap-2" id="variant-options">
+                                    <span class="text-gray-700 mb-1">Chọn phân loại:</span>
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach ($variants as $variant)
+                                            @php
+                                                $variantLabel = $variant->variant_name;
+                                                $variantImage = $variant->image ?? $product->image;
+                                            @endphp
+                                            <div class="variant-item relative flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    class="border border-gray-300 rounded px-3 py-1 flex items-center gap-2 hover:bg-gray-100 variant-btn"
+                                                    data-variant-id="{{ $variant->id }}"
+                                                    data-stock="{{ $variant->stock }}"
+                                                >
+                                                    @if ($variantImage)
+                                                        <img src="{{ Storage::url($variantImage) }}" width="20" class="rounded">
+                                                    @endif
+                                                    <span>{{ $variantLabel }}</span>
+                                                </button>
+                                                <input type="number" min="1" max="{{ $variant->stock }}"
+                                                    class="variant-qty-input w-16 text-center px-2 py-1 border rounded ml-2 hidden"
+                                                    data-variant-id="{{ $variant->id }}"
+                                                    value="1"
+                                                >
+                                                <span class="text-xs text-gray-500 ml-1 hidden variant-stock-info" data-variant-id="{{ $variant->id }}">
+                                                    ({{ $variant->stock }} có sẵn)
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <p class="text-gray-500">Không có phân loại sản phẩm.</p>
+                            @endif
                         </div>
 
                         <!-- Nút hành động -->
@@ -187,220 +162,104 @@
                     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                     <script>
                         document.addEventListener('DOMContentLoaded', () => {
-                            const variantButtons = document.querySelectorAll('button[data-value]');
-                            const addToCartButtons = document.querySelectorAll('.add-to-cart');
-                            const token = '{{ csrf_token() }}';
-                            let selectedVariantId = null;
-                            const mainImage = document.getElementById('main-image');
-                            const priceDisplay = document.getElementById('price-display');
-                            const stockInfo = document.getElementById('stock_info');
-                            const selectedVariantIdInput = document.getElementById('selected_variant_id');
+                            const variantButtons = document.querySelectorAll('.variant-btn');
+                            const addToCartButton = document.querySelector('.add-to-cart');
+                            let selectedVariants = {}; // {variant_id: quantity}
 
-                            // Hàm thay đổi ảnh chính
-                            function changeMainImage(src) {
-                                mainImage.src = src;
-                            }
-
-                            // Hàm reset về trạng thái ban đầu
-                            function resetToDefault() {
-                                selectedVariantId = null;
-                                selectedVariantIdInput.value = '';
-                                mainImage.src =
-                                    '{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}';
-                                priceDisplay.innerHTML = `
-                                    <span class="text-red-600 text-2xl font-bold">{{ number_format($product->sale_price, 0, ',', '.') }} VNĐ</span>
-                                    <span class="text-gray-500 line-through">{{ number_format($product->price, 0, ',', '.') }} VNĐ</span>
-                                    <span class="bg-red-100 text-red-600 px-2 rounded">-{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%</span>
-                                `;
-                                stockInfo.textContent = '{{ $product->stock_total }} sản phẩm có sẵn';
-                            }
-
-                            // Xử lý chọn biến thể (chỉ cập nhật UI)
                             variantButtons.forEach(button => {
                                 button.addEventListener('click', function() {
-                                    const value = this.getAttribute('data-value');
-                                    const isColor = this.closest('#color-options') !== null;
-                                    const allButtons = isColor ? document.querySelectorAll(
-                                        '#color-options button[data-value]') : document.querySelectorAll(
-                                        '#size-options button[data-value]');
-
-                                    if (this.classList.contains('bg-gray-200') && this.classList.contains(
-                                            'border-gray-500')) {
-                                        this.classList.remove('bg-gray-200', 'border-gray-500');
-                                        this.classList.add('border-gray-300');
-                                        resetToDefault();
-                                        return;
+                                    const variantId = this.getAttribute('data-variant-id');
+                                    const qtyInput = document.querySelector(`.variant-qty-input[data-variant-id="${variantId}"]`);
+                                    const stockInfo = document.querySelector(`.variant-stock-info[data-variant-id="${variantId}"]`);
+                                    if (this.classList.contains('selected')) {
+                                        // Bỏ chọn
+                                        this.classList.remove('selected');
+                                        qtyInput.classList.add('hidden');
+                                        stockInfo.classList.add('hidden');
+                                        delete selectedVariants[variantId];
+                                    } else {
+                                        // Chọn
+                                        this.classList.add('selected');
+                                        qtyInput.classList.remove('hidden');
+                                        stockInfo.classList.remove('hidden');
+                                        selectedVariants[variantId] = parseInt(qtyInput.value) || 1;
                                     }
+                                });
+                            });
 
-                                    allButtons.forEach(btn => {
-                                        btn.classList.remove('bg-gray-200', 'border-gray-500');
-                                        btn.classList.add('border-gray-300');
+                            // Xử lý thay đổi số lượng từng variant
+                            document.querySelectorAll('.variant-qty-input').forEach(input => {
+                                input.addEventListener('input', function() {
+                                    const variantId = this.getAttribute('data-variant-id');
+                                    let value = parseInt(this.value);
+                                    const max = parseInt(this.getAttribute('max'));
+                                    if (value < 1) value = 1;
+                                    if (value > max) value = max;
+                                    this.value = value;
+                                    if (selectedVariants[variantId] !== undefined) {
+                                        selectedVariants[variantId] = value;
+                                    }
+                                });
+                            });
+
+                            // Thêm vào giỏ hàng
+                            addToCartButton.addEventListener('click', function() {
+                                if (Object.keys(selectedVariants).length === 0) {
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        toast: true,
+                                        icon: 'warning',
+                                        title: 'Vui lòng chọn ít nhất một biến thể!',
+                                        timer: 1500,
+                                        showConfirmButton: false
                                     });
+                                    return;
+                                }
+                                // Gửi từng variant với số lượng
+                                const productId = this.getAttribute('data-product-id');
+                                const token = '{{ csrf_token() }}';
+                                const items = Object.entries(selectedVariants).map(([variant_id, quantity]) => ({
+                                    product_id: productId,
+                                    variant_id,
+                                    quantity
+                                }));
 
-                                    this.classList.remove('border-gray-300');
-                                    this.classList.add('bg-gray-200', 'border-gray-500');
-
-                                    const selectedColor = document.querySelector(
-                                        '#color-options button[data-value].bg-gray-200')?.getAttribute(
-                                        'data-value');
-                                    const selectedSize = document.querySelector(
-                                        '#size-options button[data-value].bg-gray-200')?.getAttribute(
-                                        'data-value');
-                                    const variants = @json($product->variants->toArray(), JSON_HEX_TAG | JSON_HEX_AMP);
-
-                                    if (selectedColor || selectedSize) {
-                                        const variant = variants.find(v => {
-                                            const attrs = v.attribute_values.map(a => ({
-                                                name: a.attribute.name,
-                                                value: a.value
-                                            }));
-                                            const matchesColor = selectedColor ? attrs.some(a => a.name ===
-                                                'Màu sắc' && a.value === selectedColor) : true;
-                                            const matchesSize = selectedSize ? attrs.some(a => a.name ===
-                                                'Kích cỡ' && a.value === selectedSize) : true;
-                                            return matchesColor && matchesSize;
-                                        });
-                                        if (variant) {
-                                            selectedVariantId = variant.id;
-                                            selectedVariantIdInput.value = variant.id;
-
-                                            // Cập nhật ảnh từ biến thể
-                                            const imagePath = variant.images.length > 0 ? variant.images[0]
-                                                .image_path :
-                                                '{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}';
-                                            mainImage.src = '{{ asset('storage/') }}/' + imagePath;
-
-                                            // Cập nhật giá
-                                            const price = variant.sale_price || variant.price;
-                                            const originalPrice = variant.price;
-                                            priceDisplay.innerHTML = `
-                                                <span class="text-red-600 text-2xl font-bold">${number_format(price, 0, ',', '.')} VNĐ</span>
-                                                <span class="text-gray-500 line-through">${number_format(originalPrice, 0, ',', '.')} VNĐ</span>
-                                                <span class="bg-red-100 text-red-600 px-2 rounded">${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>
-                                            `;
-
-                                            // Cập nhật số lượng có sẵn
-                                            const stock = variant.stock || {{ $product->stock_total }};
-                                            stockInfo.textContent = `${stock} sản phẩm có sẵn`;
-                                        }
-                                    }
+                                fetch('/customer/cart/add-multi', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': token,
+                                        'Accept': 'application/json',
+                                    },
+                                    body: JSON.stringify({ items })
+                                })
+                                .then(response => {
+                                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        toast: true,
+                                        icon: 'success',
+                                        title: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        toast: true,
+                                        icon: 'error',
+                                        title: 'Lỗi',
+                                        text: 'Không thể thêm vào giỏ hàng!',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
                                 });
                             });
-
-                            // Xử lý thêm vào giỏ hàng khi nhấn nút
-                            addToCartButtons.forEach(button => {
-                                button.addEventListener('click', () => {
-                                    if (!selectedVariantId) {
-                                        Swal.fire({
-                                            position: 'top-end',
-                                            toast: true,
-                                            icon: 'warning',
-                                            title: 'Vui lòng chọn biến thể!',
-                                            timer: 1500,
-                                            showConfirmButton: false
-                                        });
-                                        return;
-                                    }
-
-                                    const quantityInput = document.getElementById('quantity');
-                                    const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
-                                    const stock = parseInt(stockInfo.textContent.split(' ')[0]) ||
-                                        {{ $product->stock_total }};
-
-                                    if (quantity > stock) {
-                                        Swal.fire({
-                                            position: 'top-end',
-                                            toast: true,
-                                            icon: 'warning',
-                                            title: 'Số lượng vượt quá tồn kho!',
-                                            text: `Tồn kho chỉ còn ${stock} sản phẩm.`,
-                                            timer: 1500,
-                                            showConfirmButton: false
-                                        });
-                                        quantityInput.value = stock;
-                                        return;
-                                    }
-
-                                    fetch('/customer/cart/add', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': token,
-                                                'Accept': 'application/json',
-                                            },
-                                            body: JSON.stringify({
-                                                product_id: button.getAttribute('data-product-id'),
-                                                variant_id: selectedVariantId,
-                                                quantity: quantity
-                                            })
-                                        })
-                                        .then(response => {
-                                            if (!response.ok) throw new Error(
-                                                `HTTP error! Status: ${response.status}`);
-                                            return response.json();
-                                        })
-                                        .then(data => {
-                                            Swal.fire({
-                                                position: 'top-end',
-                                                toast: true,
-                                                icon: 'success',
-                                                title: data.message,
-                                                timer: 1500,
-                                                showConfirmButton: false
-                                            });
-                                        })
-                                        .catch(error => {
-                                            console.error('Error:', error);
-                                            Swal.fire({
-                                                position: 'top-end',
-                                                toast: true,
-                                                icon: 'error',
-                                                title: 'Lỗi',
-                                                text: 'Không thể thêm vào giỏ hàng!',
-                                                timer: 1500,
-                                                showConfirmButton: false
-                                            });
-                                        });
-                                });
-                            });
-
-                            // Xử lý nút tăng/giảm số lượng
-                            document.getElementById('decreaseQty').addEventListener('click', function() {
-                                let qtyInput = document.getElementById('quantity');
-                                let qty = parseInt(qtyInput.value);
-                                if (qty > 1) qtyInput.value = qty - 1;
-                            });
-
-                            document.getElementById('increaseQty').addEventListener('click', function() {
-                                let qtyInput = document.getElementById('quantity');
-                                let qty = parseInt(qtyInput.value);
-                                const stock = selectedVariantId ? parseInt(stockInfo.textContent.split(' ')[0]) :
-                                    {{ $product->stock_total }};
-                                if (qty < stock) qtyInput.value = qty + 1;
-                            });
-
-                            // Hàm format số
-                            function number_format(number, decimals, dec_point, thousands_sep) {
-                                number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
-                                let n = !isFinite(+number) ? 0 : +number;
-                                let prec = !isFinite(+decimals) ? 0 : Math.abs(decimals);
-                                let sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep;
-                                let dec = (typeof dec_point === 'undefined') ? '.' : dec_point;
-                                let s = '';
-                                let toFixedFix = function(n, prec) {
-                                    let k = Math.pow(10, prec);
-                                    return '' + Math.round(n * k) / k;
-                                };
-                                s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
-                                if (s[0].length > 3) {
-                                    s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
-                                }
-                                if ((s[1] || '').length < prec) {
-                                    s[1] = s[1] || '';
-                                    s[1] += new Array(prec - s[1].length + 1).join('0');
-                                }
-                                return s.join(dec);
-                            }
                         });
                     </script>
                 @endpush
@@ -692,6 +551,7 @@
                 let value = parseInt(quantityInput.value);
                 quantityInput.value = value + 1;
             });
+            
             // Modal báo cáo
             const reportButton = document.getElementById('reportProductBtn');
             const reportModal = document.getElementById('reportProductModal');
@@ -831,4 +691,18 @@
         });
     </script>
     </div>
+
+    @push('styles')
+    <style>
+        .variant-btn.selected {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+        .variant-item .variant-qty-input,
+        .variant-item .variant-stock-info {
+            transition: all 0.2s;
+        }
+    </style>
+    @endpush
 @endsection

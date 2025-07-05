@@ -69,6 +69,23 @@ class DatabaseSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            [
+                'id' => 4,
+                'username' => 'seller2',
+                'fullname' => 'Seller Two',
+                'phone' => '0901234570',
+                'email' => 'Seller2@gmail.com',
+                'password' => Hash::make('123123123'),
+                'status' => 'active',
+                'gender' => 'female',
+                'role' => 'seller',
+                'avatar' => null,
+                'is_verified' => 1,
+                'birthday' => '1996-06-06',
+                'remember_token' => null,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
         ]);
 
         // Bảng user_addresses
@@ -138,6 +155,23 @@ class DatabaseSeeder extends Seeder
                 'bank_account' => null,
                 'bank_name' => 'Vietcombank',
                 'bank_account_name' => 'Seller One',
+                'business_license_id' => 1,
+                'identity_card_type' => 'cccd',
+                'identity_card_image' => null,
+                'identity_card_holding_image' => null,
+                'privacy_policy_agreed' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'userID' => 4,
+                'status' => 'active',
+                'identity_card' => 987654321,
+                'identity_card_date' => '2021-01-01',
+                'identity_card_place' => 'HCM',
+                'bank_account' => null,
+                'bank_name' => 'ACB',
+                'bank_account_name' => 'Seller Two',
                 'business_license_id' => 1,
                 'identity_card_type' => 'cccd',
                 'identity_card_image' => null,
@@ -233,7 +267,7 @@ class DatabaseSeeder extends Seeder
         DB::table('shops')->insert([
             [
                 'id' => 1,
-                'ownerID' => 2, // Seller
+                'ownerID' => 2, 
                 'shop_name' => 'Seller One Shop',
                 'shop_phone' => '0901234568',
                 'shop_email' => 'shop@seller1.com',
@@ -251,6 +285,26 @@ class DatabaseSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            [
+                'id' => 2,
+                'ownerID' => 4, // Seller
+                'shop_name' => 'Seller Two Shop',
+                'shop_phone' => '0901234570',
+                'shop_email' => 'Seller2@gmail.com',
+                'shop_description' => 'Quality products at affordable prices',
+                'shop_rating' => 4.5,
+                'total_ratings' => 10,
+                'total_products' => 2,
+                'total_sales' => 1000000,
+                'total_followers' => 100,
+                'opening_hours' => json_encode(['mon-fri' => '9:00-17:00']),
+                'social_media_links' => json_encode(['facebook' => 'fb.com/seller2']),
+                'shop_logo' => '/logos/seller2.png',
+                'shop_banner' => '/banners/seller2.png',
+                'shop_status' => 'active',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
         ]);
 
         // Bảng shop_addresses
@@ -263,6 +317,39 @@ class DatabaseSeeder extends Seeder
                 'shop_ward' => 'Hàng Bạc',
                 'note' => null,
                 'is_default' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'shopID' => 1,
+                'shop_address' => '789 Another St',
+                'shop_province' => 'Hà Nội',
+                'shop_district' => 'Ba Đình',
+                'shop_ward' => 'Điện Biên',
+                'note' => 'Chi nhánh 2',
+                'is_default' => 0,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'shopID' => 2,
+                'shop_address' => '123 Shop Avenue',
+                'shop_province' => 'TP. Hồ Chí Minh',
+                'shop_district' => 'Quận 1',
+                'shop_ward' => 'Bến Nghé',
+                'note' => null,
+                'is_default' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'shopID' => 2,
+                'shop_address' => '321 Another Ave',
+                'shop_province' => 'TP. Hồ Chí Minh',
+                'shop_district' => 'Quận 3',
+                'shop_ward' => 'Phường 7',
+                'note' => 'Chi nhánh 2',
+                'is_default' => 0,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -690,5 +777,65 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
         ]);
-    }
+
+        // Thêm 3 sản phẩm cho mỗi shop, mỗi sản phẩm 2 variants
+        // Đảm bảo không bị trùng id sản phẩm và variant khi seed
+        // Lấy id lớn nhất hiện có trong bảng products và product_variants
+        $maxProductId = DB::table('products')->max('id') ?? 0;
+        $maxVariantId = DB::table('product_variants')->max('id') ?? 0;
+
+        $productId = $maxProductId + 1;
+        $variantId = $maxVariantId + 1;
+        // Tạo 6 sản phẩm, id tăng dần, chia đều cho 2 shop
+        $shops = [1, 2];
+        $totalProducts = 6;
+        foreach (range(1, $totalProducts) as $i) {
+            $shopId = $shops[($i - 1) % count($shops)];
+            DB::table('products')->insert([
+                [
+                    'id' => $productId,
+                    'shopID' => $shopId,
+                    'name' => "Product $productId Shop $shopId",
+                    'slug' => "product-$productId-shop-$shopId",
+                    'description' => "Description for product $productId of shop $shopId",
+                    'price' => 100000 * $productId,
+                    'purchase_price' => 80000 * $productId,
+                    'sale_price' => 90000 * $productId,
+                    'sold_quantity' => 1 * $productId,
+                    'stock_total' => 10 * $productId,
+                    'sku' => "SKU{$shopId}{$productId}",
+                    'brand' => 'Brand A',
+                    'category' => 'Electronics',
+                    'status' => 'active',
+                    'meta_title' => null,
+                    'meta_description' => null,
+                    'meta_keywords' => null,
+                    'is_featured' => 1,
+                    'is_variant' => 1,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ],
+            ]);
+            // 2 variants cho mỗi sản phẩm
+            for ($j = 1; $j <= 2; $j++) {
+                DB::table('product_variants')->insert([
+                    [
+                        'id' => $variantId,
+                        'productID' => $productId,
+                        'variant_name' => "Variant $j of Product $productId Shop $shopId",
+                        'price' => 90000 * $productId + 1000 * $j,
+                        'purchase_price' => 80000 * $productId + 500 * $j,
+                        'sale_price' => 85000 * $productId + 800 * $j,
+                        'stock' => 10 * $j,
+                        'sku' => "SKU{$shopId}{$productId}-V$j",
+                        'status' => 'active',
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now(),
+                    ],
+                ]);
+                $variantId++;
+            }
+            $productId++;
+        }
+}
 }
