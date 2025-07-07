@@ -3,7 +3,7 @@
  <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>Shopee Seller Registration</title>
+  <title>ZynoxMall Seller Registration</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
   <style>
@@ -17,7 +17,7 @@
   <!-- Top bar -->
   <header class="flex justify-between items-center bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 h-12">
    <div class="flex items-center space-x-1">
-    <img alt="Shopee logo, orange square with white S letter" class="w-5 h-5" height="20" src="https://storage.googleapis.com/a1aa/image/56011200-bb98-42ff-92be-38b7224af1e7.jpg" width="20"/>
+    <img alt="ZynoxMall logo, orange square with white S letter" class="w-5 h-5" height="20" src="https://storage.googleapis.com/a1aa/image/56011200-bb98-42ff-92be-38b7224af1e7.jpg" width="20"/>
     <span class="text-sm font-normal text-[#ee4d2d]">Zynox</span>
     <span class="text-sm font-normal text-black">Đăng ký trở thành Người bán Zynox</span>
    </div>

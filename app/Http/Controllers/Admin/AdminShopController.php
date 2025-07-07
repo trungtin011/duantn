@@ -42,20 +42,26 @@ class AdminShopController extends Controller
     {
         DB::beginTransaction();
         try {
+            // Cập nhật trạng thái shop
             $shop->update(['shop_status' => 'active']);
 
-            // Update user role to seller if not already
+            // Cập nhật role user thành seller nếu chưa có
             User::where('id', $shop->ownerID)->update(['role' => 'seller']);
 
-            // Send notification to the shop owner
+            // Gửi thông báo đến chủ shop (dùng reference_id để theo dõi user)
             Notification::create([
-                'receiver_user_id' => $shop->ownerID,
+                'shop_id' => $shop->id,
+                'sender_id' => auth()->id(), // có thể là Admin hiện tại
                 'title' => 'Shop của bạn đã được duyệt!',
                 'content' => 'Chúc mừng! Shop "' . $shop->shop_name . '" của bạn đã được Admin duyệt và có thể bắt đầu hoạt động.',
                 'type' => 'shop_approval',
-                'priority' => 'high',
-                'status' => 'unread',
+                'reference_id' => $shop->ownerID,
                 'receiver_type' => 'user',
+                'priority' => 'high',
+                'status' => 'pending',
+                'is_read' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
             DB::commit();
@@ -65,6 +71,7 @@ class AdminShopController extends Controller
             return back()->with('error', 'Có lỗi xảy ra khi duyệt shop: ' . $e->getMessage());
         }
     }
+
 
     /**
      * Reject a shop registration.
@@ -102,4 +109,4 @@ class AdminShopController extends Controller
             return back()->with('error', 'Có lỗi xảy ra khi từ chối shop: ' . $e->getMessage());
         }
     }
-} 
+}

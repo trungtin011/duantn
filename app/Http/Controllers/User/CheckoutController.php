@@ -109,7 +109,18 @@ class CheckoutController extends Controller
 
             $order = $this->createOrder($items, $user_address, $request);
             Log::info($order);
-            return response()->json(['success' => true, 'message' => 'Đặt hàng thành công', 'order' => $order], 200);
+            $redirectUrl = null;
+            if($request->payment_method === 'COD'){
+                $redirectUrl = route('checkout.success', ['order_code' => $order->order_code]);
+            }
+            else if($request->payment_method === 'MOMO'){
+                $redirectUrl = route('checkout.momo.payment', ['order_code' => $order->order_code]);
+            }
+            else if($request->payment_method === 'VNPAY'){
+                $redirectUrl = route('checkout.vnpay.payment', ['order_code' => $order->order_code]);
+            }
+
+            return response()->json(['success' => true, 'message' => 'Đặt hàng thành công', 'order' => $order, 'redirectUrl' => $redirectUrl], 200);
         } catch (\Exception $e) {
             Log::error('Order store error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
@@ -119,6 +130,7 @@ class CheckoutController extends Controller
             ], 500);
         }
     }
+
 
     private function getTotalPrice($items)
     {
@@ -186,8 +198,8 @@ class CheckoutController extends Controller
         }
         
         $coupon_code = $request->discount_code;
-        $coupon = Coupon::where('code', $coupon_code)->first();
-        $coupon_id = $coupon->id;
+        $coupon = Coupon::where('code', $coupon_code)->first() ?? null;
+        $coupon_id = $coupon ? $coupon->id : null;
         $total_price = $this->getTotalPrice($items);
         $shop_notes = $request->shop_notes ?? [];
         $order = Order::create([
@@ -253,219 +265,6 @@ class CheckoutController extends Controller
         return redirect()->route('checkout.success', ['order_code' => $order->order_code]);
     }
 
-    private function MomoPayment($order)
-    {
-        try {
-            $partnerCode = 'MOMOBKUN20180529';
-            $accessKey = 'klm05TvNBzhg7h7j';
-            $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
-            $endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
-
-            $requestId = time() . "";
-            $amount = (int)($order->total_price);
-            $orderId = $order->id . time();
-            $redirectUrl = route('payment.momo.return');
-            $ipnUrl = route('payment.momo.ipn');
-            $orderInfo = "Thanh toán đơn hàng " . $order->order_code;
-            $extraData = "$order->order_code";
-            $requestType = "payWithATM";
-
-            Log::info('MoMo Payment Request Details:', [
-                'order_id' => $orderId,
-                'order_code' => $order->id,
-                'amount' => $amount,
-                'request_id' => $requestId,
-                'order_info' => $orderInfo
-            ]);
-
-            $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData . "&ipnUrl=" . $ipnUrl . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo . "&partnerCode=" . $partnerCode . "&redirectUrl=" . $redirectUrl . "&requestId=" . $requestId . "&requestType=" . $requestType;
-            $signature = hash_hmac("sha256", $rawHash, $secretKey);
-
-            Log::info('MoMo Payment Hash Details:', [
-                'raw_hash' => $rawHash,
-                'signature' => $signature
-            ]);
-
-            $requestData = [
-                'partnerCode' => $partnerCode,
-                'accessKey' => $accessKey,
-                'requestId' => $requestId,
-                'amount' => $amount,
-                'orderId' => $orderId,
-                'orderInfo' => $orderInfo,
-                'redirectUrl' => $redirectUrl,
-                'ipnUrl' => $ipnUrl,
-                'lang' => 'vi',
-                'requestType' => $requestType,
-                'extraData' => $extraData,
-                'signature' => $signature,
-            ];
-
-            Log::info('MoMo Payment Request Data:', $requestData);
-
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->post($endpoint, $requestData);
-
-            Log::info('MoMo Payment Response:', [
-                'status' => $response->status(),
-                'body' => $response->json()
-            ]);
-
-            if ($response->successful()) {
-                $responseData = $response->json();
-
-                if (isset($responseData['payUrl']) && !empty($responseData['payUrl'])) {
-                    Log::info('MoMo Payment Success - Redirecting to:', [
-                        'pay_url' => $responseData['payUrl']
-                    ]);
-
-                    $order->update(['paid_at' => now()]);
-
-                    return redirect()->away($responseData['payUrl']);
-                }
-
-                Log::warning('MoMo Payment Failed - No Pay URL');
-                return redirect()->route('checkout')->with('error', 'Không thể lấy link thanh toán từ MoMo.');
-            }
-
-            $responseData = $response->json();
-            Log::error('MoMo Payment Error:', [
-                'error_message' => $responseData['message'] ?? 'Unknown error',
-                'response_data' => $responseData
-            ]);
-
-            return redirect()->route('checkout')->with('error', $responseData['message'] ?? 'Không thể kết nối với MoMo.');
-        } catch (\Exception $e) {
-            Log::error('MoMo Payment Exception:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return redirect()->route('checkout')->with('error', 'Đã xảy ra lỗi khi xử lý thanh toán.');
-        }
-    }
-
-    public function momoReturn(Request $request)
-    {
-        try {
-            $partnerCode = 'MOMOBKUN20180529';
-            $accessKey = 'klm05TvNBzhg7h7j';
-            $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
-
-            $orderId = $request->orderId;
-            $requestId = $request->requestId;
-            $amount = $request->amount;
-            $orderInfo = $request->orderInfo;
-            $orderType = $request->orderType;
-            $transId = $request->transId;
-            $resultCode = $request->resultCode;
-            $message = $request->message;
-            $payType = $request->payType;
-            $extraData = $request->extraData;
-            $signature = $request->signature;
-
-            $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData . "&message=" . $message . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo . "&orderType=" . $orderType . "&partnerCode=" . $partnerCode . "&payType=" . $payType . "&requestId=" . $requestId . "&responseTime=" . $request->responseTime . "&resultCode=" . $resultCode . "&transId=" . $transId;
-            $expectedSignature = hash_hmac("sha256", $rawHash, $secretKey);
-
-            if ($signature !== $expectedSignature) {
-                return redirect()->route('checkout')->with('error', 'Xác thực thanh toán thất bại');
-            }
-
-            $orderCode = $request->extraData;
-            $order = Order::where('order_code', $orderCode)->first();
-            if (!$order) {
-                return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
-            }
-            if ($resultCode == 0) {
-                return redirect()->route('checkout.success', ['order_code' => $orderCode]);
-            } else {
-                return redirect()->route('checkout.failed', ['order_code' => $orderCode])->with('error', 'Thanh toán thất bại');
-            }
-        } catch (\Exception $e) {
-            Log::error('MoMo Return Exception:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return redirect()->route('checkout')->with('error', 'Đã xảy ra lỗi khi xử lý kết quả thanh toán');
-        }
-    }
-
-    public function momoIpn(Request $request)
-    {
-        try {
-            $partnerCode = 'MOMOBKUN20180529';
-            $accessKey = 'klm05TvNBzhg7h7j';
-            $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
-
-            $orderId = $request->orderId;
-            $requestId = $request->requestId;
-            $amount = $request->amount;
-            $orderInfo = $request->orderInfo;
-            $orderType = $request->orderType;
-            $transId = $request->transId;
-            $resultCode = $request->resultCode;
-            $message = $request->message;
-            $payType = $request->payType;
-            $extraData = $request->extraData;
-            $signature = $request->signature;
-
-            $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData . "&message=" . $message . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo . "&orderType=" . $orderType . "&partnerCode=" . $partnerCode . "&payType=" . $payType . "&requestId=" . $requestId . "&responseTime=" . $request->responseTime . "&resultCode=" . $resultCode . "&transId=" . $transId;
-            $expectedSignature = hash_hmac("sha256", $rawHash, $secretKey);
-
-            if ($signature !== $expectedSignature) {
-                Log::error('MoMo IPN - Invalid signature', [
-                    'received_signature' => $signature,
-                    'expected_signature' => $expectedSignature
-                ]);
-                return response()->json(['RspCode' => '97', 'Message' => 'Invalid signature']);
-            }
-
-            $order = Order::where('order_code', $extraData)->first();
-            if (!$order) {
-                Log::error('MoMo IPN - Order not found', ['order_code' => $extraData]);
-                return response()->json(['RspCode' => '01', 'Message' => 'Order not found']);
-            }
-
-            if ($order->payment_status === 'paid') {
-                return response()->json(['RspCode' => '00', 'Message' => 'Order already processed']);
-            }
-
-            if ($resultCode == 0) {
-                $order->update([
-                    'payment_status' => 'paid',
-                    'paid_at' => now(),
-                    'order_status' => 'processing'
-                ]);
-                $data = [
-                    'provider' => 'MOMO',
-                    'method' => 'ATM',
-                    'amount' => $amount,
-                    'currency' => 'VND',
-                    'status' => 'success',
-                    'transaction_id' => $transId,
-                    'raw_response' => $request->all(),
-                    'message' => 'Thanh toán thành công',
-                ];
-                $this->createPaymentTransaction($order, $data);
-                return response()->json(['RspCode' => '00', 'Message' => 'Success']);
-            } else {
-                $order->update([
-                    'payment_status' => 'failed',
-                    'order_status' => 'cancelled',
-                    'note' => 'Thanh toán thất bại qua MoMo',
-                    'cancel_reason' => 'Huỷ Thanh Toán'
-                ]);
-
-                return response()->json(['RspCode' => '00', 'Message' => 'Payment failed']);
-            }
-        } catch (\Exception $e) {
-            Log::error('MoMo IPN Exception:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return response()->json(['RspCode' => '99', 'Message' => 'Unknown error']);
-        }
-    }
 
     public function successPayment($order_code)
     {
@@ -474,14 +273,13 @@ class CheckoutController extends Controller
             return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
         }
 
-        $product = Product::with(['variants' => function($query) use ($order) {
+        $product = Product::with(['variants' => function ($query) use ($order) {
             $query->where('id', $order->items->first()->variantID);
         }])->find($order->items->first()->productID);
         $stock = $product->variants->first()->stock - $order->items->first()->quantity;
         $product->variants->first()->update([
             'stock' => $stock
         ]);
-        session()->forget('checkout_items');
 
         foreach ($order->shop_order as $shop_order) {
             Log::info(' /////////////// Create Order Event /////////////// ', [

@@ -159,7 +159,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Tỉnh/Thành phố <span class="text-red-500">*</span>
                                         </label>
-                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="city">
                                             <option value="">Chọn tỉnh/thành phố</option>
                                             <option>Hồ Chí Minh</option>
                                             <option>Hà Nội</option>
@@ -170,9 +170,9 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Quận/Huyện <span class="text-red-500">*</span>
                                         </label>
-                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="district">
                                             <option value="">Chọn quận/huyện</option>
-                                            <option>Quận 1</option>
+                                            <option>Quận 1  </option>
                                             <option>Quận 3</option>
                                         </select>
                                     </div>
@@ -180,7 +180,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Phường/Xã <span class="text-red-500">*</span>
                                         </label>
-                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="ward">
                                             <option value="">Chọn phường/xã</option>
                                             <option>Phường Bến Nghé</option>
                                             <option>Phường Bến Thành</option>
@@ -380,7 +380,7 @@
                             <input type="hidden" name="selected_address_id" id="address2">
                             <input type="hidden" name="payment_method" id="payment_method">
                             <input type="hidden" name="shop_notes" id="shop_notes">
-                            <input type="hidden" name="shipping_fee" id="shipping_fee_input">
+                            <input type="hidden" name="shipping_fee" id="total_shipping_fee">
                             <input type="hidden" name="subtotal" id="subtotal">
                             <input type="hidden" name="discount_amount" id="discount_amount">
                             <input type="hidden" name="total_amount" id="total_amount">
@@ -403,7 +403,7 @@
 @endsection
 
 @push('scripts')
-
+    <!-- Checkout script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let isSubmitting = false;
@@ -513,6 +513,15 @@
                 })
                 .then(data => {
                     console.log('Phản hồi từ server:', data);
+                    if(data.success)
+                    {
+                        showSuccess('Đặt hàng thành công!');
+                        window.location.href = data.redirectUrl;
+                    }
+                    else
+                    {
+                        showError('Có lỗi xảy ra khi đặt hàng');
+                    }
                 })
                 .catch(error => {
                     console.error('Lỗi:', error);
@@ -565,67 +574,45 @@
                 }, 5000);
             }
 
-            // Xử lý form mã giảm giá
             const discountForm = document.getElementById('discount-form');
             if (discountForm) {
-                discountForm.addEventListener('submit', function(e) {
+                discountForm.addEventListener('submit', async function (e) {
                     e.preventDefault();
-                    
-                    const discountCode = document.querySelector('input[name="discount_code"]').value;
-                    if (!discountCode.trim()) {
+                    const codeInput = discountForm.querySelector('input[name="discount_code"]');
+                    const discountCode = codeInput ? codeInput.value.trim() : '';
+                    if (!discountCode) {
                         showError('Vui lòng nhập mã giảm giá');
                         return;
                     }
-
-                    // Gửi request áp dụng mã giảm giá
-                    fetch('{{ route("customer.apply-app-discount") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            discount_code: discountCode,
-                            _token: '{{ csrf_token() }}'
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
+                    try {
+                        const response = await fetch('{{ route("customer.apply-app-discount") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                discount_code: discountCode,
+                                subtotal: @json($subtotal),
+                            })
+                        });
+                        const data = await response.json();
+                        console.log(data.discount_amount);
+                        if(data.discount_amount)
+                        {
+                            document.getElementById('discount_amount').textContent = Number(data.discount_amount).toLocaleString('vi-VN');
                             showSuccess('Áp dụng mã giảm giá thành công!');
-                            // Cập nhật lại giá tiền nếu cần
-                            if (data.updated_prices) {
-                                updatePrices(data.updated_prices);
-                            }
-                        } else {
-                            showError(data.message || 'Mã giảm giá không hợp lệ');
+                            updateTotal();
                         }
-                    })
-                    .catch(error => {
-                        console.error('Lỗi:', error);
+                    } catch (error) {
+                        console.error(error);
                         showError('Có lỗi xảy ra khi áp dụng mã giảm giá');
-                    });
+                    }
                 });
-            }
-
-            function updatePrices(updatedPrices) {
-                // Cập nhật các giá trị hiển thị
-                if (updatedPrices.subtotal) {
-                    document.querySelector('[name="subtotal"]').value = updatedPrices.subtotal;
-                }
-                if (updatedPrices.discount_amount) {
-                    document.querySelector('[name="discount_amount"]').value = updatedPrices.discount_amount;
-                }
-                if (updatedPrices.total_amount) {
-                    document.querySelector('[name="total_amount"]').value = updatedPrices.total_amount;
-                    // Cập nhật text trên nút đặt hàng
-                    const orderBtn = document.getElementById('place-order-btn');
-                    orderBtn.innerHTML = `<i class="fas fa-shopping-bag mr-2"></i> Đặt hàng (${new Intl.NumberFormat('vi-VN').format(updatedPrices.total_amount)}₫)`;
-                }
             }
         });
     </script>
+    <!-- Update total -->
     <script>
         function parseCurrency(str) {
             return parseFloat(str.replace(/[^\d]/g, '')) || 0;
@@ -643,8 +630,10 @@
 
         updateTotal();
     </script>
-
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <!-- Tailwind CSS config -->
     <script>
         tailwind.config = {
             theme: {
@@ -660,6 +649,7 @@
             }
         }
     </script>
+    <!-- Xử lý hiển thị form thêm địa chỉ -->
     <script>
         // Xử lý hiển thị form thêm địa chỉ
         document.getElementById('showAddressForm').addEventListener('click', function() {
@@ -713,9 +703,81 @@
             const addresses = @json($user_addresses);
             const shops = @json($shops);
 
-            const query_count = Object.keys(shops).length;
             let isFetchingShippingFee = false;
-            let fetchTimeout = null;
+            let currentRadio = null;
+            let feeCache = {};
+
+            // Hiện loading popup
+            function showLoading(message = "Đang tính phí vận chuyển...") {
+                const overlay = document.createElement('div');
+                overlay.id = 'shipping-fee-overlay';
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100vw';
+                overlay.style.height = '100vh';
+                overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                overlay.style.zIndex = '9999';
+
+                overlay.innerHTML = `
+                    <div style="background: white; padding: 20px 30px; border-radius: 8px; font-size: 16px;">
+                        ${message}
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+
+            // Ẩn loading popup
+            function hideLoading() {
+                const overlay = document.getElementById('shipping-fee-overlay');
+                if (overlay) overlay.remove();
+            }
+
+            // Hiện confirm popup
+            function showConfirmPopup(callback) {
+                const overlay = document.createElement('div');
+                overlay.id = 'confirm-popup-overlay';
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100vw';
+                overlay.style.height = '100vh';
+                overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                overlay.style.zIndex = '10000';
+
+                overlay.innerHTML = `
+                    <div style="background: white; padding: 25px; border-radius: 8px; width: 350px; max-width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <h3 style="margin-top: 0; color: #333; font-size: 18px;">Xác nhận địa chỉ</h3>
+                        <p style="margin-bottom: 20px; color: #666;">Phí vận chuyển sẽ được tính dựa trên địa chỉ nhận hàng</p>
+                        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                            <button id="confirm-cancel" style="padding: 8px 16px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; color: #333;">Hủy</button>
+                            <button id="confirm-ok" style="padding: 8px 16px; background: #4CAF50; border: none; border-radius: 4px; cursor: pointer; color: white;">Xác nhận</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                document.getElementById('confirm-cancel').addEventListener('click', function () {
+                    hideConfirmPopup();
+                    callback(false);
+                });
+
+                document.getElementById('confirm-ok').addEventListener('click', function () {
+                    hideConfirmPopup();
+                    callback(true);
+                });
+            }
+
+            function hideConfirmPopup() {
+                const overlay = document.getElementById('confirm-popup-overlay');
+                if (overlay) overlay.remove();
+            }
 
             async function fetchShippingFee(addressId, shop) {
                 try {
@@ -723,16 +785,15 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         body: JSON.stringify({
                             address_id: addressId,
-                            shop_id: shop.id,
-                            _token: '{{ csrf_token() }}'
+                            shop_id: shop.id
                         })
                     });
                     const data = await response.json();
                     if (data && !data.error) {
-                        document.getElementById('shipping-fee-shop-' + shop.id).textContent = data.shipping_fee;
                         return Number(data.shipping_fee) || 0;
                     } else {
                         console.error('Không thể tính phí vận chuyển cho shop', shop.id, data.error);
@@ -745,65 +806,167 @@
             }
 
             document.querySelectorAll('input[name="receiver_address_id"]').forEach(function (radio) {
-                radio.addEventListener('change', function () {
+                radio.addEventListener('change', async function () {
                     if (isFetchingShippingFee) return;
 
-                    if (fetchTimeout) clearTimeout(fetchTimeout);
-                    fetchTimeout = setTimeout(async () => {
-                        isFetchingShippingFee = true;
-                        const selectedId = this.value;
-                        const address = addresses.find(addr => addr.id == selectedId);
-                        if (address) {
-                            let total_shipping_fee = 0;
-                            const feePromises = shops.map(shop => fetchShippingFee(address.id, shop));
-                            const fees = await Promise.all(feePromises);
-                            fees.forEach(fee => {
-                                total_shipping_fee += fee;
-                            });
-                            document.getElementById('total_shipping_fee').textContent = total_shipping_fee.toLocaleString('vi-VN') + '₫';
-                            updateTotal();
+                    const selectedId = this.value;
+                    currentRadio = this;
+                    const address = addresses.find(addr => addr.id == selectedId);
+                    if (!address) return;
+
+                    isFetchingShippingFee = true;
+
+                    // Tính phí trước
+                    const feePromises = shops.map(shop => fetchShippingFee(address.id, shop));
+                    const fees = await Promise.all(feePromises);
+
+                    feeCache = {};
+                    fees.forEach((fee, index) => {
+                        feeCache[shops[index].id] = fee;
+                    });
+
+                    // Hiện popup xác nhận sau khi tính xong
+                    showConfirmPopup(function (confirmed) {
+                        if (!confirmed) {
+                            currentRadio.checked = false;
+                            isFetchingShippingFee = false;
+                            return;
                         }
-                        isFetchingShippingFee = false;
-                    }, 200);
+
+                        showLoading();
+
+                        setTimeout(() => {
+                            let total_shipping_fee = 0;
+                            Object.entries(feeCache).forEach(([shopId, fee]) => {
+                                total_shipping_fee += fee;
+                                const el = document.getElementById('shipping-fee-shop-' + shopId);
+                                if (el) el.textContent = fee.toLocaleString('vi-VN') + '₫';
+                            });
+
+                            document.getElementById('total_shipping_fee').textContent = total_shipping_fee.toLocaleString('vi-VN') + '₫';
+
+                            if (typeof updateTotal === 'function') {
+                                updateTotal();
+                            }
+
+                            hideLoading();
+                            isFetchingShippingFee = false;
+                        }, 300); // delay nhỏ cho mượt
+                    });
                 });
             });
         });
     </script>
+    <!-- lấy danh sách Thành phố, Quận, Huyện từ GHN -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const discountForm = document.getElementById('discount-form');
-            if (discountForm) {
-                discountForm.addEventListener('submit', async function (e) {
-                    e.preventDefault();
-                    const codeInput = discountForm.querySelector('input[name="discount_code"]');
-                    const discountCode = codeInput ? codeInput.value.trim() : '';
-                    if (!discountCode) {
-                        return;
-                    }
-                    try {
-                        const response = await fetch('{{ route("customer.apply-app-discount") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                discount_code: discountCode,
-                                subtotal: @json($subtotal),
-                            })
+        document.addEventListener('DOMContentLoaded', function() {
+            const citySelect = document.getElementById('city');
+            const districtSelect = document.getElementById('district');
+            const wardSelect = document.getElementById('ward');
+
+            // Load danh sách tỉnh/thành phố khi trang load
+            loadProvinces();
+
+            // Xử lý khi chọn tỉnh/thành phố
+            citySelect.addEventListener('change', function() {
+                const provinceId = this.value;
+                if (provinceId) {
+                    loadDistricts(provinceId);
+                    // Reset district và ward
+                    districtSelect.innerHTML = '<option value="">Chọn quận/huyện</option>';
+                    wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+                } else {
+                    districtSelect.innerHTML = '<option value="">Chọn quận/huyện</option>';
+                    wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+                }
+            });
+
+            // Xử lý khi chọn quận/huyện
+            districtSelect.addEventListener('change', function() {
+                const districtId = this.value;
+                if (districtId) {
+                    loadWards(districtId);
+                    // Reset ward
+                    wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+                } else {
+                    wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+                }
+            });
+
+            // Load danh sách tỉnh/thành phố
+            async function loadProvinces() {
+                try {
+                    citySelect.innerHTML = '<option value="">Đang tải...</option>';
+                    
+                    const response = await fetch('/api/address/provinces');
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        citySelect.innerHTML = '<option value="">Chọn tỉnh/thành phố</option>';
+                        result.data.forEach(province => {
+                            const option = document.createElement('option');
+                            option.value = province.ProvinceID;
+                            option.textContent = province.ProvinceName;
+                            citySelect.appendChild(option);
                         });
-                        const data = await response.json();
-                        console.log(data.discount_amount);
-                        if(data.discount_amount)
-                        {
-                            document.getElementById('discount_amount').textContent = Number(data.discount_amount).toLocaleString('vi-VN');
-                            updateTotal();
-                        }
-                    } catch (error) {
-                        console.error(error);
+                    } else {
+                        citySelect.innerHTML = '<option value="">Không thể tải danh sách tỉnh/thành phố</option>';
                     }
-                });
+                } catch (error) {
+                    console.error('Lỗi khi tải danh sách tỉnh/thành phố:', error);
+                    citySelect.innerHTML = '<option value="">Lỗi khi tải dữ liệu</option>';
+                }
+            }
+
+            // Load danh sách quận/huyện
+            async function loadDistricts(provinceId) {
+                try {
+                    districtSelect.innerHTML = '<option value="">Đang tải...</option>';
+                    
+                    const response = await fetch(`/api/address/districts?province_id=${provinceId}`);
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        districtSelect.innerHTML = '<option value="">Chọn quận/huyện</option>';
+                        result.data.forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district.DistrictID;
+                            option.textContent = district.DistrictName;
+                            districtSelect.appendChild(option);
+                        });
+                    } else {
+                        districtSelect.innerHTML = '<option value="">Không thể tải danh sách quận/huyện</option>';
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải danh sách quận/huyện:', error);
+                    districtSelect.innerHTML = '<option value="">Lỗi khi tải dữ liệu</option>';
+                }
+            }
+
+            // Load danh sách phường/xã
+            async function loadWards(districtId) {
+                try {
+                    wardSelect.innerHTML = '<option value="">Đang tải...</option>';
+                    
+                    const response = await fetch(`/api/address/wards?district_id=${districtId}`);
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+                        result.data.forEach(ward => {
+                            const option = document.createElement('option');
+                            option.value = ward.WardCode;
+                            option.textContent = ward.WardName;
+                            wardSelect.appendChild(option);
+                        });
+                    } else {
+                        wardSelect.innerHTML = '<option value="">Không thể tải danh sách phường/xã</option>';
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải danh sách phường/xã:', error);
+                    wardSelect.innerHTML = '<option value="">Lỗi khi tải dữ liệu</option>';
+                }
             }
         });
-    </script>    
+    </script>
 @endpush

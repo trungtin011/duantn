@@ -28,7 +28,7 @@ class Notification extends Model
         return $this->belongsTo(Shop::class);
     }
 
-    public function sender(): BelongsTo 
+    public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }

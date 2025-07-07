@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
         // Bảng users
         DB::table('users')->insert([
             [
@@ -177,73 +176,6 @@ class DatabaseSeeder extends Seeder
                 'identity_card_image' => null,
                 'identity_card_holding_image' => null,
                 'privacy_policy_agreed' => 1,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
-        // Bảng identity_verifications
-        DB::table('identity_verifications')->insert([
-            [
-                'userID' => 1, // Admin
-                'full_name' => 'Nguyễn Văn An',
-                'identity_number' => '123456789012',
-                'birth_date' => Carbon::create(1990, 5, 15),
-                'nationality' => 'Vietnam',
-                'gender' => 'male',
-                'hometown' => 'Hà Nội',
-                'residence' => 'Quận Hoàn Kiếm, Hà Nội',
-                'identity_type' => 'cccd',
-                'identity_card_date' => Carbon::create(2020, 3, 10),
-                'identity_card_place' => 'Cục Cảnh sát Quản lý Hành chính về Trật tự Xã hội',
-                'identity_card_image' => '/uploads/identity_cards/user1_cccd_front.jpg',
-                'identity_card_holding_image' => '/uploads/identity_cards/user1_cccd_holding.jpg',
-                'status' => 'approved',
-                'rejection_reason' => null,
-                'verified_by' => 1, // Admin tự xác minh
-                'verified_at' => Carbon::now()->subDays(5),
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'userID' => 2, // Seller
-                'full_name' => 'Trần Thị Bình',
-                'identity_number' => '987654321098',
-                'birth_date' => Carbon::create(1995, 5, 5),
-                'nationality' => 'Vietnam',
-                'gender' => 'female',
-                'hometown' => 'TP. Hồ Chí Minh',
-                'residence' => 'Quận 1, TP. Hồ Chí Minh',
-                'identity_type' => 'cccd',
-                'identity_card_date' => Carbon::create(2019, 11, 5),
-                'identity_card_place' => 'Công an TP. Hồ Chí Minh',
-                'identity_card_image' => '/uploads/identity_cards/user2_cccd_front.jpg',
-                'identity_card_holding_image' => '/uploads/identity_cards/user2_cccd_holding.jpg',
-                'status' => 'approved',
-                'rejection_reason' => null,
-                'verified_by' => 1, // Xác minh bởi admin
-                'verified_at' => Carbon::now()->subDays(3),
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'userID' => 3, // Customer
-                'full_name' => 'Y Khoa Êban',
-                'identity_number' => '456789123456',
-                'birth_date' => Carbon::create(1995, 2, 10),
-                'nationality' => 'Vietnam',
-                'gender' => 'male',
-                'hometown' => 'Đà Nẵng',
-                'residence' => 'Quận Hải Châu, Đà Nẵng',
-                'identity_type' => 'cmnd',
-                'identity_card_date' => Carbon::create(2018, 7, 20),
-                'identity_card_place' => 'Công an TP. Đà Nẵng',
-                'identity_card_image' => '/uploads/identity_cards/user3_cmnd_front.jpg',
-                'identity_card_holding_image' => '/uploads/identity_cards/user3_cmnd_holding.jpg',
-                'status' => 'pending',
-                'rejection_reason' => null,
-                'verified_by' => null,
-                'verified_at' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -418,20 +350,6 @@ class DatabaseSeeder extends Seeder
                 'meta_keywords' => null,
                 'status' => 'active',
                 'parent_id' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
-        // Bảng employees
-        DB::table('employees')->insert([
-            [
-                'shopID' => 1,
-                'userID' => 2,
-                'position' => 'Manager',
-                'salary' => 10000000,
-                'hire_date' => '2023-01-01',
-                'status' => 'active',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -687,19 +605,18 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // Bảng review
-        DB::table('review')->insert([
-            [
-                'userID' => 3,
-                'productID' => 1,
-                'shopID' => 1,
-                'rating' => 5,
-                'comment' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
+        // // Bảng review
+        // DB::table('review')->insert([
+        //     [
+        //         'userID' => 3,
+        //         'productID' => 1,
+        //         'shopID' => 1,
+        //         'rating' => 5,
+        //         'comment' => null,
+        //         'created_at' => Carbon::now(),
+        //         'updated_at' => Carbon::now(),
+        //     ],
+        // ]);
 
         // Bảng wishlist
         DB::table('wishlist')->insert([

@@ -4,13 +4,13 @@
 @section('content')
     <div class="container_blog_detail">
 
-        <main class="main-content_detai">
-            <div class="image">
-                <img src="{{$post->photo}}" alt="{{$post->photo}}">
+        <main class="main-content_detail">
+            <div class="mainProductImage">
+                <img style="height: 450px" src="{{ asset($post->photo) }}" alt="{{ $post->title }}">
             </div>
 
             <div class="post-header">
-                <h1>{{$post->title}}</h1>
+                <h1>{{ $post->title }}</h1>
                 <div class="post-meta">
                     <span>👤 By Prajwal Rai</span>
                     <span>📅 Aug 16, 2020</span>
@@ -46,40 +46,22 @@
             </div>
 
             <div class="content-section">
-                <h2>What is Lorem Ipsum?</h2>
-                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
-                    industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
-                    scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap
-                    into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the
-                    release of Letraset sheets containing Lorem Ipsum passages, and</p>
+                @if ($post->quote)
+                    <blockquote> <i class="fa fa-quote-left"></i> {!! $post->quote !!}</blockquote>
+                @endif
+                <p>{!! $post->description !!}</p>
             </div>
-
-            <div class="content-section">
-                <h2>What is Lorem Ipsum?</h2>
-                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
-                    industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
-                    scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap
-                    into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the
-                    release of Letraset sheets containing Lorem Ipsum passages, and</p>
-            </div>
-
-            <div class="content-section">
-                <h2>What is Lorem Ipsum?</h2>
-                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
-                    industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and
-                    scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap
-                    into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the
-                    release of Letraset sheets containing Lorem Ipsum passages, and</p>
-            </div>
-
-
-
-
 
             <div class="tags">
-                Tags:
-                <a href="#" class="tag">Enjoy</a>
-                <a href="#" class="tag">2020</a>
+                <h4>Tags:</h4>
+                <ul class="tag-inner">
+                    @php
+                        $tags = explode(',', $post->tags);
+                    @endphp
+                    @foreach ($tags as $tag)
+                        <li><a href="javascript:void(0);">{{ $tag }}</a></li>
+                    @endforeach
+                </ul>
             </div>
 
             <div class="comment-section">
@@ -168,14 +150,14 @@
     <script>
         // Add hover effects and interactions
         document.querySelectorAll('.post-card').forEach(card => {
-            card.addEventListener('click', function () {
+            card.addEventListener('click', function() {
                 // Simulate navigation
                 console.log('Navigate to post:', this.querySelector('.post-title').textContent);
             });
         });
 
         // Search functionality
-        document.querySelector('.search-btn').addEventListener('click', function () {
+        document.querySelector('.search-btn').addEventListener('click', function() {
             const searchTerm = document.querySelector('.search-box').value;
             if (searchTerm) {
                 console.log('Searching for:', searchTerm);
@@ -188,7 +170,7 @@
         });
 
         // Newsletter subscription
-        document.querySelector('.newsletter-btn').addEventListener('click', function () {
+        document.querySelector('.newsletter-btn').addEventListener('click', function() {
             const email = document.querySelector('.newsletter-input').value;
             if (email) {
                 this.textContent = 'SUBSCRIBED!';
@@ -202,7 +184,7 @@
 
         // Tag interactions
         document.querySelectorAll('.tag').forEach(tag => {
-            tag.addEventListener('click', function (e) {
+            tag.addEventListener('click', function(e) {
                 e.preventDefault();
                 console.log('Filter by tag:', this.textContent);
             });

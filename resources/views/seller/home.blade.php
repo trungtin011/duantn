@@ -1,4 +1,8 @@
 @extends('layouts.seller_home')
+{{-- import css --}}
+@push('css')
+    <link rel="stylesheet" href="{{ asset('css/seller/seller-home.css') }}">
+@endpush
 @section('title', 'Trang chủ')
 @section('content')
     <div class="flex min-h-[calc(100vh-40px)]">
@@ -71,7 +75,7 @@
             </section>
             <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
-                    <h2 class="font-semibold text-lg">Quảng cáo Shopee</h2>
+                    <h2 class="font-semibold text-lg">Quảng cáo ZynoxMall</h2>
                     <a class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap" href="#">Xem thêm
                         <i class="fas fa-chevron-right text-[10px]"></i></a>
                 </div>
@@ -82,9 +86,9 @@
                             src="https://storage.googleapis.com/a1aa/image/edf41f8c-c956-422e-817c-1cfaae696afc.jpg"
                             width="16" />
                         <span class="font-semibold text-gray-700">Tối đa hóa doanh số bán hàng của bạn với Quảng cáo
-                            Shopee!</span>
+                            ZynoxMall!</span>
                     </div>
-                    <p class="text-gray-400 leading-tight">Tìm hiểu thêm về Quảng cáo Shopee để tạo quảng cáo một cách hiệu
+                    <p class="text-gray-400 leading-tight">Tìm hiểu thêm về Quảng cáo ZynoxMall để tạo quảng cáo một cách hiệu
                         quả và tối ưu chi phí quảng cáo.</p>
                     <button
                         class="absolute bottom-3 right-3 text-xs text-[#ff4d4f] border border-[#ff4d4f] rounded px-2 py-0.5 hover:bg-[#ff4d4f] hover:text-white transition-colors">Tìm
@@ -135,7 +139,7 @@
                         <a class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap" href="#">Xem
                             thêm <i class="fas fa-chevron-right text-[10px]"></i></a>
                     </div>
-                    <img alt="Red banner with text Buôn Hay Bán Giỏi and Shopee KOL Sellers with a cartoon character"
+                    <img alt="Red banner with text Buôn Hay Bán Giỏi and ZynoxMall KOL Sellers with a cartoon character"
                         class="rounded-md w-full object-cover" height="100"
                         src="https://storage.googleapis.com/a1aa/image/768d6aed-a0c5-4d5a-3bd1-4a0943b9301d.jpg"
                         width="300" />
@@ -158,7 +162,7 @@
                                 đầu</button>
                         </div>
                         <div class="border border-gray-200 rounded p-3">
-                            <h4 class="font-semibold text-xs mb-1">Hoàn thành khóa học Bán hàng trên Shopee</h4>
+                            <h4 class="font-semibold text-xs mb-1">Hoàn thành khóa học Bán hàng trên ZynoxMall</h4>
                             <div class="flex items-center space-x-2 text-xs text-gray-500 mb-2">
                                 <i class="fas fa-arrow-circle-up text-green-600"></i>
                                 <span>Nhận 5 lần Đẩy sản phẩm</span>

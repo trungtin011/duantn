@@ -4,7 +4,9 @@ use Illuminate\Support\Facades\Broadcast;
 use App\Models\Shop;
 use App\Models\User;
 use App\Enums\UserRole;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+
 /*
 |--------------------------------------------------------------------------
 | Broadcast Channels

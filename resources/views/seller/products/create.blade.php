@@ -23,7 +23,7 @@
         <!-- Error Messages -->
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <ul>
+                <ul class="list-disc pl-5 text-sm">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -45,7 +45,7 @@
                                     class="text-red-500">*</span></label>
                             <input type="text" name="name" id="product-name"
                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Nhập tên sản phẩm" value="{{ old('name') }}" required>
+                                placeholder="Nhập tên sản phẩm" value="{{ old('name') }}">
                             @error('name')
                                 <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                             @enderror
@@ -71,7 +71,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="number" name="price" step="0.01"
                                     class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: 100000" value="{{ old('price') }}" required>
+                                    placeholder="VD: 100000" value="{{ old('price') }}">
                                 @error('price')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
@@ -81,7 +81,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="number" name="purchase_price" step="0.01"
                                     class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: 80000" value="{{ old('purchase_price') }}" required>
+                                    placeholder="VD: 80000" value="{{ old('purchase_price') }}">
                                 @error('purchase_price')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
@@ -91,7 +91,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="number" name="sale_price" step="0.01"
                                     class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: 120000" value="{{ old('sale_price') }}" required>
+                                    placeholder="VD: 120000" value="{{ old('sale_price') }}">
                                 @error('sale_price')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
@@ -101,7 +101,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="sku"
                                     class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: SP001" value="{{ old('sku') }}" required>
+                                    placeholder="VD: SP001" value="{{ old('sku') }}">
                                 @error('sku')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
@@ -111,7 +111,7 @@
                                         class="text-red-500">*</span></label>
                                 <input type="number" name="stock_total"
                                     class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: 100" value="{{ old('stock_total') }}" required>
+                                    placeholder="VD: 100" value="{{ old('stock_total') }}">
                                 @error('stock_total')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
@@ -164,12 +164,10 @@
                             <div class="flex items-center gap-4">
                                 <input type="text" name="attributes[0][name]"
                                     placeholder="Tên thuộc tính (VD: Màu sắc)"
-                                    class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required>
+                                    class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <input type="text" name="attributes[0][values]"
                                     placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)"
-                                    class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required>
+                                    class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                         </div>
                         <button type="button"
@@ -209,8 +207,7 @@
                                 <label class="block text-gray-700 font-medium mb-1">Thương hiệu <span
                                         class="text-red-500">*</span></label>
                                 <select name="brand" id="brand"
-                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required>
+                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Chọn thương hiệu</option>
                                     @foreach ($brands as $brand)
                                         <option value="{{ $brand->name }}"
@@ -226,8 +223,7 @@
                                 <label class="block text-gray-700 font-medium mb-1">Danh mục <span
                                         class="text-red-500">*</span></label>
                                 <select name="category" id="category"
-                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required>
+                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Chọn danh mục</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->name }}"
@@ -308,8 +304,7 @@
                                 <label for="mainImage"
                                     class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                     ảnh chính</label>
-                                <input type="file" id="mainImage" name="images[]" class="hidden" accept="image/*"
-                                    required>
+                                <input type="file" id="mainImage" name="images[]" class="hidden" accept="image/*">
                             </div>
                             @error('images.*')
                                 <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>

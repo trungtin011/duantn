@@ -7,12 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
-use App\Models\Employee;
-use App\Models\Shop;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\DB; // Thêm để truy vấn bảng sessions
-use App\Enums\UserRole;
+use Illuminate\Support\Facades\DB;
 
 class LoginController extends Controller
 {
@@ -49,42 +46,17 @@ class LoginController extends Controller
         $key = 'login-attempt:' . strtolower($request->login) . ':' . $request->ip();
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-
-            // Kiểm tra trạng thái của người dùng
-            if ($user->isBanned()) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-                return redirect()->route('login')->withErrors([
-                    'login' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
-                ]);
-            }
-
             $request->session()->regenerate();
-            $request->session()->put('user_id', Auth::user()->id);
-            if (Auth::user()->role == UserRole::SELLER) {
-                $shop = Shop::where('ownerID', Auth::user()->id)->first();
-                if ($shop) {
-                    $request->session()->put('current_shop_id', $shop->id);
-                }
-            }
-            elseif(Auth::user()->role == UserRole::EMPLOYEE){
-                $shopID = Employee::where('userID', Auth::user()->id)->first()->shopID;
-                if ($shopID) {
-                    $request->session()->put('current_shop_id', $shopID);
-                }
-            }
             RateLimiter::clear($key);
-            return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
+
+            // Chuyển hướng đến URL mà người dùng muốn truy cập trước đó, hoặc về 'home' nếu không có
+            return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
         }
 
         RateLimiter::hit($key, 300);
         return back()->withErrors([
             'login' => 'Tài khoản hoặc mật khẩu không đúng.',
-        ])->withInput($request->only('login', 'remember'))
-            ->withInput($request->only('login'));
+        ])->withInput($request->only('login', 'remember'));
     }
 
     public function logout(Request $request)
@@ -165,5 +137,15 @@ class LoginController extends Controller
         return $socialiteProvider
             ->scopes(['email'])
             ->redirect();
+    }
+    public function showQrWaiting($token)
+    {
+        $qrConfirmUrl = route('qr.confirm.login', ['token' => $token]);
+        $qr_svg = \QrCode::format('svg')->size(200)->generate($qrConfirmUrl);
+
+        return view('auth.waiting-qr', [
+            'qr_svg' => $qr_svg,
+            'token' => $token,
+        ]);
     }
 }

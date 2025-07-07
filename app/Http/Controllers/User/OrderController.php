@@ -12,37 +12,70 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use App\Models\OrderReview;
+use App\Models\ShopOrderHistory;
+use App\Http\Controllers\Service\DeliveryProvider\GHNController;
 
 class OrderController extends Controller
 {
     public function index()
     {
         $userId = Auth::id();
-        $orders = Order::with(['items', 'shop_order'])
+        $reviewedProductIds = OrderReview::where('user_id', $userId)
+            ->pluck('product_id')
+            ->toArray();
+
+        $allOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
             ->where('userID', $userId)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('user.order.order_history', compact('orders'));
-    }
-
-    public function history()
-    {
-        $userId = Auth::id();
-
-        // Lấy tất cả đơn hàng
-        $Orders = Order::with(['items', 'shop_order'])
+        $pendingOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
             ->where('userID', $userId)
+            ->where('order_status', 'pending')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
-        $sub_orders = [];
-        
-        foreach ($Orders as $order) {
-            $sub_orders[] = $order->shop_order;
-        }
+        $processingOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
+            ->where('userID', $userId)
+            ->where('order_status', 'processing')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-        return view('user.order.order_history', compact('Orders', 'sub_orders'));
+        $shippedOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
+            ->where('userID', $userId)
+            ->where('order_status', 'shipped')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $deliveredOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
+            ->where('userID', $userId)
+            ->where('order_status', 'delivered')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $cancelledOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
+            ->where('userID', $userId)
+            ->where('order_status', 'cancelled')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $refundedOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
+            ->where('userID', $userId)
+            ->where('order_status', 'refunded')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('user.order.history', compact(
+            'allOrders',
+            'pendingOrders',
+            'processingOrders',
+            'shippedOrders',
+            'deliveredOrders',
+            'cancelledOrders',
+            'refundedOrders',
+            'reviewedProductIds'
+        ));
     }
 
     public function show($orderID)
@@ -71,54 +104,6 @@ class OrderController extends Controller
         return view('user.order.detail', compact('order', 'orderItems', 'orderAddress'));
     }
 
-    public function cancel(Request $request, $orderID)
-    {
-        $userId = Auth::id();
-        $order = Order::where('userID', $userId)->findOrFail($orderID);
-
-        // Check if order can be cancelled
-        if (!in_array($order->order_status, ['pending', 'processing'])) {
-            return redirect()->back()->with('error', 'Đơn hàng không thể hủy ở trạng thái hiện tại.');
-        }
-
-        $request->validate([
-            'cancel_reason' => 'required|string|max:255',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            // Update order status
-            $order->update([
-                'order_status' => 'cancelled',
-                'cancel_reason' => $request->cancel_reason,
-                'cancelled_at' => now(),
-            ]);
-
-            // Update shop orders
-            $order->shopOrders()->update([
-                'status' => 'cancelled_by_customer',
-                'note' => 'Hủy bởi khách hàng: ' . $request->cancel_reason,
-                'updated_at' => now(),
-            ]);
-
-            // Restore stock for each item
-            foreach ($order->items as $item) {
-                if ($item->variant) {
-                    $item->variant->increment('stock', $item->quantity);
-                } else {
-                    $item->product->increment('stock_total', $item->quantity);
-                }
-            }
-
-            DB::commit();
-            return redirect()->route('user.order.detail', $orderID)->with('success', 'Đơn hàng đã được hủy thành công.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Lỗi khi hủy đơn hàng: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Lỗi khi hủy đơn hàng. Vui lòng thử lại.');
-        }
-    }
-
     public function checkStatus($orderStatus)
     {
         if ($orderStatus->order_status === 'pending') {
@@ -127,6 +112,39 @@ class OrderController extends Controller
             return 'processing';
         } elseif ($orderStatus->order_status === 'shipped') {
             return 'shipped';
+        }
+    }
+
+    public function cancel(Request $request, $orderId)
+    {
+        $userId = Auth::id();
+        $order = Order::with('shopOrders')->where('userID', $userId)->findOrFail($orderId);
+
+        if (!in_array($order->order_status, ['pending', 'processing'])) {
+            return redirect()->back()->with('error', 'Không thể hủy đơn hàng ở trạng thái hiện tại.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $order->update([
+                'order_status' => 'cancelled',
+                'cancel_reason' => $request->input('cancel_reason'),
+                'cancelled_at' => now(),
+            ]);
+
+            foreach ($order->shopOrders as $shopOrder) {
+                $shopOrder->update([
+                    'status' => 'cancelled',
+                    'note' => 'Hủy bởi khách hàng: ' . $request->input('cancel_reason'),
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Đơn hàng đã được hủy thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi khi hủy đơn hàng: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Lỗi khi hủy đơn hàng: ' . $e->getMessage());
         }
     }
 
@@ -191,12 +209,10 @@ class OrderController extends Controller
                 ]);
             }
 
-            // Tạo mảng shop orders và items để chèn hàng loạt
-            $shopOrders = [];
-            $orderItems = [];
-
+            // Tạo shop orders và items tuần tự
+            $newShopOrderIds = [];
             foreach ($originalOrder->shopOrders as $shopOrder) {
-                $newShopOrder = [
+                $newShopOrder = ShopOrder::create([
                     'shopID' => $shopOrder->shopID,
                     'orderID' => $newOrder->id,
                     'shipping_provider' => $shopOrder->shipping_provider,
@@ -208,14 +224,14 @@ class OrderController extends Controller
                     'note' => $shopOrder->note,
                     'created_at' => now(),
                     'updated_at' => now(),
-                ];
-                $shopOrders[] = $newShopOrder;
+                ]);
+                $newShopOrderIds[$shopOrder->id] = $newShopOrder->id;
 
                 $items = $originalOrder->items->where('shop_orderID', $shopOrder->id);
                 foreach ($items as $item) {
-                    $orderItems[] = [
+                    OrderItem::create([
                         'orderID' => $newOrder->id,
-                        'shop_orderID' => DB::getPdo()->lastInsertId(), // Cần xử lý sau khi chèn shop orders
+                        'shop_orderID' => $newShopOrder->id,
                         'productID' => $item->productID,
                         'variantID' => $item->variantID,
                         'product_name' => $item->product_name,
@@ -230,36 +246,45 @@ class OrderController extends Controller
                         'discount_amount' => $item->discount_amount,
                         'created_at' => now(),
                         'updated_at' => now(),
-                    ];
-                }
-            }
-
-            // Chèn hàng loạt shop orders
-            if (!empty($shopOrders)) {
-                ShopOrder::insert($shopOrders);
-
-                // Cập nhật shop_orderID cho order items sau khi chèn shop orders
-                $lastShopOrderId = ShopOrder::where('orderID', $newOrder->id)->max('id');
-                foreach ($orderItems as &$item) {
-                    $item['shop_orderID'] = $lastShopOrderId - count($shopOrders) + 1; // Điều chỉnh ID
-                }
-                unset($item); // Xóa tham chiếu
-
-                // Chèn hàng loạt order items
-                if (!empty($orderItems)) {
-                    OrderItem::insert($orderItems);
+                    ]);
                 }
             }
 
             DB::commit();
 
             // Hướng dẫn người dùng đến bước thanh toán
-            return redirect()->route('user.orders.show', $newOrder->id)
+            return redirect()->route('user.order.detail', $newOrder->id)
                 ->with('success', 'Đơn hàng đã được tạo lại thành công. Vui lòng tiến hành thanh toán để hoàn tất.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Lỗi khi tạo lại đơn hàng: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Lỗi khi tạo lại đơn hàng: ' . $e->getMessage());
+        }
+    }
+    
+    public function refundOrder($tracking_code){
+        $order = ShopOrder::where('tracking_code', $tracking_code)->first();
+
+        if(!$order){
+            return redirect()->back()->with('error', 'Đơn hàng không tồn tại');
+        }   
+    
+        $GHN_Controller = new GHNController();
+        $refund = $GHN_Controller->refundOrder($tracking_code);
+
+        if($refund){
+            $order->status = 'refunded';
+            $order->save();
+
+            $history = new ShopOrderHistory();
+            $history->shop_order_id = $order->id;
+            $history->status = 'refunded';
+            $history->description = 'Người mua đã hoàn trả đơn hàng';
+            $history->save();
+
+            return redirect()->back()->with('success', 'Đơn hàng đã được hoàn trả thành công');
+        }else{
+            return redirect()->back()->with('error', 'Đơn hàng không thể hoàn trả');
         }
     }
 }
