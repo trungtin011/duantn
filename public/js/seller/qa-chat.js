@@ -305,4 +305,4 @@ document.addEventListener('alpine:init', () => {
             }
         }
     }));
-}); 
+});
