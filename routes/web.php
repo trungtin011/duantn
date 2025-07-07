@@ -290,7 +290,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.home');
     })->name('seller.dashboard');
 
-    Route::prefix('orders')->group(function () {
+    Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
         Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
         Route::put('/{id}/{shop_id}', [SellerOrderController::class, 'confirmOrder'])->name('seller.order.update-status');
@@ -298,6 +298,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::get('/order', [SellerOrderController::class, 'order'])->name('seller.orders');
         Route::put('/cancel', [SellerOrderController::class, 'cancelOrder'])->name('seller.order.cancel');
         Route::post('/tracking', [SellerOrderController::class, 'trackingOrder'])->name('seller.order.tracking');
+
     });
 
     Route::prefix('products')->group(function () {
@@ -325,10 +326,6 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/combos/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
     Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
     Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
-
-    Route::get('/order/index', [SellerOrderController::class, 'index'])->name('seller.order.index');
-    Route::get('/order/{id}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-    Route::put('/order/{id}/update-status', [SellerOrderController::class, 'updateStatus'])->name('seller.order.update-status');
 });
 
 Route::prefix('customer')->group(function () {
