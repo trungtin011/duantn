@@ -51,6 +51,7 @@ class CreateOrderEvent implements ShouldBroadcast
         Log::info(' /////////////// Broadcast On /////////////// ', [
             'shop_id' => $this->shop_id
         ]);
+        
         return [
             new PrivateChannel('order.created.' . $this->shop_id)        
         ];

@@ -14,13 +14,10 @@ class UserAddressController extends Controller
 
     public function index()
     {
-        $addresses = Auth::user()->addresses;
         $user = Auth::user();
-        if ($addresses->isEmpty()) {
-            return view('user.account.addresses.index', ['addresses' => $addresses])
-                ->with('message', 'Bạn chưa có địa chỉ nào. Hãy thêm địa chỉ mới.');
-        }
-        return view('user.account.addresses.index', compact('addresses', 'user'));
+        $addresses = $user->addresses;
+        $message = $addresses->isEmpty() ? 'Bạn chưa có địa chỉ nào. Hãy thêm địa chỉ mới.' : null;
+        return view('user.account.addresses.index', compact('addresses', 'user', 'message'));
     }
 
     public function create()

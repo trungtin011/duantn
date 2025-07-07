@@ -30,18 +30,18 @@ class ShopOrder extends Model
     ];
 
     // Relationships
-    public function shop(): BelongsTo
+    public function shop()
     {
-        return $this->belongsTo(Shop::class, 'shopID');
+        return $this->belongsTo(Shop::class, 'shopID', 'id');
     }
 
-    public function order(): BelongsTo
+    public function order()
     {
-        return $this->belongsTo(Order::class, 'orderID');
+        return $this->belongsTo(Order::class, 'orderID', 'id');
     }
 
-    public function items(): HasMany
+    public function items()
     {
-        return $this->hasMany(OrderItem::class, 'shop_orderID');
+        return $this->hasMany(ItemsOrder::class, 'shop_orderID', 'id');
     }
 }

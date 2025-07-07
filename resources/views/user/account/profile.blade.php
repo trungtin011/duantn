@@ -31,14 +31,14 @@
                         <label class="block text-gray-400 text-sm">Tên đăng nhập</label>
                         <label class="block text-gray-400 text-sm">Họ tên</label>
                         <label class="block text-gray-400 text-sm">Số điện thoại</label>
+                        <label class="block text-gray-400 text-sm">Email</label>
                         <label class="block text-gray-400 text-sm">Ngày sinh</label>
                         <label class="block text-gray-400 text-sm">Giới tính</label>
                     </div>
                     <div class="flex flex-col gap-[20px] w-[500px]">
-                        <!-- Tên đăng nhập -->
                         <div class="">
-                            <input type="text" name="username" value="{{ old('username', $user->username) }}"
-                                class="w-full border rounded px-3 py-2" required>
+                            <input type="text" name="username" value="{{ old('username', auth()->user()->username) }}"
+                        class="w-full border rounded px-3 py-2" required>
                             @error('username')
                                 <p class="text-red-600 text-sm">{{ $message }}</p>
                             @enderror
@@ -61,7 +61,13 @@
                                 <p class="text-red-600 text-sm">{{ $message }}</p>
                             @enderror
                         </div>
-
+                        <div class="">
+                            <input type="text" name="email" value="{{ old('email', $user->email) }}"
+                                class="w-full border rounded px-3 py-2">
+                            @error('email')
+                                <p class="text-red-600 text-sm">{{ $message }}</p>
+                            @enderror
+                        </div>
                         <!-- Ngày sinh -->
                         <div class="">
                             <div class="flex gap-2">

@@ -1,28 +1,21 @@
 @extends('user.account.layout')
 
 @section('account-content')
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <div class="container mx-auto py-5">
-
+        @include('layouts.notification')
         <!-- Thông báo thành công/lỗi -->
-        @if (session('success'))
+        {{-- @if (session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
-                {{-- Button cancel X --}}
-                <button onclick="this.parentElement.style.display='none'" class="float-right text-green-700">
-                    &times;
-                </button>
+                <button onclick="this.parentElement.style.display='none'" class="float-right text-green-700">×</button>
             </div>
         @endif
         @if (session('error'))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                 {{ session('error') }}
-                {{-- Button cancel X --}}
-                <button onclick="this.parentElement.style.display='none'" class="float-right text-green-700">
-                    &times;
-                </button>
+                <button onclick="this.parentElement.style.display='none'" class="float-right text-green-700">×</button>
             </div>
-        @endif
+        @endif --}}
 
         <!-- Breadcrumb -->
         <div class="flex flex-wrap items-center gap-2 mb-10 px-[10px] sm:px-0 md:mb-10 text-sm md:text-base">
@@ -31,9 +24,16 @@
             <span>Chi tiết đơn hàng</span>
         </div>
 
+        <!-- Nút quan lại -->
+        <div class="mb-4 bg-gray-200 shadow-sm rounded-lg p-4">
+            <a href="{{ route('order_history') }}" class="text-sm hover:text-red-500">
+                <i class="fa fa-arrow-left"></i> Quan lý đơn hàng
+            </a>
+        </div>
+
         <!-- Header: Chi tiết đơn hàng -->
         <div class="mb-4">
-            <div class="bg-gray-100 shadow-sm rounded-lg p-4 flex justify-between items-center">
+            <div class="bg-white shadow-sm rounded-lg p-4 h-full flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-bold text-gray-800 mb-1">Chi tiết đơn hàng</h2>
                     <p class="text-gray-600 text-sm">Đơn hàng {{ $order->order_code ?? 'N/A' }} | Order Created:
@@ -52,15 +52,14 @@
                 <!-- Nút hành động: Hủy đơn hàng hoặc Mua lại -->
                 <div class="flex space-x-2">
                     @if (in_array($order->order_status, ['pending', 'processing']))
-                        <button onclick="document.getElementById('cancel-form').classList.toggle('hidden')"
-                            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">
+                        <button class="open-cancel-modal bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm"
+                            data-order-id="{{ $order->id }}">
                             Hủy đơn hàng
                         </button>
                     @endif
                     @if (in_array($order->order_status, ['cancelled', 'refunded']))
-                        <form action="{{ route('user.orders.reorder', $order->id) }}" method="POST">
+                        <form action="{{ route('user.order.reorder', $order->id) }}" method="GET">
                             @csrf
-                            @method('POST')
                             <button type="submit"
                                 class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
                                 Mua lại
@@ -71,25 +70,26 @@
             </div>
         </div>
 
-        <!-- Form hủy đơn hàng -->
+        <!-- Modal hủy đơn hàng (gộp từ order-block.blade.php) -->
         @if (in_array($order->order_status, ['pending', 'processing']))
-            <div id="cancel-form" class="hidden mb-4">
-                <div class="bg-white shadow-sm rounded-lg p-4">
-                    <h5 class="font-semibold text-gray-800 mb-3">Hủy đơn hàng</h5>
-                    <form action="{{ route('user.orders.cancel', $order->id) }}" method="POST" class="space-y-4">
+            <div id="cancelModal-{{ $order->id }}"
+                class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-lg font-semibold mb-4">Hủy đơn hàng</h3>
+                    <form action="{{ route('user.order.cancel', $order->id) }}" method="POST">
                         @csrf
-                        @method('POST')
-                        <div>
-                            <label for="cancel_reason" class="block text-sm font-medium text-gray-700">Lý do hủy:</label>
-                            <textarea id="cancel_reason" name="cancel_reason"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required></textarea>
-                            @error('cancel_reason')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
+                        @method('PATCH')
+                        <div class="mb-4">
+                            <label for="cancel_reason" class="block text-sm font-medium text-gray-700">Lý do hủy</label>
+                            <textarea name="cancel_reason" id="cancel_reason" rows="4"
+                                class="mt-1 p-2 block w-full form-control border-gray-300 border rounded-lg text-sm focus:outline-none" required></textarea>
                         </div>
-                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">
-                            Xác nhận hủy
-                        </button>
+                        <div class="flex justify-end gap-3">
+                            <button type="button"
+                                class="close-modal px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Hủy</button>
+                            <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Xác
+                                nhận</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -140,7 +140,8 @@
                     Thông tin giao hàng
                 </h5>
                 <p class="text-gray-600 text-sm">
-                    <strong>Phương thức vận chuyển:</strong> {{ $order->shopOrder->shipping_provider ?? 'GHN' }}<br>
+                    <strong>Phương thức vận chuyển:</strong>
+                    {{ isset($order->shopOrder) && $order->shopOrder->first() ? $order->shopOrder->first()->shipping_provider : 'Chờ xác nhận' }}<br>
                     <strong>Địa chỉ:</strong> {{ $orderAddress->address ?? 'Không có thông tin' }},
                     {{ $orderAddress->ward ?? '' }}, {{ $orderAddress->district ?? '' }},
                     {{ $orderAddress->province ?? '' }}<br>
@@ -198,7 +199,8 @@
                                     @endforeach
                                 @else
                                     <tr>
-                                        <td colspan="4" class="p-3 text-gray-600 text-center">Không có sản phẩm nào trong
+                                        <td colspan="4" class="p-3 text-gray-600 text-center">Không có sản phẩm nào
+                                            trong
                                             đơn hàng này.</td>
                                     </tr>
                                 @endif
@@ -218,22 +220,36 @@
                                 <td class="py-2 text-gray-600">Tổng tiền hàng</td>
                                 <td class="py-2 text-right font-medium text-gray-800">
                                     {{ number_format($order->total_price - ($order->coupon_discount ?? 0), 0, ',', '.') }}
-                                    VND</td>
+                                    VND
+                                </td>
                             </tr>
+                            <!-- Hiển thị phí vận chuyển theo từng shop (nếu có nhiều shop) -->
+                            @foreach ($order->shopOrders as $shopOrder)
+                                <tr>
+                                    <td class="py-2 text-gray-600">Phí ship (Shop
+                                        {{ $shopOrder->shop->shop_name ?? 'N/A' }})</td>
+                                    <td class="py-2 text-right font-medium text-gray-800">
+                                        {{ number_format($shopOrder->shipping_fee ?? 0, 0, ',', '.') }} VND
+                                    </td>
+                                </tr>
+                            @endforeach
                             <tr>
-                                <td class="py-2 text-gray-600">Phí ship</td>
+                                <td class="py-2 text-gray-600">Tổng phí ship</td>
                                 <td class="py-2 text-right font-medium text-gray-800">
-                                    {{ number_format($order->shopOrder->shipping_fee ?? 0, 0, ',', '.') }} VND</td>
+                                    {{ number_format($order->shipping_fee ?? 0, 0, ',', '.') }} VND
+                                </td>
                             </tr>
                             <tr>
                                 <td class="py-2 text-gray-600">Giảm giá</td>
                                 <td class="py-2 text-right font-medium text-green-600">
-                                    {{ number_format($order->coupon_discount ?? 0, 0, ',', '.') }} VND</td>
+                                    {{ number_format($order->coupon_discount ?? 0, 0, ',', '.') }} VND
+                                </td>
                             </tr>
                             <tr class="border-t border-gray-200 pt-2">
                                 <td class="py-2 font-bold text-gray-800">Tổng cộng</td>
                                 <td class="py-2 text-right font-bold text-blue-600">
-                                    {{ number_format($order->total_price, 0, ',', '.') }} VND</td>
+                                    {{ number_format($order->total_price, 0, ',', '.') }} VND
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -242,3 +258,29 @@
         </div>
     </div>
 @endsection
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.open-cancel-modal').forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    const modal = document.getElementById(`cancelModal-${orderId}`);
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+                });
+            });
+
+            document.querySelectorAll('[id^="cancelModal-"]').forEach(modal => {
+                const closeButtons = modal.querySelectorAll('button[type="button"]');
+                closeButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                    });
+                });
+            });
+        });
+    </script>
+@endpush

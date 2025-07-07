@@ -22,9 +22,15 @@ class RegisterShopController extends Controller
     private function checkAlreadySeller()
     {
         if (\App\Models\Seller::where('userID', Auth::id())->exists()) {
-            return redirect()->route('seller.home')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
+            return redirect()->route('seller.dashboard')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
         }
         return null;
+    }
+
+    public function index()
+    {
+        if ($redirect = $this->checkAlreadySeller()) return $redirect;
+        return view('seller.register.index');
     }
 
     /**
@@ -53,7 +59,7 @@ class RegisterShopController extends Controller
         ], [
             'shop_name.required' => 'Tên shop là bắt buộc.',
             'shop_name.unique' => 'Tên shop đã tồn tại.',
-            'email.required' => 'Email là bắt buộc.',   
+            'email.required' => 'Email là bắt buộc.',
             'email.unique' => 'Email đã được sử dụng.',
             'phone.required' => 'Số điện thoại là bắt buộc.',
             'phone.unique' => 'Số điện thoại đã được sử dụng.',
@@ -187,7 +193,7 @@ class RegisterShopController extends Controller
             'tax_code' => $request->tax_code,
         ])]);
 
-      
+
 
         return redirect()->route('seller.register.step4')->with('success', 'Thông tin kinh doanh đã được lưu tạm.');
     }
@@ -234,7 +240,7 @@ class RegisterShopController extends Controller
             return back()->withErrors(['id_number' => 'Thông tin định danh không đúng hoặc chưa được xác thực.'])->withInput();
         }
 
-  
+
         $identity = [
             'identity_card' => $request->id_number,
             'identity_card_type' => $request->id_type,
@@ -351,7 +357,7 @@ class RegisterShopController extends Controller
                 'userID' => Auth::id(),
                 'status' => 'suspended',
                 'identity_card' => $data['identity_card'],
-                'identity_card_type' => in_array($data['identity_card_type'], ['cccd','cmnd']) ? $data['identity_card_type'] : 'cccd',
+                'identity_card_type' => in_array($data['identity_card_type'], ['cccd', 'cmnd']) ? $data['identity_card_type'] : 'cccd',
                 'identity_card_date' => now(),
                 'identity_card_place' => 'Unknown',
                 'identity_card_image' => $data['identity_card_image'],
@@ -366,14 +372,17 @@ class RegisterShopController extends Controller
             ]);
 
             // 7. Gửi thông báo
-            DB::table('notification')->insert([
-                'receiver_user_id' => Auth::id(),
+            DB::table('notifications')->insert([
+                'sender_id' => null,
+                'shop_id' => null,
                 'title' => 'Đăng ký shop thành công',
                 'content' => 'Shop của bạn đã được tạo. Hệ thống sẽ xác thực thông tin trong 3-4 ngày làm việc. Vui lòng chờ kết quả xác thực!',
                 'type' => 'shop_registration',
-                'priority' => 'normal',
-                'status' => 'unread',
+                'reference_id' => Auth::id(), // dùng để theo dõi ai là người nhận nếu cần
                 'receiver_type' => 'user',
+                'priority' => 'normal',
+                'status' => 'pending', // đúng enum
+                'is_read' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -397,7 +406,8 @@ class RegisterShopController extends Controller
     }
 
     // Helper lấy tên từ API
-    private function getNameFromApi($type, $code) {
+    private function getNameFromApi($type, $code)
+    {
         if (!$code) return '';
         $url = '';
         if ($type === 'province') $url = "https://provinces.open-api.vn/api/p/$code";

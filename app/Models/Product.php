@@ -43,6 +43,7 @@ class Product extends Model
         'stock_total' => 'integer',
         'is_featured' => 'boolean',
         'is_variant' => 'boolean',
+        'flash_sale_end_at' => 'datetime',
     ];
 
     // Relationships
@@ -59,6 +60,16 @@ class Product extends Model
     public function variantAttributeValues()
     {
         return $this->hasMany(ProductVariantAttributeValue::class, 'product_id');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
     }
 
     // App/Models/Product.php
@@ -84,8 +95,13 @@ class Product extends Model
 
     public function reviews(): HasMany
     {
-        return $this->hasMany(Review::class, 'productID');
+        return $this->hasMany(Review::class, 'product_id');
     }
+
+    // public function reviews()
+    // {
+    //     return $this->hasMany(\App\Models\ProductReview::class)->with('user');
+    // }
 
     public function defaultImage(): HasOne
     {
@@ -152,6 +168,7 @@ class Product extends Model
     }
 
     // Methods
+
     public function getCurrentPriceAttribute()
     {
         return $this->sale_price ?? $this->price;
@@ -194,5 +211,9 @@ class Product extends Model
     public function isFlashSaleActive()
     {
         return $this->flash_sale_price && now()->lt($this->flash_sale_end_at);
+    }
+    public function orderReviews()
+    {
+        return $this->hasMany(OrderReview::class, 'product_id');
     }
 }

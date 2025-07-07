@@ -84,7 +84,7 @@
                 <div style="display: flex; gap: 10px;">
                     <form class="form" method="GET" action="{{route('blog.search')}}"></form>
                     <input type="text" class="search-box" placeholder="Tìm kiếm ở đây...">
-                    <button class="search-btn">🔍</button>
+                    <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                     </form>
                 </div>
             </div>

@@ -65,7 +65,13 @@ class User extends Authenticatable
 
     public function seller()
     {
-        return $this->hasOne(\App\Models\Seller::class, 'userID', 'id');
+        // Sửa lại khóa ngoại thành 'userID' thay vì mặc định 'user_id'
+        return $this->hasOne(Seller::class, 'userID');
+    }
+
+    public function autoChatSetting()
+    {
+        return $this->hasOne(\App\Models\AutoChatSetting::class, 'user_id');
     }
 
     public function reviews()
