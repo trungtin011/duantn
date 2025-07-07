@@ -141,7 +141,7 @@
                                                     data-variant-id="{{ $variantId }}"
                                                     data-attribute-name="{{ $attributeName }}">
                                                     @if (isset($attributeImages[$attributeName][$value]))
-                                                        <img src="{{ Storage::url($attributeImages[$attributeName][$value]) }}"
+                                                        <img src="{{ ($attributeImages[$attributeName][$value]) }}"
                                                             width="24" height="24" class="rounded" loading="lazy">
                                                     @endif
                                                     <span>{{ $value }}</span>
@@ -153,10 +153,6 @@
                                     <p class="text-gray-600">Không có tùy chọn {{ $attributeName }}.</p>
                                 @endif
                             @endforeach
-
-                            @if ($attributes->isEmpty())
-                                <p class="text-gray-600">Không có tùy chọn thuộc tính nào.</p>
-                            @endif
                         </div>
 
                         <!-- Số lượng và biến thể được chọn -->

@@ -182,18 +182,26 @@ class ProductController extends Controller
         $variantData = [];
         foreach ($product->variants as $variant) {
             $attributeValues = $variant->attributeValues->keyBy('attribute.name');
+            $image = null; // ← Khởi tạo mặc định
+
             foreach ($attributeValues as $attrName => $attrValue) {
                 $image = $variant->images->first()->image_path ?? null;
-                $attributeImages[$attrName][$attrValue->value] = $image ?: asset('images/default_product_image.png');
+                $attributeImages[$attrName][$attrValue->value] = $image
+                    ? Storage::url($image)
+                    : asset('images/default_product_image.png');
             }
+
             $variantData[$variant->id] = [
                 'price' => $variant->getCurrentPriceAttribute(),
                 'original_price' => $variant->price,
                 'stock' => $variant->stock,
-                'image' => $image ?: asset('images/default_product_image.png'),
+                'image' => $image
+                    ? Storage::url($image)
+                    : asset('images/default_product_image.png'), // ← tránh lỗi
                 'discount_percentage' => $variant->getDiscountPercentageAttribute(),
             ];
         }
+
 
         Log::info('Variants for product ID: ' . $product->id . ', count: ' . $product->variants->count());
         foreach ($product->variants as $variant) {
