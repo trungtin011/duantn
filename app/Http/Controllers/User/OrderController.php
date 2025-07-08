@@ -26,45 +26,47 @@ class OrderController extends Controller
             ->toArray();
 
         $allOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $pendingOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->where('order_status', 'pending')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $processingOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->where('order_status', 'processing')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $shippedOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->where('order_status', 'shipped')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $deliveredOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->where('order_status', 'delivered')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $cancelledOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->where('order_status', 'cancelled')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $refundedOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->where('order_status', 'refunded')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+
+        Log::info('User ID:', ['id' => Auth::id()]);
 
         return view('user.order.history', compact(
             'allOrders',
@@ -83,7 +85,7 @@ class OrderController extends Controller
         $userId = Auth::id();
         $order = Order::with([
             'items.product.images' => function ($query) {
-                $query->select('id', 'productID', 'image_path', 'is_default', 'display_order');
+                $query->select('id', 'productID', 'image_path', 'is_default', 'display_order', 'variantID');
             },
             'items.variant' => function ($query) {
                 $query->select('id', 'productID', 'variant_name', 'price', 'sale_price');
@@ -95,7 +97,7 @@ class OrderController extends Controller
             },
             'coupon'
         ])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->findOrFail($orderID);
 
         $orderItems = $order->items;
@@ -118,7 +120,7 @@ class OrderController extends Controller
     public function cancel(Request $request, $orderId)
     {
         $userId = Auth::id();
-        $order = Order::with('shopOrders')->where('userID', $userId)->findOrFail($orderId);
+        $order = Order::with('shopOrders')->whereNotNull('userID')->where('userID', $userId)->findOrFail($orderId);
 
         if (!in_array($order->order_status, ['pending', 'processing'])) {
             return redirect()->back()->with('error', 'Không thể hủy đơn hàng ở trạng thái hiện tại.');
@@ -152,7 +154,7 @@ class OrderController extends Controller
     {
         $userId = Auth::id();
         $originalOrder = Order::with(['items.product', 'items.variant', 'address', 'shopOrders'])
-            ->where('userID', $userId)
+            ->whereNotNull('userID')->where('userID', $userId)
             ->findOrFail($orderID);
 
         // Kiểm tra trạng thái đơn hàng

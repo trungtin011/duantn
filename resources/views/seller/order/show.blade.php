@@ -44,13 +44,11 @@
                 </form>
             @endif
             
-            @if(in_array($shop_order->status, ['confirmed', 'ready_to_pick', 'picked']))
+            @if(in_array($shop_order->status, ['confirmed', 'ready_to_pick']))
                 <form action="{{ route('seller.order.cancel') }}" method="POST">
                     @csrf
                     @method('PUT')
-                    <input type="hidden" name="status" value="{{ $shop_order->status }}">
                     <input type="hidden" name="id" value="{{ $shop_order->id }}">
-                    <input type="hidden" name="shop_id" value="{{ $shop->id }}">
                     <button class="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105" type="submit">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -60,7 +58,7 @@
                 </form>
             @endif
             
-            @if($shop_order->status === 'shipping' || $shop_order->status === 'ready_to_pick'))
+            @if(in_array($shop_order->status, ['shipping', 'ready_to_pick']))
                 <form action="{{ route('seller.order.tracking') }}" method="POST">
                     @csrf
                     <input type="hidden" name="tracking_code" value="{{ $shop_order->code }}">

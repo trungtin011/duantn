@@ -162,40 +162,88 @@
                     <h5 class="font-semibold text-gray-800 mb-4">Danh sách sản phẩm</h5>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="p-3 text-sm font-semibold text-gray-700">Sản phẩm</th>
-                                    <th class="p-3 text-sm font-semibold text-gray-700">Đơn giá</th>
-                                    <th class="p-3 text-sm font-semibold text-gray-700">Số lượng</th>
-                                    <th class="p-3 text-sm font-semibold text-gray-700">Thành giá</th>
-                                </tr>
-                            </thead>
                             <tbody>
                                 @if (isset($orderItems) && $orderItems->isNotEmpty())
-                                    @foreach ($orderItems as $item)
-                                        <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                            <td class="p-3">
-                                                <div class="flex items-center">
-                                                    <img src="{{ $item->product_image ?? ($item->product->images->first()->image_path ?? 'https://via.placeholder.com/40') }}"
-                                                        alt="{{ e($item->product_name ?? ($item->variant->variant_name ?? ($item->product->name ?? 'Sản phẩm'))) }}"
-                                                        class="w-10 h-10 rounded mr-3 object-cover">
-                                                    <div>
-                                                        <span>{{ e($item->product_name ?? ($item->variant->variant_name ?? ($item->product->name ?? 'Sản phẩm không còn tồn tại'))) }}</span>
-                                                        @if ($item->variant)
-                                                            <p class="text-xs text-gray-500">Biến thể:
-                                                                {{ e($item->variant->variant_name) }}</p>
-                                                        @endif
-                                                        <p class="text-xs text-gray-500">Shop:
-                                                            {{ e($item->shopOrder->shop->shop_name ?? 'N/A') }}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="p-3 text-gray-600">
-                                                {{ number_format($item->unit_price, 0, ',', '.') }} VND</td>
-                                            <td class="p-3 text-gray-600">{{ $item->quantity }}</td>
-                                            <td class="p-3 text-gray-600">
-                                                {{ number_format($item->total_price, 0, ',', '.') }} VND</td>
-                                        </tr>
+                                    @php
+                                        $itemsGroupedByShop = $orderItems->groupBy('shop_orderID');
+                                    @endphp
+
+                                    @foreach ($itemsGroupedByShop as $shopOrderID => $items)
+                                        @php
+                                            $shop = $items->first()->shopOrder->shop;
+                                            $shopName = $shop->shop_name ?? 'Không có tên shop';
+                                        @endphp
+
+                                        <h4 class="text-base font-semibold my-3">
+                                            <img src="{{ asset('storage/' . $shop->shop_logo) }}"
+                                                alt="Logo {{ $shop->shop_name }}"
+                                                class="w-8 h-8 object-cover rounded-full inline-block mr-2">
+                                            {{ $shop->shop_name }}
+                                        </h4>
+
+                                        <table class="w-full text-left mb-6 border border-gray-200 rounded">
+                                            <thead class="bg-gray-100">
+                                                <tr>
+                                                    <th class="p-3 text-sm font-semibold text-gray-700">Sản phẩm</th>
+                                                    <th class="p-3 text-sm font-semibold text-gray-700">Đơn giá</th>
+                                                    <th class="p-3 text-sm font-semibold text-gray-700">Số lượng</th>
+                                                    <th class="p-3 text-sm font-semibold text-gray-700">Thành tiền</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($items as $item)
+                                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                                        <td class="p-3">
+                                                            <div class="flex items-center">
+                                                                @php
+                                                                    $variantId = $item->variantID ?? null;
+                                                                    $productImages =
+                                                                        $item->product->images ?? collect();
+
+                                                                    $variantImage = $productImages->firstWhere(
+                                                                        'variantID',
+                                                                        $variantId,
+                                                                    );
+                                                                    $defaultImage =
+                                                                        $productImages->firstWhere('is_default', 1) ??
+                                                                        $productImages->first();
+
+                                                                    $imagePath =
+                                                                        $variantImage->image_path ??
+                                                                        ($defaultImage->image_path ??
+                                                                            'https://via.placeholder.com/40');
+
+                                                                    $finalImage = Str::startsWith($imagePath, [
+                                                                        'http',
+                                                                        '//',
+                                                                    ])
+                                                                        ? $imagePath
+                                                                        : asset('storage/' . $imagePath);
+                                                                @endphp
+
+                                                                <img src="{{ $finalImage }}"
+                                                                    alt="{{ e($item->product_name) }}"
+                                                                    class="w-10 h-10 rounded mr-3 object-cover">
+
+                                                                <div>
+                                                                    <span
+                                                                        class="font-medium">{{ e($item->product_name) }}</span>
+                                                                    @if ($item->variant)
+                                                                        <p class="text-xs text-gray-500">Biến thể:
+                                                                            {{ e($item->variant->variant_name) }}</p>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="p-3 text-gray-600">
+                                                            {{ number_format($item->unit_price, 0, ',', '.') }} VND</td>
+                                                        <td class="p-3 text-gray-600">{{ $item->quantity }}</td>
+                                                        <td class="p-3 text-gray-600">
+                                                            {{ number_format($item->total_price, 0, ',', '.') }} VND</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
                                     @endforeach
                                 @else
                                     <tr>

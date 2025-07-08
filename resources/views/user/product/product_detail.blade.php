@@ -141,7 +141,7 @@
                                                     data-variant-id="{{ $variantId }}"
                                                     data-attribute-name="{{ $attributeName }}">
                                                     @if (isset($attributeImages[$attributeName][$value]))
-                                                        <img src="{{ Storage::url($attributeImages[$attributeName][$value]) }}"
+                                                        <img src="{{ ($attributeImages[$attributeName][$value]) }}"
                                                             width="24" height="24" class="rounded" loading="lazy">
                                                     @endif
                                                     <span>{{ $value }}</span>
@@ -153,10 +153,6 @@
                                     <p class="text-gray-600">Không có tùy chọn {{ $attributeName }}.</p>
                                 @endif
                             @endforeach
-
-                            @if ($attributes->isEmpty())
-                                <p class="text-gray-600">Không có tùy chọn thuộc tính nào.</p>
-                            @endif
                         </div>
 
                         <!-- Số lượng và biến thể được chọn -->
@@ -186,7 +182,7 @@
                                 data-product-id="{{ $product->id }}">
                                 <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
                             </button>
-                            <button class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
+                            <button id="instant_buy_btn" class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
                         </div>
                     </div>
                 </div>
@@ -527,12 +523,10 @@
                     return s.join(dec);
                 }
 
-                // Thay đổi ảnh chính
                 window.changeMainImage = function(src) {
                     mainImage.src = src;
                 };
 
-                // Reset về trạng thái mặc định
                 function resetToDefault() {
                     selectedVariantId = null;
                     selectedVariantIdInput.value = '';
@@ -1079,6 +1073,8 @@
                 attachFilterEvents();
                 attachPaginationEvents();
             });
+        </script>
+        <script>
         </script>
     @endpush
 @endsection

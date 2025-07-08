@@ -12,7 +12,10 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\Order;
 use App\Models\Notification;
 use App\Models\NotificationReceiver;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Helpers\MailHelper;
 
 class CreateOrderEvent implements ShouldBroadcast
 {
@@ -21,12 +24,17 @@ class CreateOrderEvent implements ShouldBroadcast
     public $order;
     public $notification;
     public $shop_id;
+    public $user_id;
+    public $status;
 
     public function __construct( $shop_id, Order $order)
     {
         $this->order = $order;
         $this->shop_id = $shop_id;
         $this->notification = $this->storeNotification($order);
+        $this->user_id = $order->userID;
+        $this->status = 'pending';
+        $this->mailNotification($this->user_id);
     }
 
     public function broadcastAs()
@@ -78,5 +86,10 @@ class CreateOrderEvent implements ShouldBroadcast
         $notificationReceiver->receiver_id = $this->shop_id;
         $notificationReceiver->receiver_type = 'shop';
         $notificationReceiver->save();
+    }
+
+    private function mailNotification($user_id)
+    {
+        MailHelper::sendCreateOrderMail($this->order, $this->status);
     }
 }

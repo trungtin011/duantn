@@ -112,7 +112,7 @@
                         </span>
                     </div>
                 </div>
-                <a href="{{ route('checkout',['flow_type' => 'cart_to_checkout']) }}"
+                <a href="{{ route('checkout') }}"
                     class="ml-4 bg-[#EF3248] text-white px-6 py-2 m-4 rounded hover:bg-[#EF3248]/80 transition">
                     Thanh toán
                 </a>
