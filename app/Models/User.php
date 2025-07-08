@@ -74,11 +74,6 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\AutoChatSetting::class, 'user_id');
     }
 
-    public function shop(): HasOne
-    {
-        return $this->hasOne(Shop::class, 'ownerID', 'id');
-    }
-
     public function reviews()
     {
         return $this->hasMany(ProductReview::class);
@@ -88,6 +83,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
             ->withTimestamps();
+    }
+
+    public function shop(): HasOne
+    {
+        return $this->hasOne(Shop::class, 'ownerID', 'id');
     }
 
     // Scopes

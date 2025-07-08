@@ -106,7 +106,6 @@ class OrderController extends Controller
         $order = $shop_order->order;
         $shop_address = ShopAddress::where('shopID', $shop->id)->get();
         $status = ShopOrderHistory::where('shop_order_id', $shop_order->id)->get();
-
         return view('seller.order.show', compact('order', 'shop', 'shop_order', 'shop_address', 'status'));
     }
 
@@ -169,21 +168,25 @@ class OrderController extends Controller
         return $permission_check;
     }
 
-    public function confirmOrder(Request $request, $id, $shop_id)
+    public function confirmOrder(Request $request, $id)
     {
         $order = ShopOrder::where('id', $id)->with('order')->first();
-        $shop = Shop::findOrFail($shop_id);
+        $shop = Shop::findOrFail($order->shopID);
 
+        if($order->status === 'confirmed'){
+            return redirect()->back()->with('error', 'Đơn hàng đã được xác nhận trước đó');
+        }
+        
         $order->status = 'confirmed';
         $order->save();
-
+        
         $shop_order_history = new ShopOrderHistory();
         $shop_order_history->shop_order_id = $order->id;
         $shop_order_history->status = 'confirmed';
         $shop_order_history->description = 'Người bán đã xác nhận đơn hàng';
         $shop_order_history->save();
         if ($shop_order_history) {
-            $orders = Order::where('id', $order->id)->first();
+            $orders = Order::where('id', $order->orderID)->first();
             $ord = Order::orderStatusUpdate($orders->id);
 
             return redirect()->back()->with('success', 'Đã nhận đơn hàng #' . $order->order_code);
@@ -202,7 +205,16 @@ class OrderController extends Controller
         if ($order_status === 'confirmed') {
             $order->status = 'cancelled';
             $order->save();
-        } elseif ($order_status === 'ready_to_pick' || $order_status === 'picked') {
+
+            $shop_order_history = new ShopOrderHistory();
+            $shop_order_history->shop_order_id = $order->id;
+            $shop_order_history->status = 'cancelled';
+            $shop_order_history->description = 'Người bán đã hủy đơn hàng';
+            $shop_order_history->save();
+
+            return redirect()->back()->with('success', 'Đã hủy đơn hàng #'. $order->order_code);
+        }
+        elseif($order_status === 'ready_to_pick' || $order_status === 'picked'){
             $shipping_controller = new ShippingController();
             $order_status = $shipping_controller->cancelOrderGHN($order);
 
@@ -215,8 +227,11 @@ class OrderController extends Controller
                 $shop_order_history->status = 'cancelled';
                 $shop_order_history->description = 'Người bán đã hủy đơn hàng';
                 $shop_order_history->save();
-            } else {
-                return redirect()->back()->with('error', 'Lỗi hủy đơn hàng #' . $order->order_code);
+
+                return redirect()->back()->with('success', 'Đã hủy đơn hàng #'. $order->order_code);
+            }
+            else{
+                return redirect()->back()->with('error', 'Lỗi hủy đơn hàng #'. $order->order_code);
             }
         }
 
@@ -225,8 +240,25 @@ class OrderController extends Controller
 
     public function returnOrder(Request $request)
     {
-        $order = ShopOrder::where('id', $request->id)->with('order')->first();
-        $shop = Shop::findOrFail($request->shop_id);
+        $order = ShopOrder::where('tracking_code', $request->code)->with('order')->first();
+        $shipping_controller = new ShippingController();
+        $shipping_controller->returnOrderGHN($order);
+
+        if($shipping_controller){
+            $order->status = 'refunded';
+            $order->save();
+
+            $shop_order_history = new ShopOrderHistory();
+            $shop_order_history->shop_order_id = $order->id;
+            $shop_order_history->status = 'refunded';
+            $shop_order_history->description = 'Người bán đã trả đơn hàng';
+            $shop_order_history->save();
+        }
+        else{
+            return redirect()->back()->with('error', 'Lỗi trả đơn hàng #'. $order->order_code);
+        }
+
+        return redirect()->back()->with('success', 'Đã trả đơn hàng #'. $order->order_code);
     }
 
     public function trackingOrder(Request $request)
@@ -298,4 +330,6 @@ class OrderController extends Controller
             return redirect()->back()->with('order', $status_order);
         }
     }
+
 }
+?>

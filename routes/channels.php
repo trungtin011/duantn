@@ -50,13 +50,18 @@ Broadcast::channel('seller.shop.notifications.{shopId}', function ($user, $shopI
         return $shop && $shop->id == $shopId;
     }
     return false;
+}); 
+
+Broadcast::channel('user.{role}', function ($user, $role) {
+    Log::info('Log tại channel user.' . $role);
+    return (int) $user->role === (int) $role;
 });
 
-Broadcast::channel('user.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+Broadcast::channel('shop.{role}', function ($user, $role) {
+    return (int) $user->role === (int) $role;
 });
 
-Broadcast::channel('notifications.all', function ($user) {
+Broadcast::channel('notifications.all', function () {
     return true;    
 });
 

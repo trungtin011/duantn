@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\QrLoginController;
+use App\Http\Controllers\MomoPaymentController;
 
 // admin
 use App\Http\Controllers\Admin\DashboardController;
@@ -29,8 +30,7 @@ use App\Http\Controllers\Admin\PostTagController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
-use App\Http\Controllers\Admin\NotificationsControllers;
-
+use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -41,26 +41,26 @@ use App\Http\Controllers\Seller\SellerSettingsController;
 use App\Http\Controllers\Seller\ChatSettingsController;
 
 //user
+use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
+use App\Http\Controllers\OrderReviewController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\User\WishlistController;
-use App\Http\Controllers\User\NotificationController;
-use App\Http\Controllers\User\FrontendController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\User\CheckinController;
 use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
-use App\Http\Controllers\User\CheckoutController;
-use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\OrderReviewController;
-use App\Http\Controllers\VNPayController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\NotificationController as UserNotificationController;
-use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\User\CouponController as UserCouponController;
+use App\Http\Controllers\User\FrontendController;
+use App\Http\Controllers\User\UserReviewController;
 use App\Http\Controllers\ReviewLikeController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ShopController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
@@ -131,7 +131,6 @@ Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCa
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    // Route::get('/notification', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
 
     //quản lý user
     Route::get('/user', [UserController::class, 'index'])->name('admin.users.index');
@@ -140,13 +139,6 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
-
-    //quản lý review
-    // Route::get('/seller/review', [ReviewController::class, 'index'])->name('seller.reviews.index');
-    // Route::get('/seller/review/{review}', [ReviewController::class, 'show'])->name('seller.reviews.show');
-    // Route::get('/seller/review/create', [ReviewController::class, 'create'])->name('seller.reviews.create');
-    // Route::post('/seller/review', [ReviewController::class, 'store'])->name('seller.reviews.store');
-    // Route::delete('/seller/review/{review}', [ReviewController::class, 'destroy'])->name('seller.reviews.destroy');
 
     //quản lý review
     Route::get('/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
@@ -191,14 +183,15 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
 
     // notifications
     Route::prefix('notifications')->group(function () {
-        Route::get('/edit/{id}', [UserNotificationController::class, 'edit'])->name('admin.notifications.edit');
-        Route::get('/create', [UserNotificationController::class, 'create'])->name('admin.notifications.create');
-        Route::get('/', [UserNotificationController::class, 'index'])->name('admin.notifications.index');
-        Route::post('/', [UserNotificationController::class, 'store'])->name('admin.notifications.store');
-        Route::post('/mark-all-as-read', [UserNotificationController::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
-        Route::delete('/{id}', [UserNotificationController::class, 'destroy'])->name('admin.notifications.destroy');
-        Route::get('/{id}', [UserNotificationController::class, 'show'])->name('admin.notifications.show');
-        Route::put('/{id}', [UserNotificationController::class, 'update'])->name('admin.notifications.update');
+        Route::get('/edit/{id}', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
+        Route::get('/create', [AdminNotificationsControllers::class, 'create'])->name('admin.notifications.create');
+        Route::get('/', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
+        Route::post('/', [AdminNotificationsControllers::class, 'store'])->name('admin.notifications.store');
+        Route::post('/mark-all-as-read', [AdminNotificationsControllers::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
+        Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
+        Route::get('/{id}', [AdminNotificationsControllers::class, 'show'])->name('admin.notifications.show');
+        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
+        
     });
 
     // products categories
@@ -279,9 +272,6 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
     });
 
-    Route::resource('notifications', NotificationsControllers::class, [
-        'as' => 'admin'
-    ]);
 });
 
 // seller routes
@@ -293,12 +283,11 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
         Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-        Route::put('/{id}/{shop_id}', [SellerOrderController::class, 'confirmOrder'])->name('seller.order.update-status');
+        Route::put('/{id}', [SellerOrderController::class, 'confirmOrder'])->name('seller.order.update-status');
         Route::post('/{id}/shipping', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
-        Route::get('/order', [SellerOrderController::class, 'order'])->name('seller.orders');
         Route::put('/cancel', [SellerOrderController::class, 'cancelOrder'])->name('seller.order.cancel');
         Route::post('/tracking', [SellerOrderController::class, 'trackingOrder'])->name('seller.order.tracking');
-
+        Route::post('/refund', [SellerOrderController::class, 'refundOrder'])->name('seller.order.refund');
     });
 
     Route::prefix('products')->group(function () {
@@ -402,17 +391,23 @@ Route::prefix('customer')->group(function () {
             Route::post('/add', [CartController::class, 'addToCart'])->name('cart.add');
             Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
             Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
+            Route::post('/selected', [CartController::class, 'updateSelectedProducts'])->name('cart.selected');
         });
 
         //checkout
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
         Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-        Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
         Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
         Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
         Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
-        Route::get('/checkout/momo/return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
-        Route::post('/checkout/momo/ipn', [CheckoutController::class, 'momoIpn'])->name('payment.momo.ipn');
+
+        Route::get('/checkout/momo/return', [MomoPaymentController::class, 'momoReturn'])->name('payment.momo.return');
+        Route::post('/checkout/momo/ipn', [MomoPaymentController::class, 'momoIpn'])->name('payment.momo.ipn');
+        Route::get('/checkout/momo/payment/{order_code}', [MomoPaymentController::class, 'momoPayment'])->name('checkout.momo.payment');
+
+        Route::post('/payment/vnpay/ipn', [VNPayController::class, 'vnpayIpn'])->name('payment.vnpay.ipn');
+        Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
+        Route::get('/checkout/vnpay/payment/{order_code}', [VNPayController::class, 'vnpayPayment'])->name('checkout.vnpay.payment');
 
         Route::prefix('user/order')->group(function () {
             Route::get('/orders', [OrderController::class, 'index'])->name('order_history');
@@ -494,12 +489,15 @@ Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders'
 Route::post('/update-session', [App\Http\Controllers\SessionController::class, 'updateSession'])->name('update-session');
 Route::post('/calculate-shipping-fee', [ShippingFeeController::class, 'calculateShippingFee'])->name('calculate-shipping-fee');
 // API - VNPAY   
-Route::post('/payment/vnpay/ipn', [VNPayController::class, 'ipn'])->name('payment.vnpay.ipn');
-Route::get('/payment/vnpay/return', [VNPayController::class, 'vnpayReturn'])->name('payment.vnpay.return');
+
 
 Route::resource('wishlist', WishlistController::class)->only(['store', 'destroy']);
 
 Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.order.show');
+
+Route::post('/customer/cart/add-multi', [CartController::class, 'addMultiToCart'])->name('cart.addMulti');
+Route::post('/customer/apply-app-discount', [UserCouponController::class, 'applyAppDiscount'])->name('customer.apply-app-discount');
+
 Route::middleware(['auth'])->group(function () {
     Route::post('/order-review/store', [OrderReviewController::class, 'store'])->name('reviews.store');
 });
@@ -544,10 +542,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/password/reset', [UserController::class, 'showPasswordResetForm'])->name('account.password.reset.form');
     Route::post('/account/password/reset', [UserController::class, 'confirmNewPassword'])->name('account.password.reset.confirm');
 });
-Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])->name('account.password.code.verify.form');
 Route::post('/account/password/request-confirm', [UserController::class, 'requestPasswordChangeConfirm'])->name('account.password.request.confirm');
 Route::post('/account/password/confirm-code', [UserController::class, 'confirmPasswordChangeCode'])->name('account.password.confirm.code');
 Route::post('/account/password/verify-code', [UserController::class, 'confirmPasswordChangeCode'])
     ->name('account.password.code.verify');
 Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])
     ->name('account.password.code.verify.form');
+
+Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

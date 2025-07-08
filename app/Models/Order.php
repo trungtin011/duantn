@@ -15,6 +15,8 @@ class Order extends Model
         'userID',
         'order_code',
         'total_price',
+        'shipping_fee',
+        'coupon_id',
         'coupon_id',
         'coupon_discount',
         'payment_method',
@@ -32,7 +34,8 @@ class Order extends Model
         'cancelled_at' => 'datetime',
         'delivered_at' => 'datetime',
         'total_price' => 'decimal:2',
-        'coupon_discount' => 'decimal:2'
+        'coupon_discount' => 'decimal:2',
+        'shipping_fee' => 'decimal:2'
     ];
 
     public function user(): BelongsTo
@@ -47,7 +50,7 @@ class Order extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class, 'orderID', 'id');
+        return $this->hasMany(ItemsOrder::class, 'orderID', 'id');
     }
 
     public function address(): HasOne

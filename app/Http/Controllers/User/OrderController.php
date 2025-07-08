@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Models\OrderReview;
+use App\Models\ShopOrderHistory;
+use App\Http\Controllers\Service\DeliveryProvider\GHNController;
 
 class OrderController extends Controller
 {
@@ -259,6 +261,32 @@ class OrderController extends Controller
             DB::rollBack();
             Log::error('Lỗi khi tạo lại đơn hàng: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Lỗi khi tạo lại đơn hàng: ' . $e->getMessage());
+        }
+    }
+    
+    public function refundOrder($tracking_code){
+        $order = ShopOrder::where('tracking_code', $tracking_code)->first();
+
+        if(!$order){
+            return redirect()->back()->with('error', 'Đơn hàng không tồn tại');
+        }   
+    
+        $GHN_Controller = new GHNController();
+        $refund = $GHN_Controller->refundOrder($tracking_code);
+
+        if($refund){
+            $order->status = 'refunded';
+            $order->save();
+
+            $history = new ShopOrderHistory();
+            $history->shop_order_id = $order->id;
+            $history->status = 'refunded';
+            $history->description = 'Người mua đã hoàn trả đơn hàng';
+            $history->save();
+
+            return redirect()->back()->with('success', 'Đơn hàng đã được hoàn trả thành công');
+        }else{
+            return redirect()->back()->with('error', 'Đơn hàng không thể hoàn trả');
         }
     }
 }

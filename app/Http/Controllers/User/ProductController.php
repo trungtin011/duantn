@@ -180,6 +180,7 @@ class ProductController extends Controller
         // Gán hình ảnh, giá, và số lượng của biến thể
         $attributeImages = [];
         $variantData = [];
+        $image = null;
         foreach ($product->variants as $variant) {
             $attributeValues = $variant->attributeValues->keyBy('attribute.name');
             $image = null; // ← Khởi tạo mặc định
@@ -202,6 +203,17 @@ class ProductController extends Controller
             ];
         }
 
+        if ($product->variants->isEmpty()) {
+            $variantData['default'] = [
+                'price' => $product->getCurrentPriceAttribute(),
+                'original_price' => $product->price,
+                'stock' => $product->stock_total,
+                'image' => $product->images->first()
+                    ? Storage::url($product->images->first()->image_path)
+                    : asset('images/default_product_image.png'),
+                'discount_percentage' => $product->getDiscountPercentageAttribute(),
+            ];
+        }
 
         Log::info('Variants for product ID: ' . $product->id . ', count: ' . $product->variants->count());
         foreach ($product->variants as $variant) {

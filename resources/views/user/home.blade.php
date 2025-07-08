@@ -6,8 +6,7 @@
 @section('meta-keywords', 'trang chủ, mua sắm trực tuyến, sản phẩm mới, ưu đãi, thời trang, điện tử')
 <!-- Custom style -->
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/user/style-prefix.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/style-home.css') }}">
+    @vite(['resources/css/user/style-prefix.css', 'resources/css/user/style-home.css'])
 @endpush
 @section('content')
 
@@ -77,7 +76,7 @@
                             <ul class="dropdown-panel-list">
                                 @if ($parentCategory)
                                     <li class="menu-title">
-                                        <a href="#">{{ $parentCategory->name }}</a>
+                                        <a href="#">{{ $parentCategory->name ?? 'Danh mục'}}</a>
                                     </li>
 
                                     @foreach ($subCategories as $subcategory)
@@ -145,7 +144,7 @@
                             @endforeach
 
                             <ul class="dropdown-panel-list">
-                                <li class="menu-title"><a href="#">{{ $parentCategory->name }}</a></li>
+                                <li class="menu-title"><a href="#">{{ $parentCategory->name ?? 'Danh mục'}}</a></li>
 
                                 @foreach ($filteredSubCategories as $child)
                                     <li class="panel-list-item">
@@ -154,7 +153,7 @@
                                 @endforeach
 
                                 {{-- Banner nếu danh mục cha có ảnh --}}
-                                @if ($parentCategory->image_path)
+                                @if (isset($parentCategory) && $parentCategory->image_path)
                                     <li class="panel-list-item">
                                         <a href="#" class="overflow-hidden">
                                             <img src="{{ asset('storage/' . $parentCategory->image_path) }}"

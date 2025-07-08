@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
     <script src="https://cdn.tiny.cloud/1/bwf2fyyh0knkijbdmdtqiak2d3uzu8b0rxcg0zuwqwdsddde/tinymce/7/tinymce.min.js"
         referrerpolicy="origin"></script>
-    <link rel="stylesheet" href="{{ asset('css/seller/seller-products.css') }}">
+    @vite('resources/css/seller/seller-products.css')
     @vite('resources/js/echo.js')
     @stack('styles')
     <style>
@@ -396,7 +396,7 @@
         </footer>
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         @stack('scripts')
-        <script src="{{ asset('js/seller/product.js') }}"></script>
+        @vite('resources/js/seller/product.js')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const trigger = document.getElementById('user-menu-trigger');

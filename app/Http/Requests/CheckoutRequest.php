@@ -17,19 +17,23 @@ class CheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'address' => 'required|exists:user_addresses,id',
-            'payment' => 'required|in:MOMO,VNPAY,COD,PAYPAL',    
+            'selected_address_id' => 'required|exists:user_addresses,id',
+            'payment_method' => 'required|in:MOMO,VNPAY,COD,PAYPAL',
+            'shop_notes' => 'nullable|string',
+            'shipping_fee' => 'required|numeric',
+            'subtotal' => 'required|numeric',
+            'discount_amount' => 'required|numeric',
+            'total_amount' => 'required|numeric',
         ];
-
     }
 
     public function messages(): array
     {
         return [
-            'address.required' => 'Địa chỉ người nhận không được để trống',
-            'address.exists' => 'Địa chỉ người nhận không tồn tại',
-            'payment.required' => 'Phương thức thanh toán không được để trống',
-            'payment.in' => 'Phương thức thanh toán không hợp lệ',
+            'selected_address_id.required' => 'Địa chỉ người nhận không được để trống',
+            'selected_address_id.exists' => 'Địa chỉ người nhận không tồn tại',
+            'payment_method.required' => 'Phương thức thanh toán không được để trống',
+            'payment_method.in' => 'Phương thức thanh toán không hợp lệ',
         ];
     }
 
