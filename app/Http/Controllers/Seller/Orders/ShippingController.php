@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Order;
 use App\Models\ShopAddress;
 use App\Models\ShopOrderHistory;
+use App\Events\OrderStatusUpdate;
+use App\Models\ShopOrder;
 
 use Carbon\Carbon;
 
@@ -112,7 +114,7 @@ class ShippingController extends Controller
             $shop_order_history->note = $note;
             $shop_order_history->save();
 
-            $orders = Order::orderStatusUpdate($orders->id);
+            event(new OrderStatusUpdate($shop_order, 'ready_to_pick'));
             return true;
         } else {
             return false;
@@ -138,6 +140,7 @@ class ShippingController extends Controller
             'order_codes' => [$order->tracking_code],
         ]);
         if($response->status() == 200){
+            event(new OrderStatusUpdate($order, 'cancelled'));
             return true;
         }
         else{
@@ -176,13 +179,23 @@ class ShippingController extends Controller
         ])->post($url, ['order_codes' => [$tracking_code]]);
 
         if($response->status() == 200){
+
+            $order = ShopOrder::where('tracking_code', $tracking_code)->first();
+            $order->status = 'refunded';
+            $order->save();
+
+            $history = new ShopOrderHistory();
+            $history->shop_order_id = $order->id;
+            $history->status = 'refunded';
+            $history->description = 'Đơn hàng đã được yêu cầu trả lại từ người bán';
+            $history->save();
+
+            event(new OrderStatusUpdate($order));
             return true;
         }
         else{
             return false;
         }
     }
-
-    
 
 }

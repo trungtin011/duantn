@@ -39,12 +39,13 @@
         <div class="tab-content h-full" id="orderStatusTabsContent">
             <!-- Tab Pane: Tất cả -->
             <div class="tab-pane" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <div class="text-sm text-red-500 font-bold mb-2">Tổng đơn hàng: {{ $allOrders->total() }}</div>
+
                 @forelse ($allOrders as $order)
                     @include('user.order.components.order-block', [
                         'order' => $order,
                         'reviewedProductIds' => $reviewedProductIds,
                     ])
-
                 @empty
                     <div class="bg-white shadow-sm rounded-lg text-center py-6">
                         <div class="p-4 flex flex-col gap-2 items-center">
@@ -53,6 +54,7 @@
                         </div>
                     </div>
                 @endforelse
+
                 {{ $allOrders->links() }}
             </div>
 

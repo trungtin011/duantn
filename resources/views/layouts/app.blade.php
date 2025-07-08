@@ -137,7 +137,7 @@
                                                 <span class="text-xs text-gray-400">({{ $notifications->count() }})</span>
                                             </div>
                                             
-                                            @foreach($notifications->take(3) as $notification)
+                                            @foreach($notifications->sortByDesc('created_at')->take(3) as $notification)
                                                 <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ $notification->status === 'unread' ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
                                                      data-notification-id="{{ $notification->id }}"
                                                      data-notification-type="{{ $notification->type }}">
@@ -235,10 +235,12 @@
                                 </div>
                             @endif
                         @endauth
+                        @guest
                             <div class="p-6 text-center">
                                 <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
                                 <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng nhập</a>
                             </div>
+                        @endguest
                     </div>
                 </div>
                 <div class="flex items-center gap-2">

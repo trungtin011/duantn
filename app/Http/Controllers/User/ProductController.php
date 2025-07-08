@@ -174,27 +174,33 @@ class ProductController extends Controller
             $query->where('rating', $rating);
         }
 
-        // Lấy danh sách đánh giá với phân trang
         $filteredReviews = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        // Gán hình ảnh, giá, và số lượng của biến thể
         $attributeImages = [];
         $variantData = [];
         $image = null;
         foreach ($product->variants as $variant) {
             $attributeValues = $variant->attributeValues->keyBy('attribute.name');
+            $image = null; 
+
             foreach ($attributeValues as $attrName => $attrValue) {
                 $image = $variant->images->first()->image_path ?? null;
-                $attributeImages[$attrName][$attrValue->value] = $image ?: asset('images/default_product_image.png');
+                $attributeImages[$attrName][$attrValue->value] = $image
+                    ? Storage::url($image)
+                    : asset('images/default_product_image.png');
             }
+
             $variantData[$variant->id] = [
                 'price' => $variant->getCurrentPriceAttribute(),
                 'original_price' => $variant->price,
                 'stock' => $variant->stock,
-                'image' => $image ?: asset('images/default_product_image.png'),
+                'image' => $image
+                    ? Storage::url($image)
+                    : asset('images/default_product_image.png'), // ← tránh lỗi
                 'discount_percentage' => $variant->getDiscountPercentageAttribute(),
             ];
         }
+
 
         Log::info('Variants for product ID: ' . $product->id . ', count: ' . $product->variants->count());
         foreach ($product->variants as $variant) {
@@ -528,5 +534,62 @@ class ProductController extends Controller
         ]);
 
         return response()->json(['message' => 'Đánh giá của bạn đã được gửi thành công'], 200);
+    }
+
+    public function instantBuy(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Bạn cần đăng nhập để mua sản phẩm'], 401);
+        }
+
+        // Validate request
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'variant_id' => 'nullable|exists:variants,id',
+            'quantity' => 'required|integer|min:1',
+            'shop_id' => 'required|exists:shops,id'
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+        
+        // Check if variant exists and belongs to product
+        $variant = null;
+        if ($request->variant_id) {
+            $variant = Variant::where('id', $request->variant_id)
+                ->where('product_id', $product->id)
+                ->firstOrFail();
+        }
+
+        // Check stock availability
+        $availableStock = $variant ? $variant->stock : $product->stock_total;
+        if ($request->quantity > $availableStock) {
+            return response()->json([
+                'message' => 'Số lượng vượt quá tồn kho!',
+                'available_stock' => $availableStock
+            ], 400);
+        }
+
+        // Store checkout data in session for direct checkout
+        $checkoutData = [
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'variant_id' => $request->variant_id,
+                    'quantity' => $request->quantity,
+                    'shop_id' => $request->shop_id,
+                    'product' => $product,
+                    'variant' => $variant
+                ]
+            ],
+            'is_instant_buy' => true
+        ];
+
+        session(['checkout_data' => $checkoutData]);
+
+        return response()->json([
+            'message' => 'Chuyển hướng đến trang thanh toán',
+            'redirect_url' => route('checkout.index')
+        ], 200);
     }
 }

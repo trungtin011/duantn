@@ -17,19 +17,19 @@ if(window.Laravel.user.role === 'seller') {
     window.Echo.private(`order.created.${window.Laravel.shop}`)
     .listen('.create-order.event', (e) => {
         console.log('Order created:', e);
-        addNotificationToList(e);
+        addNotificationToSellerHome(e);
     });
 
     window.Echo.channel(`shop.${window.Laravel.user.role}`)
     .listen('.seller-notification.event', (e) => {
         console.log('Seller notification:', e);
-        addNotificationToList(e);
+        addNotificationToSellerHome(e);
     });
     
     window.Echo.channel('notifications.all')
         .listen('.new-notification.event', (e) => { 
             console.log('Global notification:', e);
-            addNotificationToList(e);
+            addNotificationToSellerHome(e);
         });
 }
 
@@ -46,10 +46,17 @@ if (window.Laravel.user.role === 'customer') {
             console.log('Global notification:', e);
             addNotificationToList(e);
         });
+
+    window.Echo.private(`order-status-update.${window.Laravel.user.id}`)
+    .listen('.order-status-update.event', (e) => {
+        console.log('Order status update:', e);
+        addNotificationToList(e);
+    });
 }
 
 
 function addNotificationToList(notification) {
+    console.log('Add notification to list:', notification);
     const dropdownContent = document.querySelector('.dropdown-notification-content');
     if (!dropdownContent) return;
 
@@ -265,3 +272,84 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Thêm hàm để hiển thị thông báo realtime trên seller_home
+function addNotificationToSellerHome(notification) {
+    const notificationList = document.getElementById('notification-list');
+    if (!notificationList) return;
+
+    // Tìm hoặc tạo group theo type
+    let typeGroup = notificationList.querySelector(`.notification-type[data-type="${notification.type}"]`);
+    if (!typeGroup) {
+        // Nếu chưa có, tạo mới giống blade
+        typeGroup = document.createElement('div');
+        typeGroup.className = 'notification-type';
+        typeGroup.setAttribute('data-type', notification.type);
+
+        // Tạo header
+        const header = document.createElement('div');
+        header.className = 'px-4 py-2 bg-gray-50';
+        header.innerHTML = `<h4 class="text-xs font-medium text-gray-500 uppercase">${getTypeLabel(notification.type)}</h4>`;
+        typeGroup.appendChild(header);
+
+        // Tạo notification-items
+        const items = document.createElement('div');
+        items.className = 'notification-items';
+        typeGroup.appendChild(items);
+
+        // Thêm vào đầu danh sách
+        notificationList.prepend(typeGroup);
+    }
+
+    // Tìm notification-items
+    const items = typeGroup.querySelector('.notification-items');
+
+    // Xóa thông báo trùng lặp nếu có
+    const existing = items.querySelector(
+        `[data-notification-title="${escapeHtml(notification.title)}"][data-notification-type="${notification.type}"][data-notification-receiver-type="${notification.receiver_type}"]`
+    );
+    if (existing) {
+        existing.remove();
+    }
+
+    // Tạo thẻ <a> mới
+    const a = document.createElement('a');
+    a.href = notification.link || '#';
+    a.className = 'block px-4 py-3 hover:bg-gray-50 border-b border-gray-100';
+    a.setAttribute('data-notification-id', notification.id);
+    a.setAttribute('data-notification-title', notification.title);
+    a.setAttribute('data-notification-type', notification.type);
+    a.setAttribute('data-notification-receiver-type', notification.receiver_type);
+
+    a.innerHTML = `
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <span class="inline-block h-2 w-2 rounded-full ${notification.read_at ? 'bg-gray-300' : 'bg-red-500'}"></span>
+            </div>
+            <div class="ml-3 w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900">${escapeHtml(notification.title)}</p>
+                <p class="text-sm text-gray-500">${escapeHtml(notification.content)}</p>
+                <p class="text-xs text-gray-400 mt-1">${formatDate(notification.created_at)}</p>
+            </div>
+        </div>
+    `;
+
+    // Thêm vào đầu danh sách
+    items.prepend(a);
+
+    // Giới hạn số lượng thông báo hiển thị (ví dụ 5)
+    const all = items.querySelectorAll('a');
+    if (all.length > 5) {
+        all[all.length - 1].remove();
+    }
+}
+
+// Helper để lấy label type giống blade
+function getTypeLabel(type) {
+    switch(type) {
+        case 'order': return 'Đơn hàng';
+        case 'promotion': return 'Khuyến mãi';
+        case 'system': return 'Hệ thống';
+        default: return type;
+    }
+}

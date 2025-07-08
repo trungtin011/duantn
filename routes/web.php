@@ -283,11 +283,11 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
         Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
-        Route::put('/{id}', [SellerOrderController::class, 'confirmOrder'])->name('seller.order.update-status');
-        Route::post('/{id}/shipping', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
         Route::put('/cancel', [SellerOrderController::class, 'cancelOrder'])->name('seller.order.cancel');
         Route::post('/tracking', [SellerOrderController::class, 'trackingOrder'])->name('seller.order.tracking');
         Route::post('/refund', [SellerOrderController::class, 'refundOrder'])->name('seller.order.refund');
+        Route::put('/{id}', [SellerOrderController::class, 'confirmOrder'])->name('seller.order.update-status');
+        Route::post('/{id}/shipping', [SellerOrderController::class, 'shippingOrder'])->name('seller.order.shipping');
     });
 
     Route::prefix('products')->group(function () {
@@ -340,7 +340,8 @@ Route::prefix('customer')->group(function () {
     Route::post('/shop/{shopId}/save-all-coupons', [ProductController::class, 'saveAllCoupons'])->name('shop.saveAllCoupons');
     // Route like sản phẩm
     Route::post('/review/{review}/like', [ReviewLikeController::class, 'toggle'])->middleware('auth');
-
+    // Route mua ngay
+    Route::post('/instant-buy', [ProductController::class, 'instantBuy'])->name('instant-buy');
     // Trang liên hệ
     Route::get('/contact', function () {
         return view('user.contact');
