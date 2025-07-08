@@ -7,5 +7,5 @@ use Illuminate\Http\Request;
 
 class ChatSettingsController extends Controller
 {
-    // Controller logic will go here
+    
 } 

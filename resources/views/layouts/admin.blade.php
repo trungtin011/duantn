@@ -30,8 +30,9 @@
         rel="stylesheet" />
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/product.css') }}">
+    @vite('resources/css/admin.css')
+    @vite('resources/css/admin/product.css')
+    @stack('styles')
     @yield('head')
 </head>
 
@@ -59,7 +60,17 @@
                     </svg>
                     Bảng điều khiển
                 </a>
-
+               
+                <a href="{{ route('admin.notifications.index') }}"
+                    class="{{ request()->routeIs('admin.notifications.index') ? 'active' : '' }} link_admin">
+                    <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"
+                        height="16">
+                        <path fill="currentColor"
+                            d="M12,0A12,12,0,1,0,24,12,12,12,0,0,0,12,0Zm0,22a10,10,0,1,1,10-10A10,10,0,0,1,12,22Z">
+                    </svg>
+                    Thông báo
+                </a>
+                
                 <div x-data="{ open: false }" class="">
                     <!-- Nút dropdown -->
                     <div @click="open = !open"
@@ -404,6 +415,7 @@
     </div>
 
     @yield('scripts')
+    @stack('scripts')
     <script src="{{ asset('js/admin/product.js') }}"></script>
     <script src="{{ asset('js/admin/variant.js') }}"></script>
     <script src="{{ asset('js/admin/admin.js') }}"></script>

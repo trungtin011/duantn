@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Cart;
+use App\Models\Wishlist;
+use App\Models\Address;
+use App\Models\Coupon;
+use App\Models\Notification;
+use App\Models\NotificationReceiver;
+use App\Models\ProductVariant;
 use App\Models\PointTransaction;
 use App\Models\Banner; // Thêm model Banner nếu có
 use Carbon\Carbon;
@@ -100,6 +106,7 @@ class HomeController extends Controller
             ->take(10)
             ->get();
 
+            
         return view('user.home', compact(
             'parentCategory',
             'subCategories',

@@ -50,4 +50,5 @@ class Review extends Model
     {
         return $this->hasMany(ReviewVideo::class);
     }
+
 }

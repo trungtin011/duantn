@@ -52,7 +52,7 @@ class Shop extends Model
 
     public function addresses()
     {
-        return $this->belongsTo(ShopAddress::class, 'shop_address_id');
+        return $this->hasMany(ShopAddress::class, 'shopID', 'id');
     }
 
     public function followers()

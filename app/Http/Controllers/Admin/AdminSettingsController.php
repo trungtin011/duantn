@@ -10,22 +10,14 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminSettingsController extends Controller
 {
-    /**
-     * Hiển thị form cài đặt quản trị.
-     *
-     * @return \Illuminate\View\View
-     */
+    
     public function index()
     {
         $settings = $this->getSettings();
         return view('admin.settings.index', compact('settings'));
     }
 
-    /**
-     * Hiển thị form tạo mới cài đặt.
-     *
-     * @return \Illuminate\View\View
-     */
+    
     public function create()
     {
         $settings = $this->getSettings();

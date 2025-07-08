@@ -39,7 +39,7 @@
         <div class="tab-content h-full" id="orderStatusTabsContent">
             <!-- Tab Pane: Tất cả -->
             <div class="tab-pane" id="all" role="tabpanel" aria-labelledby="all-tab">
-                <div class="text-sm text-red-500 font-bold mb-2">Tổng đơn hàng: {{ $allOrders->total() }}</div>
+                <div class="text-sm text-red-500 text-right mr-4 font-bold mb-2">Tổng đơn hàng: {{ $allOrders->total() }}</div>
 
                 @forelse ($allOrders as $order)
                     @include('user.order.components.order-block', [
@@ -169,37 +169,5 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const tabList = document.querySelector('#orderStatusTabs');
-                const tabContents = document.querySelectorAll('.tab-content .tab-pane');
 
-                tabList.addEventListener('click', function(e) {
-                    const tab = e.target.closest('button');
-                    if (!tab) return;
-
-                    e.preventDefault();
-                    tabList.querySelectorAll('button').forEach(t => t.classList.remove('text-black',
-                        'border-b-2', 'border-black'));
-                    tab.classList.add('text-black', 'border-b-2', 'border-black');
-                    tabContents.forEach(content => content.classList.add('hidden'));
-                    const target = document.querySelector(tab.getAttribute('data-target'));
-                    if (target) {
-                        target.classList.remove('hidden');
-                    }
-                });
-
-                // Kích hoạt tab mặc định (Tất cả)
-                const defaultTab = tabList.querySelector('#all-tab');
-                if (defaultTab) {
-                    defaultTab.classList.add('text-black', 'border-b-2', 'border-black');
-                    const defaultContent = document.querySelector(defaultTab.getAttribute('data-target'));
-                    if (defaultContent) {
-                        defaultContent.classList.remove('hidden');
-                    }
-                }
-            });
-        </script>
-    @endpush
 @endsection

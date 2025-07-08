@@ -161,7 +161,7 @@
                             <form action="{{ route('cart.add') }}" method="POST" class="flex items-center">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="variant_id" id="selected_variant_id" value="">
+                                <input type="hidden" name="variant_id" id="selected_variant_id" value="{{ $product->variants->isEmpty() ? 'default' : '' }}">
                                 <button type="button" id="decreaseQty"
                                     class="border border-gray-300 px-4 py-2 rounded-l-lg hover:bg-gray-100 text-lg">-</button>
                                 <input type="text" name="quantity" id="quantity" value="1"
@@ -535,10 +535,10 @@
                     mainImage.src =
                         '{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}';
                     priceDisplay.innerHTML = `
-                    <span class="text-red-600 text-3xl font-bold">${number_format({{ $product->sale_price }}, 0, ',', '.')} VNĐ</span>
-                    <span class="text-gray-500 line-through text-lg">${number_format({{ $product->price }}, 0, ',', '.')} VNĐ</span>
-                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">-${{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%</span>
-                `;
+                        <span class="text-red-600 text-3xl font-bold">${number_format({{ $product->sale_price }}, 0, ',', '.')} VNĐ</span>
+                        <span class="text-gray-500 line-through text-lg">${number_format({{ $product->price }}, 0, ',', '.')} VNĐ</span>
+                        <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">-${{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%</span>
+                    `;
                     stockInfo.textContent = '{{ $product->stock_total }} sản phẩm có sẵn';
                 }
 
@@ -614,7 +614,7 @@
                 // Xử lý thêm vào giỏ hàng
                 addToCartButtons.forEach(button => {
                     button.addEventListener('click', () => {
-                        if (!selectedVariantId) {
+                        if (!selectedVariantId && {{ $product->variants->count() > 0 ? 'true' : 'false' }}) {
                             Swal.fire({
                                 position: 'top-end',
                                 toast: true,

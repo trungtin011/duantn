@@ -141,7 +141,7 @@
                 </h5>
                 <p class="text-gray-600 text-sm">
                     <strong>Phương thức vận chuyển:</strong>
-                    {{ $order->shopOrders->first()->shipping_provider ?? 'GHN' }}<br>
+                    {{ isset($order->shopOrder) && $order->shopOrder->first() ? $order->shopOrder->first()->shipping_provider : 'Chờ xác nhận' }}<br>
                     <strong>Địa chỉ:</strong> {{ $orderAddress->address ?? 'Không có thông tin' }},
                     {{ $orderAddress->ward ?? '' }}, {{ $orderAddress->district ?? '' }},
                     {{ $orderAddress->province ?? '' }}<br>
@@ -284,7 +284,7 @@
                             <tr>
                                 <td class="py-2 text-gray-600">Tổng phí ship</td>
                                 <td class="py-2 text-right font-medium text-gray-800">
-                                    {{ number_format($order->shopOrders->sum('shipping_fee') ?? 0, 0, ',', '.') }} VND
+                                    {{ number_format($order->shipping_fee ?? 0, 0, ',', '.') }} VND
                                 </td>
                             </tr>
                             <tr>
