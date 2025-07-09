@@ -1,5 +1,18 @@
 @extends('layouts.seller_home')
+@push('styles')
+    <style>
+        .variant-content {
+            overflow: hidden;
+            max-height: 1000px;
+            /* Giới hạn chiều cao tối đa khi mở */
+            transition: max-height 0.3s ease-in-out;
+        }
 
+        .variant-content.hidden {
+            max-height: 0;
+        }
+    </style>
+@endpush
 @section('title', 'Chỉnh sửa sản phẩm')
 @section('content')
     <div class="">
@@ -36,9 +49,9 @@
             @csrf
             @method('PUT')
             <div class="grid grid-cols-12 gap-6">
-                <!-- Left Column -->
                 <div class="col-span-12 lg:col-span-12">
                     <div class="flex gap-6">
+                        <!-- Left Column -->
                         <div class="">
                             <!-- General Section -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
@@ -174,26 +187,22 @@
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <h4 class="text-xl font-semibold mb-4">Thuộc tính sản phẩm</h4>
                                 <div id="attribute-container">
-                                    @foreach ($attributes as $index => $attribute)
-                                        <div class="mb-4 flex items-center gap-4 attribute-item">
-                                            <input type="text" name="attributes[{{ $index }}][name]"
-                                                value="{{ old("attributes.$index.name", $attribute->name) }}"
-                                                placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
+                                    @foreach ($attributes as $attribute)
+                                        <div class="mb-4 flex items-center gap-4">
+                                            <input type="text" name="attributes[{{ $loop->index }}][name]"
+                                                value="{{ $attribute->name }}"
                                                 class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                required>
-                                            <input type="text" name="attributes[{{ $index }}][values]"
-                                                value="{{ old("attributes.$index.values", $attribute->values->pluck('value')->implode(', ') ?? '') }}"
-                                                placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
-                                                class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                required>
+                                                readonly>
+                                            <input type="text" name="attributes[{{ $loop->index }}][values]"
+                                                value="{{ $attribute->values->pluck('value')->implode(', ') }}"
+                                                class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                             <button type="button"
                                                 class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
                                         </div>
                                     @endforeach
                                 </div>
-                                <button type="button"
-                                    class="ml-3 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600"
-                                    onclick="addAttribute()">Thêm</button>
+                                <button type="button" id="add-attribute-btn"
+                                    class="ml-3 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600">Thêm</button>
                             </div>
 
                             <!-- Khu vực hiển thị biến thể -->
@@ -201,132 +210,227 @@
                                 <h4 class="text-xl font-semibold mb-4">Biến thể sản phẩm</h4>
                                 <div id="variant-container">
                                     @foreach ($product->variants as $index => $variant)
-                                        <div class="p-6 border border-gray-300 rounded-md mb-6 bg-white relative">
+                                        <div
+                                            class="p-6 border border-gray-300 rounded-md mb-6 bg-white relative variant-item">
                                             <div class="flex justify-between items-center mb-3">
                                                 <h5 class="text-lg font-semibold">Biến thể {{ $index + 1 }}:
                                                     {{ $variant->variant_name }}</h5>
-                                                <button type="button"
-                                                    class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-variant">Xóa</button>
-                                            </div>
-                                            <input type="hidden" name="variants[{{ $index }}][index]"
-                                                value="{{ $index }}">
-                                            <input type="hidden" name="variants[{{ $index }}][name]"
-                                                value="{{ $variant->variant_name }}">
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                                    <input type="number" name="variants[{{ $index }}][price]"
-                                                        step="0.01"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập giá gốc"
-                                                        value="{{ old("variants.$index.price", $variant->price) }}"
-                                                        required>
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
-                                                    <input type="number"
-                                                        name="variants[{{ $index }}][purchase_price]"
-                                                        step="0.01"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập giá nhập"
-                                                        value="{{ old("variants.$index.purchase_price", $variant->purchase_price) }}"
-                                                        required>
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                                                    <input type="number"
-                                                        name="variants[{{ $index }}][sale_price]" step="0.01"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập giá bán"
-                                                        value="{{ old("variants.$index.sale_price", $variant->sale_price) }}"
-                                                        required>
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                                    <input type="text" name="variants[{{ $index }}][sku]"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập SKU"
-                                                        value="{{ old("variants.$index.sku", $variant->sku) }}" required>
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Số lượng tồn
-                                                        kho</label>
-                                                    <input type="number"
-                                                        name="variants[{{ $index }}][stock_total]"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Nhập số lượng"
-                                                        value="{{ old("variants.$index.stock_total", $variant->stock) }}"
-                                                        required>
-                                                </div>
-                                                <!-- Thêm các trường kích thước cho biến thể -->
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Chiều dài
-                                                        (inch)</label>
-                                                    <input type="number" name="variants[{{ $index }}][length]"
-                                                        step="0.01"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Chiều dài"
-                                                        value="{{ old("variants.$index.length", optional($variant->dimensions)->length ?? 0) }}">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Chiều rộng
-                                                        (inch)</label>
-                                                    <input type="number" name="variants[{{ $index }}][width]"
-                                                        step="0.01"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Chiều rộng"
-                                                        value="{{ old("variants.$index.width", optional($variant->dimensions)->width ?? 0) }}">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Chiều cao
-                                                        (inch)</label>
-                                                    <input type="number" name="variants[{{ $index }}][height]"
-                                                        step="0.01"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Chiều cao"
-                                                        value="{{ old("variants.$index.height", optional($variant->dimensions)->height ?? 0) }}">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Trọng lượng
-                                                        (kg)</label>
-                                                    <input type="number" name="variants[{{ $index }}][weight]"
-                                                        step="0.01"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        placeholder="Trọng lượng"
-                                                        value="{{ old("variants.$index.weight", optional($variant->dimensions)->weight ?? 0) }}">
+                                                <div class="flex space-x-3">
+                                                    <button type="button"
+                                                        class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
+                                                    <button type="button" class="toggle-variants"
+                                                        data-index="{{ $index }}"
+                                                        class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                                        <svg class="toggle-icon w-6 h-6" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24"
+                                                            xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                                                <input type="file" name="variant_images[{{ $index }}][]"
-                                                    multiple
-                                                    class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    accept="image/*"
-                                                    onchange="previewVariantImage(event, {{ $index }})">
-                                                <div id="preview-images-{{ $index }}"
-                                                    class="mt-2 flex flex-wrap gap-2">
-                                                    @foreach ($variant->images as $image)
-                                                        <div class="relative">
-                                                            <img src="{{ asset('storage/' . $image->image_path) }}"
-                                                                class="w-24 h-24 object-cover rounded-md border border-gray-300">
-                                                            <button type="button"
-                                                                class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md"
-                                                                onclick="removeImage(this)">✖</button>
+                                            <div class="variant-content transition-all duration-300 ease-in-out hidden">
+                                                <input type="hidden" name="variants[{{ $index }}][index]"
+                                                    value="{{ $index }}">
+                                                <input type="hidden" name="variants[{{ $index }}][name]"
+                                                    value="{{ $variant->variant_name }}">
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                                        <input type="number" name="variants[{{ $index }}][price]"
+                                                            step="0.01"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Nhập giá gốc"
+                                                            value="{{ old("variants.$index.price", $variant->price) }}"
+                                                            required>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Giá
+                                                            nhập</label>
+                                                        <input type="number"
+                                                            name="variants[{{ $index }}][purchase_price]"
+                                                            step="0.01"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Nhập giá nhập"
+                                                            value="{{ old("variants.$index.purchase_price", $variant->purchase_price) }}"
+                                                            required>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                                        <input type="number"
+                                                            name="variants[{{ $index }}][sale_price]"
+                                                            step="0.01"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Nhập giá bán"
+                                                            value="{{ old("variants.$index.sale_price", $variant->sale_price) }}"
+                                                            required>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                                        <input type="text" name="variants[{{ $index }}][sku]"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Nhập SKU"
+                                                            value="{{ old("variants.$index.sku", $variant->sku) }}"
+                                                            required>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Số lượng tồn
+                                                            kho</label>
+                                                        <input type="number"
+                                                            name="variants[{{ $index }}][stock_total]"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Nhập số lượng"
+                                                            value="{{ old("variants.$index.stock_total", $variant->stock) }}"
+                                                            required>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Chiều dài
+                                                            (inch)</label>
+                                                        <input type="number"
+                                                            name="variants[{{ $index }}][length]" step="0.01"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Chiều dài"
+                                                            value="{{ old("variants.$index.length", optional($variant->dimensions)->length ?? 0) }}">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Chiều rộng
+                                                            (inch)</label>
+                                                        <input type="number" name="variants[{{ $index }}][width]"
+                                                            step="0.01"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Chiều rộng"
+                                                            value="{{ old("variants.$index.width", optional($variant->dimensions)->width ?? 0) }}">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Chiều cao
+                                                            (inch)</label>
+                                                        <input type="number"
+                                                            name="variants[{{ $index }}][height]" step="0.01"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Chiều cao"
+                                                            value="{{ old("variants.$index.height", optional($variant->dimensions)->height ?? 0) }}">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Trọng lượng
+                                                            (kg)</label>
+                                                        <input type="number"
+                                                            name="variants[{{ $index }}][weight]" step="0.01"
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder="Trọng lượng"
+                                                            value="{{ old("variants.$index.weight", optional($variant->dimensions)->weight ?? 0) }}">
+                                                    </div>
+                                                </div>
+                                                <!-- Hiển thị thuộc tính của biến thể -->
+                                                <div class="mb-4 hidden">
+                                                    <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến
+                                                        thể</label>
+                                                    @foreach ($variant->attributeValues as $attrIndex => $attrValue)
+                                                        <div class="flex items-center gap-4 mb-2">
+                                                            <input type="text"
+                                                                name="variants[{{ $index }}][attributes][{{ $attrIndex }}][name]"
+                                                                value="{{ old("variants.$index.attributes.$attrIndex.name", $attrValue->attribute->name) }}"
+                                                                placeholder="Tên thuộc tính"
+                                                                class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                readonly>
+                                                            <input type="text"
+                                                                name="variants[{{ $index }}][attributes][{{ $attrIndex }}][value]"
+                                                                value="{{ old("variants.$index.attributes.$attrIndex.value", $attrValue->value) }}"
+                                                                placeholder="Giá trị thuộc tính"
+                                                                class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                readonly>
                                                         </div>
                                                     @endforeach
+                                                </div>
+                                                <div>
+                                                    <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
+                                                    <input type="file" name="variant_images[{{ $index }}][]"
+                                                        multiple
+                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        accept="image/*"
+                                                        onchange="previewVariantImage(event, {{ $index }})">
+                                                    <div id="preview-images-{{ $index }}"
+                                                        class="mt-2 flex flex-wrap gap-2">
+                                                        @foreach ($variant->images as $image)
+                                                            <div class="relative">
+                                                                <img src="{{ asset('storage/' . $image->image_path) }}"
+                                                                    class="w-24 h-24 object-cover rounded-md border border-gray-300">
+                                                                <button type="button"
+                                                                    class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md"
+                                                                    onclick="removeImage(this)">✖</button>
+                                                                <input type="hidden"
+                                                                    name="existing_variant_images[{{ $index }}][]"
+                                                                    value="{{ $image->image_path }}">
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
-                                <button type="button"
-                                    class="mt-4 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600"
-                                    onclick="generateVariants()">Tạo biến thể từ thuộc tính</button>
+                                <button type="button" id="generate-variants-btn"
+                                    class="mt-4 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600">Tạo biến
+                                    thể từ thuộc tính</button>
                             </div>
                         </div>
 
                         <!-- Right Column -->
                         <div class="col-span-12 lg:col-span-4">
+                            <!-- Category & Brand Section -->
+                            <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                                <p class="text-gray-700 font-medium mb-4">Chi tiết sản phẩm</p>
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <div class="">
+                                        <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương
+                                            hiệu</label>
+                                        <select name="brand_id" id="brand_id"
+                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required>
+                                            <option value="">Chọn thương hiệu</option>
+                                            @foreach ($brands as $brand)
+                                                <option value="{{ $brand->id }}"
+                                                    {{ old('brand_id', $product->brands->pluck('id')->first()) == $brand->id ? 'selected' : '' }}>
+                                                    {{ $brand->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="">
+                                        <label for="category_id" class="block text-gray-700 font-medium mb-1">Danh
+                                            mục</label>
+                                        <select name="category_id" id="category_id"
+                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required>
+                                            <option value="">Chọn danh mục</option>
+                                            @foreach ($categories as $category)
+                                                <option value="{{ $category->id }}"
+                                                    {{ old('category_id', $product->categories->pluck('id')->first()) == $category->id ? 'selected' : '' }}>
+                                                    {{ $category->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="is_featured" value="1" class="mr-2"
+                                            {{ old('is_featured', $product->is_featured) ? 'checked' : '' }}>
+                                        <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Từ khóa (Tags)</label>
+                                    <input type="text" name="meta_keywords" id="meta-keywords"
+                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Thêm từ khóa (phân cách bằng dấu phẩy)"
+                                        value="{{ old('meta_keywords', $product->meta_keywords) }}">
+                                    @error('meta_keywords')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
                             <!-- SEO Section -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <h4 class="text-xl font-semibold mb-4">SEO</h4>
@@ -382,7 +486,8 @@
                                         class="block w-full py-2 px-4 border border-gray-300 rounded-md text-center text-sm text-gray-700 hover:bg-blue-50 cursor-pointer">
                                         Tải ảnh chính lên
                                     </label>
-                                    <input type="file" id="mainImage" name="images[]" class="hidden"
+                                    <input type="hidden" name="default_image_index" value="0">
+                                    <input type="file" id="mainImage" name="main_image" class="hidden"
                                         accept="image/*">
                                     @error('images.*')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -395,211 +500,383 @@
                                 <p class="text-gray-700 font-medium mb-4">Tải nhiều hình ảnh lên</p>
                                 <div class="text-center">
                                     <div id="uploadIconContainer2"
-                                        class="mb-2 {{ $product->images->count() > 1 ? 'hidden' : '' }}">
+                                        class="mb-2 {{ $product->images->whereNull('variantID')->count() > 1 ? 'hidden' : '' }}">
                                         <img id="uploadIcon2" class="w-24 h-auto mx-auto mb-2"
                                             src="https://html.hixstudio.net/ebazer/assets/img/icons/upload.png"
                                             alt="Upload Icon">
                                     </div>
+
                                     <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh phải nhỏ hơn 5Mb</span>
-                                    <div id="additionalImagesPreview"
-                                        class="mt-2 mb-2 flex flex-wrap gap-2 {{ $product->images->count() > 1 ? '' : 'hidden' }}">
-                                        @foreach ($product->images->slice(1) as $image)
-                                            <div class="relative">
+
+                                    <div id="existingImagesPreview" class="flex flex-wrap gap-2 mb-2 w-[415px]">
+                                        @foreach ($product->images->whereNull('variantID')->slice(1) as $image)
+                                            <div class="relative existing-image">
                                                 <img src="{{ asset('storage/' . $image->image_path) }}"
                                                     class="w-24 h-24 object-cover rounded-md border">
                                                 <button type="button"
                                                     class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md"
                                                     onclick="removeImage(this)">✖</button>
+                                                <input type="hidden" name="existing_images[]"
+                                                    value="{{ $image->image_path }}">
                                             </div>
                                         @endforeach
                                     </div>
+
+                                    <div id="newImagesPreview" class="flex flex-wrap gap-2 mb-2 w-[415px]"></div>
+
                                     <label for="additionalImages"
                                         class="block w-full py-2 px-4 border border-gray-300 rounded-md text-center text-sm text-gray-700 hover:bg-blue-50 cursor-pointer">
-                                        Tải nhiều hình ảnh lên
+                                        Thêm ảnh mới
                                     </label>
                                     <input type="file" id="additionalImages" name="images[]" class="hidden" multiple
                                         accept="image/*">
-                                    @error('images.*')
+
+                                    @error('images')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
-                                </div>
-                            </div>
-
-                            <!-- Product Details Section -->
-                            <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                                <p class="text-gray-700 font-medium mb-4">Chi tiết sản phẩm</p>
-                                <div class="grid grid-cols-2 gap-3 mb-4">
-                                    <div>
-                                        <label class="block text-sm text-gray-600 mb-1">Thương hiệu</label>
-                                        <select name="brand" id="brand"
-                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            required>
-                                            <option value="">Chọn thương hiệu</option>
-                                            @foreach ($brands as $brand)
-                                                <option value="{{ $brand->name }}"
-                                                    {{ old('brand', $product->brand) == $brand->name ? 'selected' : '' }}>
-                                                    {{ $brand->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('brand')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm text-gray-600 mb-1">Danh mục</label>
-                                        <select name="category" id="category"
-                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            required>
-                                            <option value="">Chọn danh mục</option>
-                                            @foreach ($categories as $category)
-                                                <option value="{{ $category->name }}"
-                                                    {{ old('category', $product->category) == $category->name ? 'selected' : '' }}>
-                                                    {{ $category->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('category')
-                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="is_featured" value="1" class="mr-2"
-                                            {{ old('is_featured', $product->is_featured) ? 'checked' : '' }}>
-                                        <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
-                                    </label>
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Từ khóa (Tags)</label>
-                                    <input type="text" name="meta_keywords" id="meta-keywords"
-                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Thêm từ khóa (phân cách bằng dấu phẩy)"
-                                        value="{{ old('meta_keywords', $product->meta_keywords) }}">
-                                    @error('meta_keywords')
+                                    @error('images.*')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Footer Buttons -->
-                <div class="flex justify-start space-x-3 mt-6 col-span-12">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và
-                        cập nhật</button>
-                    <button type="submit" name="save_draft" value="1"
-                        class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Lưu
-                        nháp</button>
+                    <!-- Footer Buttons -->
+                    <div class="flex justify-start space-x-3 mt-6 col-span-12">
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu
+                            và
+                            cập nhật</button>
+                        <button type="submit" name="save_draft" value="1"
+                            class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Lưu
+                            nháp</button>
+                    </div>
                 </div>
-            </div>
         </form>
     </div>
 
     @push('scripts')
         <script>
-            // Tương tự script trong edit.blade.php
-            document.addEventListener('DOMContentLoaded', function() {
-                tinymce.init({
-                    selector: '#description',
-                    height: 300,
-                    plugins: 'image imagetools code link lists table media',
-                    toolbar: 'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | forecolor backcolor | code | removeformat',
-                    images_upload_url: '{{ route('seller.upload.image') }}',
-                    image_advtab: true,
-                    image_caption: true,
-                    file_picker_types: 'image',
-                    file_picker_callback: function(cb, value, meta) {
-                        const input = document.createElement('input');
-                        input.setAttribute('type', 'file');
-                        input.setAttribute('accept', 'image/*');
-                        input.onchange = function() {
-                            const file = this.files[0];
-                            const reader = new FileReader();
-                            reader.onload = function() {
-                                const id = 'blobid' + (new Date()).getTime();
-                                const blobCache = tinymce.activeEditor.editorUpload.blobCache;
-                                const base64 = reader.result.split(',')[1];
-                                const blobInfo = blobCache.create(id, file, base64);
-                                blobCache.add(blobInfo);
-                                cb(blobInfo.blobUri(), {
-                                    title: file.name
-                                });
-                            };
-                            reader.readAsDataURL(file);
-                        };
-                        input.click();
-                    },
-                    setup: function(editor) {
-                        editor.on('change', function() {
-                            editor.save();
-                        });
-                    }
-                });
+            function debugLog(message, data = null) {
+                console.log(`[DEBUG] ${message}`, data);
+            }
 
-                const productForm = document.getElementById('product-form');
-                if (productForm) {
-                    productForm.addEventListener('submit', function(e) {
-                        tinymce.triggerSave();
-                        console.log('Description:', document.getElementById('description').value);
+            document.addEventListener('DOMContentLoaded', function() {
+                debugLog('DOM fully loaded');
+
+                // Kiểm tra nút Thêm thuộc tính
+                const addAttributeButton = document.getElementById('add-attribute-btn');
+                if (addAttributeButton) {
+                    debugLog('Add attribute button found');
+                    addAttributeButton.addEventListener('click', function() {
+                        debugLog('Add attribute button clicked');
+                        addAttribute();
+                    });
+                } else {
+                    debugLog('Add attribute button NOT found');
+                }
+
+                // Kiểm tra nút Tạo biến thể
+                const generateVariantsButton = document.getElementById('generate-variants-btn');
+                if (generateVariantsButton) {
+                    debugLog('Generate variants button found');
+                    generateVariantsButton.addEventListener('click', function() {
+                        debugLog('Generate variants button clicked');
+                        generateVariants();
+                    });
+                } else {
+                    debugLog('Generate variants button NOT found');
+                }
+
+                // Hàm thêm thuộc tính
+                function addAttribute() {
+                    debugLog('Adding new attribute');
+                    let container = document.getElementById('attribute-container');
+                    if (!container) {
+                        debugLog('Attribute container not found');
+                        return;
+                    }
+                    let index = container.querySelectorAll('.mb-4').length;
+                    let newAttribute = document.createElement('div');
+                    newAttribute.classList.add('mb-4', 'flex', 'items-center', 'gap-4');
+                    newAttribute.innerHTML = `
+                <input type="text" name="attributes[${index}][name]" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
+                    class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="text" name="attributes[${index}][values]" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
+                    class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
+            `;
+                    container.appendChild(newAttribute);
+                    debugLog('New attribute added', {
+                        index
+                    });
+                    newAttribute.querySelector('.remove-attribute').addEventListener('click', function() {
+                        debugLog('Removing attribute', {
+                            index
+                        });
+                        newAttribute.remove();
                     });
                 }
 
-                // Xử lý SEO Preview
-                const productName = document.getElementById('product-name');
-                const metaTitle = document.getElementById('meta-title');
-                const metaTitleCount = document.getElementById('meta-title-count');
-                const previewTitle = document.getElementById('preview-title');
-                const previewUrl = document.getElementById('preview-url');
-                const previewDescription = document.getElementById('preview-description');
-                const metaDescription = document.getElementById('meta-description');
-                const metaDescriptionCount = document.getElementById('meta-description-count');
+                // Hàm tạo biến thể
+                function generateVariants() {
+                    debugLog('Generating variants');
+                    let attributes = document.querySelectorAll('[name^="attributes["][name$="[name]"]');
+                    let values = document.querySelectorAll('[name^="attributes["][name$="[values]"]');
+                    let variantContainer = document.getElementById('variant-container');
 
-                let metaTitleEditedManually = false;
+                    if (!variantContainer) {
+                        debugLog('Variant container not found');
+                        return;
+                    }
 
-                function slugify(text) {
-                    return text
-                        .toLowerCase()
-                        .normalize("NFD")
-                        .replace(/[\u0300-\u036f]/g, "")
-                        .replace(/đ/g, "d")
-                        .replace(/[^a-z0-9 -]/g, "")
-                        .replace(/\s+/g, "-")
-                        .replace(/-+/g, "-");
+                    variantContainer.innerHTML = '';
+                    let attributeData = [];
+                    let hasValidAttribute = false;
+
+                    attributes.forEach((attr, index) => {
+                        const attrName = attr.value.trim();
+                        const valuesArray = values[index].value
+                            .split(',')
+                            .map(v => v.trim())
+                            .filter(v => v);
+                        if (attrName && valuesArray.length) {
+                            attributeData.push({
+                                name: attrName,
+                                values: valuesArray
+                            });
+                            hasValidAttribute = true;
+                        }
+                    });
+
+                    if (!hasValidAttribute) {
+                        alert('Vui lòng nhập ít nhất một thuộc tính hợp lệ với tên và giá trị.');
+                        debugLog('No valid attributes provided');
+                        return;
+                    }
+
+                    let variants = getCombinations(attributeData.map(attr => attr.values));
+                    debugLog('Generated variants', variants);
+
+                    variants.forEach((variant, index) => {
+                        let variantDiv = document.createElement('div');
+                        variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6',
+                            'bg-white', 'relative', 'variant-item');
+                        let variantHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
+                        <div class="flex space-x-3">
+                            <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
+                            <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="variant-content transition-all duration-300 ease-in-out hidden">
+                        <input type="hidden" name="variants[${index}][index]" value="${index}">
+                        <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
+                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
+                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
+                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
+                `;
+                        variant.forEach((value, attrIndex) => {
+                            variantHTML += `
+                        <div class="flex items-center gap-4 mb-2">
+                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                        </div>
+                    `;
+                        });
+                        variantHTML += `
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
+                            <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
+                            <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                `;
+                        variantDiv.innerHTML = variantHTML;
+                        variantContainer.appendChild(variantDiv);
+                        variantDiv.querySelector('.remove-variant').addEventListener('click', function() {
+                            debugLog('Removing variant', {
+                                index
+                            });
+                            variantDiv.remove();
+                            updateVariantIndices();
+                        });
+                    });
+                    initializeToggleButtons();
+                    debugLog('Variants generated', {
+                        count: variants.length
+                    });
                 }
 
-                function updateSEOPreview() {
-                    if (!metaTitleEditedManually) {
-                        metaTitle.value = productName.value;
-                    }
-                    metaTitleCount.textContent = `${metaTitle.value.length}/60`;
-                    metaDescriptionCount.textContent = `${metaDescription.value.length}/160`;
-                    previewTitle.textContent = metaTitle.value || productName.value || 'Tiêu đề sản phẩm';
-                    previewUrl.textContent = `https://Zynox.com/san-pham/${slugify(productName.value || 'san-pham')}`;
-                    previewDescription.textContent = metaDescription.value || 'Mô tả ngắn gọn về sản phẩm.';
+                // Hàm cập nhật chỉ số biến thể
+                function updateVariantIndices() {
+                    debugLog('Updating variant indices');
+                    const variantItems = document.querySelectorAll('#variant-container > .variant-item');
+                    variantItems.forEach((item, index) => {
+                        const label = item.querySelector('h5');
+                        const nameInput = item.querySelector('input[name$="[name]"]');
+                        label.textContent = `Biến thể ${index + 1}: ${nameInput.value}`;
+                        const inputs = item.querySelectorAll('input[name]');
+                        inputs.forEach(input => {
+                            let oldName = input.getAttribute('name');
+                            let newName = oldName.replace(/\[\d+\]/, `[${index}]`);
+                            input.setAttribute('name', newName);
+                        });
+                        const toggleButton = item.querySelector('.toggle-variants');
+                        if (toggleButton) {
+                            toggleButton.setAttribute('data-index', index);
+                        }
+                        const previewImages = item.querySelector('div[id^="preview-images-"]');
+                        if (previewImages) {
+                            previewImages.id = `preview-images-${index}`;
+                        }
+                        const fileInput = item.querySelector('input[type="file"]');
+                        if (fileInput) {
+                            fileInput.setAttribute('onchange', `previewVariantImage(event, ${index})`);
+                        }
+                    });
                 }
 
-                productName.addEventListener('input', function() {
-                    if (!metaTitleEditedManually) {
-                        metaTitle.value = productName.value;
-                        updateSEOPreview();
+                // Hàm tạo tổ hợp biến thể
+                function getCombinations(arr) {
+                    debugLog('Generating combinations', arr);
+                    return arr.reduce((acc, val) => acc.flatMap(a => val.map(v => [...a, v])), [
+                        []
+                    ]);
+                }
+
+                // Hàm xử lý preview ảnh biến thể
+                function previewVariantImage(event, index) {
+                    debugLog('Previewing variant images', {
+                        index
+                    });
+                    let previewContainer = document.getElementById(`preview-images-${index}`);
+                    if (!previewContainer) {
+                        debugLog('Preview container not found', {
+                            index
+                        });
+                        return;
                     }
-                });
+                    previewContainer.innerHTML = '';
+                    Array.from(event.target.files).forEach((file, fileIndex) => {
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
+                            event.target.value = '';
+                            return;
+                        }
+                        let reader = new FileReader();
+                        reader.onload = function(e) {
+                            let imgContainer = document.createElement('div');
+                            imgContainer.classList.add('relative');
+                            imgContainer.innerHTML = `
+                        <img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md border border-gray-300">
+                        <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded" onclick="removeImage(this)">✖</button>
+                    `;
+                            previewContainer.appendChild(imgContainer);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
 
-                metaTitle.addEventListener('input', function() {
-                    metaTitleEditedManually = true;
-                    updateSEOPreview();
-                });
+                // Hàm xóa ảnh
+                function removeImage(element) {
+                    debugLog('Removing image');
+                    element.parentElement.remove();
+                }
 
-                metaDescription.addEventListener('input', updateSEOPreview);
-                updateSEOPreview();
+                // Hàm xử lý toggle biến thể
+                function initializeToggleButtons() {
+                    debugLog('Initializing toggle buttons');
+                    const toggleButtons = document.querySelectorAll('.toggle-variants');
+                    debugLog('Found toggle buttons', {
+                        count: toggleButtons.length
+                    });
+                    toggleButtons.forEach(button => {
+                        button.removeEventListener('click', handleToggleClick);
+                        const index = button.getAttribute('data-index');
+                        const variantItem = button.closest('.variant-item');
+                        const variantContent = variantItem.querySelector('.variant-content');
+                        const toggleIcon = button.querySelector('.toggle-icon path');
 
-                // Xử lý preview ảnh chính
+                        if (!variantContent || !toggleIcon) {
+                            debugLog('Missing variantContent or toggleIcon', {
+                                index
+                            });
+                            return;
+                        }
+
+                        let isOpen = false;
+                        variantContent.classList.add('hidden');
+                        toggleIcon.setAttribute('d', 'M5 15l7-7 7 7'); // Mũi tên xuống
+
+                        function handleToggleClick() {
+                            debugLog('Toggling variant', {
+                                index
+                            });
+                            variantContent.classList.toggle('hidden');
+                            isOpen = !variantContent.classList.contains('hidden');
+                            toggleIcon.setAttribute('d', isOpen ? 'M19 9l-7 7-7-7' : 'M5 15l7-7 7 7');
+                        }
+
+                        button.addEventListener('click', handleToggleClick);
+                    });
+                }
+
+                // Hàm xử lý preview ảnh chính
                 function handleMainImagePreview(inputId, iconId) {
+                    debugLog('Initializing main image preview');
                     const input = document.getElementById(inputId);
                     const uploadIcon = document.getElementById(iconId);
+                    if (!input || !uploadIcon) {
+                        debugLog('Main image input or icon not found', {
+                            inputId,
+                            iconId
+                        });
+                        return;
+                    }
 
                     input.addEventListener('change', function(e) {
                         const file = e.target.files[0];
@@ -608,7 +885,7 @@
                                 alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
                                 input.value = '';
                                 uploadIcon.src =
-                                    "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
+                                "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
                                 uploadIcon.alt = 'Upload Icon';
                                 return;
                             }
@@ -625,26 +902,33 @@
                     });
                 }
 
-                // Xử lý preview nhiều hình ảnh
-                function handleAdditionalImagesPreview(inputId, iconContainerId, previewContainerId) {
+                // Hàm xử lý preview nhiều ảnh
+                function handleAdditionalImagesPreview(inputId, iconContainerId) {
+                    debugLog('Initializing additional images preview');
                     const input = document.getElementById(inputId);
                     const uploadIconContainer = document.getElementById(iconContainerId);
-                    const previewContainer = document.getElementById(previewContainerId);
+                    const newPreviewContainer = document.getElementById('newImagesPreview');
+
+                    if (!input || !uploadIconContainer || !newPreviewContainer) {
+                        debugLog('Additional images elements not found', {
+                            inputId,
+                            iconContainerId
+                        });
+                        return;
+                    }
 
                     input.addEventListener('change', function(e) {
                         const files = e.target.files;
+                        newPreviewContainer.innerHTML = '';
+
                         if (files.length > 0) {
                             uploadIconContainer.classList.add('hidden');
-                            previewContainer.classList.remove('hidden');
-                            previewContainer.innerHTML = '';
-
-                            for (let i = 0; i < files.length; i++) {
-                                const file = files[i];
+                            Array.from(files).forEach(file => {
                                 if (file.size > 5 * 1024 * 1024) {
                                     alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
                                     input.value = '';
+                                    newPreviewContainer.innerHTML = '';
                                     uploadIconContainer.classList.remove('hidden');
-                                    previewContainer.classList.add('hidden');
                                     return;
                                 }
                                 const reader = new FileReader();
@@ -652,210 +936,157 @@
                                     const imgContainer = document.createElement('div');
                                     imgContainer.className = 'relative';
                                     imgContainer.innerHTML = `
-                                    <img src="${event.target.result}" class="w-24 h-24 object-cover rounded-md border">
-                                    <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md" onclick="removeImage(this)">✖</button>
-                                `;
-                                    previewContainer.appendChild(imgContainer);
+                                <img src="${event.target.result}" class="w-24 h-24 object-cover rounded-md border">
+                                <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md" onclick="removeImage(this)">✖</button>
+                            `;
+                                    newPreviewContainer.appendChild(imgContainer);
                                 };
                                 reader.readAsDataURL(file);
-                            }
+                            });
                         } else {
                             uploadIconContainer.classList.remove('hidden');
-                            previewContainer.classList.add('hidden');
                         }
                     });
                 }
 
-                handleMainImagePreview('mainImage', 'uploadIcon1');
-                handleAdditionalImagesPreview('additionalImages', 'uploadIconContainer2', 'additionalImagesPreview');
+                // Hàm xử lý SEO Preview
+                function updateSEOPreview() {
+                    debugLog('Updating SEO preview');
+                    const productName = document.getElementById('product-name');
+                    const metaTitle = document.getElementById('meta-title');
+                    const metaTitleCount = document.getElementById('meta-title-count');
+                    const previewTitle = document.getElementById('preview-title');
+                    const previewUrl = document.getElementById('preview-url');
+                    const previewDescription = document.getElementById('preview-description');
+                    const metaDescription = document.getElementById('meta-description');
+                    const metaDescriptionCount = document.getElementById('meta-description-count');
 
-                // Xử lý thuộc tính
+                    if (!productName || !metaTitle || !metaDescription) {
+                        debugLog('SEO preview elements not found');
+                        return;
+                    }
+
+                    let metaTitleEditedManually = false;
+
+                    function slugify(text) {
+                        return text
+                            .toLowerCase()
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .replace(/đ/g, "d")
+                            .replace(/[^a-z0-9 -]/g, "")
+                            .replace(/\s+/g, "-")
+                            .replace(/-+/g, "-");
+                    }
+
+                    if (!metaTitleEditedManually) {
+                        metaTitle.value = productName.value;
+                    }
+                    metaTitleCount.textContent = `${metaTitle.value.length}/60`;
+                    metaDescriptionCount.textContent = `${metaDescription.value.length}/160`;
+                    previewTitle.textContent = metaTitle.value || productName.value || 'Tiêu đề sản phẩm';
+                    previewUrl.textContent = `https://Zynox.com/san-pham/${slugify(productName.value || 'san-pham')}`;
+                    previewDescription.textContent = metaDescription.value || 'Mô tả ngắn gọn về sản phẩm.';
+                }
+
+                // Khởi tạo TinyMCE
+                if (typeof tinymce !== 'undefined') {
+                    tinymce.init({
+                        selector: '#description',
+                        height: 300,
+                        plugins: 'image imagetools code link lists table media',
+                        toolbar: 'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | forecolor backcolor | code | removeformat',
+                        images_upload_url: '{{ route('seller.upload.image') }}',
+                        image_advtab: true,
+                        image_caption: true,
+                        file_picker_types: 'image',
+                        file_picker_callback: function(cb, value, meta) {
+                            const input = document.createElement('input');
+                            input.setAttribute('type', 'file');
+                            input.setAttribute('accept', 'image/*');
+                            input.onchange = function() {
+                                const file = this.files[0];
+                                const reader = new FileReader();
+                                reader.onload = function() {
+                                    const id = 'blobid' + (new Date()).getTime();
+                                    const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                                    const base64 = reader.result.split(',')[1];
+                                    const blobInfo = blobCache.create(id, file, base64);
+                                    blobCache.add(blobInfo);
+                                    cb(blobInfo.blobUri(), {
+                                        title: file.name
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            };
+                            input.click();
+                        },
+                        setup: function(editor) {
+                            editor.on('change', function() {
+                                editor.save();
+                            });
+                        }
+                    });
+                    debugLog('TinyMCE initialized');
+                } else {
+                    debugLog('TinyMCE not loaded');
+                }
+
+                // Gắn sự kiện cho nút xóa thuộc tính
                 document.querySelectorAll('.remove-attribute').forEach(button => {
                     button.addEventListener('click', function() {
+                        debugLog('Remove attribute button clicked');
                         this.parentElement.remove();
                     });
                 });
 
-                // Xử lý biến thể
+                // Gắn sự kiện cho nút xóa biến thể
                 document.querySelectorAll('.remove-variant').forEach(button => {
                     button.addEventListener('click', function() {
-                        this.closest('.p-6').remove();
+                        debugLog('Remove variant button clicked');
+                        this.closest('.variant-item').remove();
                         updateVariantIndices();
                     });
                 });
-            });
 
-            function addAttribute() {
-                let container = document.getElementById('attribute-container');
-                let index = container.querySelectorAll('.mb-4').length;
-                let newAttribute = document.createElement('div');
-                newAttribute.classList.add('mb-4', 'flex', 'items-center', 'gap-4');
-                newAttribute.innerHTML = `
-                <input type="text" name="attributes[${index}][name]" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
-                    class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <input type="text" name="attributes[${index}][values]" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
-                    class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
-            `;
-                container.appendChild(newAttribute);
-                newAttribute.querySelector('.remove-attribute').addEventListener('click', function() {
-                    newAttribute.remove();
-                });
-            }
+                // Khởi tạo toggle buttons
+                initializeToggleButtons();
 
-            function generateVariants() {
-                let attributes = document.querySelectorAll('[name^="attributes["][name$="[name]"]');
-                let values = document.querySelectorAll('[name^="attributes["][name$="[values]"]');
-                let variantContainer = document.getElementById('variant-container');
+                // Khởi tạo preview ảnh
+                handleMainImagePreview('mainImage', 'uploadIcon1');
+                handleAdditionalImagesPreview('additionalImages', 'uploadIconContainer2');
 
-                variantContainer.innerHTML = '';
+                // Khởi tạo SEO preview
+                const productName = document.getElementById('product-name');
+                const metaTitle = document.getElementById('meta-title');
+                const metaDescription = document.getElementById('meta-description');
 
-                let attributeData = [];
-                let hasValidAttribute = false;
-
-                attributes.forEach((attr, index) => {
-                    const attrName = attr.value.trim();
-                    const valuesArray = values[index].value
-                        .split(',')
-                        .map(v => v.trim())
-                        .filter(v => v);
-                    if (attrName && valuesArray.length) {
-                        attributeData.push({
-                            name: attrName,
-                            values: valuesArray
-                        });
-                        hasValidAttribute = true;
-                    }
-                });
-
-                if (!hasValidAttribute) {
-                    alert('Vui lòng nhập ít nhất một thuộc tính hợp lệ với tên và giá trị.');
-                    return;
+                if (productName && metaTitle && metaDescription) {
+                    productName.addEventListener('input', updateSEOPreview);
+                    metaTitle.addEventListener('input', function() {
+                        metaTitleEditedManually = true;
+                        updateSEOPreview();
+                    });
+                    metaDescription.addEventListener('input', updateSEOPreview);
+                    updateSEOPreview();
+                } else {
+                    debugLog('SEO preview elements missing');
                 }
 
-                let variants = getCombinations(attributeData.map(attr => attr.values));
-
-                variants.forEach((variant, index) => {
-                    let variantDiv = document.createElement('div');
-                    variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white',
-                        'relative');
-                    let variantHTML = `
-            <div class="flex justify-between items-center mb-3">
-                <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
-                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-variant">Xóa</button>
-            </div>
-            <input type="hidden" name="variants[${index}][index]" value="${index}">
-            <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                    <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required>
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
-                    <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required>
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                    <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required>
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                    <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required>
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
-                    <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required>
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
-                    <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài">
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
-                    <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng">
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
-                    <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao">
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
-                    <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng">
-                </div>
-            </div>
-            <div>
-                <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
-                <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
-            </div>
-        `;
-
-                    // Thêm input ẩn cho thuộc tính của biến thể
-                    variant.forEach((value, attrIndex) => {
-                        variantHTML += `
-                <input type="hidden" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}">
-                <input type="hidden" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}">
-            `;
+                // Xử lý form submit
+                const productForm = document.getElementById('product-form');
+                if (productForm) {
+                    productForm.addEventListener('submit', function(e) {
+                        debugLog('Form submitted');
+                        if (typeof tinymce !== 'undefined') {
+                            tinymce.triggerSave();
+                            debugLog('TinyMCE saved', document.getElementById('description').value);
+                        }
                     });
-
-                    variantDiv.innerHTML = variantHTML;
-                    variantContainer.appendChild(variantDiv);
-
-                    variantDiv.querySelector('.remove-variant').addEventListener('click', function() {
-                        variantDiv.remove();
-                        updateVariantIndices();
-                    });
-                });
-
-                updateVariantIndices();
-            }
-
-            function updateVariantIndices() {
-                const variantItems = document.querySelectorAll('#variant-container > div');
-                variantItems.forEach((item, index) => {
-                    const label = item.querySelector('h5');
-                    const nameInput = item.querySelector('input[name$="[name]"]');
-                    label.textContent = `Biến thể ${index + 1}: ${nameInput.value}`;
-                    const inputs = item.querySelectorAll('input[name]');
-                    inputs.forEach(input => {
-                        let oldName = input.getAttribute('name');
-                        let newName = oldName.replace(/\[\d+\]/, `[${index}]`);
-                        input.setAttribute('name', newName);
-                    });
-                    item.querySelector('div[id^="preview-images-"]').id = `preview-images-${index}`;
-                    item.querySelector('input[type="file"]').setAttribute('onchange',
-                        `previewVariantImage(event, ${index})`);
-                });
-            }
-
-            function getCombinations(arr) {
-                return arr.reduce((acc, val) => acc.flatMap(a => val.map(v => [...a, v])), [
-                    []
-                ]);
-            }
-
-            function previewVariantImage(event, index) {
-                let previewContainer = document.getElementById(`preview-images-${index}`);
-                previewContainer.innerHTML = '';
-                Array.from(event.target.files).forEach((file, fileIndex) => {
-                    let reader = new FileReader();
-                    reader.onload = function(e) {
-                        let imgContainer = document.createElement('div');
-                        imgContainer.classList.add('relative');
-                        imgContainer.innerHTML = `
-                        <img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md border border-gray-300">
-                        <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded" onclick="removeImage(this)">✖</button>
-                    `;
-                        previewContainer.appendChild(imgContainer);
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            function removeImage(element) {
-                element.parentElement.remove();
-            }
+                } else {
+                    debugLog('Product form not found');
+                }
+            });
         </script>
     @endpush
 @endsection
