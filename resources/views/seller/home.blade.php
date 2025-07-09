@@ -179,8 +179,7 @@
                 </section>
             </aside>
         </main>
-        <div class="fixed right-4 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-4 z-40"
-            style="max-height: 400px">
+        <div class="fixed right-1 bottom-4 flex flex-col items-center space-y-4 z-40">
             <button aria-label="Notification bell"
                 class="w-8 h-8 rounded-full bg-[#ff4d4f] text-white flex items-center justify-center shadow-md hover:brightness-90 transition">
                 <i class="fas fa-bell"></i>
