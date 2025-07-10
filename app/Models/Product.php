@@ -100,12 +100,12 @@ class Product extends Model
 
     public function brands()
     {
-        return $this->belongsToMany(Brand::class, 'product_brands', 'product_id', 'brand_id');
+        return $this->belongsToMany(Brand::class, 'product_brands', 'product_id', 'brand_id')->withTimestamps();;
     }
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'product_categories', 'product_id', 'category_id');
+        return $this->belongsToMany(Category::class, 'product_categories', 'product_id', 'category_id')->withTimestamps();;
     }
 
     // public function reviews()
