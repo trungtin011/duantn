@@ -384,7 +384,7 @@
                                     <div class="">
                                         <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương
                                             hiệu</label>
-                                        <select name="brand_id" id="brand_id"
+                                        {{-- <select name="brand_id" id="brand_id"
                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required>
                                             <option value="">Chọn thương hiệu</option>
@@ -394,12 +394,66 @@
                                                     {{ $brand->name }}
                                                 </option>
                                             @endforeach
-                                        </select>
+                                        </select> --}}
+                                        <div
+                                            class="flex flex-col gap-2 items-start bg-gray-100 rounded-md p-2 overflow-y-scroll h-auto max-h-40">
+                                            @foreach ($brands as $brand)
+                                                <div class="relative flex items-center justify-between w-full">
+                                                    <div class="flex items-center gap-2">
+                                                        <input type="checkbox" name="brand_ids[]"
+                                                            id="brand_{{ $brand->id }}"
+                                                            class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                            value="{{ $brand->id }}"
+                                                            {{ in_array($brand->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                        <label for="brand_{{ $brand->id }}"
+                                                            class="text-gray-700 font-medium">
+                                                            {{ $brand->name }}
+                                                        </label>
+                                                    </div>
+                                                    @if ($brand->children->isNotEmpty())
+                                                        <button type="button"
+                                                            class="toggle-sub-brands text-gray-600 hover:text-gray-800"
+                                                            data-brand-id="{{ $brand->id }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                viewBox="0 0 24 24" stroke-width="1.5"
+                                                                stroke="currentColor" class="size-5 toggle-icon">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                                            </svg>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                                @if ($brand->children->isNotEmpty())
+                                                    <div class="sub-brands hidden w-full bg-white shadow-md rounded-md p-2 mt-1 ml-4"
+                                                        data-brand-id="{{ $brand->id }}">
+                                                        @foreach ($brand->children as $child)
+                                                            <div class="flex items-center gap-2">
+                                                                <input type="checkbox" name="brand_ids[]"
+                                                                    id="brand_{{ $child->id }}"
+                                                                    class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                                    value="{{ $child->id }}"
+                                                                    {{ in_array($child->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                                <label for="brand_{{ $child->id }}"
+                                                                    class="text-gray-700 font-medium">
+                                                                    {{ $child->name }}
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                        @error('brand_ids')
+                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                        @enderror
+                                        @error('brand_ids.*')
+                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                     <div class="">
                                         <label for="category_id" class="block text-gray-700 font-medium mb-1">Danh
                                             mục</label>
-                                        <select name="category_id" id="category_id"
+                                        {{-- <select name="category_id" id="category_id"
                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required>
                                             <option value="">Chọn danh mục</option>
@@ -409,7 +463,61 @@
                                                     {{ $category->name }}
                                                 </option>
                                             @endforeach
-                                        </select>
+                                        </select> --}}
+                                        <div
+                                            class="flex flex-col gap-2 items-start bg-gray-100 rounded-md p-2 overflow-y-scroll h-auto max-h-40">
+                                            @foreach ($categories as $category)
+                                                <div class="relative flex items-center justify-between w-full">
+                                                    <div class="flex items-center gap-2">
+                                                        <input type="checkbox" name="category_ids[]"
+                                                            id="category_{{ $category->id }}"
+                                                            class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                            value="{{ $category->id }}"
+                                                            {{ in_array($category->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                        <label for="category_{{ $category->id }}"
+                                                            class="text-gray-700 font-medium">
+                                                            {{ $category->name }}
+                                                        </label>
+                                                    </div>
+                                                    @if ($category->children->isNotEmpty())
+                                                        <button type="button"
+                                                            class="toggle-sub-categories text-gray-600 hover:text-gray-800"
+                                                            data-category-id="{{ $category->id }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                viewBox="0 0 24 24" stroke-width="1.5"
+                                                                stroke="currentColor" class="size-5 toggle-icon">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                                            </svg>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                                @if ($category->children->isNotEmpty())
+                                                    <div class="sub-categories hidden w-full bg-white shadow-md rounded-md p-2 mt-1 ml-4"
+                                                        data-category-id="{{ $category->id }}">
+                                                        @foreach ($category->children as $child)
+                                                            <div class="flex items-center gap-2">
+                                                                <input type="checkbox" name="category_ids[]"
+                                                                    id="category_{{ $child->id }}"
+                                                                    class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                                    value="{{ $child->id }}"
+                                                                    {{ in_array($child->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                                <label for="category_{{ $child->id }}"
+                                                                    class="text-gray-700 font-medium">
+                                                                    {{ $child->name }}
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                        @error('category_ids')
+                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                        @enderror
+                                        @error('category_ids.*')
+                                            <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="mb-4">
@@ -588,6 +696,72 @@
                     debugLog('Generate variants button NOT found');
                 }
 
+                // Xử lý toggle thương hiệu con
+                function initializeSubBrandToggles() {
+                    debugLog('Initializing sub-brand toggles');
+                    const toggleButtons = document.querySelectorAll('.toggle-sub-brands');
+                    toggleButtons.forEach(button => {
+                        const brandId = button.getAttribute('data-brand-id');
+                        const subBrandContainer = document.querySelector(
+                            `.sub-brands[data-brand-id="${brandId}"]`);
+                        const toggleIcon = button.querySelector('.toggle-icon path');
+
+                        if (!subBrandContainer || !toggleIcon) {
+                            debugLog('Sub-brand container or toggle icon not found', {
+                                brandId
+                            });
+                            return;
+                        }
+
+                        let isOpen = false;
+                        subBrandContainer.classList.add('hidden');
+                        toggleIcon.setAttribute('d', 'm8.25 4.5 7.5 7.5-7.5 7.5'); // Mũi tên phải
+
+                        button.addEventListener('click', function() {
+                            debugLog('Toggling sub-brand dropdown', {
+                                brandId
+                            });
+                            isOpen = !isOpen;
+                            subBrandContainer.classList.toggle('hidden', !isOpen);
+                            toggleIcon.setAttribute('d', isOpen ? 'm8.25 19.5 7.5-7.5-7.5-7.5' :
+                                'm8.25 4.5 7.5 7.5-7.5 7.5');
+                        });
+                    });
+                }
+
+                // Xử lý toggle danh mục con
+                function initializeSubCategoryToggles() {
+                    debugLog('Initializing sub-category toggles');
+                    const toggleButtons = document.querySelectorAll('.toggle-sub-categories');
+                    toggleButtons.forEach(button => {
+                        const categoryId = button.getAttribute('data-category-id');
+                        const subCategoryContainer = document.querySelector(
+                            `.sub-categories[data-category-id="${categoryId}"]`);
+                        const toggleIcon = button.querySelector('.toggle-icon path');
+
+                        if (!subCategoryContainer || !toggleIcon) {
+                            debugLog('Sub-category container or toggle icon not found', {
+                                categoryId
+                            });
+                            return;
+                        }
+
+                        let isOpen = false;
+                        subCategoryContainer.classList.add('hidden');
+                        toggleIcon.setAttribute('d', 'm8.25 4.5 7.5 7.5-7.5 7.5'); // Mũi tên phải
+
+                        button.addEventListener('click', function() {
+                            debugLog('Toggling sub-category dropdown', {
+                                categoryId
+                            });
+                            isOpen = !isOpen;
+                            subCategoryContainer.classList.toggle('hidden', !isOpen);
+                            toggleIcon.setAttribute('d', isOpen ? 'm8.25 19.5 7.5-7.5-7.5-7.5' :
+                                'm8.25 4.5 7.5 7.5-7.5 7.5');
+                        });
+                    });
+                }
+
                 // Hàm thêm thuộc tính
                 function addAttribute() {
                     debugLog('Adding new attribute');
@@ -600,12 +774,12 @@
                     let newAttribute = document.createElement('div');
                     newAttribute.classList.add('mb-4', 'flex', 'items-center', 'gap-4');
                     newAttribute.innerHTML = `
-                <input type="text" name="attributes[${index}][name]" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
-                    class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <input type="text" name="attributes[${index}][values]" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
-                    class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
-            `;
+                    <input type="text" name="attributes[${index}][name]" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
+                        class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <input type="text" name="attributes[${index}][values]" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
+                        class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
+                `;
                     container.appendChild(newAttribute);
                     debugLog('New attribute added', {
                         index
@@ -663,78 +837,78 @@
                         variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6',
                             'bg-white', 'relative', 'variant-item');
                         let variantHTML = `
-                    <div class="flex justify-between items-center mb-3">
-                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
-                        <div class="flex space-x-3">
-                            <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
-                            <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
-                                <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="variant-content transition-all duration-300 ease-in-out hidden">
-                        <input type="hidden" name="variants[${index}][index]" value="${index}">
-                        <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
-                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
-                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
-                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
-                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
-                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
-                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng">
+                        <div class="flex justify-between items-center mb-3">
+                            <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
+                            <div class="flex space-x-3">
+                                <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
+                                <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                    <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
-                        <div class="mb-4">
-                            <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
-                `;
+                        <div class="variant-content transition-all duration-300 ease-in-out hidden">
+                            <input type="hidden" name="variants[${index}][index]" value="${index}">
+                            <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                    <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                                    <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                    <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                    <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                                    <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                    <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
+                                    <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
+                                    <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
+                                    <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
+                    `;
                         variant.forEach((value, attrIndex) => {
                             variantHTML += `
-                        <div class="flex items-center gap-4 mb-2">
-                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                        </div>
-                    `;
+                            <div class="flex items-center gap-4 mb-2">
+                                <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                            </div>
+                        `;
                         });
                         variantHTML += `
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
+                                <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
+                                <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                            <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
-                            <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
-                        </div>
-                    </div>
-                `;
+                    `;
                         variantDiv.innerHTML = variantHTML;
                         variantContainer.appendChild(variantDiv);
                         variantDiv.querySelector('.remove-variant').addEventListener('click', function() {
@@ -812,9 +986,9 @@
                             let imgContainer = document.createElement('div');
                             imgContainer.classList.add('relative');
                             imgContainer.innerHTML = `
-                        <img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md border border-gray-300">
-                        <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded" onclick="removeImage(this)">✖</button>
-                    `;
+                            <img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md border border-gray-300">
+                            <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded" onclick="removeImage(this)">✖</button>
+                        `;
                             previewContainer.appendChild(imgContainer);
                         };
                         reader.readAsDataURL(file);
@@ -885,7 +1059,7 @@
                                 alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
                                 input.value = '';
                                 uploadIcon.src =
-                                "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
+                                    "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
                                 uploadIcon.alt = 'Upload Icon';
                                 return;
                             }
@@ -936,9 +1110,9 @@
                                     const imgContainer = document.createElement('div');
                                     imgContainer.className = 'relative';
                                     imgContainer.innerHTML = `
-                                <img src="${event.target.result}" class="w-24 h-24 object-cover rounded-md border">
-                                <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md" onclick="removeImage(this)">✖</button>
-                            `;
+                                    <img src="${event.target.result}" class="w-24 h-24 object-cover rounded-md border">
+                                    <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md" onclick="removeImage(this)">✖</button>
+                                `;
                                     newPreviewContainer.appendChild(imgContainer);
                                 };
                                 reader.readAsDataURL(file);
@@ -1051,6 +1225,8 @@
 
                 // Khởi tạo toggle buttons
                 initializeToggleButtons();
+                initializeSubBrandToggles();
+                initializeSubCategoryToggles();
 
                 // Khởi tạo preview ảnh
                 handleMainImagePreview('mainImage', 'uploadIcon1');
@@ -1078,6 +1254,19 @@
                 if (productForm) {
                     productForm.addEventListener('submit', function(e) {
                         debugLog('Form submitted');
+                        const brandCheckboxes = document.querySelectorAll('input[name="brand_ids[]"]:checked');
+                        const categoryCheckboxes = document.querySelectorAll(
+                            'input[name="category_ids[]"]:checked');
+                        if (brandCheckboxes.length === 0) {
+                            e.preventDefault();
+                            alert('Vui lòng chọn ít nhất một thương hiệu.');
+                            debugLog('Form submission prevented: No brands selected');
+                        }
+                        if (categoryCheckboxes.length === 0) {
+                            e.preventDefault();
+                            alert('Vui lòng chọn ít nhất một danh mục.');
+                            debugLog('Form submission prevented: No categories selected');
+                        }
                         if (typeof tinymce !== 'undefined') {
                             tinymce.triggerSave();
                             debugLog('TinyMCE saved', document.getElementById('description').value);
@@ -1085,6 +1274,20 @@
                     });
                 } else {
                     debugLog('Product form not found');
+                }
+
+                function loadSubCategories(categoryId, button) {
+                    fetch(`/seller/categories/${categoryId}/children`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const subCategoryContainer = document.querySelector(
+                                `.sub-categories[data-category-id="${categoryId}"]`);
+                            subCategoryContainer.innerHTML = data.html;
+                            subCategoryContainer.classList.toggle('hidden');
+                            debugLog('Sub-categories loaded', {
+                                categoryId
+                            });
+                        });
                 }
             });
         </script>

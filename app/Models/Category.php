@@ -23,7 +23,7 @@ class Category extends Model
         'status' => 'string',
     ];
 
-    public function subCategories()
+    public function children()
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
@@ -35,6 +35,6 @@ class Category extends Model
 
     public function products()
     {
-        return $this->hasMany(Product::class, 'category', 'id', 'category_id');
+        return $this->belongsToMany(Product::class, 'product_categories', 'brand_id', 'product_id');
     }
 }

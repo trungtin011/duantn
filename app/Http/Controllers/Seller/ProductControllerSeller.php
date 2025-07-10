@@ -417,6 +417,19 @@ class ProductControllerSeller extends Controller
             DB::beginTransaction();
 
             $product = Product::findOrFail($id);
+
+            // Kiểm tra quyền sở hữu
+            $seller = Auth::user()->seller;
+            $shop = $seller->shops()->where('id', $product->shopID)->first();
+            if (!$shop) {
+                Log::warning('Unauthorized attempt to update product', [
+                    'product_id' => $product->id,
+                    'seller_user_id' => $seller->userID,
+                    'shop_id' => $product->shopID,
+                ]);
+                return redirect()->back()->with('error', 'Bạn không có quyền chỉnh sửa sản phẩm này.');
+            }
+
             Log::info('Updating product', ['product_id' => $id, 'request_data' => $request->except(['images', 'variant_images'])]);
 
             $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
@@ -439,35 +452,65 @@ class ProductControllerSeller extends Controller
                 'status' => $request->save_draft ? 'draft' : 'active',
             ]);
 
-            // ======= Xử lý thương hiệu (brand) =======
-            if ($request->has('brand_id')) {
-                // Đồng bộ brand_id với bảng product_brands
-                $product->brands()->sync([$request->brand_id]);
-                Log::info('Brand synced', [
-                    'product_id' => $product->id,
-                    'brand_id' => $request->brand_id
-                ]);
+            // Xử lý thương hiệu
+            $newBrandIds = $request->input('brand_ids', []);
+            Log::info('New brand IDs from request', ['brand_ids' => $newBrandIds]);
+            $currentBrandIds = $product->brands()->pluck('brand_id')->toArray();
+            Log::info('Current brand IDs', ['current_brand_ids' => $currentBrandIds]);
+            sort($newBrandIds);
+            sort($currentBrandIds);
+            if ($newBrandIds !== $currentBrandIds) {
+                if (!empty($newBrandIds)) {
+                    $product->brands()->sync($newBrandIds);
+                    Log::info('Brands synced', [
+                        'product_id' => $product->id,
+                        'brand_ids' => $newBrandIds,
+                        'brand_names' => Brand::whereIn('id', $newBrandIds)->pluck('name')->toArray(),
+                    ]);
+                } else {
+                    $product->brands()->detach();
+                    Log::info('Brands detached', [
+                        'product_id' => $product->id,
+                        'previous_brand_ids' => $currentBrandIds,
+                    ]);
+                }
             } else {
-                // Nếu không có brand_id, xóa tất cả quan hệ thương hiệu
-                $product->brands()->detach();
-                Log::info('Brand detached', ['product_id' => $product->id]);
+                Log::info('No changes in brands, skipping sync.', [
+                    'product_id' => $product->id,
+                    'brand_ids' => $newBrandIds,
+                ]);
             }
 
-            // ======= Xử lý danh mục (category) =======
-            if ($request->has('category_id')) {
-                // Đồng bộ category_id với bảng product_categories
-                $product->categories()->sync([$request->category_id]);
-                Log::info('Category synced', [
-                    'product_id' => $product->id,
-                    'category_id' => $request->category_id
-                ]);
+            // Xử lý danh mục
+            $newCategoryIds = $request->input('category_ids', []);
+            Log::info('New category IDs from request', ['category_ids' => $newCategoryIds]);
+            $currentCategoryIds = $product->categories()->pluck('category_id')->toArray();
+            Log::info('Current category IDs', ['current_category_ids' => $currentCategoryIds]);
+            sort($newCategoryIds);
+            sort($currentCategoryIds);
+            if ($newCategoryIds !== $currentCategoryIds) {
+                if (!empty($newCategoryIds)) {
+                    $product->categories()->sync($newCategoryIds);
+                    Log::info('Categories synced', [
+                        'product_id' => $product->id,
+                        'category_ids' => $newCategoryIds,
+                        'category_names' => Category::whereIn('id', $newCategoryIds)->pluck('name')->toArray(),
+                    ]);
+                } else {
+                    $product->categories()->detach();
+                    Log::info('Categories detached', [
+                        'product_id' => $product->id,
+                        'previous_category_ids' => $currentCategoryIds,
+                    ]);
+                }
             } else {
-                // Nếu không có category_id, xóa tất cả quan hệ danh mục
-                $product->categories()->detach();
-                Log::info('Category detached', ['product_id' => $product->id]);
+                Log::info('No changes in categories, skipping sync.', [
+                    'product_id' => $product->id,
+                    'category_ids' => $newCategoryIds,
+                ]);
             }
 
-            // ======= Xử lý thuộc tính sản phẩm =======
+            // Xử lý thuộc tính sản phẩm
             if ($request->has('attributes')) {
                 $existingAttributeValues = $product->attributes()
                     ->with('values')
@@ -492,11 +535,6 @@ class ProductControllerSeller extends Controller
                     })
                     ->toArray();
 
-                Log::info('Existing attribute values', $existingAttributeValues);
-                Log::info('New attribute values', $newAttributeValues);
-                Log::info('Attribute values equal?', ['equal' => $existingAttributeValues == $newAttributeValues]);
-
-                // Chỉ cập nhật nếu có sự thay đổi hoặc có thuộc tính mới
                 if ($newAttributeValues != $existingAttributeValues) {
                     $product->attributes()->detach();
                     Log::info('Old attributes detached', ['product_id' => $product->id]);
@@ -522,7 +560,6 @@ class ProductControllerSeller extends Controller
                                 ]);
                             }
 
-                            // Gán giá trị thuộc tính cho sản phẩm nếu không có biến thể
                             if (!$request->filled('variants')) {
                                 DB::table('product_attribute')->updateOrInsert([
                                     'product_id' => $product->id,
@@ -546,7 +583,7 @@ class ProductControllerSeller extends Controller
                 Log::info('No attributes provided in request, retaining existing attributes.', ['product_id' => $product->id]);
             }
 
-            // ======= Xử lý biến thể =======
+            // Xử lý biến thể
             $existingVariants = $product->variants()->with('images')->get();
             $variantImageMap = [];
             foreach ($existingVariants as $variant) {
@@ -645,7 +682,7 @@ class ProductControllerSeller extends Controller
                 }
             }
 
-            // ======= Ảnh chính và ảnh phụ =======
+            // Xử lý ảnh chính và ảnh phụ
             $hasMainImage = $request->hasFile('main_image');
             $hasAdditionalImages = $request->hasFile('images');
 
@@ -728,7 +765,6 @@ class ProductControllerSeller extends Controller
         }
     }
 
-
     /**
      * Xóa sản phẩm (soft delete)
      * @param int $id ID của sản phẩm cần xóa
@@ -806,7 +842,6 @@ class ProductControllerSeller extends Controller
         }
     }
 
-
     // Tái sử dụng cho store & update
     protected function validationRules($isUpdate = false, $productId = null)
     {
@@ -821,8 +856,10 @@ class ProductControllerSeller extends Controller
         return [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'brand_id' => 'required|exists:brand,id', // Kiểm tra brand_id tồn tại trong bảng brand
-            'category_id' => 'required|exists:categories,id', // Kiểm tra category_id tồn tại trong bảng categories
+            'brand_ids' => 'required|array|min:1', // Yêu cầu ít nhất 1 thương hiệu
+            'brand_ids.*' => 'exists:brand,id', // Kiểm tra từng ID thương hiệu
+            'category_ids' => 'required|array|min:1', // Yêu cầu ít nhất 1 danh mục
+            'category_ids.*' => 'exists:categories,id', // Kiểm tra từng ID danh mục
             'sku' => $skuRule,
             'price' => 'required|numeric|min:0',
             'purchase_price' => 'required|numeric|min:0',
@@ -851,7 +888,7 @@ class ProductControllerSeller extends Controller
             'variants.*.weight' => 'nullable|numeric|min:0',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
             'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
-            'main_image' => ($isUpdate ? 'nullable' : 'required') . '|image|mimes:jpeg,png,jpg,webp,svg|max:5120', // Thêm validation cho main_image
+            'main_image' => ($isUpdate ? 'nullable' : 'required') . '|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
         ];
     }
 
@@ -862,10 +899,12 @@ class ProductControllerSeller extends Controller
             'name.max' => 'Tên sản phẩm không được vượt quá :max ký tự.',
             'sku.required' => 'Vui lòng nhập mã SKU.',
             'sku.unique' => 'Mã SKU này đã tồn tại.',
-            'brand_id.required' => 'Vui lòng chọn thương hiệu.',
-            'brand_id.exists' => 'Thương hiệu đã chọn không hợp lệ.',
-            'category_id.required' => 'Vui lòng chọn danh mục.',
-            'category_id.exists' => 'Danh mục đã chọn không hợp lệ.',
+            'brand_ids.required' => 'Vui lòng chọn ít nhất một thương hiệu.',
+            'brand_ids.min' => 'Vui lòng chọn ít nhất một thương hiệu.',
+            'brand_ids.*.exists' => 'Thương hiệu được chọn không tồn tại.',
+            'category_ids.required' => 'Vui lòng chọn ít nhất một danh mục.',
+            'category_ids.min' => 'Vui lòng chọn ít nhất một danh mục.',
+            'category_ids.*.exists' => 'Danh mục được chọn không tồn tại.',
             'price.required' => 'Vui lòng nhập giá gốc.',
             'price.numeric' => 'Giá gốc phải là số.',
             'price.min' => 'Giá gốc không được nhỏ hơn 0.',
@@ -897,5 +936,25 @@ class ProductControllerSeller extends Controller
             'main_image.mimes' => 'Ảnh chính chỉ chấp nhận định dạng jpeg, png, jpg, webp, svg.',
             'main_image.max' => 'Ảnh chính không được vượt quá 5MB.',
         ];
+    }
+
+    /**
+     * Lấy tất cả ID của danh mục/thương hiệu cha
+     * @param array $ids Mảng ID ban đầu
+     * @param string $model Tên model (Brand hoặc Category)
+     * @return array
+     */
+    protected function getAllParentIds($ids, $model)
+    {
+        $parentIds = [];
+        foreach ($ids as $id) {
+            $item = $model::find($id);
+            if ($item && $item->parent_id) {
+                $parentIds[] = $item->parent_id;
+                // Gọi đệ quy để lấy tất cả parent IDs
+                $parentIds = array_merge($parentIds, $this->getAllParentIds([$item->parent_id], $model));
+            }
+        }
+        return array_unique($parentIds);
     }
 }
