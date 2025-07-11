@@ -452,35 +452,6 @@ class ProductControllerSeller extends Controller
                 'status' => $request->save_draft ? 'draft' : 'active',
             ]);
 
-            // Xử lý thương hiệu
-            $newBrandIds = $request->input('brand_ids', []);
-            Log::info('New brand IDs from request', ['brand_ids' => $newBrandIds]);
-            $currentBrandIds = $product->brands()->pluck('brand_id')->toArray();
-            Log::info('Current brand IDs', ['current_brand_ids' => $currentBrandIds]);
-            sort($newBrandIds);
-            sort($currentBrandIds);
-            if ($newBrandIds !== $currentBrandIds) {
-                if (!empty($newBrandIds)) {
-                    $product->brands()->sync($newBrandIds);
-                    Log::info('Brands synced', [
-                        'product_id' => $product->id,
-                        'brand_ids' => $newBrandIds,
-                        'brand_names' => Brand::whereIn('id', $newBrandIds)->pluck('name')->toArray(),
-                    ]);
-                } else {
-                    $product->brands()->detach();
-                    Log::info('Brands detached', [
-                        'product_id' => $product->id,
-                        'previous_brand_ids' => $currentBrandIds,
-                    ]);
-                }
-            } else {
-                Log::info('No changes in brands, skipping sync.', [
-                    'product_id' => $product->id,
-                    'brand_ids' => $newBrandIds,
-                ]);
-            }
-
             // Xử lý danh mục
             $newCategoryIds = $request->input('category_ids', []);
             Log::info('New category IDs from request', ['category_ids' => $newCategoryIds]);
@@ -507,6 +478,35 @@ class ProductControllerSeller extends Controller
                 Log::info('No changes in categories, skipping sync.', [
                     'product_id' => $product->id,
                     'category_ids' => $newCategoryIds,
+                ]);
+            }
+
+            // Xử lý thương hiệu
+            $newBrandIds = $request->input('brand_ids', []);
+            Log::info('New brand IDs from request', ['brand_ids' => $newBrandIds]);
+            $currentBrandIds = $product->brands()->pluck('brand_id')->toArray();
+            Log::info('Current brand IDs', ['current_brand_ids' => $currentBrandIds]);
+            sort($newBrandIds);
+            sort($currentBrandIds);
+            if ($newBrandIds !== $currentBrandIds) {
+                if (!empty($newBrandIds)) {
+                    $product->brands()->sync($newBrandIds);
+                    Log::info('Brands synced', [
+                        'product_id' => $product->id,
+                        'brand_ids' => $newBrandIds,
+                        'brand_names' => Brand::whereIn('id', $newBrandIds)->pluck('name')->toArray(),
+                    ]);
+                } else {
+                    $product->brands()->detach();
+                    Log::info('Brands detached', [
+                        'product_id' => $product->id,
+                        'previous_brand_ids' => $currentBrandIds,
+                    ]);
+                }
+            } else {
+                Log::info('No changes in brands, skipping sync.', [
+                    'product_id' => $product->id,
+                    'brand_ids' => $newBrandIds,
                 ]);
             }
 
