@@ -380,66 +380,89 @@
                             <!-- Category & Brand Section -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <p class="text-gray-700 font-medium mb-4">Chi tiết sản phẩm</p>
-                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                <div class="flex flex-col gap-3 mb-4">
                                     <div class="">
                                         <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương
                                             hiệu</label>
-                                        {{-- <select name="brand_id" id="brand_id"
-                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            required>
-                                            <option value="">Chọn thương hiệu</option>
-                                            @foreach ($brands as $brand)
-                                                <option value="{{ $brand->id }}"
-                                                    {{ old('brand_id', $product->brands->pluck('id')->first()) == $brand->id ? 'selected' : '' }}>
-                                                    {{ $brand->name }}
-                                                </option>
-                                            @endforeach
-                                        </select> --}}
                                         <div
                                             class="flex flex-col gap-2 items-start bg-gray-100 rounded-md p-2 overflow-y-scroll h-auto max-h-40">
                                             @foreach ($brands as $brand)
-                                                <div class="relative flex items-center justify-between w-full">
-                                                    <div class="flex items-center gap-2">
-                                                        <input type="checkbox" name="brand_ids[]"
-                                                            id="brand_{{ $brand->id }}"
-                                                            class="border border-gray-300 rounded-md p-2 focus:outline-none"
-                                                            value="{{ $brand->id }}"
-                                                            {{ in_array($brand->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}>
-                                                        <label for="brand_{{ $brand->id }}"
-                                                            class="text-gray-700 font-medium">
-                                                            {{ $brand->name }}
-                                                        </label>
+                                                @if (is_null($brand->parent_id))
+                                                    <div class="relative flex items-center justify-between w-full">
+                                                        <div class="flex items-center gap-2">
+                                                            <input type="checkbox" name="brand_ids[]"
+                                                                id="brand_{{ $brand->id }}"
+                                                                class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                                value="{{ $brand->id }}"
+                                                                {{ in_array($brand->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                            <label for="brand_{{ $brand->id }}"
+                                                                class="text-gray-700 font-medium">
+                                                                {{ $brand->name }}
+                                                            </label>
+                                                        </div>
+                                                        @if ($brand->children->isNotEmpty())
+                                                            <button type="button"
+                                                                class="toggle-sub-brands text-gray-600 hover:text-gray-800"
+                                                                data-brand-id="{{ $brand->id }}">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                    viewBox="0 0 24 24" stroke-width="1.5"
+                                                                    stroke="currentColor" class="size-5 toggle-icon">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                                                </svg>
+                                                            </button>
+                                                        @endif
                                                     </div>
                                                     @if ($brand->children->isNotEmpty())
-                                                        <button type="button"
-                                                            class="toggle-sub-brands text-gray-600 hover:text-gray-800"
+                                                        <div class="sub-brands hidden w-[calc(100%-1.5rem)] rounded-md bg-white p-2 ml-4"
                                                             data-brand-id="{{ $brand->id }}">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                viewBox="0 0 24 24" stroke-width="1.5"
-                                                                stroke="currentColor" class="size-5 toggle-icon">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                                                            </svg>
-                                                        </button>
+                                                            @foreach ($brand->children as $child)
+                                                                <div class="flex items-center gap-2">
+                                                                    <input type="checkbox" name="brand_ids[]"
+                                                                        id="brand_{{ $child->id }}"
+                                                                        class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                                        value="{{ $child->id }}"
+                                                                        {{ in_array($child->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                                    <label for="brand_{{ $child->id }}"
+                                                                        class="text-gray-700 font-medium">
+                                                                        {{ $child->name }}
+                                                                    </label>
+                                                                    @if ($child->children->isNotEmpty())
+                                                                        <button type="button"
+                                                                            class="toggle-sub-brands text-gray-600 hover:text-gray-800"
+                                                                            data-brand-id="{{ $child->id }}">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                fill="none" viewBox="0 0 24 24"
+                                                                                stroke-width="1.5" stroke="currentColor"
+                                                                                class="size-5 toggle-icon">
+                                                                                <path stroke-linecap="round"
+                                                                                    stroke-linejoin="round"
+                                                                                    d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    @endif
+                                                                </div>
+                                                                @if ($child->children->isNotEmpty())
+                                                                    <div class="sub-brands hidden ml-8"
+                                                                        data-brand-id="{{ $child->id }}">
+                                                                        @foreach ($child->children as $grandchild)
+                                                                            <div class="flex items-center gap-2">
+                                                                                <input type="checkbox" name="brand_ids[]"
+                                                                                    id="brand_{{ $grandchild->id }}"
+                                                                                    class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                                                    value="{{ $grandchild->id }}"
+                                                                                    {{ in_array($grandchild->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                                                <label for="brand_{{ $grandchild->id }}"
+                                                                                    class="text-gray-700 font-medium">
+                                                                                    {{ $grandchild->name }}
+                                                                                </label>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                @endif
+                                                            @endforeach
+                                                        </div>
                                                     @endif
-                                                </div>
-                                                @if ($brand->children->isNotEmpty())
-                                                    <div class="sub-brands hidden w-full bg-white shadow-md rounded-md p-2 mt-1 ml-4"
-                                                        data-brand-id="{{ $brand->id }}">
-                                                        @foreach ($brand->children as $child)
-                                                            <div class="flex items-center gap-2">
-                                                                <input type="checkbox" name="brand_ids[]"
-                                                                    id="brand_{{ $child->id }}"
-                                                                    class="border border-gray-300 rounded-md p-2 focus:outline-none"
-                                                                    value="{{ $child->id }}"
-                                                                    {{ in_array($child->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}>
-                                                                <label for="brand_{{ $child->id }}"
-                                                                    class="text-gray-700 font-medium">
-                                                                    {{ $child->name }}
-                                                                </label>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
                                                 @endif
                                             @endforeach
                                         </div>
@@ -453,62 +476,87 @@
                                     <div class="">
                                         <label for="category_id" class="block text-gray-700 font-medium mb-1">Danh
                                             mục</label>
-                                        {{-- <select name="category_id" id="category_id"
-                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            required>
-                                            <option value="">Chọn danh mục</option>
-                                            @foreach ($categories as $category)
-                                                <option value="{{ $category->id }}"
-                                                    {{ old('category_id', $product->categories->pluck('id')->first()) == $category->id ? 'selected' : '' }}>
-                                                    {{ $category->name }}
-                                                </option>
-                                            @endforeach
-                                        </select> --}}
                                         <div
                                             class="flex flex-col gap-2 items-start bg-gray-100 rounded-md p-2 overflow-y-scroll h-auto max-h-40">
                                             @foreach ($categories as $category)
-                                                <div class="relative flex items-center justify-between w-full">
-                                                    <div class="flex items-center gap-2">
-                                                        <input type="checkbox" name="category_ids[]"
-                                                            id="category_{{ $category->id }}"
-                                                            class="border border-gray-300 rounded-md p-2 focus:outline-none"
-                                                            value="{{ $category->id }}"
-                                                            {{ in_array($category->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
-                                                        <label for="category_{{ $category->id }}"
-                                                            class="text-gray-700 font-medium">
-                                                            {{ $category->name }}
-                                                        </label>
+                                                @if (is_null($category->parent_id))
+                                                    <div class="relative flex items-center justify-between w-full">
+                                                        <div class="flex items-center gap-2">
+                                                            <input type="checkbox" name="category_ids[]"
+                                                                id="category_{{ $category->id }}"
+                                                                class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                                value="{{ $category->id }}"
+                                                                {{ in_array($category->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                            <label for="category_{{ $category->id }}"
+                                                                class="text-gray-700 font-medium">
+                                                                {{ $category->name }}
+                                                            </label>
+                                                        </div>
+                                                        @if ($category->children->isNotEmpty())
+                                                            <button type="button"
+                                                                class="toggle-sub-categories text-gray-600 hover:text-gray-800"
+                                                                data-category-id="{{ $category->id }}">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                    viewBox="0 0 24 24" stroke-width="1.5"
+                                                                    stroke="currentColor" class="size-5 toggle-icon">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                                                </svg>
+                                                            </button>
+                                                        @endif
                                                     </div>
                                                     @if ($category->children->isNotEmpty())
-                                                        <button type="button"
-                                                            class="toggle-sub-categories text-gray-600 hover:text-gray-800"
+                                                        <div class="sub-categories hidden w-[calc(100%-1.5rem)] rounded-md bg-white p-2 ml-4"
                                                             data-category-id="{{ $category->id }}">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                                viewBox="0 0 24 24" stroke-width="1.5"
-                                                                stroke="currentColor" class="size-5 toggle-icon">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                                                            </svg>
-                                                        </button>
+                                                            @foreach ($category->children as $child)
+                                                                <div class="flex items-center gap-2">
+                                                                    <input type="checkbox" name="category_ids[]"
+                                                                        id="category_{{ $child->id }}"
+                                                                        class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                                        value="{{ $child->id }}"
+                                                                        {{ in_array($child->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                                    <label for="category_{{ $child->id }}"
+                                                                        class="text-gray-700 font-medium">
+                                                                        {{ $child->name }}
+                                                                    </label>
+                                                                    @if ($child->children->isNotEmpty())
+                                                                        <button type="button"
+                                                                            class="toggle-sub-categories text-gray-600 hover:text-gray-800"
+                                                                            data-category-id="{{ $child->id }}">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                fill="none" viewBox="0 0 24 24"
+                                                                                stroke-width="1.5" stroke="currentColor"
+                                                                                class="size-5 toggle-icon">
+                                                                                <path stroke-linecap="round"
+                                                                                    stroke-linejoin="round"
+                                                                                    d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    @endif
+                                                                </div>
+                                                                @if ($child->children->isNotEmpty())
+                                                                    <div class="sub-categories hidden ml-8"
+                                                                        data-category-id="{{ $child->id }}">
+                                                                        @foreach ($child->children as $grandchild)
+                                                                            <div class="flex items-center gap-2 ">
+                                                                                <input type="checkbox"
+                                                                                    name="category_ids[]"
+                                                                                    id="category_{{ $grandchild->id }}"
+                                                                                    class="border border-gray-300 rounded-md p-2 focus:outline-none"
+                                                                                    value="{{ $grandchild->id }}"
+                                                                                    {{ in_array($grandchild->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
+                                                                                <label
+                                                                                    for="category_{{ $grandchild->id }}"
+                                                                                    class="text-gray-700 font-medium">
+                                                                                    {{ $grandchild->name }}
+                                                                                </label>
+                                                                            </div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                @endif
+                                                            @endforeach
+                                                        </div>
                                                     @endif
-                                                </div>
-                                                @if ($category->children->isNotEmpty())
-                                                    <div class="sub-categories hidden w-full bg-white shadow-md rounded-md p-2 mt-1 ml-4"
-                                                        data-category-id="{{ $category->id }}">
-                                                        @foreach ($category->children as $child)
-                                                            <div class="flex items-center gap-2">
-                                                                <input type="checkbox" name="category_ids[]"
-                                                                    id="category_{{ $child->id }}"
-                                                                    class="border border-gray-300 rounded-md p-2 focus:outline-none"
-                                                                    value="{{ $child->id }}"
-                                                                    {{ in_array($child->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}>
-                                                                <label for="category_{{ $child->id }}"
-                                                                    class="text-gray-700 font-medium">
-                                                                    {{ $child->name }}
-                                                                </label>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
                                                 @endif
                                             @endforeach
                                         </div>
@@ -672,31 +720,40 @@
             document.addEventListener('DOMContentLoaded', function() {
                 debugLog('DOM fully loaded');
 
-                // Kiểm tra nút Thêm thuộc tính
-                const addAttributeButton = document.getElementById('add-attribute-btn');
-                if (addAttributeButton) {
-                    debugLog('Add attribute button found');
-                    addAttributeButton.addEventListener('click', function() {
-                        debugLog('Add attribute button clicked');
-                        addAttribute();
+                // Khởi tạo toggle danh mục
+                function initializeSubCategoryToggles() {
+                    debugLog('Initializing sub-category toggles');
+                    const toggleButtons = document.querySelectorAll('.toggle-sub-categories');
+                    toggleButtons.forEach(button => {
+                        const categoryId = button.getAttribute('data-category-id');
+                        const subCategoryContainer = document.querySelector(
+                            `.sub-categories[data-category-id="${categoryId}"]`);
+                        const toggleIcon = button.querySelector('.toggle-icon path');
+
+                        if (!subCategoryContainer || !toggleIcon) {
+                            debugLog('Sub-category container or toggle icon not found', {
+                                categoryId
+                            });
+                            return;
+                        }
+
+                        let isOpen = false;
+                        subCategoryContainer.classList.add('hidden');
+                        toggleIcon.setAttribute('d', 'm8.25 4.5 7.5 7.5-7.5 7.5'); // Mũi tên phải
+
+                        button.addEventListener('click', function() {
+                            debugLog('Toggling sub-category dropdown', {
+                                categoryId
+                            });
+                            isOpen = !isOpen;
+                            subCategoryContainer.classList.toggle('hidden', !isOpen);
+                            toggleIcon.setAttribute('d', isOpen ? 'm8.25 19.5 7.5-7.5-7.5-7.5' :
+                                'm8.25 4.5 7.5 7.5-7.5 7.5');
+                        });
                     });
-                } else {
-                    debugLog('Add attribute button NOT found');
                 }
 
-                // Kiểm tra nút Tạo biến thể
-                const generateVariantsButton = document.getElementById('generate-variants-btn');
-                if (generateVariantsButton) {
-                    debugLog('Generate variants button found');
-                    generateVariantsButton.addEventListener('click', function() {
-                        debugLog('Generate variants button clicked');
-                        generateVariants();
-                    });
-                } else {
-                    debugLog('Generate variants button NOT found');
-                }
-
-                // Xử lý toggle thương hiệu con
+                // Khởi tạo toggle thương hiệu
                 function initializeSubBrandToggles() {
                     debugLog('Initializing sub-brand toggles');
                     const toggleButtons = document.querySelectorAll('.toggle-sub-brands');
@@ -729,37 +786,32 @@
                     });
                 }
 
-                // Xử lý toggle danh mục con
-                function initializeSubCategoryToggles() {
-                    debugLog('Initializing sub-category toggles');
-                    const toggleButtons = document.querySelectorAll('.toggle-sub-categories');
-                    toggleButtons.forEach(button => {
-                        const categoryId = button.getAttribute('data-category-id');
-                        const subCategoryContainer = document.querySelector(
-                            `.sub-categories[data-category-id="${categoryId}"]`);
-                        const toggleIcon = button.querySelector('.toggle-icon path');
+                // Gọi hàm khởi tạo
+                initializeSubCategoryToggles();
+                initializeSubBrandToggles();
 
-                        if (!subCategoryContainer || !toggleIcon) {
-                            debugLog('Sub-category container or toggle icon not found', {
-                                categoryId
-                            });
-                            return;
-                        }
-
-                        let isOpen = false;
-                        subCategoryContainer.classList.add('hidden');
-                        toggleIcon.setAttribute('d', 'm8.25 4.5 7.5 7.5-7.5 7.5'); // Mũi tên phải
-
-                        button.addEventListener('click', function() {
-                            debugLog('Toggling sub-category dropdown', {
-                                categoryId
-                            });
-                            isOpen = !isOpen;
-                            subCategoryContainer.classList.toggle('hidden', !isOpen);
-                            toggleIcon.setAttribute('d', isOpen ? 'm8.25 19.5 7.5-7.5-7.5-7.5' :
-                                'm8.25 4.5 7.5 7.5-7.5 7.5');
-                        });
+                // Xử lý nút Thêm thuộc tính
+                const addAttributeButton = document.getElementById('add-attribute-btn');
+                if (addAttributeButton) {
+                    debugLog('Add attribute button found');
+                    addAttributeButton.addEventListener('click', function() {
+                        debugLog('Add attribute button clicked');
+                        addAttribute();
                     });
+                } else {
+                    debugLog('Add attribute button NOT found');
+                }
+
+                // Xử lý nút Tạo biến thể
+                const generateVariantsButton = document.getElementById('generate-variants-btn');
+                if (generateVariantsButton) {
+                    debugLog('Generate variants button found');
+                    generateVariantsButton.addEventListener('click', function() {
+                        debugLog('Generate variants button clicked');
+                        generateVariants();
+                    });
+                } else {
+                    debugLog('Generate variants button NOT found');
                 }
 
                 // Hàm thêm thuộc tính
@@ -1168,7 +1220,7 @@
                     tinymce.init({
                         selector: '#description',
                         height: 300,
-                        plugins: 'image imagetools code link lists table media',
+                        plugins: 'image imagetools code link lists style table media',
                         toolbar: 'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | forecolor backcolor | code | removeformat',
                         images_upload_url: '{{ route('seller.upload.image') }}',
                         image_advtab: true,
@@ -1178,12 +1230,13 @@
                             const input = document.createElement('input');
                             input.setAttribute('type', 'file');
                             input.setAttribute('accept', 'image/*');
-                            input.onchange = function() {
+                            input.onchange('change', function() {
                                 const file = this.files[0];
                                 const reader = new FileReader();
                                 reader.onload = function() {
                                     const id = 'blobid' + (new Date()).getTime();
-                                    const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                                    const blobCache = tinymce.activeEditor.editorUpload
+                                        .blobCache;
                                     const base64 = reader.result.split(',')[1];
                                     const blobInfo = blobCache.create(id, file, base64);
                                     blobCache.add(blobInfo);
@@ -1192,7 +1245,7 @@
                                     });
                                 };
                                 reader.readAsDataURL(file);
-                            };
+                            });
                             input.click();
                         },
                         setup: function(editor) {
@@ -1214,42 +1267,7 @@
                     });
                 });
 
-                // Gắn sự kiện cho nút xóa biến thể
-                document.querySelectorAll('.remove-variant').forEach(button => {
-                    button.addEventListener('click', function() {
-                        debugLog('Remove variant button clicked');
-                        this.closest('.variant-item').remove();
-                        updateVariantIndices();
-                    });
-                });
-
-                // Khởi tạo toggle buttons
-                initializeToggleButtons();
-                initializeSubBrandToggles();
-                initializeSubCategoryToggles();
-
-                // Khởi tạo preview ảnh
-                handleMainImagePreview('mainImage', 'uploadIcon1');
-                handleAdditionalImagesPreview('additionalImages', 'uploadIconContainer2');
-
-                // Khởi tạo SEO preview
-                const productName = document.getElementById('product-name');
-                const metaTitle = document.getElementById('meta-title');
-                const metaDescription = document.getElementById('meta-description');
-
-                if (productName && metaTitle && metaDescription) {
-                    productName.addEventListener('input', updateSEOPreview);
-                    metaTitle.addEventListener('input', function() {
-                        metaTitleEditedManually = true;
-                        updateSEOPreview();
-                    });
-                    metaDescription.addEventListener('input', updateSEOPreview);
-                    updateSEOPreview();
-                } else {
-                    debugLog('SEO preview elements missing');
-                }
-
-                // Xử lý form submit
+                // Gắn xử lý sự kiện submit form
                 const productForm = document.getElementById('product-form');
                 if (productForm) {
                     productForm.addEventListener('submit', function(e) {
@@ -1274,20 +1292,6 @@
                     });
                 } else {
                     debugLog('Product form not found');
-                }
-
-                function loadSubCategories(categoryId, button) {
-                    fetch(`/seller/categories/${categoryId}/children`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const subCategoryContainer = document.querySelector(
-                                `.sub-categories[data-category-id="${categoryId}"]`);
-                            subCategoryContainer.innerHTML = data.html;
-                            subCategoryContainer.classList.toggle('hidden');
-                            debugLog('Sub-categories loaded', {
-                                categoryId
-                            });
-                        });
                 }
             });
         </script>

@@ -191,7 +191,6 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
         Route::get('/{id}', [AdminNotificationsControllers::class, 'show'])->name('admin.notifications.show');
         Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
-        
     });
 
     // products categories
@@ -271,7 +270,6 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
         Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
     });
-
 });
 
 // seller routes
@@ -318,6 +316,10 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 });
 
 Route::prefix('customer')->group(function () {
+    // Route chi tiết sản phẩm
+    Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
+    // Route xem nhanh sản phẩm
+    Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
     Route::get('/search', [ProductController::class, 'search'])->name('search');
     // Route Hồ sơ người dùng
     Route::get('/profile/{id}', [ShopController::class, 'show'])->name('shop.profile');
@@ -325,8 +327,6 @@ Route::prefix('customer')->group(function () {
     Route::post('/shop/follow/{shop}', [ShopController::class, 'follow'])->name('shop.follow');
     // Route unfollow shop
     Route::post('/shop/unfollow/{shop}', [ShopController::class, 'unfollow'])->name('shop.unfollow');
-    // Route chi tiết sản phẩm
-    Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
     // Route bình luận sản phẩm
     Route::post('/product/{productId}/review', [ProductController::class, 'storeReview'])->name('product.review');
     // Route yêu thích sản phẩm

@@ -330,6 +330,125 @@ class ProductController extends Controller
         ]);
     }
 
+    public function quickView($slug)
+    {
+        try {
+            $product = Product::with([
+                'images' => function ($query) {
+                    $query->select('id', 'productID', 'image_path', 'is_default');
+                },
+                'variants' => function ($query) {
+                    $query->select('id', 'productID', 'price', 'sale_price', 'stock')
+                        ->with([
+                            'images' => function ($q) {
+                                $q->select('id', 'variantID', 'image_path');
+                            },
+                            'attributeValues' => function ($q) {
+                                $q->select('attribute_values.id', 'attribute_values.attribute_id', 'attribute_values.value')
+                                    ->with(['attribute' => function ($qa) {
+                                        $qa->select('id', 'name');
+                                    }]);
+                            }
+                        ]);
+                }
+            ])->where('slug', $slug)->firstOrFail();
+
+            // Gán dữ liệu hiển thị theo biến thể
+            $attributeImages = [];
+            $variantData = [];
+            foreach ($product->variants as $variant) {
+                $attributeValues = $variant->attributeValues?->keyBy(fn($val) => $val->attribute->name) ?? collect();
+                $image = $variant->images->first()->image_path ?? null;
+
+                // Gán ảnh theo giá trị thuộc tính
+                foreach ($attributeValues as $attrName => $attrValue) {
+                    $attributeImages[$attrName][$attrValue->value] = $image
+                        ? Storage::url($image)
+                        : asset('storage/product_images/default.jpg');
+                }
+
+                // ✅ Thêm attributes vào từng biến thể
+                $attributesArray = $variant->attributeValues->mapWithKeys(function ($attr) {
+                    return [$attr->attribute->name => $attr->value];
+                })->toArray();
+
+                $variantData[$variant->id] = [
+                    'price' => $variant->sale_price ?? $variant->price,
+                    'original_price' => $variant->price,
+                    'stock' => $variant->stock,
+                    'image' => $variant->images->first()
+                        ? Storage::url($variant->images->first()->image_path)
+                        : asset('storage/product_images/default.jpg'),
+                    'discount_percentage' => $variant->sale_price
+                        ? round((($variant->price - $variant->sale_price) / $variant->price) * 100)
+                        : 0,
+                    'attributes' => $variant->attributeValues->mapWithKeys(function ($attr) {
+                        return [$attr->attribute->name => $attr->value];
+                    })->toArray(),
+                ];
+            }
+
+            // Nếu không có biến thể → mặc định
+            if ($product->variants->isEmpty()) {
+                $variantData['default'] = [
+                    'price' => $product->sale_price ?? $product->price,
+                    'original_price' => $product->price,
+                    'stock' => $product->stock_total,
+                    'image' => $product->images->first()
+                        ? Storage::url($product->images->first()->image_path)
+                        : asset('storage/product_images/default.jpg'),
+                    'discount_percentage' => $product->sale_price
+                        ? round((($product->price - $product->sale_price) / $product->price) * 100)
+                        : 0,
+                    'attributes' => [] // Không có thuộc tính
+                ];
+            }
+
+            // Chuẩn bị danh sách thuộc tính cho view
+            $attributes = [];
+            foreach ($product->variants as $variant) {
+                foreach ($variant->attributeValues as $attributeValue) {
+                    $attributeName = $attributeValue->attribute->name;
+                    $value = $attributeValue->value;
+                    if (!isset($attributes[$attributeName])) {
+                        $attributes[$attributeName] = collect();
+                    }
+                    if (!$attributes[$attributeName]->contains($value)) {
+                        $attributes[$attributeName]->push($value);
+                    }
+                }
+            }
+
+            Log::info('QuickView Product:', [
+                'id' => $product->id,
+                'variants_count' => $product->variants->count(),
+                'variantData' => $variantData,
+                'attributeImages' => $attributeImages
+            ]);
+
+            $html = view('partials.quick_view', compact('product', 'attributeImages', 'variantData', 'attributes'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'variantData' => $variantData
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('QuickView Error: Product not found for slug ' . $slug);
+            return response()->json([
+                'success' => false,
+                'message' => 'Sản phẩm không tồn tại!'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('QuickView Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã có lỗi xảy ra khi tải chi tiết sản phẩm!'
+            ], 500);
+        }
+    }
+
+
     public function reportProduct(Request $request, Product $product)
     {
         $request->validate([
@@ -393,30 +512,55 @@ class ProductController extends Controller
 
     public function toggleWishlist(Request $request, $productId)
     {
-        $user = Auth::user();
-        if (!$user) {
-            return response()->json(['message' => 'Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích'], 401);
-        }
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích!'
+                ], 401);
+            }
 
-        $product = Product::findOrFail($productId);
-        $wishlist = Wishlist::where('userID', $user->id)->where('productID', $productId)->first();
+            $product = Product::find($productId);
+            if (!$product) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sản phẩm không tồn tại!'
+                ], 404);
+            }
 
-        if ($wishlist) {
-            // Nếu sản phẩm đã có trong wishlist, xóa nó
-            $wishlist->delete();
-            return response()->json(['message' => 'Đã xóa sản phẩm khỏi danh sách yêu thích', 'isWishlisted' => false]);
-        } else {
-            // Nếu sản phẩm chưa có trong wishlist, thêm mới
+            $wishlist = Wishlist::where('userID', $user->id)
+                ->where('productID', $productId)
+                ->first();
+
+            if ($wishlist) {
+                $wishlist->delete();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đã xóa khỏi danh sách yêu thích!',
+                    'isWishlisted' => false
+                ]);
+            }
+
             Wishlist::create([
                 'userID' => $user->id,
                 'productID' => $productId,
-                'shopID' => $product->shopID,
-                'note' => $request->input('note', null),
+                'shopID' => $product->shopID
             ]);
-            return response()->json(['message' => 'Đã thêm sản phẩm vào danh sách yêu thích', 'isWishlisted' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã thêm vào danh sách yêu thích!',
+                'isWishlisted' => true
+            ]);
+        } catch (\Exception $e) {
+            Log::error('ToggleWishlist Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã có lỗi xảy ra!'
+            ], 500);
         }
     }
-
 
     public function saveCoupon(Request $request, $couponId)
     {
