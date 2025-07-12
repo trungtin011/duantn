@@ -33,56 +33,67 @@ class ProductController extends Controller
         $priceMax = $request->input('price_max');
         $sort = $request->input('sort', 'relevance');
 
-        // Log ban đầu
-        Log::info('Filter request received:', [
-            'query' => $query,
-            'selected_category_ids' => $categoryIds,
-            'selected_brand_ids' => $brandIds,
-            'price_min' => $priceMin,
-            'price_max' => $priceMax,
-            'sort' => $sort
+        // Log số lượng danh mục/thương hiệu trong database
+        Log::info('Tổng số danh mục trong database:', ['số lượng' => Category::count()]);
+        Log::info('Tổng số thương hiệu trong database:', ['số lượng' => Brand::count()]);
+
+        // Log yêu cầu
+        Log::info('Yêu cầu bộ lọc nhận được:', [
+            'từ khóa tìm kiếm' => $query,
+            'danh mục đã chọn' => $categoryIds,
+            'thương hiệu đã chọn' => $brandIds,
+            'giá tối thiểu' => $priceMin,
+            'giá tối đa' => $priceMax,
+            'sắp xếp' => $sort
         ]);
 
-        // Lấy tất cả ID danh mục (cả con cháu)
-        $allCategoryIds = collect();
-        if (!empty($categoryIds)) {
-            $selectedCategories = Category::with('subCategories.subCategories')
-                ->whereIn('id', $categoryIds)->get();
+        // Xóa cache khi không có bộ lọc
+        if (empty($categoryIds) && empty($brandIds) && !$priceMin && !$priceMax) {
+            Cache::forget('all_categories');
+            Cache::forget('all_brands');
+        }
 
-            foreach ($selectedCategories as $cat) {
-                $allCategoryIds->push($cat->id);
-                foreach ($cat->subCategories as $sub) {
-                    $allCategoryIds->push($sub->id);
-                    foreach ($sub->subCategories as $sub2) {
-                        $allCategoryIds->push($sub2->id);
+        // Lấy tất cả danh mục
+        $categories = Cache::remember('all_categories', 600, function () {
+            return Category::with(['subCategories.subCategories'])
+                ->whereNull('parent_id') // Lấy tất cả danh mục cha
+                ->select('id', 'name', 'parent_id')
+                ->get()
+                ->map(function ($cat) {
+                    $cat->product_count = $cat->products()->where('status', 'active')->count();
+                    foreach ($cat->subCategories as $sub) {
+                        $sub->product_count = $sub->products()->where('status', 'active')->count();
+                        foreach ($sub->subCategories as $sub2) {
+                            $sub2->product_count = $sub2->products()->where('status', 'active')->count();
+                            $sub->product_count += $sub2->product_count;
+                        }
+                        $cat->product_count += $sub->product_count;
                     }
-                }
-            }
-            $allCategoryIds = $allCategoryIds->unique()->values();
-        }
-        Log::debug('📂 Final Category IDs used:', $allCategoryIds->toArray());
+                    return $cat;
+                });
+        });
 
-        // Lấy tất cả ID thương hiệu (cả con)
-        $allBrandIds = collect();
-        if (!empty($brandIds)) {
-            $selectedBrands = Brand::with('subBrands')
-                ->whereIn('id', $brandIds)->get();
-
-            foreach ($selectedBrands as $brand) {
-                $allBrandIds->push($brand->id);
-                foreach ($brand->subBrands as $sub) {
-                    $allBrandIds->push($sub->id);
-                }
-            }
-            $allBrandIds = $allBrandIds->unique()->values();
-        }
-        Log::debug('🏷️ Final Brand IDs used:', $allBrandIds->toArray());
+        // Lấy tất cả thương hiệu
+        $brands = Cache::remember('all_brands', 600, function () {
+            return Brand::with(['subBrands'])
+                ->whereNull('parent_id') // Lấy tất cả thương hiệu cha
+                ->select('id', 'name', 'parent_id')
+                ->get()
+                ->map(function ($brand) {
+                    $brand->product_count = $brand->products()->where('status', 'active')->count();
+                    foreach ($brand->subBrands as $sub) {
+                        $sub->product_count = $sub->products()->where('status', 'active')->count();
+                        $brand->product_count += $sub->product_count;
+                    }
+                    return $brand;
+                });
+        });
 
         // Truy vấn sản phẩm
         $productQuery = Product::query()
             ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
-            ->when($allCategoryIds->isNotEmpty(), fn($q) => $q->whereHas('categories', fn($q2) => $q2->whereIn('categories.id', $allCategoryIds)))
-            ->when($allBrandIds->isNotEmpty(), fn($q) => $q->whereHas('brands', fn($q2) => $q2->whereIn('brand.id', $allBrandIds)))
+            ->when($categoryIds, fn($q) => $q->whereHas('categories', fn($q2) => $q2->whereIn('categories.id', $categoryIds)))
+            ->when($brandIds, fn($q) => $q->whereHas('brands', fn($q2) => $q2->whereIn('brands.id', $brandIds)))
             ->when($priceMin, fn($q) => $q->where('sale_price', '>=', $priceMin))
             ->when($priceMax, fn($q) => $q->where('sale_price', '<=', $priceMax))
             ->when($sort, fn($q) => match ($sort) {
@@ -96,106 +107,16 @@ class ProductController extends Controller
             ->with(['categories', 'brands', 'images']);
 
         $products = $productQuery->paginate(20);
-        $productIds = $products->pluck('id');
 
-        Log::info('✅ Total products matched:', ['count' => $products->total()]);
+        Log::info('✅ Tổng số sản phẩm khớp:', ['số lượng' => $products->total()]);
+        Log::info('✅ Danh mục và thương hiệu đã lấy:', ['danh mục' => $categories->count(), 'thương hiệu' => $brands->count()]);
 
-        // Lấy danh mục liên quan đến danh mục được chọn
-        $categories = collect();
-        if (!empty($categoryIds)) {
-            $categories = Cache::remember('selected_categories_' . md5(json_encode($categoryIds)), 600, function () use ($categoryIds, $productIds) {
-                return Category::with(['subCategories.subCategories'])
-                    ->whereIn('id', $categoryIds)
-                    ->select('id', 'name', 'parent_id')
-                    ->get()
-                    ->map(function ($cat) use ($productIds) {
-                        $cat->product_count = $cat->products()->whereIn('products.id', $productIds)->count();
-                        foreach ($cat->subCategories as $sub) {
-                            $sub->product_count = $sub->products()->whereIn('products.id', $productIds)->count();
-                            foreach ($sub->subCategories as $sub2) {
-                                $sub2->product_count = $sub2->products()->whereIn('products.id', $productIds)->count();
-                                $sub->product_count += $sub2->product_count;
-                            }
-                            $cat->product_count += $sub->product_count;
-                        }
-                        return $cat;
-                    });
-            });
-        } else {
-            // Nếu không có danh mục được chọn, lấy tất cả danh mục cha
-            $categories = Cache::remember('all_categories', 600, function () use ($productIds) {
-                return Category::with(['subCategories.subCategories'])
-                    ->whereNull('parent_id')
-                    ->select('id', 'name', 'parent_id')
-                    ->get()
-                    ->map(function ($cat) use ($productIds) {
-                        $cat->product_count = $cat->products()->whereIn('products.id', $productIds)->count();
-                        foreach ($cat->subCategories as $sub) {
-                            $sub->product_count = $sub->products()->whereIn('products.id', $productIds)->count();
-                            foreach ($sub->subCategories as $sub2) {
-                                $sub2->product_count = $sub2->products()->whereIn('products.id', $productIds)->count();
-                                $sub->product_count += $sub2->product_count;
-                            }
-                            $cat->product_count += $sub->product_count;
-                        }
-                        return $cat;
-                    });
-            });
-        }
-
-        // Lấy thương hiệu liên quan đến thương hiệu được chọn
-        $brands = collect();
-        if (!empty($brandIds)) {
-            $brands = Cache::remember('selected_brands_' . md5(json_encode($brandIds)), 600, function () use ($brandIds, $productIds) {
-                return Brand::with(['subBrands'])
-                    ->whereIn('id', $brandIds)
-                    ->select('id', 'name', 'parent_id')
-                    ->get()
-                    ->map(function ($brand) use ($productIds) {
-                        $brand->product_count = $brand->products()->whereIn('products.id', $productIds)->count();
-                        foreach ($brand->subBrands as $sub) {
-                            $sub->product_count = $sub->products()->whereIn('products.id', $productIds)->count();
-                            $brand->product_count += $sub->product_count;
-                        }
-                        return $brand;
-                    });
-            });
-        } else {
-            // Nếu không có thương hiệu được chọn, lấy tất cả thương hiệu cha
-            $brands = Cache::remember('all_brands', 600, function () use ($productIds) {
-                return Brand::with(['subBrands'])
-                    ->whereNull('parent_id')
-                    ->select('id', 'name', 'parent_id')
-                    ->get()
-                    ->map(function ($brand) use ($productIds) {
-                        $brand->product_count = $brand->products()->whereIn('products.id', $productIds)->count();
-                        foreach ($brand->subBrands as $sub) {
-                            $sub->product_count = $sub->products()->whereIn('products.id', $productIds)->count();
-                            $brand->product_count += $sub->product_count;
-                        }
-                        return $brand;
-                    });
-            });
-        }
-
-        Log::info('✅ Categories and Brands fetched:', ['categories' => $categories->count(), 'brands' => $brands->count()]);
-
-        // Log kết quả cuối cùng
-        Log::info('🔍 Search Results:', [
-            'query' => $query,
-            'total_products' => $products->total(),
-            'categories_count' => $categories->count(),
-            'brands_count' => $brands->count()
-        ]);
-
-        // Xử lý yêu cầu AJAX
+        // Trong phương thức search, phần AJAX
         if ($request->ajax()) {
             return response()->json([
                 'html' => view('partials.product_list', compact('products'))->render(),
-                'filters' => [
-                    'category' => $allCategoryIds->toArray(),
-                    'brand' => $allBrandIds->toArray(),
-                ],
+                'categories_html' => view('partials.category_filters', compact('categories'))->render(),
+                'brands_html' => view('partials.brand_filters', compact('brands'))->render(),
             ]);
         }
 
