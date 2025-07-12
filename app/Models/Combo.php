@@ -2,21 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Combo extends Model
 {
-    use HasFactory;
-protected $table = 'combo';
+    protected $table = 'combo';
     protected $fillable = [
         'shopID',
         'combo_name',
         'combo_description',
+        'image',
         'total_price',
         'discount_value',
         'discount_type',
+        'quantity',
         'status',
+        'created_at',
+        'updated_at',
     ];
 
     public function shop()
