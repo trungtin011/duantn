@@ -64,6 +64,7 @@ use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ShopController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\User\ComboController as UserComboController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -550,3 +551,8 @@ Route::get('/account/password/verify-code', [UserController::class, 'showVerifyC
     ->name('account.password.code.verify.form');
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+    Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
+Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
+Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
+
