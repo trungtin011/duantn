@@ -445,7 +445,7 @@
                                     <h3 class="category-item-title">{{ $category->name }}</h3>
                                     <p class="category-item-amount">({{ $category->products_count }})</p>
                                 </div>
-                                <a href="{{ route('search', $category->slug) }}" class="category-btn">Xem tất cả</a>
+                                <a href="{{ route('search', ['category' => [$category->id]]) }}" class="category-btn">Xem tất cả</a>
                             </div>
                         </div>
                     @endforeach
