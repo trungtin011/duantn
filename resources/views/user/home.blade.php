@@ -81,6 +81,9 @@
                     <li class="menu-category">
                         <a href="#" class="menu-title">Trang chủ</a>
                     </li>
+                                    <li class="menu-category">
+        <a href="{{ route('combo.index') }}" class="menu-title">Combo</a>
+    </li>
                     <li class="menu-category">
                         <a href="#" class="menu-title">Danh mục</a>
                         <div class="dropdown-panel">

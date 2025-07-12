@@ -17,6 +17,7 @@ class Cart extends Model
         'total_price',
         'session_id',
         'buying_flag',
+        'combo_id',
 
     ];
 
@@ -38,6 +39,10 @@ class Cart extends Model
     public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'variantID', 'id');
+    }
+     public function combo()
+    {
+        return $this->belongsTo(Combo::class, 'combo_id');
     }
 }
 
