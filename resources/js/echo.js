@@ -11,7 +11,7 @@ window.Echo = new Echo({
 });
 
 
-if(window.Laravel.user.role === 'seller') {
+if (window.Laravel.user.role === 'seller') {
     console.log('Seller notification:', window.Laravel.user.role);
 
     window.Echo.private(`order.created.${window.Laravel.shop}`)
@@ -27,22 +27,23 @@ if(window.Laravel.user.role === 'seller') {
     });
     
     window.Echo.channel('notifications.all')
-        .listen('.new-notification.event', (e) => { 
+        .listen('.new-notification.event', (e) => {
             console.log('Global notification:', e);
             addNotificationToSellerHome(e);
+            addNotificationToList(e);
         });
 }
 
 if (window.Laravel.user.role === 'customer') {
     console.log('Customer notification:', window.Laravel.user.role);
     window.Echo.channel(`user.${window.Laravel.user.role}`)
-    .listen('.customer-notification.event', (e) => {
-        console.log('User notification:', e);
-        addNotificationToList(e);
-    });
+        .listen('.customer-notification.event', (e) => {
+            console.log('User notification:', e);
+            addNotificationToList(e);
+        });
 
     window.Echo.channel('notifications.all')
-        .listen('.new-notification.event', (e) => { 
+        .listen('.new-notification.event', (e) => {
             console.log('Global notification:', e);
             addNotificationToList(e);
         });
@@ -56,6 +57,7 @@ if (window.Laravel.user.role === 'customer') {
 
 
 function addNotificationToList(notification) {
+    console.log('Add notification to list:', notification);
     console.log('Add notification to list:', notification);
     const dropdownContent = document.querySelector('.dropdown-notification-content');
     if (!dropdownContent) return;
@@ -113,7 +115,7 @@ function addNotificationToList(notification) {
 
     // Cập nhật số đếm thông báo
     updateNotificationCount();
-    
+
     // Hiển thị dropdown nếu đang ẩn
     if (dropdownContent.classList.contains('hidden')) {
         dropdownContent.classList.remove('hidden');
@@ -124,9 +126,9 @@ function createNotificationTypeSection(type) {
     const section = document.createElement('div');
     section.className = 'mb-3';
     section.setAttribute('data-type', type);
-    
+
     const typeInfo = getTypeInfo(type);
-    
+
     section.innerHTML = `
         <div class="flex items-center gap-2 mb-2">
             <div class="w-2 h-2 rounded-full ${typeInfo.color}"></div>
@@ -135,21 +137,21 @@ function createNotificationTypeSection(type) {
         </div>
         <div class="notifications-list"></div>
     `;
-    
+
     return section;
 }
 
 function createNotificationItem(notification) {
     const typeInfo = getTypeInfo(notification.type);
-    const priorityBadge = notification.priority === 'high' ? 
+    const priorityBadge = notification.priority === 'high' ?
         '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Quan trọng</span>' : '';
-    
+
     const notificationItem = document.createElement('div');
     notificationItem.className = 'flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 bg-blue-50 border-l-4 border-blue-500 notification-item';
     notificationItem.setAttribute('data-notification-title', escapeHtml(notification.title));
     notificationItem.setAttribute('data-notification-type', notification.type);
     notificationItem.setAttribute('data-notification-receiver-type', notification.receiver_type);
-    
+
     notificationItem.innerHTML = `
         <div class="flex-shrink-0">
             <div class="w-10 h-10 rounded-full flex items-center justify-center ${typeInfo.bgColor}">
@@ -168,7 +170,7 @@ function createNotificationItem(notification) {
             </div>
         </div>
     `;
-    
+
     return notificationItem;
 }
 
@@ -199,7 +201,7 @@ function getTypeInfo(type) {
             icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-red-600"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>'
         }
     };
-    
+
     return typeMap[type] || {
         label: type.charAt(0).toUpperCase() + type.slice(1),
         color: 'bg-gray-500',
@@ -214,7 +216,7 @@ function updateNotificationCount() {
 
     const unreadNotifications = dropdownContent.querySelectorAll('.bg-blue-50');
     const count = unreadNotifications.length;
-    
+
     // Tìm hoặc tạo badge số đếm
     let badge = document.querySelector('.bg-red-500.text-white.text-xs.rounded-full');
     if (count > 0) {
@@ -235,37 +237,37 @@ function updateNotificationCount() {
 }
 
 function escapeHtml(text) {
-  return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 function formatDate(dateString) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now - date) / 1000);
-  
-  if (diffInSeconds < 60) return 'Vừa xong';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
-  return date.toLocaleString('vi-VN');
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return 'Vừa xong';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
+    return date.toLocaleString('vi-VN');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const notificationButton = document.querySelector('.dropdown-notification');
     const dropdownContent = document.querySelector('.dropdown-notification-content');
-    
+
     if (notificationButton && dropdownContent) {
-        notificationButton.addEventListener('click', function(e) {
+        notificationButton.addEventListener('click', function (e) {
             e.stopPropagation();
             dropdownContent.classList.toggle('hidden');
         });
-        
+
         // Đóng dropdown khi click bên ngoài
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!notificationButton.contains(e.target)) {
                 dropdownContent.classList.add('hidden');
             }

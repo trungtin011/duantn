@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('order_reviews', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('user_id')->constrained()->onDelete('cascade');
-    $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
-    $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-    $table->foreignId('shop_id')->constrained('shops')->onDelete('cascade');
-    $table->tinyInteger('rating')->default(0);
-    $table->text('comment')->nullable();
-    $table->timestamps();
-});
+        $table->id();
+        $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+        $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+        $table->foreignId('shop_id')->constrained('shops')->onDelete('cascade');
+        $table->tinyInteger('rating')->default(0);
+        $table->text('comment')->nullable();
+        $table->timestamps();
+    });
 
     }
 

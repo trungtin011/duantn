@@ -98,6 +98,16 @@ class Product extends Model
         return $this->hasMany(Review::class, 'product_id');
     }
 
+    public function brands()
+    {
+        return $this->belongsToMany(Brand::class, 'product_brands', 'product_id', 'brand_id')->withTimestamps();;
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'product_categories', 'product_id', 'category_id')->withTimestamps();;
+    }
+
     // public function reviews()
     // {
     //     return $this->hasMany(\App\Models\ProductReview::class)->with('user');
@@ -127,6 +137,17 @@ class Product extends Model
             'id',
             'id'
         )->join('product_variant_attribute_values', 'attribute_values.id', '=', 'product_variant_attribute_values.attribute_value_id');
+    }
+
+    public function variantAttributes()
+    {
+        return $this->variants()
+            ->with(['attributeValues' => function ($query) {
+                $query->with('attribute');
+            }])
+            ->get()
+            ->pluck('attributeValues')
+            ->flatten();
     }
 
     // Scopes

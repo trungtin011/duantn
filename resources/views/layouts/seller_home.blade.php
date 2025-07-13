@@ -10,7 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
-    <script src="https://cdn.tiny.cloud/1/bwf2fyyh0knkijbdmdtqiak2d3uzu8b0rxcg0zuwqwdsddde/tinymce/7/tinymce.min.js"
+    <script src="https://cdn.tiny.cloud/1/qcg1t5tgcxrd5t849fhl74dsm4w81nsyuhwtao66g7e1aw31/tinymce/7/tinymce.min.js"
         referrerpolicy="origin"></script>
     @vite('resources/css/seller/seller-products.css')
     @vite('resources/js/echo.js')
@@ -164,8 +164,8 @@
                         <div @click="open = !open"
                             class="dropdown_admin px-[24px] py-[12px] flex items-center justify-between cursor-pointer {{ request()->routeIs('seller.order.index') ? 'active' : '' }}">
                             <div class="flex items-center gap-2">
-                                <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                    width="16" height="16">
+                                <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16"
+                                    height="16">
                                     <path fill="currentColor"
                                         d="m11.349,24H0V3C0,1.346,1.346,0,3,0h12c1.654,0,3,1.346,3,3v5.059c-.329-.036-.662-.059-1-.059s-.671.022-1,.059V3c0-.552-.448-1-1-1H3c-.552,0-1,.448-1,1v19h7.518c.506.756,1.125,1.429,1.831,2Zm0-14h-7.349v2h5.518c.506-.756,1.125-1.429,1.831-2Zm-7.349,7h4c0-.688.084-1.356.231-2h-4.231v2Zm20,0c0,3.859-3.141,7-7,7s-7-3.141-7-7,3.141-7,7-7,7,3.141,7,7Zm-2,0c0-2.757-2.243-5-5-5s-5,2.243-5,5,2.243,5,5,5,5-2.243,5-5ZM14,5H4v2h10v-2Zm5.589,9.692l-3.228,3.175-1.63-1.58-1.393,1.436,1.845,1.788c.314.315.733.489,1.179.489s.865-.174,1.173-.482l3.456-3.399-1.402-1.426Z" />
                                 </svg>
@@ -396,7 +396,6 @@
         </footer>
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         @stack('scripts')
-        @vite('resources/js/seller/product.js')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const trigger = document.getElementById('user-menu-trigger');

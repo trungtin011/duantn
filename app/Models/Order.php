@@ -18,6 +18,7 @@ class Order extends Model
         'shipping_fee',
         'coupon_id',
         'coupon_id',
+        'used_points',
         'coupon_discount',
         'payment_method',
         'payment_status',
