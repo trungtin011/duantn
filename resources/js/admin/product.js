@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/-+/g, "-"); // Xóa dấu "-" thừa
     }
 
-
     // Cập nhật nội dung xem trước SEO và đồng bộ meta title
     function updateSEOPreview() {
         if (!metaTitleEditedManually) {
@@ -59,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
         previewUrl.textContent = `https://Zynox.com/san-pham/${slugify(productName.value || 'san-pham')}`;
         previewDescription.textContent = metaDescription.value || 'Mô tả ngắn gọn về sản phẩm.';
     }
-
 
     // Thêm sự kiện khi nhập liệu vào product-name
     productName.addEventListener('input', function () {
@@ -82,7 +80,6 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSEOPreview();
 
     productName.addEventListener('input', function () {
-        console.log('Tên sản phẩm:', productName.value); // Debug
         if (!metaTitle.value) {
             metaTitle.value = productName.value;
             updateSEOPreview();
@@ -605,11 +602,53 @@ function addAttribute() {
     });
 }
 
+// Đảm bảo các hàm có thể được gọi từ global scope
+window.generateVariants = generateVariants;
+window.addAttribute = addAttribute;
+window.removeVariant = removeVariant;
+window.removeImage = removeImage;
+window.previewVariantImage = previewVariantImage;
+
+// Đảm bảo DOM đã sẵn sàng
+document.addEventListener('DOMContentLoaded', function() {
+    // Gắn event listener cho button generate variants
+    const generateButton = document.getElementById('generate-variants-btn');
+    if (generateButton) {
+        generateButton.addEventListener('click', generateVariants);
+    }
+    
+    // Gắn event listener cho button add attribute
+    const addAttributeButton = document.querySelector('button[onclick="addAttribute()"]');
+    if (addAttributeButton) {
+        addAttributeButton.removeAttribute('onclick');
+        addAttributeButton.addEventListener('click', addAttribute);
+    }
+    
+    // Gắn event listener cho button add attribute (nếu có ID)
+    const addAttributeBtn = document.getElementById('add-attribute-btn');
+    if (addAttributeBtn) {
+        addAttributeBtn.addEventListener('click', addAttribute);
+    }
+    
+    // Event delegation cho việc xóa variant và image
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.remove-variant-btn, button[onclick*="removeVariant"]')) {
+            e.preventDefault();
+            e.stopPropagation();
+            removeVariant(e.target);
+        }
+        
+        if (e.target.matches('.remove-image-btn, button[onclick*="removeImage"]')) {
+            e.preventDefault();
+            e.stopPropagation();
+            removeImage(e.target);
+        }
+    });
+});
 
 function generateVariants() {
     let attributes = document.querySelectorAll('[name$="[name]"]');
     let values = document.querySelectorAll('[name$="[values]"]');
-    console.log('Attributes:', attributes.length, 'Values:', values.length);
     let variantContainer = document.getElementById('variant-container');
     let attributeContainer = document.getElementById('attribute-container');
     variantContainer.innerHTML = '';
@@ -662,8 +701,8 @@ function generateVariants() {
         variantDiv.innerHTML = `
             <div class="flex justify-between items-center mb-3">
                 <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
-                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600"
-                    onclick="removeVariant(this)">Xóa</button>
+                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-variant-btn"
+                    data-action="remove-variant">Xóa</button>
             </div>
             <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
             <div class="grid grid-cols-2 gap-4 mb-6">
@@ -721,8 +760,8 @@ function previewVariantImage(event, index) {
 
             imgContainer.innerHTML = `
                 <img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md border border-gray-300">
-                <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md"
-                    onclick="removeImage(this)">✖</button>
+                <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md remove-image-btn"
+                    data-action="remove-image">✖</button>
             `;
             previewContainer.appendChild(imgContainer);
         };
@@ -731,11 +770,22 @@ function previewVariantImage(event, index) {
 }
 
 function removeVariant(element) {
-    element.closest('.p-4').remove();
+    const variantDiv = element.closest('.p-6, .p-4');
+    if (variantDiv) {
+        variantDiv.remove();
+    } else {
+        // Fallback: remove the parent div
+        const parentDiv = element.closest('div');
+        if (parentDiv) {
+            parentDiv.remove();
+        }
+    }
 }
 
 function removeImage(element) {
-    element.parentElement.remove();
+    if (element && element.parentElement) {
+        element.parentElement.remove();
+    }
 }
 
 document.getElementById('select-all').addEventListener('change', function () {

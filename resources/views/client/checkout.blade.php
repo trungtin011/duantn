@@ -387,12 +387,51 @@
                                         <div class="w-2/3">
                                             <div class="text-left">
                                                 <div class="font-medium text-gray-800 mb-1">{{ $item['product']->name }}</div>
-                                                <div class="text-sm text-gray-600 mb-1">{{ $item['product']->variants->first()->variant_name }}</div>
+                                                <div class="text-sm text-gray-600 mb-1">
+                                                    @if (isset($item['is_combo']) && $item['is_combo'] && isset($item['variant']))
+                                                        {{ $item['variant']->variant_name ?? 'Không có biến thể' }}
+                                                    @elseif ($item['product']->variants && $item['product']->variants->count() > 0)
+                                                        {{ $item['product']->variants->first()->variant_name ?? 'Không có biến thể' }}
+                                                    @else
+                                                        Không có biến thể
+                                                    @endif
+                                                </div>
                                                 <div class="text-sm text-gray-600">Số lượng: x{{ $item['quantity'] }}</div>
                                             </div>
+                                            @if (isset($item['is_combo']) && $item['is_combo'])
+                                                <div class="text-xs text-primary bg-primary-soft px-2 py-1 rounded-md inline-block mb-1">
+                                                    (Thuộc Combo: <strong>{{ $item['combo_info']['combo_name'] }}</strong>)
+                                                </div>
+                                            @endif
                                             <div class="text-right flex flex-row gap-2 mt-5">
-                                                <div class="font-medium text-gray-800">{{ number_format($item['product']->variants->first()->sale_price, 0, ',', '.') }}₫</div>
-                                                <div class="text-sm text-gray-500 line-through">{{ number_format($item['product']->variants->first()->price, 0, ',', '.') }}₫</div>
+                                                @if (isset($item['is_combo']) && $item['is_combo'] && isset($item['combo_info']))
+                                                    @php
+                                                        // Sử dụng giá đã được tính sẵn từ CheckoutController
+                                                        $combo = $item['combo_info'];
+                                                        $discountedPrice = $combo['price_in_combo'];
+                                                        $originalPrice = $combo['original_price'];
+                                                    @endphp
+                                                    <div class="font-medium text-gray-800">{{ number_format($discountedPrice, 0, ',', '.') }}₫</div>
+                                                    @if($discountedPrice < $originalPrice)
+                                                        <div class="text-sm text-gray-500 line-through">{{ number_format($originalPrice, 0, ',', '.') }}₫</div>
+                                                    @endif
+                                                @else
+                                                    @php
+                                                        // Kiểm tra xem sản phẩm có variant hay không
+                                                        if ($item['product']->variants && $item['product']->variants->count() > 0) {
+                                                            $currentPrice = $item['product']->variants->first()->sale_price;
+                                                            $originalPrice = $item['product']->variants->first()->price;
+                                                        } else {
+                                                            // Sản phẩm không có variant - sử dụng giá từ product
+                                                            $currentPrice = $item['product']->sale_price ?? $item['product']->price;
+                                                            $originalPrice = $item['product']->price;
+                                                        }
+                                                    @endphp
+                                                    <div class="font-medium text-gray-800">{{ number_format($currentPrice, 0, ',', '.') }}₫</div>
+                                                    @if($currentPrice < $originalPrice)
+                                                        <div class="text-sm text-gray-500 line-through">{{ number_format($originalPrice, 0, ',', '.') }}₫</div>
+                                                    @endif
+                                                @endif
                                             </div>
                                         </div>
                                     </div>

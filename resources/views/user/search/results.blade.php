@@ -1,4 +1,15 @@
 @extends('layouts.app')
+@push('styles')
+    <style>
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+
+        .filter-link.active {
+            color: #ef444488 !important;
+        }
+    </style>
+@endpush
 @php
     $hasFilter =
         request()->has('category') ||
@@ -11,7 +22,7 @@
     <div class="container mx-auto px-4 py-6">
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Bộ Lọc -->
-            <aside class="w-full lg:w-1/5 bg-white p-4 border rounded-lg shadow-sm">
+            <aside class="w-full lg:w-1/5 bg-white p-4 rounded-lg shadow-lg">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-800">Bộ Lọc</h2>
                     <button type="button" id="reset-filters"
@@ -23,92 +34,63 @@
                 <form method="GET" action="{{ route('search') }}" id="filter-form">
                     <input type="hidden" name="query" value="{{ request('query') }}">
 
-                    <!-- Danh mục -->
+                    <!-- Danh mục và Thương hiệu trong cùng khu vực -->
                     <div class="mb-4">
                         <h3 class="font-semibold text-sm mb-2 text-gray-700">Danh mục</h3>
-                        <div class="space-y-1">
-                            @foreach ($categories as $cat)
-                                <div class="category-group relative">
-                                    <div
-                                        class="flex w-full justify-between items-center bg-white rounded-md overflow-hidden">
-                                        <button type="button"
-                                            class="filter-link text-left text-sm text-black hover:text-red-500 px-3 py-2 w-full"
-                                            data-value="{{ $cat->id }}" data-type="category">
-                                            {{ $cat->name }}
-                                            <span class="text-gray-500">({{ $cat->product_count }})</span>
-                                        </button>
-                                        @if ($cat->subCategories->isNotEmpty())
-                                            <button type="button" class="toggle-dropdown px-2"
-                                                data-toggle="dropdown-{{ $cat->id }}">
-                                                <svg class="dropdown-icon w-4 h-4 text-gray-400 transition-transform duration-300"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </button>
-                                        @endif
-                                    </div>
-                                    @if ($cat->subCategories->isNotEmpty())
-                                        <div id="dropdown-{{ $cat->id }}"
-                                            class="dropdown hidden mt-1 ml-4 rounded-md bg-white p-2 space-y-1">
-                                            @foreach ($cat->subCategories as $sub)
-                                                <button
-                                                    class="filter-link block text-sm text-black hover:text-red-500 px-2 py-1 rounded"
-                                                    data-value="{{ $sub->id }}" data-type="category">
-                                                    -- {{ $sub->name }} <span
-                                                        class="text-gray-500">({{ $sub->product_count ?? 0 }})</span>
-                                                </button>
-                                            @endforeach
-                                        </div>
-                                    @endif
+                        @foreach ($categories as $cat)
+                            <div class="category-group mb-1">
+                                <div class="flex items-center bg-white rounded-md px-2 py-1">
+                                    <label class="flex items-center space-x-2 w-full cursor-pointer">
+                                        <input type="checkbox" class="filter-checkbox" name="category[]"
+                                            value="{{ $cat->id }}"
+                                            {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
+                                        <span class="text-sm text-gray-800">{{ $cat->name }} <span
+                                                class="text-gray-500">({{ $cat->product_count }})</span></span>
+                                    </label>
                                 </div>
-                            @endforeach
-                        </div>
-                    </div>
+                                @if ($cat->subCategories->isNotEmpty())
+                                    <div id="dropdown-{{ $cat->id }}" class="ml-4 mt-1 space-y-1">
+                                        @foreach ($cat->subCategories as $sub)
+                                            <label class="flex items-center space-x-2 cursor-pointer">
+                                                <input type="checkbox" class="filter-checkbox" name="category[]"
+                                                    value="{{ $sub->id }}"
+                                                    {{ in_array($sub->id, request('category', [])) ? 'checked' : '' }}>
+                                                <span class="text-sm text-gray-700">-- {{ $sub->name }} <span
+                                                        class="text-gray-500">({{ $sub->product_count ?? 0 }})</span></span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
 
-                    <!-- Thương hiệu -->
-                    <div class="mb-4">
-                        <h3 class="font-semibold text-sm mb-2 text-gray-700">Thương Hiệu</h3>
-                        <div class="space-y-1">
-                            @foreach ($brands as $brand)
-                                <div class="brand-group relative">
-                                    <div
-                                        class="flex w-full justify-between items-center bg-white rounded-md overflow-hidden">
-                                        <button type="button"
-                                            class="filter-link text-left text-sm text-black hover:text-red-500 px-3 py-2 w-full"
-                                            data-value="{{ $brand->id }}" data-type="brand">
-                                            {{ $brand->name }}
-                                            <span class="text-gray-500">({{ $brand->product_count }})</span>
-                                        </button>
-                                        @if ($brand->subBrands->isNotEmpty())
-                                            <button type="button" class="toggle-dropdown px-2"
-                                                data-toggle="brand-dropdown-{{ $brand->id }}">
-                                                <svg class="dropdown-icon w-4 h-4 text-gray-400 transition-transform duration-300"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </button>
-                                        @endif
-                                    </div>
-                                    @if ($brand->subBrands->isNotEmpty())
-                                        <div id="brand-dropdown-{{ $brand->id }}"
-                                            class="dropdown hidden mt-1 ml-4 rounded-md bg-white p-2 space-y-1">
-                                            @foreach ($brand->subBrands as $sub)
-                                                <button
-                                                    class="filter-link block text-sm text-black hover:text-red-500 px-2 py-1 rounded"
-                                                    data-value="{{ $sub->id }}" data-type="brand">
-                                                    -- {{ $sub->name }}
-                                                    <span class="text-gray-500">({{ $sub->product_count ?? 0 }})</span>
-                                                </button>
-                                            @endforeach
-                                        </div>
-                                    @endif
+                        <h3 class="font-semibold text-sm mt-4 mb-2 text-gray-700">Thương hiệu</h3>
+                        @foreach ($brands as $brand)
+                            <div class="brand-group mb-1">
+                                <div class="flex items-center bg-white rounded-md px-2 py-1">
+                                    <label class="flex items-center space-x-2 w-full cursor-pointer">
+                                        <input type="checkbox" class="filter-checkbox" name="brand[]"
+                                            value="{{ $brand->id }}"
+                                            {{ in_array($brand->id, request('brand', [])) ? 'checked' : '' }}>
+                                        <span class="text-sm text-gray-800">{{ $brand->name }} <span
+                                                class="text-gray-500">({{ $brand->product_count }})</span></span>
+                                    </label>
                                 </div>
-                            @endforeach
-                        </div>
+                                @if ($brand->subBrands->isNotEmpty())
+                                    <div id="brand-dropdown-{{ $brand->id }}" class="ml-4 mt-1 space-y-1">
+                                        @foreach ($brand->subBrands as $sub)
+                                            <label class="flex items-center space-x-2 cursor-pointer">
+                                                <input type="checkbox" class="filter-checkbox" name="brand[]"
+                                                    value="{{ $sub->id }}"
+                                                    {{ in_array($sub->id, request('brand', [])) ? 'checked' : '' }}>
+                                                <span class="text-sm text-gray-700">-- {{ $sub->name }} <span
+                                                        class="text-gray-500">({{ $sub->product_count ?? 0 }})</span></span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
                     </div>
 
                     <!-- Khoảng giá -->
@@ -147,9 +129,8 @@
 
             <!-- Kết quả tìm kiếm -->
             <div class="w-full lg:w-4/5">
-                <!-- Thanh sắp xếp -->
                 <div
-                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 bg-white p-3 rounded-lg shadow-sm">
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 bg-white p-3 rounded-lg shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6 ml-2">
                         <path
                             d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
@@ -181,113 +162,46 @@
             </div>
         </div>
     </div>
-
     @push('scripts')
         <script>
-            document.getElementById('filter-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                applyFilterAJAX();
-            });
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.getElementById('filter-form');
 
-            document.querySelectorAll('.toggle-dropdown').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const dropdownId = this.getAttribute('data-toggle');
-                    const dropdown = document.getElementById(dropdownId);
-                    const icon = this.querySelector('svg');
-                    if (dropdown) {
-                        dropdown.classList.toggle('hidden');
-                        if (icon) icon.classList.toggle('rotate-180');
-                    }
+                // Gắn sự kiện change cho checkbox danh mục
+                document.querySelectorAll('input[name="category[]"]').forEach(cb => {
+                    cb.addEventListener('change', () => {
+                        form.submit();
+                    });
                 });
-            });
 
-            document.querySelectorAll('.filter-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const value = this.getAttribute('data-value');
-                    const type = this.getAttribute('data-type');
+                // Gắn sự kiện change cho checkbox thương hiệu
+                document.querySelectorAll('input[name="brand[]"]').forEach(cb => {
+                    cb.addEventListener('change', () => {
+                        form.submit();
+                    });
+                });
+
+                // Gợi ý khoảng giá
+                document.querySelectorAll('.price-suggestion').forEach(button => {
+                    button.addEventListener('click', () => {
+                        document.getElementById('price_min').value = button.getAttribute('data-min') ||
+                            '';
+                        document.getElementById('price_max').value = button.getAttribute('data-max') ||
+                            '';
+                        form.submit();
+                    });
+                });
+
+                // Nút reset
+                document.getElementById('reset-filters')?.addEventListener('click', () => {
                     const form = document.getElementById('filter-form');
-
-                    form.querySelectorAll(`input[name="category[]"], input[name="brand[]"]`).forEach(el => el
-                        .remove());
-
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = `${type}[]`;
-                    input.value = value;
-                    form.appendChild(input);
-
-                    applyFilterAJAX();
+                    form.querySelectorAll('.filter-checkbox').forEach(cb => cb.checked = false);
+                    document.getElementById('price_min').value = '';
+                    document.getElementById('price_max').value = '';
+                    form.submit();
+                    document.getElementById('reset-filters').classList.add('hidden');
                 });
             });
-
-
-            document.querySelectorAll('.price-suggestion').forEach(button => {
-                button.addEventListener('click', () => {
-                    document.getElementById('price_min').value = button.getAttribute('data-min') || '';
-                    document.getElementById('price_max').value = button.getAttribute('data-max') || '';
-                    applyFilterAJAX();
-                });
-            });
-
-            document.getElementById('reset-filters')?.addEventListener('click', () => {
-                const form = document.getElementById('filter-form');
-                document.getElementById('price_min').value = '';
-                document.getElementById('price_max').value = '';
-                form.querySelectorAll('input[name="category[]"], input[name="brand[]"]').forEach(el => el.remove());
-
-                applyFilterAJAX();
-
-                // Ẩn nút sau khi xóa lọc
-                const resetBtn = document.getElementById('reset-filters');
-                if (resetBtn) {
-                    resetBtn.classList.add('hidden');
-                }
-            });
-
-            function applyFilterAJAX() {
-                const form = document.getElementById('filter-form');
-                const url = form.getAttribute('action');
-                const formData = new FormData(form);
-
-                fetch(url + '?' + new URLSearchParams(formData).toString(), {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        const resultContainer = document.getElementById('product-results');
-                        if (resultContainer) {
-                            resultContainer.innerHTML = data.html;
-
-                            // Kiểm tra lại có filter không
-                            const hasFilter = form.querySelector(
-                                'input[name="category[]"], input[name="brand[]"], #price_min[value], #price_max[value]');
-                            const resetBtn = document.getElementById('reset-filters');
-                            if (resetBtn) {
-                                if (
-                                    form.querySelector('input[name="category[]"]') ||
-                                    form.querySelector('input[name="brand[]"]') ||
-                                    document.getElementById('price_min').value ||
-                                    document.getElementById('price_max').value
-                                ) {
-                                    resetBtn.classList.remove('hidden');
-                                } else {
-                                    resetBtn.classList.add('hidden');
-                                }
-                            }
-                        }
-                    })
-                    .catch(err => console.error('Lỗi khi gọi AJAX:', err));
-            }
         </script>
-        <style>
-            .rotate-180 {
-                transform: rotate(180deg);
-            }
-        </style>
     @endpush
 @endsection

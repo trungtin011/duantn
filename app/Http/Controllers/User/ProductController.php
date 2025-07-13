@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -34,93 +35,90 @@ class ProductController extends Controller
         $priceMax = $request->input('price_max');
         $sort = $request->input('sort', 'relevance');
 
-        // Lấy tên các danh mục cha + con
-        $categoryNames = collect();
-        if (!empty($categoryIds)) {
-            $categories = Category::whereIn('id', $categoryIds)->with('subCategories')->get();
-            $categoryNames = $categories->flatMap(function ($cat) {
-                return collect([$cat->name])->merge($cat->subCategories->pluck('name'));
-            });
-        }
+        // Log số lượng danh mục/thương hiệu trong database
+        Log::info('Tổng số danh mục trong database:', ['số lượng' => Category::count()]);
+        Log::info('Tổng số thương hiệu trong database:', ['số lượng' => Brand::count()]);
 
-        // Tương tự cho thương hiệu (chưa cần lấy sub-brand)
-        $brandNames = collect();
-        if (!empty($brandIds)) {
-            $brandNames = Brand::whereIn('id', $brandIds)->pluck('name');
-        }
-
-        Log::info('Filtering with', [
-            'category' => $categoryNames->toArray(),
-            'brand' => $brandNames->toArray(),
-            'price_min' => $priceMin,
-            'price_max' => $priceMax,
+        // Log yêu cầu
+        Log::info('Yêu cầu bộ lọc nhận được:', [
+            'từ khóa tìm kiếm' => $query,
+            'danh mục đã chọn' => $categoryIds,
+            'thương hiệu đã chọn' => $brandIds,
+            'giá tối thiểu' => $priceMin,
+            'giá tối đa' => $priceMax,
+            'sắp xếp' => $sort
         ]);
 
+        // Xóa cache khi không có bộ lọc
+        if (empty($categoryIds) && empty($brandIds) && !$priceMin && !$priceMax) {
+            Cache::forget('all_categories');
+            Cache::forget('all_brands');
+        }
+
+        // Lấy tất cả danh mục
+        $categories = Cache::remember('all_categories', 600, function () {
+            return Category::with(['subCategories.subCategories'])
+                ->whereNull('parent_id') // Lấy tất cả danh mục cha
+                ->select('id', 'name', 'parent_id')
+                ->get()
+                ->map(function ($cat) {
+                    $cat->product_count = $cat->products()->where('status', 'active')->count();
+                    foreach ($cat->subCategories as $sub) {
+                        $sub->product_count = $sub->products()->where('status', 'active')->count();
+                        foreach ($sub->subCategories as $sub2) {
+                            $sub2->product_count = $sub2->products()->where('status', 'active')->count();
+                            $sub->product_count += $sub2->product_count;
+                        }
+                        $cat->product_count += $sub->product_count;
+                    }
+                    return $cat;
+                });
+        });
+
+        // Lấy tất cả thương hiệu
+        $brands = Cache::remember('all_brands', 600, function () {
+            return Brand::with(['subBrands'])
+                ->whereNull('parent_id') // Lấy tất cả thương hiệu cha
+                ->select('id', 'name', 'parent_id')
+                ->get()
+                ->map(function ($brand) {
+                    $brand->product_count = $brand->products()->where('status', 'active')->count();
+                    foreach ($brand->subBrands as $sub) {
+                        $sub->product_count = $sub->products()->where('status', 'active')->count();
+                        $brand->product_count += $sub->product_count;
+                    }
+                    return $brand;
+                });
+        });
+
         // Truy vấn sản phẩm
-        $products = Product::query()
+        $productQuery = Product::query()
             ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
-            ->when($categoryNames->isNotEmpty(), fn($q) => $q->whereIn('category', $categoryNames))
-            ->when($brandNames->isNotEmpty(), fn($q) => $q->whereIn('brand', $brandNames))
+            ->when($categoryIds, fn($q) => $q->whereHas('categories', fn($q2) => $q2->whereIn('categories.id', $categoryIds)))
+            ->when($brandIds, fn($q) => $q->whereHas('brands', fn($q2) => $q2->whereIn('brands.id', $brandIds)))
             ->when($priceMin, fn($q) => $q->where('sale_price', '>=', $priceMin))
             ->when($priceMax, fn($q) => $q->where('sale_price', '<=', $priceMax))
-            ->when($sort, function ($q) use ($sort) {
-                switch ($sort) {
-                    case 'price_asc':
-                        $q->orderBy('sale_price', 'asc');
-                        break;
-                    case 'price_desc':
-                        $q->orderBy('sale_price', 'desc');
-                        break;
-                    case 'sold':
-                        $q->orderBy('sold_quantity', 'desc');
-                        break;
-                    case 'newest':
-                        $q->orderBy('created_at', 'desc');
-                        break;
-                    default:
-                        $q->orderBy('id', 'desc');
-                        break;
-                }
+            ->when($sort, fn($q) => match ($sort) {
+                'price_asc' => $q->orderBy('sale_price', 'asc'),
+                'price_desc' => $q->orderBy('sale_price', 'desc'),
+                'sold' => $q->orderBy('sold_quantity', 'desc'),
+                'newest' => $q->orderBy('created_at', 'desc'),
+                default => $q->orderBy('id', 'desc'),
             })
             ->where('status', 'active')
-            ->with(['category', 'brand']) // nếu bạn dùng quan hệ thật
-            ->paginate(20);
+            ->with(['categories', 'brands', 'images']);
 
-        // Đếm sản phẩm theo danh mục cha + con
-        $categories = Category::whereNull('parent_id')->with('subCategories')->get()->map(function ($category) {
-            $category->product_count = Product::where('category', $category->name)->count();
+        $products = $productQuery->paginate(20);
 
-            foreach ($category->subCategories as $sub) {
-                $sub->product_count = Product::where('category', $sub->name)->count();
-                $category->product_count += $sub->product_count;
-            }
+        Log::info('✅ Tổng số sản phẩm khớp:', ['số lượng' => $products->total()]);
+        Log::info('✅ Danh mục và thương hiệu đã lấy:', ['danh mục' => $categories->count(), 'thương hiệu' => $brands->count()]);
 
-            return $category;
-        });
-
-        // Đếm sản phẩm theo thương hiệu cha + con
-        $brands = Brand::whereNull('parent_id')->with('subBrands')->get()->map(function ($brand) {
-            $brand->product_count = Product::where('brand', $brand->name)->count();
-
-            foreach ($brand->subBrands as $sub) {
-                $sub->product_count = Product::where('brand', $sub->name)->count();
-                $brand->product_count += $sub->product_count;
-            }
-
-            return $brand;
-        });
-
-        // Gắn lại đường dẫn ảnh nếu thiếu
-        $products->getCollection()->transform(function ($product) {
-            if ($product->image_path && !Str::startsWith($product->image_path, 'product_images/')) {
-                $product->image_path = 'product_images/' . $product->image_path;
-            }
-            return $product;
-        });
-
+        // Trong phương thức search, phần AJAX
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('partials.product_list', compact('products'))->render()
+                'html' => view('partials.product_list', compact('products'))->render(),
+                'categories_html' => view('partials.category_filters', compact('categories'))->render(),
+                'brands_html' => view('partials.brand_filters', compact('brands'))->render(),
             ]);
         }
 
