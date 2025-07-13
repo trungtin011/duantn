@@ -112,10 +112,10 @@
                         </span>
                     </div>
                 </div>
-                <a href="{{ route('checkout') }}"
-                    class="ml-4 bg-[#EF3248] text-white px-6 py-2 m-4 rounded hover:bg-[#EF3248]/80 transition">
+                <button 
+                    class="ml-4 bg-[#EF3248] text-white px-6 py-2 m-4 rounded hover:bg-[#EF3248]/80 transition" id='checkout-button'>
                     Thanh toán
-                </a>
+                </button>
             </div>
         @endif
     </div>
@@ -242,13 +242,13 @@
                     });
                 });
             });
-
-            // --- Đoạn này là phần xử lý checkbox gửi id sản phẩm và id cart lên server ---
-            document.addEventListener("DOMContentLoaded", function() {
+            
+            (function() {
                 const selectAllCheckbox = document.getElementById('select-all');
                 const checkboxes = document.querySelectorAll('.cart-checkbox');
                 const totalElement = document.getElementById('cart-total');
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
 
                 // Helper: Lấy danh sách ID sản phẩm và ID cart đã chọn
                 function getSelectedProductAndCartIds() {
@@ -259,17 +259,16 @@
                                 cart_id: checkbox.dataset.id,
                                 product_id: checkbox.dataset.productId,
                                 variant_id: checkbox.dataset.variantId,
-                                quantity: checkbox.dataset.quantity
+                                quantity: checkbox.closest('.p-4').querySelector('.cart-quantity-input').value
                             });
                         }
                     });
                     return selected;
                 }
 
-                // Gửi AJAX để lưu danh sách sản phẩm đã chọn vào session (gửi cả id cart và id sản phẩm)
                 function updateSelectedProductsInSession() {
                     const selected = getSelectedProductAndCartIds();
-                    fetch('/customer/cart/selected', {
+                    return fetch('/customer/cart/selected', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -283,11 +282,12 @@
                         return res.json();
                     })
                     .then(data => {
-                        // Thêm console.log sản phẩm được thêm vào session
                         console.log('Sản phẩm được thêm vào session:', selected);
+                        return data;
                     })
                     .catch(err => {
                         console.error('Lỗi cập nhật session:', err);
+                        throw err;
                     });
                 }
 
@@ -305,7 +305,6 @@
                     }
                 }
 
-                // Gắn sự kiện từng checkbox sản phẩm
                 checkboxes.forEach(cb => {
                     cb.addEventListener('change', () => {
                         // Nếu có 1 cái chưa chọn, bỏ chọn tất cả
@@ -335,9 +334,26 @@
                     });
                 }
 
-                updateTotal(); // Gọi lần đầu
-                updateSelectedProductsInSession(); // Lưu trạng thái ban đầu vào session
-            });
+                const checkoutButton = document.getElementById('checkout-button');
+                if (checkoutButton) {
+                    checkoutButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        updateSelectedProductsInSession()
+                            .then(() => {
+                                window.location.href = '{{ route('checkout') }}';
+                            })
+                            .catch(() => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể lưu sản phẩm đã chọn. Vui lòng thử lại!',
+                                });
+                            });
+                    });
+                }
+            })();
         </script>
     @endpush
 @endsection

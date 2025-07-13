@@ -163,9 +163,6 @@ class CartController extends Controller
         ]);
     }
 
-    /**
-     * Thêm nhiều variant vào giỏ hàng cùng lúc
-     */
     public function addMultiToCart(Request $request)
     {
         $request->validate([
@@ -259,7 +256,6 @@ class CartController extends Controller
         // Nếu có lỗi
         return response()->json(['message' => 'Một số sản phẩm không thể thêm vào giỏ hàng!', 'results' => $results], 422);
     }
-
 
     public function updateSelectedProducts(Request $request)
     {

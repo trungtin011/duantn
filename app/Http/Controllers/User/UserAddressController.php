@@ -7,6 +7,7 @@ use App\Models\UserAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Log;
 
 class UserAddressController extends Controller
 {
@@ -35,21 +36,35 @@ class UserAddressController extends Controller
             'province' => 'required',
             'district' => 'required',
             'ward' => 'required',
-            'zip_code' => 'required',
+            'zip_code' => 'nullable',
             'address_type' => 'required|in:home,office,other',
         ]);
+
+        $zip_code = $request->zip_code ?? str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
 
         if ($request->has('is_default')) {
             UserAddress::where('userID', Auth::id())->update(['is_default' => 0]);
         }
 
-        UserAddress::create([
-            ...$request->all(),
+        $store = UserAddress::create([
+            'receiver_name' => $request->receiver_name,
+            'receiver_phone' => $request->receiver_phone,
+            'address' => $request->address,
+            'province' => $request->province,
+            'district' => $request->district,
+            'ward' => $request->ward,
+            'address_type' => $request->address_type,
             'userID' => Auth::id(),
-            'is_default' => $request->has('is_default') ? 1 : 0
+            'is_default' => $request->has('is_default') ? 1 : 0,
+            'zip_code' => $zip_code,
         ]);
+        Log::info($store);
+        if ($store) {
+            Log::info('Đã thêm địa chỉ thành công.');
+            return redirect()->back()->with('success', 'Đã thêm địa chỉ thành công.');
+        }
 
-        return redirect()->route('account.addresses')->with('success', 'Đã thêm địa chỉ thành công.');
+        return redirect()->back()->with('error', 'Đã xảy ra lỗi khi thêm địa chỉ.');
     }
 
     public function edit(UserAddress $address)

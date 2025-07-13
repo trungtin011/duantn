@@ -14,6 +14,8 @@ use App\Models\Order;
 use App\Models\OrderReview;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\ProductCategory;
+use App\Models\ProductVariant as Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -131,164 +133,29 @@ class ProductController extends Controller
         if (!$user) {
             return redirect()->guest(route('login'))->with('error', 'Bạn cần đăng nhập để xem chi tiết sản phẩm');
         }
-        $product = Product::with([
-            'images',
-            'reviews.user',
-            'variants.attributeValues.attribute',
-            'variants.images',
-            'reviews.likes',
-            'shop.coupons',
-            'orderReviews.user',
-            'orderReviews.images',
-            'orderReviews.videos'
-        ])->where('slug', $slug)->firstOrFail();
 
-        // Tính trung bình rating và số lượng đánh giá
-        $averageRating = Cache::remember("product_{$product->id}_average_rating", 3600, function () use ($product) {
-            return $product->orderReviews()->avg('rating') ?? 0;
-        });
-        $totalReviews = $product->orderReviews()->count();
-        $ratingCounts = [
-            '5' => $product->orderReviews()->where('rating', 5)->count(),
-            '4' => $product->orderReviews()->where('rating', 4)->count(),
-            '3' => $product->orderReviews()->where('rating', 3)->count(),
-            '2' => $product->orderReviews()->where('rating', 2)->count(),
-            '1' => $product->orderReviews()->where('rating', 1)->count(),
-        ];
-        $commentCount = $product->orderReviews()->whereNotNull('comment')->count();
-        $mediaCount = $product->orderReviews()->whereHas('images')->orWhereHas('videos')->count();
+        $product = $this->getProductWithRelations($slug);
 
-        // Xử lý bộ lọc
+        [$averageRating, $totalReviews, $ratingCounts, $commentCount, $mediaCount] = $this->getProductReviewStats($product);
+
         $filter = $request->input('filter');
-        $query = $product->orderReviews()->with(['user', 'images', 'videos']);
+        $filteredReviews = $this->getFilteredReviews($product, $filter);
 
-        // Áp dụng bộ lọc trước khi phân trang
-        if ($filter === 'images') {
-            $query->where(function ($q) {
-                $q->whereHas('images')->orWhereHas('videos');
-            });
-        } elseif ($filter === 'comments') {
-            $query->whereNotNull('comment');
-        } elseif (Str::startsWith($filter, 'star-')) {
-            $rating = (int) Str::after($filter, 'star-');
-            $query->where('rating', $rating);
-        }
+        [$attributeImages, $variantData] = $this->getVariantImagesAndData($product);
 
-        $filteredReviews = $query->orderBy('created_at', 'desc')->paginate(10);
+        $selectedVariant = $this->getSelectedVariant($product, $request);
 
-        $attributeImages = [];
-        $variantData = [];
-        $image = null;
-        foreach ($product->variants as $variant) {
-            $attributeValues = $variant->attributeValues->keyBy('attribute.name');
-            $image = null; 
-
-            foreach ($attributeValues as $attrName => $attrValue) {
-                $image = $variant->images->first()->image_path ?? null;
-                $attributeImages[$attrName][$attrValue->value] = $image
-                    ? Storage::url($image)
-                    : asset('images/default_product_image.png');
-            }
-
-            $variantData[$variant->id] = [
-                'price' => $variant->getCurrentPriceAttribute(),
-                'original_price' => $variant->price,
-                'stock' => $variant->stock,
-                'image' => $image
-                    ? Storage::url($image)
-                    : asset('images/default_product_image.png'), // ← tránh lỗi
-                'discount_percentage' => $variant->getDiscountPercentageAttribute(),
-            ];
-        }
-
-
-        Log::info('Variants for product ID: ' . $product->id . ', count: ' . $product->variants->count());
-        foreach ($product->variants as $variant) {
-            Log::info('Variant ID: ' . $variant->id . ', images count: ' . $variant->images->count() . ', attributeValues count: ' . $variant->attributeValues->count());
-        }
-
-        $hasReviewed = false;
-        $selectedVariant = null;
-        if (Auth::check()) {
-            $hasReviewed = OrderReview::where('user_id', Auth::id())
-                ->where('product_id', $product->id)
-                ->exists();
-        }
-        if ($request->has('variant_id')) {
-            $selectedVariant = $product->variants->find($request->variant_id);
-        } elseif ($product->variants->isNotEmpty()) {
-            $selectedVariant = $product->variants->first();
-        }
-
-        $viewed = session()->get('viewed_products', []);
-        $viewed = array_unique(array_merge([$product->id], $viewed));
-        session()->put('viewed_products', array_slice($viewed, 0, 10));
-
-        // Lấy sản phẩm liên quan theo danh mục
-        $recentProducts = Cache::remember("related_products_{$product->id}", 3600, function () use ($product) {
-            Log::info('Fetching related products for product ID: ' . $product->id . ', category: ' . $product->category);
-
-            $products = Product::where('category', $product->category)
-                ->where('id', '!=', $product->id)
-                ->where('status', 'active')
-                ->with('images')
-                ->take(8)
-                ->get();
-
-            Log::info('Found ' . $products->count() . ' related products by category');
-
-            // Nếu không tìm thấy sản phẩm cùng danh mục, lấy sản phẩm ngẫu nhiên
-            if ($products->count() < 4) {
-                $additionalProducts = Product::where('id', '!=', $product->id)
-                    ->where('status', 'active')
-                    ->with('images')
-                    ->take(8 - $products->count())
-                    ->inRandomOrder()
-                    ->get();
-                Log::info('Added ' . $additionalProducts->count() . ' random products');
-                $products = $products->merge($additionalProducts);
-            }
-
-            return $products;
-        });
+        $this->updateViewedProductsSession($product->id);
 
         $logoPath = $product->shop ? Storage::url($product->shop->logo) : asset('images/default_shop_logo.png');
 
-        // Kiểm tra trạng thái yêu thích
-        $isWishlisted = false;
-        if (Auth::check()) {
-            $isWishlisted = Wishlist::where('userID', Auth::id())
-                ->where('productID', $product->id)
-                ->exists();
-        }
+        $isWishlisted = $this->checkIsWishlisted($product);
 
-        // Kiểm tra trạng thái đã lưu của các voucher
-        $savedCoupons = [];
-        if (Auth::check() && $product->shop) {
-            $savedCoupons = CouponUser::where('user_id', Auth::id())
-                ->whereIn('coupon_id', $product->shop->coupons->pluck('id'))
-                ->pluck('coupon_id')
-                ->toArray();
-        }
+        $savedCoupons = $this->getSavedCoupons($product);
 
-        // Kiểm tra xem người dùng đã mua sản phẩm và đơn hàng đã giao thành công
-        $hasPurchased = false;
-        if (Auth::check()) {
-            $hasPurchased = Order::where('userID', Auth::id())
-                ->where('order_status', 'delivered')
-                ->whereHas('items', function ($query) use ($product) {
-                    $query->where('productID', $product->id);
-                })
-                ->exists();
-        }
+        $hasPurchased = $this->checkHasPurchased($product);
 
-        // Kiểm tra xem người dùng đã đánh giá sản phẩm chưa
-        $hasReviewed = false;
-        if (Auth::check()) {
-            $hasReviewed = OrderReview::where('user_id', Auth::id())
-                ->where('product_id', $product->id)
-                ->exists();
-        }
+        $hasReviewed = $this->checkHasReviewed($product);
 
         if ($request->ajax()) {
             return view('partials.review_list', ['reviews' => $filteredReviews]);
@@ -298,7 +165,6 @@ class ProductController extends Controller
             'product' => $product,
             'filteredReviews' => $filteredReviews,
             'filter' => $filter,
-            'recentProducts' => $recentProducts,
             'shop' => $product->shop,
             'logoPath' => $logoPath,
             'hasPurchased' => $hasPurchased,
@@ -316,6 +182,317 @@ class ProductController extends Controller
             'mediaCount' => $mediaCount,
         ]);
     }
+
+    protected function getProductWithRelations($slug)
+    {
+        return Product::with([
+            'images',
+            'reviews.user',
+            'variants.attributeValues.attribute',
+            'variants.images',
+            'reviews.likes',
+            'shop.coupons',
+            'orderReviews.user',
+            'orderReviews.images',
+            'orderReviews.videos'
+        ])->where('slug', $slug)->firstOrFail();
+    }
+
+    protected function getProductReviewStats($product)
+    {
+        $averageRating = Cache::remember("product_{$product->id}_average_rating", 3600, function () use ($product) {
+            return $product->orderReviews()->avg('rating') ?? 0;
+        });
+        $totalReviews = $product->orderReviews()->count();
+
+        $ratingCounts = [
+            '5' => $product->orderReviews()->where('rating', 5)->count(),
+            '4' => $product->orderReviews()->where('rating', 4)->count(),
+            '3' => $product->orderReviews()->where('rating', 3)->count(),
+            '2' => $product->orderReviews()->where('rating', 2)->count(),
+            '1' => $product->orderReviews()->where('rating', 1)->count(),
+        ];
+
+        $commentCount = $product->orderReviews()->whereNotNull('comment')->count();
+        $mediaCount = $product->orderReviews()->whereHas('images')->orWhereHas('videos')->count();
+
+        return [$averageRating, $totalReviews, $ratingCounts, $commentCount, $mediaCount];
+    }
+
+    protected function getFilteredReviews($product, $filter)
+    {
+        $query = $product->orderReviews()->with(['user', 'images', 'videos']);
+
+        if ($filter === 'images') {
+            $query->where(function ($q) {
+                $q->whereHas('images')->orWhereHas('videos');
+            });
+        } elseif ($filter === 'comments') {
+            $query->whereNotNull('comment');
+        } elseif (Str::startsWith($filter, 'star-')) {
+            $rating = (int) Str::after($filter, 'star-');
+            $query->where('rating', $rating);
+        }
+
+        return $query->orderBy('created_at', 'desc')->paginate(10);
+    }
+
+    protected function getVariantImagesAndData($product)
+    {
+        $attributeImages = [];
+        $variantData = [];
+        $image = null;
+
+        foreach ($product->variants as $variant) {
+            $attributeValues = $variant->attributeValues->keyBy('attribute.name');
+            $image = null;
+
+            foreach ($attributeValues as $attrName => $attrValue) {
+                $image = $variant->images->first()->image_path ?? null;
+                $attributeImages[$attrName][$attrValue->value] = $image
+                    ? Storage::url($image)
+                    : asset('images/default_product_image.png');
+            }
+
+            $variantData[$variant->id] = [
+                'price' => $variant->getCurrentPriceAttribute(),
+                'original_price' => $variant->price,
+                'stock' => $variant->stock,
+                'image' => $image
+                    ? Storage::url($image)
+                    : asset('images/default_product_image.png'),
+                'discount_percentage' => $variant->getDiscountPercentageAttribute(),
+            ];
+        }
+
+        if ($product->variants->isEmpty()) {
+            $variantData['default'] = [
+                'price' => $product->getCurrentPriceAttribute(),
+                'original_price' => $product->price,
+                'stock' => $product->stock_total,
+                'image' => $product->images->first()
+                    ? Storage::url($product->images->first()->image_path)
+                    : asset('images/default_product_image.png'),
+                'discount_percentage' => $product->getDiscountPercentageAttribute(),
+            ];
+        }
+
+        Log::info('Variants for product ID: ' . $product->id . ', count: ' . $product->variants->count());
+        foreach ($product->variants as $variant) {
+            Log::info('Variant ID: ' . $variant->id . ', images count: ' . $variant->images->count() . ', attributeValues count: ' . $variant->attributeValues->count());
+        }
+
+        return [$attributeImages, $variantData];
+    }
+
+    protected function getSelectedVariant($product, $request)
+    {
+        if ($request->has('variant_id')) {
+            return $product->variants->find($request->variant_id);
+        } elseif ($product->variants->isNotEmpty()) {
+            return $product->variants->first();
+        }
+        return null;
+    }
+
+    protected function updateViewedProductsSession($productId)
+    {
+        $viewed = session()->get('viewed_products', []);
+        $viewed = array_unique(array_merge([$productId], $viewed));
+        session()->put('viewed_products', array_slice($viewed, 0, 10));
+    }
+
+    protected function getRelatedProducts($product)
+    {
+        return Cache::remember("related_products_{$product->id}", 3600, function () use ($product) {
+            Log::info('Fetching related products for product ID: ' . $product->id . ', category: ' . $product->category);
+
+            $products = ProductCategory::where('product_id', $product->id)
+                ->where('category_id', '!=', $product->category_id)
+                ->where('status', 'active')
+                ->with('images')
+                ->take(8)
+                ->get();
+
+            Log::info('Found ' . $products->count() . ' related products by category');
+
+            if ($products->count() < 4) {
+                $additionalProducts = Product::where('id', '!=', $product->id)
+                    ->where('status', 'active')
+                    ->with('images')
+                    ->take(8 - $products->count())
+                    ->inRandomOrder()
+                    ->get();
+                Log::info('Added ' . $additionalProducts->count() . ' random products');
+                $products = $products->merge($additionalProducts);
+            }
+
+            return $products;
+        });
+    }
+
+    protected function checkIsWishlisted($product)
+    {
+        if (Auth::check()) {
+            return Wishlist::where('userID', Auth::id())
+                ->where('productID', $product->id)
+                ->exists();
+        }
+        return false;
+    }
+
+    protected function getSavedCoupons($product)
+    {
+        if (Auth::check() && $product->shop) {
+            return CouponUser::where('user_id', Auth::id())
+                ->whereIn('coupon_id', $product->shop->coupons->pluck('id'))
+                ->pluck('coupon_id')
+                ->toArray();
+        }
+        return [];
+    }
+
+    protected function checkHasPurchased($product)
+    {
+        if (Auth::check()) {
+            return Order::where('userID', Auth::id())
+                ->where('order_status', 'delivered')
+                ->whereHas('items', function ($query) use ($product) {
+                    $query->where('productID', $product->id);
+                })
+                ->exists();
+        }
+        return false;
+    }
+
+    protected function checkHasReviewed($product)
+    {
+        if (Auth::check()) {
+            return OrderReview::where('user_id', Auth::id())
+                ->where('product_id', $product->id)
+                ->exists();
+        }
+        return false;
+    }
+
+    public function quickView($slug)
+    {
+        try {
+            $product = Product::with([
+                'images' => function ($query) {
+                    $query->select('id', 'productID', 'image_path', 'is_default');
+                },
+                'variants' => function ($query) {
+                    $query->select('id', 'productID', 'price', 'sale_price', 'stock')
+                        ->with([
+                            'images' => function ($q) {
+                                $q->select('id', 'variantID', 'image_path');
+                            },
+                            'attributeValues' => function ($q) {
+                                $q->select('attribute_values.id', 'attribute_values.attribute_id', 'attribute_values.value')
+                                    ->with(['attribute' => function ($qa) {
+                                        $qa->select('id', 'name');
+                                    }]);
+                            }
+                        ]);
+                }
+            ])->where('slug', $slug)->firstOrFail();
+
+            // Gán dữ liệu hiển thị theo biến thể
+            $attributeImages = [];
+            $variantData = [];
+            foreach ($product->variants as $variant) {
+                $attributeValues = $variant->attributeValues?->keyBy(fn($val) => $val->attribute->name) ?? collect();
+                $image = $variant->images->first()->image_path ?? null;
+
+                // Gán ảnh theo giá trị thuộc tính
+                foreach ($attributeValues as $attrName => $attrValue) {
+                    $attributeImages[$attrName][$attrValue->value] = $image
+                        ? Storage::url($image)
+                        : asset('storage/product_images/default.jpg');
+                }
+
+                // ✅ Thêm attributes vào từng biến thể
+                $attributesArray = $variant->attributeValues->mapWithKeys(function ($attr) {
+                    return [$attr->attribute->name => $attr->value];
+                })->toArray();
+
+                $variantData[$variant->id] = [
+                    'price' => $variant->sale_price ?? $variant->price,
+                    'original_price' => $variant->price,
+                    'stock' => $variant->stock,
+                    'image' => $variant->images->first()
+                        ? Storage::url($variant->images->first()->image_path)
+                        : asset('storage/product_images/default.jpg'),
+                    'discount_percentage' => $variant->sale_price
+                        ? round((($variant->price - $variant->sale_price) / $variant->price) * 100)
+                        : 0,
+                    'attributes' => $variant->attributeValues->mapWithKeys(function ($attr) {
+                        return [$attr->attribute->name => $attr->value];
+                    })->toArray(),
+                ];
+            }
+
+            // Nếu không có biến thể → mặc định
+            if ($product->variants->isEmpty()) {
+                $variantData['default'] = [
+                    'price' => $product->sale_price ?? $product->price,
+                    'original_price' => $product->price,
+                    'stock' => $product->stock_total,
+                    'image' => $product->images->first()
+                        ? Storage::url($product->images->first()->image_path)
+                        : asset('storage/product_images/default.jpg'),
+                    'discount_percentage' => $product->sale_price
+                        ? round((($product->price - $product->sale_price) / $product->price) * 100)
+                        : 0,
+                    'attributes' => [] // Không có thuộc tính
+                ];
+            }
+
+            // Chuẩn bị danh sách thuộc tính cho view
+            $attributes = [];
+            foreach ($product->variants as $variant) {
+                foreach ($variant->attributeValues as $attributeValue) {
+                    $attributeName = $attributeValue->attribute->name;
+                    $value = $attributeValue->value;
+                    if (!isset($attributes[$attributeName])) {
+                        $attributes[$attributeName] = collect();
+                    }
+                    if (!$attributes[$attributeName]->contains($value)) {
+                        $attributes[$attributeName]->push($value);
+                    }
+                }
+            }
+
+            Log::info('QuickView Product:', [
+                'id' => $product->id,
+                'variants_count' => $product->variants->count(),
+                'variantData' => $variantData,
+                'attributeImages' => $attributeImages
+            ]);
+
+            $html = view('partials.quick_view', compact('product', 'attributeImages', 'variantData', 'attributes'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'variantData' => $variantData
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('QuickView Error: Product not found for slug ' . $slug);
+            return response()->json([
+                'success' => false,
+                'message' => 'Sản phẩm không tồn tại!'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('QuickView Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã có lỗi xảy ra khi tải chi tiết sản phẩm!'
+            ], 500);
+        }
+    }
+
 
     public function reportProduct(Request $request, Product $product)
     {
@@ -380,30 +557,55 @@ class ProductController extends Controller
 
     public function toggleWishlist(Request $request, $productId)
     {
-        $user = Auth::user();
-        if (!$user) {
-            return response()->json(['message' => 'Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích'], 401);
-        }
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích!'
+                ], 401);
+            }
 
-        $product = Product::findOrFail($productId);
-        $wishlist = Wishlist::where('userID', $user->id)->where('productID', $productId)->first();
+            $product = Product::find($productId);
+            if (!$product) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sản phẩm không tồn tại!'
+                ], 404);
+            }
 
-        if ($wishlist) {
-            // Nếu sản phẩm đã có trong wishlist, xóa nó
-            $wishlist->delete();
-            return response()->json(['message' => 'Đã xóa sản phẩm khỏi danh sách yêu thích', 'isWishlisted' => false]);
-        } else {
-            // Nếu sản phẩm chưa có trong wishlist, thêm mới
+            $wishlist = Wishlist::where('userID', $user->id)
+                ->where('productID', $productId)
+                ->first();
+
+            if ($wishlist) {
+                $wishlist->delete();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đã xóa khỏi danh sách yêu thích!',
+                    'isWishlisted' => false
+                ]);
+            }
+
             Wishlist::create([
                 'userID' => $user->id,
                 'productID' => $productId,
-                'shopID' => $product->shopID,
-                'note' => $request->input('note', null),
+                'shopID' => $product->shopID
             ]);
-            return response()->json(['message' => 'Đã thêm sản phẩm vào danh sách yêu thích', 'isWishlisted' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã thêm vào danh sách yêu thích!',
+                'isWishlisted' => true
+            ]);
+        } catch (\Exception $e) {
+            Log::error('ToggleWishlist Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã có lỗi xảy ra!'
+            ], 500);
         }
     }
-
 
     public function saveCoupon(Request $request, $couponId)
     {

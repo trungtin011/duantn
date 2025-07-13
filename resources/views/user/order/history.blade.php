@@ -39,7 +39,7 @@
         <div class="tab-content h-full" id="orderStatusTabsContent">
             <!-- Tab Pane: Tất cả -->
             <div class="tab-pane" id="all" role="tabpanel" aria-labelledby="all-tab">
-                <div class="text-sm text-red-500 font-bold mb-2">Tổng đơn hàng: {{ $allOrders->total() }}</div>
+                <div class="text-sm text-red-500 text-right mr-4 font-bold mb-2">Tổng đơn hàng: {{ $allOrders->total() }}</div>
 
                 @forelse ($allOrders as $order)
                     @include('user.order.components.order-block', [

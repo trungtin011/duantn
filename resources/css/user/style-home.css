@@ -1378,6 +1378,7 @@ body::-webkit-scrollbar-thumb:hover {
 .product-grid .product-img.default {
     position: relative;
     z-index: 1;
+    height: 200px;
 }
 
 .product-grid .product-img.hover {
@@ -1386,6 +1387,7 @@ body::-webkit-scrollbar-thumb:hover {
     left: 0;
     z-index: 2;
     opacity: 0;
+    height: 200px;
 }
 
 .product-grid .showcase:hover .product-img.hover {

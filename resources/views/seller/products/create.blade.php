@@ -1,7 +1,6 @@
 @extends('layouts.seller_home')
 
 @section('title', 'Thêm Sản Phẩm Mới')
-
 @section('content')
     <div class="container mx-auto px-4">
         <!-- Header -->
@@ -339,7 +338,7 @@
         </form>
     </div>
 
-@section('scripts')
-    <script src="{{ asset('js/product.js') }}"></script>
 @endsection
-@endsection
+@push('scripts')
+    @vite('resources/js/seller/product.js')
+@endpush
