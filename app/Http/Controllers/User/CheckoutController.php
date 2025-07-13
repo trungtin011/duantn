@@ -305,7 +305,7 @@ class CheckoutController extends Controller
                 $original_price = $item['combo_info']['original_price'];
                 $discount_amount = $original_price - $unit_price;
                 $variant_id = $item['product']->variants->first()->id;
-                $variant_name = $item['variant'] ? $item['variant']->variant_name : 'Không có biến thể';
+                $variant_name = $item['product']->variants->first()->variant_name ?? 'Không có biến thể';
             } else {
                 if ($item['product']->variants && $item['product']->variants->count() > 0) {
                     $unit_price = $item['product']->variants->first()->sale_price;
