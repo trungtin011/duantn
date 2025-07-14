@@ -6,29 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
-    <title>@yield('title')</title>
-
+    <title>@yield('title', 'Default Title')</title>
+    
     <!-- Font + Tailwind + Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/user/home.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/client-wishlist.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/orderDetail.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/user/post.css') }}">
-    @vite('resources/js/echo.js')
+    @vite('resources/css/user/home.css')
+    @vite('resources/css/user/orderDetail.css')
+    @vite('resources/css/user/notifications.css')
     @stack('styles')
+    @vite('resources/js/echo.js')
 </head>
 
 @auth
     <script>
         window.addEventListener('beforeunload', function() {
             navigator.sendBeacon('/update-session', JSON.stringify({
-                user_id: {{ auth()->id() }}
+                user_id: {{ Auth::id() }}
             }));
         });
     </script>
@@ -60,24 +63,213 @@
                                 d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
                         </svg>
                         <span class="capitalize text-sm">Thông báo</span>
+                        @auth
+                            @php
+                                $unreadCount = 0;
+                                if (isset($groupedNotifications)) {
+                                    foreach ($groupedNotifications as $type => $notifications) {
+                                        $unreadCount += $notifications->where('status', 'unread')->count();
+                                    }
+                                }
+                            @endphp
+                            @if ($unreadCount > 0)
+                                <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                                    {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                                </span>
+                            @endif
+                        @endauth
                     </div>
-                    <div class="absolute dropdown-notification-content z-10 right-0 bg-white w-[300px] p-3 shadow">
+                    <div
+                        class="absolute dropdown-notification-content z-10 right-0 bg-white w-[400px] max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden">
                         <!-- Thêm phần nhô lên -->
                         <div class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle">
                         </div>
-                        <div class="">
-                            <span class="text-sm text-gray-500">Thông báo tin nhắn mới</span>
-                        </div>
-                        <div class="border-t border-gray-200 my-2"></div>
-                        <div class="flex items-center gap-1 text-black">
-                            <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
-                                alt="phone" class="w-[50px] h-[50px] rounded-[5px]">
-                            <div class="flex flex-col gap-1 overflow-hidden">
-                                <h6 class="uppercase text-sm w-full truncate">
-                                    LIVESTREAMING: Giảm giá 50% cho tất cả đồ bơi và giao hàng nhanh miễn phí!
-                                </h6>
-                                <span class="text-xs text-gray-500">1 phút trước</span>
-                            </div>
+
+                        @auth
+                            @if (isset($groupedNotifications) && $groupedNotifications->count() > 0)
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <span class="text-sm font-semibold text-gray-700">Thông báo mới</span>
+                                        <a href="#" class="text-xs text-blue-600 hover:text-blue-800">Xem tất cả</a>
+                                    </div>
+
+                                    @foreach ($groupedNotifications as $type => $notifications)
+                                        <!-- Notification Type Header -->
+                                        <div class="mb-3">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <div
+                                                    class="w-2 h-2 rounded-full 
+                                                    @switch($type)
+                                                        @case('order')
+                                                            bg-blue-500
+                                                            @break
+                                                        @case('promotion')
+                                                            bg-green-500
+                                                            @break
+                                                        @case('system')
+                                                            bg-purple-500
+                                                            @break
+                                                        @case('security')
+                                                            bg-red-500
+                                                            @break
+                                                        @default
+                                                            bg-gray-500
+                                                    @endswitch">
+                                                </div>
+                                                <h4 class="text-xs font-medium text-gray-500 uppercase">
+                                                    @switch($type)
+                                                        @case('order')
+                                                            Đơn hàng
+                                                        @break
+
+                                                        @case('promotion')
+                                                            Khuyến mãi
+                                                        @break
+
+                                                        @case('system')
+                                                            Hệ thống
+                                                        @break
+
+                                                        @case('security')
+                                                            Bảo mật
+                                                        @break
+
+                                                        @default
+                                                            {{ ucfirst($type) }}
+                                                    @endswitch
+                                                </h4>
+                                                <span class="text-xs text-gray-400">({{ $notifications->count() }})</span>
+                                            </div>
+
+                                            @foreach ($notifications->take(3) as $notification)
+                                                <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ $notification->status === 'unread' ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
+                                                    data-notification-id="{{ $notification->id }}"
+                                                    data-notification-type="{{ $notification->type }}">
+                                                    <div class="flex-shrink-0">
+                                                        <div
+                                                            class="w-10 h-10 rounded-full flex items-center justify-center
+                                                            @switch($notification->type)
+                                                                @case('order')
+                                                                    bg-blue-100
+                                                                    @break
+                                                                @case('promotion')
+                                                                    bg-green-100
+                                                                    @break
+                                                                @case('system')
+                                                                    bg-purple-100
+                                                                    @break
+                                                                @case('security')
+                                                                    bg-red-100
+                                                                    @break
+                                                                @default
+                                                                    bg-gray-100
+                                                            @endswitch">
+                                                            @switch($notification->type)
+                                                                @case('order')
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                                        class="w-5 h-5 text-blue-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                                                    </svg>
+                                                                @break
+
+                                                                @case('promotion')
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                                        class="w-5 h-5 text-green-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                                            d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.732.699 2.431 0l4.318-4.318c.699-.699.699-1.732 0-2.431L9.568 3z" />
+                                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                                            d="M6 6h.008v.008H6V6z" />
+                                                                    </svg>
+                                                                @break
+
+                                                                @case('system')
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                                        class="w-5 h-5 text-purple-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                                            d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+                                                                    </svg>
+                                                                @break
+
+                                                                @case('security')
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                                        class="w-5 h-5 text-red-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                                            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                                                                    </svg>
+                                                                @break
+
+                                                                @default
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                                        class="w-5 h-5 text-gray-600">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                                                    </svg>
+                                                            @endswitch
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-center justify-between">
+                                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                                                {{ $notification->title }}
+                                                            </p>
+                                                            @if ($notification->priority === 'high')
+                                                                <span
+                                                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                    Quan trọng
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                            {{ $notification->content }}
+                                                        </p>
+                                                        <div class="flex items-center justify-between mt-2">
+                                                            <p class="text-xs text-gray-400">
+                                                                {{ $notification->created_at->diffForHumans() }}
+                                                            </p>
+                                                            @if ($notification->status === 'unread')
+                                                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+
+                                            @if ($notifications->count() > 3)
+                                                <div class="text-center py-2">
+                                                    <a href="{{ route('notifications.index', ['type' => $type]) }}"
+                                                        class="text-xs text-blue-600 hover:text-blue-800">
+                                                        Xem thêm {{ $notifications->count() - 3 }} thông báo
+                                                        {{ strtolower($type) }}
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="p-8 text-center">
+                                    <div
+                                        class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-gray-400">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Không có thông báo mới</p>
+                                </div>
+                            @endif
+                        @endauth
+                        <div class="p-6 text-center">
+                            <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
+                            <a href="{{ route('login') }}"
+                                class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng nhập</a>
                         </div>
                     </div>
                 </div>
@@ -87,6 +279,7 @@
                         <option class="text-black">English</option>
                     </select>
                 </div>
+
                 <div class="flex items-center gap-2">
                     <div class="relative dropdown-parent">
                         @guest
@@ -269,39 +462,51 @@
                 <i class="fa fa-bars"></i>
             </button>
 
-            <!-- Search & Icons -->
-            <div class="hidden md:flex items-center gap-10 w-5/6">
-                <form action="{{ route('search') }}" method="GET"
-                    id="searchForm"
-                    class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between relative">
-                    
-                    <input
-                        type="text"
-                        name="query"
-                        id="searchInput"
-                        placeholder="Bạn muốn tìm kiếm gì ?"
-                        class="text-sm focus:outline-none w-full"
-                        value="{{ request('query') }}"
-                        autocomplete="off"
-                    />
-                    <button type="submit">
-                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
-                    </button>
+        <!-- Search & Icons -->
+        <div class="hidden md:flex items-center gap-10 w-5/6">
+            <form action="{{ route('search') }}" method="GET"
+                id="searchForm"
+                class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between relative">
+                
+                <input
+                    type="text"
+                    name="query"
+                    id="searchInput"
+                    placeholder="Bạn muốn tìm kiếm gì ?"
+                    class="text-sm focus:outline-none w-full"
+                    value="{{ request('query') }}"
+                    autocomplete="off"
+                />
+                <button type="submit">
+                    <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                </button>
 
-                    <!-- Dropdown gợi ý -->
-                    <div id="searchSuggestions"
-                        class="absolute top-full left-0 bg-white border w-full mt-1 shadow-lg rounded-md hidden z-50">
-                    </div>
+                <!-- Gợi ý tìm kiếm -->
+                <div id="searchSuggestions"
+                    class="absolute top-full left-0 bg-white border w-full mt-1 shadow-lg rounded-md hidden z-50">
+                </div>
                 </form>
+
                 <div class="relative">
-                    <div
-                        class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
+                    <div class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
                         <span class="text-center text-xs text-white">3</span>
                     </div>
                     <a href="{{ route('cart') }}">
                         <i class="fa fa-shopping-cart text-gray-700 hover:text-red-500 text-2xl"></i>
                     </a>
                 </div>
+
+                <!-- Đăng xuất -->
+                @auth
+                    <a href="{{ route('logout') }}" id="logoutLink"
+                    onclick="event.preventDefault(); document.getElementById('logoutForm').submit();"
+                    class="text-sm text-gray-700 hover:text-red-500">
+                        Đăng xuất
+                    </a>
+                    <form id="logoutForm" action="{{ route('logout') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
+                @endauth
             </div>
         </div>
 
@@ -449,18 +654,14 @@
                             @endauth
                         </div>
                     </div>
-                @else
-                    <a href="{{ route('login') }}"
-                        class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-200">
-                        <i class="fa fa-user"></i>
-                    </a>
                 @endif
             </div>
         </div>
     </header>
 
+
     <!-- Main Content -->
-    <main class="bg-[#F5F5F5] pb-10 min-h-screen">
+    <main class="bg-white pb-10 min-h-screen">
         @yield('content')
     </main>
 
@@ -491,29 +692,36 @@
             <div>
                 <h4 class="font-bold mb-2">Tài khoản</h4>
                 @auth
+                    @if (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
+                        <a href="{{ route('account.profile') }}"
+                            class="text-sm text-gray-400 hover:text-orange-500 block">Tài khoản của tôi</a>
+                        <a href="{{ route('order_history') }}"
+                            class="text-sm text-gray-400 hover:text-orange-500 block">Đơn
+                            hàng</a>
+                        <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh
+                            sách
+                            ước</a>
+                        <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ
+                            hàng</a>
 
-                    <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Tài khoản của tôi</a>
-                    <a href="{{ route('order_history') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đơn
-                        hàng</a>
-                    <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách
-                        ước</a>
-                    <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
-
-                    <a href="{{ route('logout') }}"
-                        onclick="event.preventDefault(); document.getElementById('logout-form-footer').submit();"
-                        class="text-sm text-gray-400 hover:text-orange-500 block">Đăng xuất</a>
-                    <form id="logout-form-footer" action="{{ route('logout') }}" method="POST" class="hidden">
-                        @csrf
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
-                        nhập</a>
-                    <a href="{{ route('register') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
-                        ký</a>
-                    <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ hàng</a>
-                    <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh sách
-                        ước</a>
-                    <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
+                        <a href="{{ route('logout') }}"
+                            onclick="event.preventDefault(); document.getElementById('logout-form-footer').submit();"
+                            class="text-sm text-gray-400 hover:text-orange-500 block">Đăng xuất</a>
+                        <form id="logout-form-footer" action="{{ route('logout') }}" method="POST" class="hidden">
+                            @csrf
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
+                            nhập</a>
+                        <a href="{{ route('register') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Đăng
+                            ký</a>
+                        <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ
+                            hàng</a>
+                        <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh
+                            sách
+                            ước</a>
+                        <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
+                    @endif
                 @endauth
             </div>
 
@@ -561,33 +769,48 @@
             user: @json(Auth::user())
         };
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const isLoggedIn = {{ auth()->check() ? 'true' : 'false' }};
-            const input = document.getElementById('searchInput');
-            const form = document.getElementById('searchForm');
-            const suggestionsBox = document.getElementById('searchSuggestions');
-            const STORAGE_KEY = 'search_history';
-            const MAX_ITEMS = 10;
+        document.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn  = {{ auth()->check() ? 'true' : 'false' }};  
+            const userId      = {{ auth()->check() ? auth()->id() : 'null' }}; 
+            const STORAGE_KEY = userId ? `search_history_${userId}` : null;     
+            const MAX_ITEMS   = 10;
+
+            const input           = document.getElementById('searchInput');
+            const form            = document.getElementById('searchForm');
+            const suggestionsBox  = document.getElementById('searchSuggestions');
+            const logoutLink      = document.getElementById('logoutLink');
+
+            if (logoutLink) {
+                logoutLink.addEventListener('click', () => {
+                    localStorage.removeItem('auth_token');  
+                });
+            }
 
             function getHistory() {
+                if (!STORAGE_KEY) return [];                        
                 const raw = localStorage.getItem(STORAGE_KEY);
                 return raw ? JSON.parse(raw) : [];
             }
 
             function saveHistory(keyword) {
-                let history = getHistory();
+                if (!STORAGE_KEY) return;                        
                 keyword = keyword.trim();
                 if (!keyword) return;
 
-                history = history.filter(item => item !== keyword); // xóa trùng
+                let history = getHistory();
+                history = history.filter(item => item !== keyword);
                 history.unshift(keyword);
                 history = history.slice(0, MAX_ITEMS);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
             }
 
-            function renderSuggestions(keyword = '') {
-                let history = getHistory().filter(item =>
-                    item.toLowerCase().includes(keyword.toLowerCase())
+            function renderSuggestions(filter = '') {
+                if (!STORAGE_KEY) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+                const history = getHistory().filter(item =>
+                    item.toLowerCase().includes(filter.toLowerCase())
                 );
 
                 if (history.length === 0) {
@@ -595,15 +818,14 @@
                     return;
                 }
 
-                // ➕ Thêm phần tiêu đề "Lịch sử tìm kiếm"
                 suggestionsBox.innerHTML = `
                     <div class="px-4 py-2 text-sm font-semibold text-gray-600 border-b">
                         Lịch sử tìm kiếm
                     </div>
                     ${history.map(item => `
                         <button type="button"
-                            class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                            data-key="${item}">
+                                class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                                data-key="${item}">
                             ${item}
                         </button>
                     `).join('')}
@@ -612,30 +834,29 @@
             }
 
             input.addEventListener('input', () => renderSuggestions(input.value));
-            input.addEventListener('focus', () => renderSuggestions(input.value));
+            input.addEventListener('focus', ()  => renderSuggestions(input.value));
 
-            suggestionsBox.addEventListener('click', function (e) {
-                if (e.target.matches('[data-key]')) {
-                    input.value = e.target.dataset.key;
-                    suggestionsBox.classList.add('hidden');
-                    form.submit();
-                }
+            suggestionsBox.addEventListener('click', e => {
+                const btn = e.target.closest('[data-key]');
+                if (!btn) return;
+                input.value = btn.dataset.key;
+                suggestionsBox.classList.add('hidden');
+                form.submit();
             });
 
-            form.addEventListener('submit', function () {
+            form.addEventListener('submit', () => {
                 const keyword = input.value.trim();
-                if (isLoggedIn && keyword) {
-                    saveHistory(keyword);
-                }
+                if (keyword) saveHistory(keyword);
             });
 
-            document.addEventListener('click', function (e) {
+            document.addEventListener('click', e => {
                 if (!form.contains(e.target)) {
                     suggestionsBox.classList.add('hidden');
                 }
             });
         });
     </script>
+
 </body>
 
 </html>
