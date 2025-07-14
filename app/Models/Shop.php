@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ShopStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ShopCategory;
 
 class Shop extends Model
 {
@@ -54,4 +55,9 @@ class Shop extends Model
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
+    public function categories()
+{
+    return $this->hasMany(ShopCategory::class);
+}
+
 }

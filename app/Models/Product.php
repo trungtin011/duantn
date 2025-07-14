@@ -180,6 +180,10 @@ public function seller()
 {
     return $this->belongsTo(Seller::class, 'shopID', 'id'); // nếu shopID là seller_id
 }
+public function shopCategory()
+{
+    return $this->belongsTo(ShopCategory::class, 'shop_category_id');
+}
 
 
 }

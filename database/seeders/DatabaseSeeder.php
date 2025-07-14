@@ -660,5 +660,14 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
         ]);
+        // Bảng shop_category
+        DB::table('shop_category')->insert([
+            [
+                'shop_id' => 1,
+                'category_id' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+        ]);
     }
 }
