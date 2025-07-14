@@ -257,7 +257,9 @@ Route::get('/san-pham/{slug}', [ProductController::class, 'show'])->name('produc
 Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.profile');
 Route::post('/shop/{shop}/follow', [ShopController::class, 'follow'])->middleware('auth')->name('shop.follow');
 Route::post('/shop/{shop}/unfollow', [ShopController::class, 'unfollow'])->name('shop.unfollow');
-
+Route::get('/shop/{shop}/search', [ShopController::class, 'searchProducts'])->name('shop.search');
+Route::get('/shop/{shop}', [ShopController::class, 'show'])->name('shop.show');
+Route::get('/shop/{shop}/category/{category}', [ShopController::class, 'productsByCategory'])->name('shop.category');
 Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
 Route::get('/login/qr/generate', [QrLoginController::class, 'generate']);
 Route::get('/qr-confirm', function () {
@@ -298,13 +300,25 @@ Route::post('/account/password/verify', [UserController::class, 'verifyPasswordC
 Route::get('/account/password/reset', [UserController::class, 'showPasswordResetForm'])->name('account.password.reset.form');
 Route::post('/account/password/reset', [UserController::class, 'confirmNewPassword'])->name('account.password.reset.confirm');
 });
-Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])->name('account.password.code.verify.form');
-Route::post('/account/password/request-confirm', [UserController::class, 'requestPasswordChangeConfirm'])->name('account.password.request.confirm');
-Route::post('/account/password/confirm-code', [UserController::class, 'confirmPasswordChangeCode'])->name('account.password.confirm.code');
-Route::post('/account/password/verify-code', [UserController::class, 'confirmPasswordChangeCode'])
-    ->name('account.password.code.verify');
-Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])
-    ->name('account.password.code.verify.form');
+Route::middleware(['auth'])->prefix('account/password')->group(function () {
+    Route::get('/', [UserController::class, 'changePasswordForm'])->name('account.password');
+
+    // Gửi mã xác nhận
+    Route::post('/send-code', [UserController::class, 'requestPasswordVerify'])->name('account.password.send.code');
+
+    // Form nhập mã xác nhận
+    Route::get('/verify-code', [UserController::class, 'showVerifyCodeForm'])->name('account.password.code.verify.form');
+
+    // Xử lý mã xác nhận
+    Route::post('/verify-code', [UserController::class, 'verifyPasswordCode'])->name('account.password.code.verify');
+
+    // Form đổi mật khẩu
+    Route::get('/reset', [UserController::class, 'showPasswordResetForm'])->name('account.password.reset.form');
+
+    // Xác nhận đổi mật khẩu
+    Route::post('/reset', [UserController::class, 'confirmNewPassword'])->name('account.password.request.confirm');
+});
+
 
 
 

@@ -141,16 +141,26 @@ public function showVerifyCodeForm()
 
 public function verifyPasswordCode(Request $request)
 {
-    $request->validate(['code' => 'required|numeric']);
+    $request->validate(['code' => 'required|digits:6']);
 
-    $user = Auth::user();
+    $sessionCode = session('password_reset_code');
+    $expire = session('password_reset_expire');
 
-    if ($user->reset_code !== $request->code || $user->reset_code_expires_at < now()) {
-        return back()->withErrors(['code' => 'Mã xác nhận không đúng hoặc đã hết hạn.']);
+    if (!$sessionCode || !$expire || now()->greaterThan($expire)) {
+        return back()->withErrors(['code' => 'Mã xác nhận đã hết hạn.']);
     }
+
+    if ($request->code != $sessionCode) {
+        return back()->withErrors(['code' => 'Mã xác nhận không đúng.']);
+    }
+
+    // Xác nhận thành công
+    session(['can_reset_password' => true]);
 
     return redirect()->route('account.password.reset.form');
 }
+
+
 
 public function showPasswordResetForm()
 {
@@ -159,18 +169,25 @@ public function showPasswordResetForm()
 
 public function confirmNewPassword(Request $request)
 {
+    if (!session('can_reset_password')) {
+        return redirect()->route('account.password')->withErrors(['error' => 'Vui lòng xác minh mã trước.']);
+    }
+
     $request->validate([
         'password' => 'required|min:6|confirmed',
     ]);
 
     $user = Auth::user();
     $user->password = bcrypt($request->password);
-    $user->reset_code = null;
-    $user->reset_code_expires_at = null;
     $user->save();
+
+    // Xoá session sau khi đổi xong
+    session()->forget(['password_reset_code', 'password_reset_expire', 'can_reset_password']);
 
     return redirect()->route('account.password')->with('success', 'Đổi mật khẩu thành công!');
 }
+
+
 public function requestPasswordChangeConfirm(Request $request)
 {
     $request->validate([
@@ -221,25 +238,29 @@ public function requestPasswordVerify(Request $request)
     $user = Auth::user();
 
     $code = random_int(100000, 999999);
-    $user->reset_code = $code;
-    $user->reset_code_expires_at = now()->addMinutes(10);
-    $user->save();
 
-    // Gửi email mã xác nhận
+    // Lưu mã vào session
+    session([
+        'password_reset_code' => $code,
+        'password_reset_expire' => now()->addMinutes(10),
+    ]);
+
+    // Gửi email
     Mail::send([], [], function ($message) use ($user, $code) {
-    $message->to($user->email)
-        ->subject('Mã xác nhận đổi mật khẩu')
-        ->html("
-            <p>Xin chào <strong>{$user->fullname}</strong>,</p>
-            <p>Mã xác nhận đổi mật khẩu của bạn là: <strong style='color: red; font-size: 18px;'>$code</strong></p>
-            <p>Mã có hiệu lực trong 10 phút.</p>
-            <p>Trân trọng,<br>Hệ thống</p>
-        ");
-});
-
+        $message->to($user->email)
+            ->subject('Mã xác nhận đổi mật khẩu')
+            ->html("
+                <p>Xin chào <strong>{$user->fullname}</strong>,</p>
+                <p>Mã xác nhận đổi mật khẩu của bạn là: <strong style='color:red; font-size:18px;'>$code</strong></p>
+                <p>Mã có hiệu lực trong 10 phút.</p>
+                <p>Trân trọng,<br>Hệ thống</p>
+            ");
+    });
 
     return redirect()->route('account.password.code.verify.form')
         ->with('success', 'Mã xác nhận đã được gửi tới email của bạn.');
 }
+
+
 
 }
