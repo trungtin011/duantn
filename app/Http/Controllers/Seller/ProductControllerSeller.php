@@ -73,9 +73,40 @@ class ProductControllerSeller extends Controller
      */
     public function create()
     {
-        $categories = Category::where('status', 'active')->get();
-        $brands = Brand::where('status', 'active')->get();
-        return view('seller.products.create', compact('categories', 'brands'));
+        $categories = Category::where('status', 'active')
+            ->with(['children' => function ($query) {
+                $query->where('status', 'active')
+                    ->with(['children' => function ($subQuery) {
+                        $subQuery->where('status', 'active');
+                    }]);
+            }])
+            ->whereNull('parent_id')
+            ->get();
+
+        $brands = Brand::where('status', 'active')
+            ->with(['children' => function ($query) {
+                $query->where('status', 'active')
+                    ->with(['children' => function ($subQuery) {
+                        $subQuery->where('status', 'active');
+                    }]);
+            }])
+            ->whereNull('parent_id')
+            ->get();
+
+        $allAttributes = Attribute::with(['values' => function ($query) {
+            $query->whereNotNull('value')->where('value', '!=', '');
+        }])
+            ->whereNotNull('name')
+            ->where('name', '!=', '')
+            ->get();
+
+        Log::info('Loaded data for product create', [
+            'brands_count' => $brands->count(),
+            'categories_count' => $categories->count(),
+            'all_attributes_count' => $allAttributes->count(),
+        ]);
+
+        return view('seller.products.create', compact('categories', 'brands', 'allAttributes'));
     }
 
     /**
@@ -84,53 +115,42 @@ class ProductControllerSeller extends Controller
     public function store(Request $request)
     {
         $request->validate(
-            $this->validationRules(), // Không truyền gì là store
+            $this->validationRules(),
             $this->validationMessages()
         );
+
         try {
             DB::beginTransaction();
 
             Log::info('Creating new product', [
-                'request_data' => $request->except(['images', 'variant_images']),
-                'has_images' => $request->hasFile('images'),
+                'request_data' => $request->except(['main_image', 'images', 'variant_images']),
+                'has_main_image' => $request->hasFile('main_image'),
+                'has_additional_images' => $request->hasFile('images'),
                 'has_variants' => $request->filled('variants'),
+                'variants_data' => $request->variants,
                 'user_id' => Auth::id() ?? 'guest'
             ]);
 
-            // Kiểm tra seller
+            // Kiểm tra seller và shop
             $seller = Auth::user()->seller;
             if (!$seller) {
                 Log::error('Seller not found for user ID: ' . Auth::id());
-                return back()->withErrors('Bạn cần đăng ký làm seller trước.');
+                return back()->withErrors('Bạn cần đăng ký làm seller trước.')->withInput();
             }
 
-            // Lấy userID từ seller để gán cho ownerID
-            $userId = $seller->userID;
-
-            // Tìm shop hiện có liên kết với seller qua userID
-            $shop = $seller->shops()->where('ownerID', $userId)->first();
-
-            // Nếu không tìm thấy shop, kiểm tra trực tiếp trong bảng shops
+            $shop = $seller->shops()->first();
             if (!$shop) {
-                $shop = Shop::where('ownerID', $userId)->first();
-                if (!$shop) {
-                    // Tạo shop mới chỉ khi thực sự không có
-                    $shop = Shop::create([
-                        'ownerID' => $userId,
-                        'shop_name' => 'Default Shop for Seller ' . $seller->id,
-                        'shop_phone' => '0900000000',
-                        'shop_email' => 'default_' . $seller->id . '@example.com',
-                        'shop_description' => 'Mô tả mặc định cho shop của seller ' . $seller->id,
-                        'shop_logo' => '/logos/default.png',
-                        'shop_banner' => '/banners/default.png',
-                        'shop_status' => 'active',
-                    ]);
-                    Log::info('Created default shop for seller', ['seller_id' => $seller->id, 'shop_id' => $shop->id, 'ownerID' => $userId]);
-                } else {
-                    Log::info('Found existing shop for seller', ['shop_id' => $shop->id, 'ownerID' => $userId]);
-                }
-            } else {
-                Log::info('Found existing shop for seller via relationship', ['shop_id' => $shop->id, 'ownerID' => $userId]);
+                $shop = Shop::create([
+                    'ownerID' => $seller->userID,
+                    'shop_name' => 'Default Shop for Seller ' . $seller->id,
+                    'shop_phone' => '0900000000',
+                    'shop_email' => 'default_' . $seller->id . '@example.com',
+                    'shop_description' => 'Mô tả mặc định cho shop của seller ' . $seller->id,
+                    'shop_logo' => '/logos/default.png',
+                    'shop_banner' => '/banners/default.png',
+                    'shop_status' => 'active',
+                ]);
+                Log::info('Created default shop for seller', ['seller_id' => $seller->id, 'shop_id' => $shop->id]);
             }
 
             if ($request->sale_price < $request->purchase_price) {
@@ -145,8 +165,6 @@ class ProductControllerSeller extends Controller
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description ?: '',
-                'brand' => $request->brand,
-                'category' => $request->category,
                 'sku' => $request->sku,
                 'price' => $request->price,
                 'purchase_price' => $request->purchase_price,
@@ -162,20 +180,72 @@ class ProductControllerSeller extends Controller
                 'shopID' => $shop->id,
             ]);
 
+            Log::info('Product created', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'has_variants' => $request->filled('variants'),
+            ]);
+
+            // Lưu danh mục
+            if ($request->filled('category_ids') && is_array($request->category_ids)) {
+                $product->categories()->sync($request->category_ids);
+                Log::info('Categories synced', [
+                    'product_id' => $product->id,
+                    'category_ids' => $request->category_ids
+                ]);
+            }
+
+            // Lưu thương hiệu
+            if ($request->filled('brand_ids') && is_array($request->brand_ids)) {
+                $product->brands()->sync($request->brand_ids);
+                Log::info('Brands synced', [
+                    'product_id' => $product->id,
+                    'brand_ids' => $request->brand_ids
+                ]);
+            }
+
             // Xử lý thuộc tính
             if ($request->filled('attributes')) {
-                Log::info('Processing attributes', ['attributes' => $request->input('attributes')]);
                 $attributeIds = [];
-                foreach ($request->input('attributes') as $attributeInput) {
-                    if (!isset($attributeInput['name']) || !isset($attributeInput['values']) || empty(trim($attributeInput['name'])) || empty(trim($attributeInput['values']))) {
+                foreach ($request->attributes as $index => $attrData) {
+                    if (empty(trim($attrData['values']))) {
+                        Log::warning('Skipping attribute due to empty values', [
+                            'attribute_index' => $index,
+                            'attribute_data' => $attrData
+                        ]);
                         continue;
                     }
-                    $attribute = Attribute::firstOrCreate(['name' => trim($attributeInput['name'])]);
-                    $attributeIds[] = $attribute->id;
 
-                    foreach (explode(',', $attributeInput['values']) as $value) {
-                        $value = trim($value);
-                        if (empty($value)) continue;
+                    $attribute = null;
+                    if ($attrData['id'] === 'new' && !empty(trim($attrData['name']))) {
+                        $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
+                        Log::info('New attribute created', [
+                            'attribute_id' => $attribute->id,
+                            'attribute_name' => $attribute->name
+                        ]);
+                    } elseif ($attrData['id'] !== 'new' && !empty($attrData['id'])) {
+                        $attribute = Attribute::find($attrData['id']);
+                        if (!$attribute) {
+                            Log::warning('Attribute not found', [
+                                'attribute_id' => $attrData['id'],
+                                'attribute_index' => $index
+                            ]);
+                            continue;
+                        }
+                    } else {
+                        Log::warning('Invalid attribute data', [
+                            'attribute_index' => $index,
+                            'attribute_data' => $attrData
+                        ]);
+                        continue;
+                    }
+
+                    $values = collect(explode(',', $attrData['values']))
+                        ->map(fn($v) => trim($v))
+                        ->filter()
+                        ->toArray();
+
+                    foreach ($values as $value) {
                         $attributeValue = AttributeValue::firstOrCreate([
                             'attribute_id' => $attribute->id,
                             'value' => $value,
@@ -186,80 +256,140 @@ class ProductControllerSeller extends Controller
                             'attribute_value' => $attributeValue->value
                         ]);
                     }
+
+                    $attributeIds[] = $attribute->id;
                 }
+
                 if (!empty($attributeIds)) {
                     $product->attributes()->sync($attributeIds);
-                    Log::info('Attributes attached to product', [
+                    Log::info('Attributes synced to product', [
                         'product_id' => $product->id,
                         'attribute_ids' => $attributeIds
                     ]);
+                } else {
+                    Log::warning('No valid attributes to sync', [
+                        'product_id' => $product->id
+                    ]);
                 }
+            } else {
+                Log::info('No attributes provided', [
+                    'product_id' => $product->id
+                ]);
             }
 
             // Xử lý biến thể
-            $variants = [];
             if ($request->filled('variants')) {
                 Log::info('Processing variants', ['variants_count' => count($request->variants)]);
-                foreach ($request->variants as $variantIndex => $variantData) {
+                foreach ($request->variants as $index => $variantData) {
+                    // Kiểm tra dữ liệu biến thể hợp lệ
+                    if (empty($variantData['name']) || empty($variantData['sku']) || empty($variantData['price']) || empty($variantData['purchase_price']) || empty($variantData['sale_price']) || empty($variantData['stock_total'])) {
+                        Log::warning('Skipping invalid variant data', [
+                            'index' => $index,
+                            'variant_data' => $variantData
+                        ]);
+                        continue;
+                    }
+
+                    // Tạo biến thể
                     $variant = ProductVariant::create([
                         'productID' => $product->id,
                         'variant_name' => $variantData['name'],
-                        'price' => $variantData['price'],
-                        'purchase_price' => $variantData['purchase_price'],
-                        'sale_price' => $variantData['sale_price'],
-                        'stock' => $variantData['stock_total'],
+                        'price' => $variantData['price'] ?? 0,
+                        'purchase_price' => $variantData['purchase_price'] ?? 0,
+                        'sale_price' => $variantData['sale_price'] ?? 0,
+                        'stock' => $variantData['stock_total'] ?? 0,
                         'sku' => $variantData['sku'],
                         'status' => 'active',
                     ]);
-                    $variants[] = $variant;
 
-                    // Lưu kích thước cho biến thể
+                    Log::info('Variant created', [
+                        'variant_id' => $variant->id,
+                        'variant_name' => $variant->variant_name,
+                        'product_id' => $product->id
+                    ]);
+
+                    // Lưu kích thước
                     ProductDimension::create([
                         'productID' => $product->id,
                         'variantID' => $variant->id,
-                        'length' => isset($variantData['length']) ? $variantData['length'] : null,
-                        'width' => isset($variantData['width']) ? $variantData['width'] : null,
-                        'height' => isset($variantData['height']) ? $variantData['height'] : null,
-                        'weight' => isset($variantData['weight']) ? $variantData['weight'] : null,
+                        'length' => $variantData['length'] ?? null,
+                        'width' => $variantData['width'] ?? null,
+                        'height' => $variantData['height'] ?? null,
+                        'weight' => $variantData['weight'] ?? null,
                     ]);
 
-                    Log::info('Variant created with dimensions', [
+                    Log::info('Dimension created for variant', [
                         'variant_id' => $variant->id,
-                        'variant_name' => $variant->variant_name,
-                        'variant_sku' => $variant->sku,
-                        'dimensions' => [
-                            'length' => $variantData['length'] ?? null,
-                            'width' => $variantData['width'] ?? null,
-                            'height' => $variantData['height'] ?? null,
-                            'weight' => $variantData['weight'] ?? null,
-                        ]
+                        'product_id' => $product->id
                     ]);
 
-                    // Lưu thuộc tính cho biến thể
-                    if (isset($variantData['attributes'])) {
-                        foreach ($variantData['attributes'] as $attrData) {
-                            if (!isset($attrData['name']) || !isset($attrData['value']) || empty(trim($attrData['name'])) || empty(trim($attrData['value']))) {
+                    // Xử lý thuộc tính của biến thể
+                    if (!empty($variantData['attributes'])) {
+                        foreach ($variantData['attributes'] as $attrIndex => $attrData) {
+                            if (empty(trim($attrData['name'])) || empty(trim($attrData['value']))) {
+                                Log::warning('Skipping invalid variant attribute', [
+                                    'variant_id' => $variant->id,
+                                    'attribute_data' => $attrData,
+                                    'attr_index' => $attrIndex
+                                ]);
                                 continue;
                             }
+
                             $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
                             $attributeValue = AttributeValue::firstOrCreate([
                                 'attribute_id' => $attribute->id,
                                 'value' => trim($attrData['value']),
                             ]);
+
                             ProductVariantAttributeValue::create([
                                 'product_variant_id' => $variant->id,
                                 'attribute_value_id' => $attributeValue->id,
                             ]);
+
                             Log::info('Variant attribute value linked', [
                                 'variant_id' => $variant->id,
                                 'attribute_value_id' => $attributeValue->id,
                                 'attribute_value' => $attributeValue->value
                             ]);
                         }
+                    } else {
+                        Log::warning('No attributes provided for variant', [
+                            'variant_id' => $variant->id,
+                            'variant_name' => $variant->variant_name
+                        ]);
+                    }
+
+                    // Xử lý ảnh biến thể
+                    if ($request->hasFile("variant_images.$index")) {
+                        foreach ($request->file("variant_images.$index") as $image) {
+                            if ($image->isValid()) {
+                                $path = $image->store('product_images', 'public');
+                                ProductImage::create([
+                                    'productID' => $product->id,
+                                    'variantID' => $variant->id,
+                                    'image_path' => $path,
+                                    'is_default' => 0,
+                                    'display_order' => 0,
+                                    'alt_text' => "{$variant->variant_name} - Image",
+                                ]);
+                                Log::info('Variant image saved', [
+                                    'variant_id' => $variant->id,
+                                    'image_path' => $path
+                                ]);
+                            } else {
+                                Log::warning('Invalid image file for variant', [
+                                    'variant_id' => $variant->id,
+                                    'index' => $index
+                                ]);
+                            }
+                        }
                     }
                 }
             } else {
-                // Lưu kích thước cho sản phẩm chính
+                Log::info('No variants provided, creating default dimension', [
+                    'product_id' => $product->id
+                ]);
+                // Lưu kích thước mặc định nếu không có biến thể
                 ProductDimension::create([
                     'productID' => $product->id,
                     'variantID' => null,
@@ -268,81 +398,50 @@ class ProductControllerSeller extends Controller
                     'height' => $request->height ?? null,
                     'weight' => $request->weight ?? null,
                 ]);
+            }
 
-                Log::info('Product dimensions saved', [
-                    'product_id' => $product->id,
-                    'dimensions' => [
-                        'length' => $request->length ?? null,
-                        'width' => $request->width ?? null,
-                        'height' => $request->height ?? null,
-                        'weight' => $request->weight ?? null,
-                    ]
+            // Lưu ảnh chính
+            if ($request->hasFile('main_image') && $request->file('main_image')->isValid()) {
+                $path = $request->file('main_image')->store('product_images', 'public');
+                ProductImage::create([
+                    'productID' => $product->id,
+                    'variantID' => null,
+                    'image_path' => $path,
+                    'is_default' => 1,
+                    'display_order' => 0,
+                    'alt_text' => "{$product->name} - Ảnh chính",
                 ]);
+                Log::info('Main image saved', ['image_path' => $path]);
             }
 
-            // Lưu ảnh sản phẩm chính
-            $displayOrder = 0;
+            // Lưu ảnh phụ
             if ($request->hasFile('images')) {
-                $imageCount = count($request->file('images'));
-                Log::info('Processing main product images', ['image_count' => $imageCount]);
-                foreach ($request->file('images') as $index => $image) {
-                    $path = $image->store('product_images', 'public');
-                    ProductImage::create([
-                        'productID' => $product->id,
-                        'variantID' => null,
-                        'image_path' => $path,
-                        'is_default' => ($index === 0) ? 1 : 0,
-                        'display_order' => $displayOrder++,
-                        'alt_text' => "{$product->name} - Image {$index}",
-                    ]);
-                    Log::info('Main product image saved', [
-                        'image_path' => $path,
-                        'is_default' => ($index === 0) ? 1 : 0,
-                        'display_order' => $displayOrder - 1
-                    ]);
-                }
-            }
-
-            // Lưu ảnh biến thể
-            foreach ($variants as $variantIndex => $variant) {
-                if ($request->hasFile("variant_images.{$variantIndex}")) {
-                    $variantImageCount = count($request->file("variant_images.{$variantIndex}"));
-                    Log::info('Processing variant images', [
-                        'variant_id' => $variant->id,
-                        'variant_name' => $variant->variant_name,
-                        'image_count' => $variantImageCount
-                    ]);
-                    foreach ($request->file("variant_images.{$variantIndex}") as $image) {
+                $displayOrder = 1;
+                foreach ($request->file('images') as $image) {
+                    if ($image->isValid()) {
                         $path = $image->store('product_images', 'public');
                         ProductImage::create([
                             'productID' => $product->id,
-                            'variantID' => $variant->id,
+                            'variantID' => null,
                             'image_path' => $path,
                             'is_default' => 0,
                             'display_order' => $displayOrder++,
-                            'alt_text' => "{$variant->variant_name} - Image",
+                            'alt_text' => "{$product->name} - Ảnh phụ {$displayOrder}",
                         ]);
-                        Log::info('Variant image saved', [
-                            'variant_id' => $variant->id,
-                            'image_path' => $path,
-                            'display_order' => $displayOrder - 1
-                        ]);
+                        Log::info('Additional image saved', ['image_path' => $path]);
                     }
                 }
             }
 
             DB::commit();
-
-            Log::info('Product creation completed successfully', [
-                'product_id' => $product->id,
-                'total_variants' => count($variants),
-                'total_images' => $displayOrder
-            ]);
-
             return redirect()->route('seller.products.index')->with('success', 'Sản phẩm đã được tạo thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Product creation failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('Product creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['main_image', 'images', 'variant_images'])
+            ]);
             return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())->withInput();
         }
     }
