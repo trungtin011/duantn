@@ -60,7 +60,7 @@
                                     <label class="block text-gray-700 font-medium mb-1">Tên sản phẩm <span
                                             class="text-red-500">*</span></label>
                                     <input type="text" name="name" id="product-name"
-                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Tên sản phẩm" value="{{ old('name', $product->name) }}" required>
                                     @error('name')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -70,7 +70,7 @@
                                 <div>
                                     <label class="block text-gray-700 font-medium mb-1">Mô tả</label>
                                     <textarea id="description" name="description"
-                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">{!! old('description', $product->description) !!}</textarea>
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">{!! old('description', $product->description) !!}</textarea>
                                     @error('description')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -86,7 +86,7 @@
                                         <label class="block text-gray-700 font-medium mb-1">Giá gốc <span
                                                 class="text-red-500">*</span></label>
                                         <input type="number" name="price" step="0.01"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="Giá gốc của sản phẩm" value="{{ old('price', $product->price) }}"
                                             required>
                                         @error('price')
@@ -97,7 +97,7 @@
                                         <label class="block text-gray-700 font-medium mb-1">Giá nhập <span
                                                 class="text-red-500">*</span></label>
                                         <input type="number" name="purchase_price" step="0.01"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="Giá nhập sản phẩm"
                                             value="{{ old('purchase_price', $product->purchase_price) }}" required>
                                         @error('purchase_price')
@@ -108,7 +108,7 @@
                                         <label class="block text-gray-700 font-medium mb-1">Giá bán <span
                                                 class="text-red-500">*</span></label>
                                         <input type="number" name="sale_price" step="0.01"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="Giá bán sản phẩm"
                                             value="{{ old('sale_price', $product->sale_price) }}" required>
                                         @error('sale_price')
@@ -119,7 +119,7 @@
                                         <label class="block text-gray-700 font-medium mb-1">SKU sản phẩm <span
                                                 class="text-red-500">*</span></label>
                                         <input type="text" name="sku"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="SKU sản phẩm" value="{{ old('sku', $product->sku) }}" required>
                                         @error('sku')
                                             <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -129,7 +129,7 @@
                                         <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho <span
                                                 class="text-red-500">*</span></label>
                                         <input type="number" name="stock_total"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="Số lượng tồn kho"
                                             value="{{ old('stock_total', $product->stock_total) }}" required>
                                         @error('stock_total')
@@ -143,7 +143,7 @@
                                     <div>
                                         <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
                                         <input type="number" name="length" step="0.01"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="Chiều dài sản phẩm"
                                             value="{{ old('length', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->length : 0) }}">
                                         @error('length')
@@ -153,7 +153,7 @@
                                     <div>
                                         <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
                                         <input type="number" name="width" step="0.01"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="Chiều rộng sản phẩm"
                                             value="{{ old('width', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->width : 0) }}">
                                         @error('width')
@@ -163,7 +163,7 @@
                                     <div>
                                         <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
                                         <input type="number" name="height" step="0.01"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="Chiều cao sản phẩm"
                                             value="{{ old('height', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->height : 0) }}">
                                         @error('height')
@@ -173,7 +173,7 @@
                                     <div>
                                         <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
                                         <input type="number" name="weight" step="0.01"
-                                            class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             placeholder="Trọng lượng sản phẩm"
                                             value="{{ old('weight', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->weight : 0) }}">
                                         @error('weight')
@@ -186,16 +186,29 @@
                             <!-- Thuộc tính & Biến thể -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <h4 class="text-xl font-semibold mb-4">Thuộc tính sản phẩm</h4>
+
                                 <div id="attribute-container">
-                                    @foreach ($attributes as $attribute)
-                                        <div class="mb-4 flex items-center gap-4">
-                                            <input type="text" name="attributes[{{ $loop->index }}][name]"
-                                                value="{{ $attribute->name }}"
-                                                class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                readonly>
-                                            <input type="text" name="attributes[{{ $loop->index }}][values]"
-                                                value="{{ $attribute->values->pluck('value')->implode(', ') }}"
-                                                class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    @foreach ($attributes as $index => $attribute)
+                                        <div class="mb-4 flex items-center gap-4 attribute-row">
+                                            <select name="attributes[{{ $index }}][id]"
+                                                class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select"
+                                                onchange="updateAttributeValues(this)">
+                                                <option value="" disabled selected>Chọn hoặc nhập thuộc tính</option>
+                                                <option value="new">Tạo thuộc tính mới</option>
+                                                @foreach ($allAttributes as $attr)
+                                                    <option value="{{ $attr->id }}"
+                                                        {{ $attribute->id == $attr->id ? 'selected' : '' }}>
+                                                        {{ $attr->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <input type="text" name="attributes[{{ $index }}][name]"
+                                                value="{{ $attribute->name ?? '' }}"
+                                                class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name {{ $attribute->id == 'new' ? '' : 'hidden' }}"
+                                                placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
+                                            <input type="text" name="attributes[{{ $index }}][values]"
+                                                value="{{ $attribute->values->isNotEmpty() ? $attribute->values->pluck('value')->implode(', ') : '' }}"
+                                                class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values"
+                                                placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)">
                                             <button type="button"
                                                 class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
                                         </div>
@@ -578,7 +591,7 @@
                                 <div>
                                     <label class="block text-gray-700 font-medium mb-1">Từ khóa (Tags)</label>
                                     <input type="text" name="meta_keywords" id="meta-keywords"
-                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Thêm từ khóa (phân cách bằng dấu phẩy)"
                                         value="{{ old('meta_keywords', $product->meta_keywords) }}">
                                     @error('meta_keywords')
@@ -594,7 +607,7 @@
                                     <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO (Meta Title) <span
                                             id="meta-title-count">0/60</span></label>
                                     <input type="text" name="meta_title" id="meta-title"
-                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         value="{{ old('meta_title', $product->meta_title) }}" maxlength="60"
                                         placeholder="Tiêu đề SEO (tối đa 60 ký tự)">
                                     <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm kiếm,
@@ -607,7 +620,7 @@
                                     <label class="block text-gray-700 font-medium mb-1">Mô tả SEO (Meta Description) <span
                                             id="meta-description-count">0/160</span></label>
                                     <textarea name="meta_description" id="meta-description"
-                                        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         maxlength="160" placeholder="Mô tả ngắn gọn (tối đa 160 ký tự)">{{ old('meta_description', $product->meta_description) }}</textarea>
                                     <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ
                                         tìm kiếm.</span>
@@ -617,7 +630,7 @@
                                 </div>
                                 <div class="mb-4">
                                     <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
-                                    <div id="seo-preview" class="card p-3"
+                                    <div id="seo-preview" class="card px-3 py-2"
                                         style="max-width: 600px; border: 1px solid #ddd;">
                                         <h5 id="preview-title" class="text-blue-600 mb-1">
                                             {{ $product->meta_title ?: $product->name }}</h5>
@@ -711,16 +724,273 @@
         </form>
     </div>
 
+    @php
+        // Lấy các giá trị thuộc tính từ $attributes
+        $sanitizedAttributes = $attributes
+            ->map(function ($attr) {
+                return [
+                    'id' => $attr->id ?? '',
+                    'name' => $attr->name ?? '',
+                    'values' => $attr->values->pluck('value')->toArray(),
+                ];
+            })
+            ->filter(function ($attr) {
+                return !empty($attr['id']) && !empty($attr['name']);
+            })
+            ->values()
+            ->toArray();
+
+        // Thêm các thuộc tính khác từ $allAttributes để hiển thị trong dropdown
+        $additionalAttributes = $allAttributes
+            ->filter(function ($attr) use ($attributes) {
+                return !$attributes->contains('id', $attr->id);
+            })
+            ->map(function ($attr) {
+                return [
+                    'id' => $attr->id ?? '',
+                    'name' => $attr->name ?? '',
+                    'values' => $attr->values->pluck('value')->toArray(),
+                ];
+            })
+            ->filter(function ($attr) {
+                return !empty($attr['id']) && !empty($attr['name']);
+            })
+            ->values()
+            ->toArray();
+
+        // Kết hợp $sanitizedAttributes và $additionalAttributes
+        $sanitizedAttributes = array_merge($sanitizedAttributes, $additionalAttributes);
+
+        // Ghi log JavaScript để kiểm tra
+        $sanitizedAttributesLog = json_encode($sanitizedAttributes, JSON_PRETTY_PRINT);
+    @endphp
+
     @push('scripts')
         <script>
+            console.log('Sanitized Attributes:', @json($sanitizedAttributes));
+
             function debugLog(message, data = null) {
                 console.log(`[DEBUG] ${message}`, data);
             }
 
+            // Dữ liệu thuộc tính có sẵn từ server
+            const allAttributes = @json($sanitizedAttributes);
+
+            // Hàm cập nhật giá trị thuộc tính khi chọn từ dropdown
+            function updateAttributeValues(select) {
+                debugLog('Updating attribute values', {
+                    selectValue: select.value
+                });
+                const row = select.closest('.attribute-row');
+                const nameInput = row.querySelector('.attribute-name');
+                const valuesInput = row.querySelector('.attribute-values');
+
+                if (!nameInput || !valuesInput) {
+                    debugLog('Attribute name or values input not found');
+                    return;
+                }
+
+                if (select.value === 'new') {
+                    nameInput.classList.remove('hidden');
+                    nameInput.value = '';
+                    valuesInput.value = '';
+                } else {
+                    nameInput.classList.add('hidden');
+                    const selectedAttribute = allAttributes.find(attr => attr.id == select.value);
+                    if (selectedAttribute) {
+                        valuesInput.value = selectedAttribute.values.length > 0 ? selectedAttribute.values.join(', ') : '';
+                        debugLog('Attribute values updated', {
+                            values: selectedAttribute.values
+                        });
+                    } else {
+                        valuesInput.value = '';
+                        debugLog('No attribute found for selected ID', {
+                            selectValue: select.value
+                        });
+                    }
+                }
+            }
+
+            // Hàm xử lý preview ảnh chính
+            function handleMainImagePreview(inputId, iconId) {
+                debugLog('Initializing main image preview');
+                const input = document.getElementById(inputId);
+                const uploadIcon = document.getElementById(iconId);
+                if (!input || !uploadIcon) {
+                    debugLog('Main image input or icon not found', {
+                        inputId,
+                        iconId
+                    });
+                    return;
+                }
+
+                input.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
+                            input.value = '';
+                            uploadIcon.src = "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
+                            uploadIcon.alt = 'Upload Icon';
+                            return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            uploadIcon.src = event.target.result;
+                            uploadIcon.alt = 'Uploaded Image';
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        uploadIcon.src = "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
+                        uploadIcon.alt = 'Upload Icon';
+                    }
+                });
+            }
+
+            // Hàm xử lý preview nhiều ảnh
+            function handleAdditionalImagesPreview(inputId, iconContainerId) {
+                debugLog('Initializing additional images preview');
+                const input = document.getElementById(inputId);
+                const uploadIconContainer = document.getElementById(iconContainerId);
+                const newPreviewContainer = document.getElementById('newImagesPreview');
+
+                if (!input || !uploadIconContainer || !newPreviewContainer) {
+                    debugLog('Additional images elements not found', {
+                        inputId,
+                        iconContainerId
+                    });
+                    return;
+                }
+
+                input.addEventListener('change', function(e) {
+                    const files = e.target.files;
+                    newPreviewContainer.innerHTML = '';
+
+                    if (files.length > 0) {
+                        uploadIconContainer.classList.add('hidden');
+                        Array.from(files).forEach(file => {
+                            if (file.size > 5 * 1024 * 1024) {
+                                alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
+                                input.value = '';
+                                newPreviewContainer.innerHTML = '';
+                                uploadIconContainer.classList.remove('hidden');
+                                return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                const imgContainer = document.createElement('div');
+                                imgContainer.className = 'relative';
+                                imgContainer.innerHTML = `
+                            <img src="${event.target.result}" class="w-24 h-24 object-cover rounded-md border">
+                            <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md" onclick="removeImage(this)">✖</button>
+                        `;
+                                newPreviewContainer.appendChild(imgContainer);
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    } else {
+                        uploadIconContainer.classList.remove('hidden');
+                    }
+                });
+            }
+
+            // Hàm xử lý preview ảnh biến thể
+            function previewVariantImage(event, index) {
+                debugLog('Previewing variant images', {
+                    index
+                });
+                let previewContainer = document.getElementById(`preview-images-${index}`);
+                if (!previewContainer) {
+                    debugLog('Preview container not found', {
+                        index
+                    });
+                    return;
+                }
+                previewContainer.innerHTML = '';
+                Array.from(event.target.files).forEach((file, fileIndex) => {
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
+                        event.target.value = '';
+                        return;
+                    }
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        let imgContainer = document.createElement('div');
+                        imgContainer.classList.add('relative');
+                        imgContainer.innerHTML = `
+                    <img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md border border-gray-300">
+                    <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded" onclick="removeImage(this)">✖</button>
+                `;
+                        previewContainer.appendChild(imgContainer);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Hàm xóa ảnh
+            function removeImage(element) {
+                debugLog('Removing image');
+                element.parentElement.remove();
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 debugLog('DOM fully loaded');
+                debugLog('All attributes loaded', {
+                    allAttributes
+                });
 
-                // Khởi tạo toggle danh mục
+                // Khởi tạo preview ảnh chính
+                handleMainImagePreview('mainImage', 'uploadIcon1');
+
+                // Khởi tạo preview ảnh phụ
+                handleAdditionalImagesPreview('additionalImages', 'uploadIconContainer2');
+
+                // Hàm xử lý toggle biến thể
+                function initializeToggleButtons() {
+                    debugLog('Initializing toggle buttons');
+                    const toggleButtons = document.querySelectorAll('.toggle-variants');
+                    debugLog('Found toggle buttons', {
+                        count: toggleButtons.length
+                    });
+
+                    toggleButtons.forEach(button => {
+                        button.removeEventListener('click', handleToggleClick);
+
+                        const index = button.getAttribute('data-index');
+                        const variantItem = button.closest('.variant-item');
+                        const variantContent = variantItem ? variantItem.querySelector('.variant-content') :
+                            null;
+                        const toggleIcon = button.querySelector('.toggle-icon path');
+
+                        if (!variantContent || !toggleIcon) {
+                            debugLog('Missing variantContent or toggleIcon', {
+                                index
+                            });
+                            return;
+                        }
+
+                        let isOpen = !variantContent.classList.contains('hidden');
+                        if (!isOpen) {
+                            variantContent.classList.add('hidden');
+                            toggleIcon.setAttribute('d', 'M5 15l7-7 7 7');
+                        } else {
+                            toggleIcon.setAttribute('d', 'M19 9l-7 7-7-7');
+                        }
+
+                        function handleToggleClick() {
+                            debugLog('Toggling variant', {
+                                index
+                            });
+                            isOpen = !isOpen;
+                            variantContent.classList.toggle('hidden', !isOpen);
+                            toggleIcon.setAttribute('d', isOpen ? 'M19 9l-7 7-7-7' : 'M5 15l7-7 7 7');
+                        }
+
+                        button.addEventListener('click', handleToggleClick);
+                    });
+                }
+
+                // Hàm khởi tạo toggle danh mục
                 function initializeSubCategoryToggles() {
                     debugLog('Initializing sub-category toggles');
                     const toggleButtons = document.querySelectorAll('.toggle-sub-categories');
@@ -739,7 +1009,7 @@
 
                         let isOpen = false;
                         subCategoryContainer.classList.add('hidden');
-                        toggleIcon.setAttribute('d', 'm8.25 4.5 7.5 7.5-7.5 7.5'); // Mũi tên phải
+                        toggleIcon.setAttribute('d', 'm8.25 4.5 7.5 7.5-7.5 7.5');
 
                         button.addEventListener('click', function() {
                             debugLog('Toggling sub-category dropdown', {
@@ -753,7 +1023,7 @@
                     });
                 }
 
-                // Khởi tạo toggle thương hiệu
+                // Hàm khởi tạo toggle thương hiệu
                 function initializeSubBrandToggles() {
                     debugLog('Initializing sub-brand toggles');
                     const toggleButtons = document.querySelectorAll('.toggle-sub-brands');
@@ -772,7 +1042,7 @@
 
                         let isOpen = false;
                         subBrandContainer.classList.add('hidden');
-                        toggleIcon.setAttribute('d', 'm8.25 4.5 7.5 7.5-7.5 7.5'); // Mũi tên phải
+                        toggleIcon.setAttribute('d', 'm8.25 4.5 7.5 7.5-7.5 7.5');
 
                         button.addEventListener('click', function() {
                             debugLog('Toggling sub-brand dropdown', {
@@ -786,32 +1056,15 @@
                     });
                 }
 
-                // Gọi hàm khởi tạo
-                initializeSubCategoryToggles();
-                initializeSubBrandToggles();
-
-                // Xử lý nút Thêm thuộc tính
-                const addAttributeButton = document.getElementById('add-attribute-btn');
-                if (addAttributeButton) {
-                    debugLog('Add attribute button found');
-                    addAttributeButton.addEventListener('click', function() {
-                        debugLog('Add attribute button clicked');
-                        addAttribute();
+                // Hàm khởi tạo trạng thái ban đầu cho các dropdown thuộc tính
+                function initializeAttributeSelects() {
+                    debugLog('Initializing attribute selects');
+                    const selects = document.querySelectorAll('.attribute-select');
+                    selects.forEach(select => {
+                        if (select.value) {
+                            updateAttributeValues(select);
+                        }
                     });
-                } else {
-                    debugLog('Add attribute button NOT found');
-                }
-
-                // Xử lý nút Tạo biến thể
-                const generateVariantsButton = document.getElementById('generate-variants-btn');
-                if (generateVariantsButton) {
-                    debugLog('Generate variants button found');
-                    generateVariantsButton.addEventListener('click', function() {
-                        debugLog('Generate variants button clicked');
-                        generateVariants();
-                    });
-                } else {
-                    debugLog('Generate variants button NOT found');
                 }
 
                 // Hàm thêm thuộc tính
@@ -822,22 +1075,29 @@
                         debugLog('Attribute container not found');
                         return;
                     }
-                    let index = container.querySelectorAll('.mb-4').length;
+                    let index = container.querySelectorAll('.attribute-row').length;
                     let newAttribute = document.createElement('div');
-                    newAttribute.classList.add('mb-4', 'flex', 'items-center', 'gap-4');
+                    newAttribute.classList.add('mb-4', 'flex', 'items-center', 'gap-4', 'attribute-row');
                     newAttribute.innerHTML = `
-                    <input type="text" name="attributes[${index}][name]" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
-                        class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    <input type="text" name="attributes[${index}][values]" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)"
-                        class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
-                `;
+                <select name="attributes[${index}][id]" class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select" onchange="updateAttributeValues(this)">
+                    <option value="" disabled selected>Chọn hoặc nhập thuộc tính</option>
+                    <option value="new">Tạo thuộc tính mới</option>
+                    ${allAttributes
+                        .filter(attr => attr.id && attr.name)
+                        .map(attr => `<option value="${attr.id}">${attr.name}</option>`)
+                        .join('')}
+                </select>
+                <input type="text" name="attributes[${index}][name]" class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name hidden" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
+                <input type="text" name="attributes[${index}][values]" class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)">
+                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
+            `;
                     container.appendChild(newAttribute);
-                    debugLog('New attribute added', {
+                    debugLog('New attribute row added', {
                         index
                     });
+
                     newAttribute.querySelector('.remove-attribute').addEventListener('click', function() {
-                        debugLog('Removing attribute', {
+                        debugLog('Removing attribute row', {
                             index
                         });
                         newAttribute.remove();
@@ -847,7 +1107,8 @@
                 // Hàm tạo biến thể
                 function generateVariants() {
                     debugLog('Generating variants');
-                    let attributes = document.querySelectorAll('[name^="attributes["][name$="[name]"]');
+                    let selects = document.querySelectorAll('[name^="attributes["][name$="[id]"]');
+                    let names = document.querySelectorAll('[name^="attributes["][name$="[name]"]');
                     let values = document.querySelectorAll('[name^="attributes["][name$="[values]"]');
                     let variantContainer = document.getElementById('variant-container');
 
@@ -860,12 +1121,21 @@
                     let attributeData = [];
                     let hasValidAttribute = false;
 
-                    attributes.forEach((attr, index) => {
-                        const attrName = attr.value.trim();
+                    selects.forEach((select, index) => {
+                        const attrId = select.value;
+                        let attrName = names[index].value.trim();
                         const valuesArray = values[index].value
                             .split(',')
                             .map(v => v.trim())
                             .filter(v => v);
+
+                        if (attrId !== 'new' && attrId) {
+                            const selectedAttribute = allAttributes.find(attr => attr.id == attrId);
+                            if (selectedAttribute) {
+                                attrName = selectedAttribute.name;
+                            }
+                        }
+
                         if (attrName && valuesArray.length) {
                             attributeData.push({
                                 name: attrName,
@@ -889,78 +1159,74 @@
                         variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6',
                             'bg-white', 'relative', 'variant-item');
                         let variantHTML = `
-                        <div class="flex justify-between items-center mb-3">
-                            <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
-                            <div class="flex space-x-3">
-                                <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
-                                <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
-                                    <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                    </svg>
-                                </button>
-                            </div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
+                        <div class="flex space-x-3">
+                            <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
+                            <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                </svg>
+                            </button>
                         </div>
-                        <div class="variant-content transition-all duration-300 ease-in-out hidden">
-                            <input type="hidden" name="variants[${index}][index]" value="${index}">
-                            <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                    <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required>
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
-                                    <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required>
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                                    <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required>
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                    <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required>
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
-                                    <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required>
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
-                                    <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
-                                    <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
-                                    <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
-                                    <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng">
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
-                    `;
-                        variant.forEach((value, attrIndex) => {
-                            variantHTML += `
-                            <div class="flex items-center gap-4 mb-2">
-                                <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                            </div>
-                        `;
-                        });
-                        variantHTML += `
+                    </div>
+                    <div class="variant-content transition-all duration-300 ease-in-out hidden">
+                        <input type="hidden" name="variants[${index}][index]" value="${index}">
+                        <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required>
                             </div>
                             <div>
-                                <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                                <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
-                                <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
+                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
+                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
+                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng">
                             </div>
                         </div>
-                    `;
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
+                            ${variant.map((value, attrIndex) => `
+                                        <div class="flex items-center gap-4 mb-2">
+                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                        </div>
+                                    `).join('')}
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
+                            <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
+                            <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                `;
                         variantDiv.innerHTML = variantHTML;
                         variantContainer.appendChild(variantDiv);
                         variantDiv.querySelector('.remove-variant').addEventListener('click', function() {
@@ -1014,251 +1280,6 @@
                     ]);
                 }
 
-                // Hàm xử lý preview ảnh biến thể
-                function previewVariantImage(event, index) {
-                    debugLog('Previewing variant images', {
-                        index
-                    });
-                    let previewContainer = document.getElementById(`preview-images-${index}`);
-                    if (!previewContainer) {
-                        debugLog('Preview container not found', {
-                            index
-                        });
-                        return;
-                    }
-                    previewContainer.innerHTML = '';
-                    Array.from(event.target.files).forEach((file, fileIndex) => {
-                        if (file.size > 5 * 1024 * 1024) {
-                            alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
-                            event.target.value = '';
-                            return;
-                        }
-                        let reader = new FileReader();
-                        reader.onload = function(e) {
-                            let imgContainer = document.createElement('div');
-                            imgContainer.classList.add('relative');
-                            imgContainer.innerHTML = `
-                            <img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md border border-gray-300">
-                            <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded" onclick="removeImage(this)">✖</button>
-                        `;
-                            previewContainer.appendChild(imgContainer);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                }
-
-                // Hàm xóa ảnh
-                function removeImage(element) {
-                    debugLog('Removing image');
-                    element.parentElement.remove();
-                }
-
-                // Hàm xử lý toggle biến thể
-                function initializeToggleButtons() {
-                    debugLog('Initializing toggle buttons');
-                    const toggleButtons = document.querySelectorAll('.toggle-variants');
-                    debugLog('Found toggle buttons', {
-                        count: toggleButtons.length
-                    });
-                    toggleButtons.forEach(button => {
-                        button.removeEventListener('click', handleToggleClick);
-                        const index = button.getAttribute('data-index');
-                        const variantItem = button.closest('.variant-item');
-                        const variantContent = variantItem.querySelector('.variant-content');
-                        const toggleIcon = button.querySelector('.toggle-icon path');
-
-                        if (!variantContent || !toggleIcon) {
-                            debugLog('Missing variantContent or toggleIcon', {
-                                index
-                            });
-                            return;
-                        }
-
-                        let isOpen = false;
-                        variantContent.classList.add('hidden');
-                        toggleIcon.setAttribute('d', 'M5 15l7-7 7 7'); // Mũi tên xuống
-
-                        function handleToggleClick() {
-                            debugLog('Toggling variant', {
-                                index
-                            });
-                            variantContent.classList.toggle('hidden');
-                            isOpen = !variantContent.classList.contains('hidden');
-                            toggleIcon.setAttribute('d', isOpen ? 'M19 9l-7 7-7-7' : 'M5 15l7-7 7 7');
-                        }
-
-                        button.addEventListener('click', handleToggleClick);
-                    });
-                }
-
-                // Hàm xử lý preview ảnh chính
-                function handleMainImagePreview(inputId, iconId) {
-                    debugLog('Initializing main image preview');
-                    const input = document.getElementById(inputId);
-                    const uploadIcon = document.getElementById(iconId);
-                    if (!input || !uploadIcon) {
-                        debugLog('Main image input or icon not found', {
-                            inputId,
-                            iconId
-                        });
-                        return;
-                    }
-
-                    input.addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        if (file) {
-                            if (file.size > 5 * 1024 * 1024) {
-                                alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
-                                input.value = '';
-                                uploadIcon.src =
-                                    "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
-                                uploadIcon.alt = 'Upload Icon';
-                                return;
-                            }
-                            const reader = new FileReader();
-                            reader.onload = function(event) {
-                                uploadIcon.src = event.target.result;
-                                uploadIcon.alt = 'Uploaded Image';
-                            };
-                            reader.readAsDataURL(file);
-                        } else {
-                            uploadIcon.src = "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
-                            uploadIcon.alt = 'Upload Icon';
-                        }
-                    });
-                }
-
-                // Hàm xử lý preview nhiều ảnh
-                function handleAdditionalImagesPreview(inputId, iconContainerId) {
-                    debugLog('Initializing additional images preview');
-                    const input = document.getElementById(inputId);
-                    const uploadIconContainer = document.getElementById(iconContainerId);
-                    const newPreviewContainer = document.getElementById('newImagesPreview');
-
-                    if (!input || !uploadIconContainer || !newPreviewContainer) {
-                        debugLog('Additional images elements not found', {
-                            inputId,
-                            iconContainerId
-                        });
-                        return;
-                    }
-
-                    input.addEventListener('change', function(e) {
-                        const files = e.target.files;
-                        newPreviewContainer.innerHTML = '';
-
-                        if (files.length > 0) {
-                            uploadIconContainer.classList.add('hidden');
-                            Array.from(files).forEach(file => {
-                                if (file.size > 5 * 1024 * 1024) {
-                                    alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
-                                    input.value = '';
-                                    newPreviewContainer.innerHTML = '';
-                                    uploadIconContainer.classList.remove('hidden');
-                                    return;
-                                }
-                                const reader = new FileReader();
-                                reader.onload = function(event) {
-                                    const imgContainer = document.createElement('div');
-                                    imgContainer.className = 'relative';
-                                    imgContainer.innerHTML = `
-                                    <img src="${event.target.result}" class="w-24 h-24 object-cover rounded-md border">
-                                    <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-md" onclick="removeImage(this)">✖</button>
-                                `;
-                                    newPreviewContainer.appendChild(imgContainer);
-                                };
-                                reader.readAsDataURL(file);
-                            });
-                        } else {
-                            uploadIconContainer.classList.remove('hidden');
-                        }
-                    });
-                }
-
-                // Hàm xử lý SEO Preview
-                function updateSEOPreview() {
-                    debugLog('Updating SEO preview');
-                    const productName = document.getElementById('product-name');
-                    const metaTitle = document.getElementById('meta-title');
-                    const metaTitleCount = document.getElementById('meta-title-count');
-                    const previewTitle = document.getElementById('preview-title');
-                    const previewUrl = document.getElementById('preview-url');
-                    const previewDescription = document.getElementById('preview-description');
-                    const metaDescription = document.getElementById('meta-description');
-                    const metaDescriptionCount = document.getElementById('meta-description-count');
-
-                    if (!productName || !metaTitle || !metaDescription) {
-                        debugLog('SEO preview elements not found');
-                        return;
-                    }
-
-                    let metaTitleEditedManually = false;
-
-                    function slugify(text) {
-                        return text
-                            .toLowerCase()
-                            .normalize("NFD")
-                            .replace(/[\u0300-\u036f]/g, "")
-                            .replace(/đ/g, "d")
-                            .replace(/[^a-z0-9 -]/g, "")
-                            .replace(/\s+/g, "-")
-                            .replace(/-+/g, "-");
-                    }
-
-                    if (!metaTitleEditedManually) {
-                        metaTitle.value = productName.value;
-                    }
-                    metaTitleCount.textContent = `${metaTitle.value.length}/60`;
-                    metaDescriptionCount.textContent = `${metaDescription.value.length}/160`;
-                    previewTitle.textContent = metaTitle.value || productName.value || 'Tiêu đề sản phẩm';
-                    previewUrl.textContent = `https://Zynox.com/san-pham/${slugify(productName.value || 'san-pham')}`;
-                    previewDescription.textContent = metaDescription.value || 'Mô tả ngắn gọn về sản phẩm.';
-                }
-
-                // Khởi tạo TinyMCE
-                if (typeof tinymce !== 'undefined') {
-                    tinymce.init({
-                        selector: '#description',
-                        height: 300,
-                        plugins: 'image imagetools code link lists style table media',
-                        toolbar: 'undo redo | styles | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media table | forecolor backcolor | code | removeformat',
-                        images_upload_url: '{{ route('seller.upload.image') }}',
-                        image_advtab: true,
-                        image_caption: true,
-                        file_picker_types: 'image',
-                        file_picker_callback: function(cb, value, meta) {
-                            const input = document.createElement('input');
-                            input.setAttribute('type', 'file');
-                            input.setAttribute('accept', 'image/*');
-                            input.onchange('change', function() {
-                                const file = this.files[0];
-                                const reader = new FileReader();
-                                reader.onload = function() {
-                                    const id = 'blobid' + (new Date()).getTime();
-                                    const blobCache = tinymce.activeEditor.editorUpload
-                                        .blobCache;
-                                    const base64 = reader.result.split(',')[1];
-                                    const blobInfo = blobCache.create(id, file, base64);
-                                    blobCache.add(blobInfo);
-                                    cb(blobInfo.blobUri(), {
-                                        title: file.name
-                                    });
-                                };
-                                reader.readAsDataURL(file);
-                            });
-                            input.click();
-                        },
-                        setup: function(editor) {
-                            editor.on('change', function() {
-                                editor.save();
-                            });
-                        }
-                    });
-                    debugLog('TinyMCE initialized');
-                } else {
-                    debugLog('TinyMCE not loaded');
-                }
-
                 // Gắn sự kiện cho nút xóa thuộc tính
                 document.querySelectorAll('.remove-attribute').forEach(button => {
                     button.addEventListener('click', function() {
@@ -1293,6 +1314,36 @@
                 } else {
                     debugLog('Product form not found');
                 }
+
+                // Gắn sự kiện cho nút Thêm thuộc tính
+                const addAttributeButton = document.getElementById('add-attribute-btn');
+                if (addAttributeButton) {
+                    debugLog('Add attribute button found');
+                    addAttributeButton.addEventListener('click', function() {
+                        debugLog('Add attribute button clicked');
+                        addAttribute();
+                    });
+                } else {
+                    debugLog('Add attribute button NOT found');
+                }
+
+                // Gắn sự kiện cho nút Tạo biến thể
+                const generateVariantsButton = document.getElementById('generate-variants-btn');
+                if (generateVariantsButton) {
+                    debugLog('Generate variants button found');
+                    generateVariantsButton.addEventListener('click', function() {
+                        debugLog('Generate variants button clicked');
+                        generateVariants();
+                    });
+                } else {
+                    debugLog('Generate variants button NOT found');
+                }
+
+                // Khởi tạo trạng thái ban đầu
+                initializeAttributeSelects();
+                initializeToggleButtons();
+                initializeSubCategoryToggles();
+                initializeSubBrandToggles();
             });
         </script>
     @endpush

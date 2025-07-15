@@ -357,7 +357,7 @@ class ProductControllerSeller extends Controller
             'variants.attributeValues.attribute', // Tải biến thể và thuộc tính liên quan
             'images', // Tải ảnh sản phẩm
             'dimensions', // Tải kích thước
-            'attributes.values', // Tải thuộc tính và giá trị
+            'attributes.values', // Tải thuộc tính và tất cả giá trị
             'brands', // Tải thương hiệu
             'categories' // Tải danh mục
         ])->findOrFail($id);
@@ -366,7 +366,11 @@ class ProductControllerSeller extends Controller
             'product_id' => $product->id,
             'product_name' => $product->name,
             'brand_ids' => $product->brands->pluck('id')->toArray(),
-            'category_ids' => $product->categories->pluck('id')->toArray()
+            'category_ids' => $product->categories->pluck('id')->toArray(),
+            'variants_count' => $product->variants->count(),
+            'images_count' => $product->images->count(),
+            'dimensions_count' => $product->dimensions->count(),
+            'attributes_count' => $product->attributes->count(),
         ]);
 
         // Lấy ID các giá trị thuộc tính được sử dụng bởi biến thể
@@ -376,9 +380,14 @@ class ProductControllerSeller extends Controller
             ->pluck('attribute_value_id')
             ->toArray();
 
-        // Lấy thuộc tính với các giá trị được sử dụng
+        Log::info('Used attribute value IDs', [
+            'product_id' => $product->id,
+            'used_value_ids' => $usedValueIds,
+        ]);
+
+        // Lấy thuộc tính của sản phẩm với các giá trị đã được sử dụng
         $attributes = $product->attributes()->with(['values' => function ($query) use ($usedValueIds) {
-            $query->whereIn('id', $usedValueIds);
+            $query->whereIn('id', $usedValueIds)->orWhereNull('id');
         }])->get();
 
         // Ghi log chi tiết về thuộc tính
@@ -387,20 +396,49 @@ class ProductControllerSeller extends Controller
                 'attribute_id' => $attribute->id,
                 'attribute_name' => $attribute->name,
                 'values' => $attribute->values->pluck('value')->toArray(),
+                'values_count' => $attribute->values->count(),
+                'pivot' => $attribute->pivot ? $attribute->pivot->toArray() : null,
             ]);
         }
+
+        // Tải tất cả thuộc tính có sẵn (để hiển thị trong dropdown)
+        $allAttributes = Attribute::with(['values' => function ($query) {
+            $query->whereNotNull('value')->where('value', '!=', '');
+        }])
+            ->whereNotNull('name')
+            ->where('name', '!=', '')
+            ->get();
+
+        // Ghi log chi tiết về tất cả thuộc tính
+        Log::info('All attributes loaded', [
+            'all_attributes' => $allAttributes->map(function ($attr) {
+                return [
+                    'id' => $attr->id,
+                    'name' => $attr->name,
+                    'values' => $attr->values->pluck('value')->toArray(),
+                ];
+            })->toArray(),
+        ]);
 
         // Tải danh sách thương hiệu (chỉ lấy trạng thái active)
         $brands = Brand::where('status', 'active')->get();
         // Tải danh sách danh mục
         $categories = Category::all();
 
-        Log::info('Brands and categories loaded', [
+        Log::info('Brands, categories, and all attributes loaded', [
             'brands_count' => $brands->count(),
             'categories_count' => $categories->count(),
+            'all_attributes_count' => $allAttributes->count(),
+            'attributes' => $attributes->map(function ($attr) {
+                return [
+                    'id' => $attr->id,
+                    'name' => $attr->name,
+                    'values' => $attr->values->pluck('value')->toArray(),
+                ];
+            })->toArray(),
         ]);
 
-        return view('seller.products.edit', compact('product', 'attributes', 'brands', 'categories'));
+        return view('seller.products.edit', compact('product', 'attributes', 'allAttributes', 'brands', 'categories'));
     }
 
     /**
@@ -522,11 +560,12 @@ class ProductControllerSeller extends Controller
 
                 $newAttributeValues = collect($request->input('attributes', []))
                     ->filter(function ($attr) {
-                        return !empty(trim($attr['name'])) && !empty(trim($attr['values']));
+                        return (!empty(trim($attr['id'])) || !empty(trim($attr['name']))) && !empty(trim($attr['values']));
                     })
                     ->mapWithKeys(function ($attr) {
+                        $name = $attr['id'] === 'new' ? trim($attr['name']) : Attribute::find($attr['id'])->name;
                         return [
-                            $attr['name'] => array_values(collect(explode(',', $attr['values']))
+                            $name => array_values(collect(explode(',', $attr['values']))
                                 ->map(fn($v) => trim($v))
                                 ->filter()
                                 ->sort()
@@ -541,30 +580,57 @@ class ProductControllerSeller extends Controller
 
                     $attributeIds = [];
 
-                    foreach ($newAttributeValues as $name => $values) {
-                        $attribute = Attribute::firstOrCreate(['name' => trim($name)]);
-                        $attributeIds[] = $attribute->id;
+                    foreach ($request->input('attributes', []) as $attrData) {
+                        if (empty(trim($attrData['values']))) {
+                            continue;
+                        }
 
-                        foreach ($values as $value) {
-                            $attributeValue = AttributeValue::firstOrNew([
+                        $attribute = null;
+                        if ($attrData['id'] === 'new' && !empty(trim($attrData['name']))) {
+                            // Tạo thuộc tính mới
+                            $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
+                            Log::info('New attribute created', [
                                 'attribute_id' => $attribute->id,
-                                'value' => trim($value),
+                                'attribute_name' => $attribute->name,
                             ]);
-
-                            if (!$attributeValue->exists) {
-                                $attributeValue->save();
-                                Log::info('Attribute value created', [
-                                    'attribute_id' => $attribute->id,
-                                    'attribute_value_id' => $attributeValue->id,
-                                    'attribute_value' => $attributeValue->value
-                                ]);
+                        } elseif (!empty($attrData['id']) && $attrData['id'] !== 'new') {
+                            // Sử dụng thuộc tính có sẵn
+                            $attribute = Attribute::find($attrData['id']);
+                            if (!$attribute) {
+                                Log::warning('Attribute not found', ['attribute_id' => $attrData['id']]);
+                                continue;
                             }
+                        }
 
-                            if (!$request->filled('variants')) {
-                                DB::table('product_attribute')->updateOrInsert([
-                                    'product_id' => $product->id,
+                        if ($attribute) {
+                            $attributeIds[] = $attribute->id;
+
+                            $values = collect(explode(',', $attrData['values']))
+                                ->map(fn($v) => trim($v))
+                                ->filter()
+                                ->toArray();
+
+                            foreach ($values as $value) {
+                                $attributeValue = AttributeValue::firstOrNew([
                                     'attribute_id' => $attribute->id,
+                                    'value' => $value,
                                 ]);
+
+                                if (!$attributeValue->exists) {
+                                    $attributeValue->save();
+                                    Log::info('Attribute value created', [
+                                        'attribute_id' => $attribute->id,
+                                        'attribute_value_id' => $attributeValue->id,
+                                        'attribute_value' => $attributeValue->value
+                                    ]);
+                                }
+
+                                if (!$request->filled('variants')) {
+                                    DB::table('product_attribute')->updateOrInsert([
+                                        'product_id' => $product->id,
+                                        'attribute_id' => $attribute->id,
+                                    ]);
+                                }
                             }
                         }
                     }

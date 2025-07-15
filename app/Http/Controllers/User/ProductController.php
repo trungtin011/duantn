@@ -129,6 +129,8 @@ class ProductController extends Controller
         if (!$user) {
             return redirect()->guest(route('login'))->with('error', 'Bạn cần đăng nhập để xem chi tiết sản phẩm');
         }
+
+        // Tải sản phẩm với các quan hệ cần thiết, bao gồm categories và brands
         $product = Product::with([
             'images',
             'reviews.user',
@@ -138,7 +140,9 @@ class ProductController extends Controller
             'shop.coupons',
             'orderReviews.user',
             'orderReviews.images',
-            'orderReviews.videos'
+            'orderReviews.videos',
+            'categories', // Quan hệ với bảng categories thông qua product_categories
+            'brands'      // Quan hệ với bảng brand thông qua product_brands
         ])->where('slug', $slug)->firstOrFail();
 
         // Tính trung bình rating và số lượng đánh giá
@@ -178,13 +182,11 @@ class ProductController extends Controller
         // Gán hình ảnh, giá, và số lượng của biến thể
         $attributeImages = [];
         $variantData = [];
-        $image = null;
         foreach ($product->variants as $variant) {
             $attributeValues = $variant->attributeValues->keyBy('attribute.name');
-            $image = null; // ← Khởi tạo mặc định
+            $image = $variant->images->first()->image_path ?? null;
 
             foreach ($attributeValues as $attrName => $attrValue) {
-                $image = $variant->images->first()->image_path ?? null;
                 $attributeImages[$attrName][$attrValue->value] = $image
                     ? Storage::url($image)
                     : asset('images/default_product_image.png');
@@ -196,7 +198,7 @@ class ProductController extends Controller
                 'stock' => $variant->stock,
                 'image' => $image
                     ? Storage::url($image)
-                    : asset('images/default_product_image.png'), // ← tránh lỗi
+                    : asset('images/default_product_image.png'),
                 'discount_percentage' => $variant->getDiscountPercentageAttribute(),
             ];
         }
@@ -237,18 +239,23 @@ class ProductController extends Controller
 
         // Lấy sản phẩm liên quan theo danh mục
         $recentProducts = Cache::remember("related_products_{$product->id}", 3600, function () use ($product) {
-            Log::info('Fetching related products for product ID: ' . $product->id . ', category: ' . $product->category);
+            Log::info('Fetching related products for product ID: ' . $product->id);
 
-            $products = Product::where('category', $product->category)
+            // Lấy danh sách category_id từ bảng product_categories
+            $categoryIds = $product->categories->pluck('id');
+
+            $products = Product::where('status', 'active')
                 ->where('id', '!=', $product->id)
-                ->where('status', 'active')
+                ->whereHas('categories', function ($query) use ($categoryIds) {
+                    $query->whereIn('category_id', $categoryIds);
+                })
                 ->with('images')
                 ->take(8)
                 ->get();
 
-            Log::info('Found ' . $products->count() . ' related products by category');
+            Log::info('Found ' . $products->count() . ' related products by categories');
 
-            // Nếu không tìm thấy sản phẩm cùng danh mục, lấy sản phẩm ngẫu nhiên
+            // Nếu không đủ sản phẩm liên quan, lấy thêm sản phẩm ngẫu nhiên
             if ($products->count() < 4) {
                 $additionalProducts = Product::where('id', '!=', $product->id)
                     ->where('status', 'active')
@@ -445,7 +452,6 @@ class ProductController extends Controller
             ], 500);
         }
     }
-
 
     public function reportProduct(Request $request, Product $product)
     {

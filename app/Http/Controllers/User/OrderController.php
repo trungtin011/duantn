@@ -4,69 +4,73 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\ItemsOrder;
 use App\Models\OrderAddress;
 use App\Models\ShopOrder;
+use App\Models\OrderReview;
+use App\Models\ShopOrderHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use App\Models\OrderReview;
-use App\Models\ShopOrderHistory;
 use App\Http\Controllers\Service\DeliveryProvider\GHNController;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $userId = Auth::id();
-        $reviewedProductIds = OrderReview::where('user_id', $userId)
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để xem đơn hàng');
+        }
+
+        // Lấy danh sách sản phẩm đã đánh giá
+        $reviewedProductIds = OrderReview::where('user_id', $user->id)
             ->pluck('product_id')
             ->toArray();
 
-        $allOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->whereNotNull('userID')->where('userID', $userId)
+        // Lấy đơn hàng theo trạng thái
+        $allOrders = Order::where('userID', $user->id)
+            ->with(['items.product.images', 'items.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $pendingOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->whereNotNull('userID')->where('userID', $userId)
+        $pendingOrders = Order::where('userID', $user->id)
             ->where('order_status', 'pending')
+            ->with(['items.product.images', 'items.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $processingOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->whereNotNull('userID')->where('userID', $userId)
+        $processingOrders = Order::where('userID', $user->id)
             ->where('order_status', 'processing')
+            ->with(['items.product.images', 'items.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $shippedOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->whereNotNull('userID')->where('userID', $userId)
+        $shippedOrders = Order::where('userID', $user->id)
             ->where('order_status', 'shipped')
+            ->with(['items.product.images', 'items.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $deliveredOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->whereNotNull('userID')->where('userID', $userId)
+        $deliveredOrders = Order::where('userID', $user->id)
             ->where('order_status', 'delivered')
+            ->with(['items.product.images', 'items.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $cancelledOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->whereNotNull('userID')->where('userID', $userId)
+        $cancelledOrders = Order::where('userID', $user->id)
             ->where('order_status', 'cancelled')
+            ->with(['items.product.images', 'items.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $refundedOrders = Order::with(['items.product.images', 'items.variant', 'shopOrders.shop'])
-            ->whereNotNull('userID')->where('userID', $userId)
+        $refundedOrders = Order::where('userID', $user->id)
             ->where('order_status', 'refunded')
+            ->with(['items.product.images', 'items.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
-        Log::info('User ID:', ['id' => Auth::id()]);
 
         return view('user.order.history', compact(
             'allOrders',
@@ -231,7 +235,7 @@ class OrderController extends Controller
 
                 $items = $originalOrder->items->where('shop_orderID', $shopOrder->id);
                 foreach ($items as $item) {
-                    OrderItem::create([
+                    ItemsOrder::create([
                         'orderID' => $newOrder->id,
                         'shop_orderID' => $newShopOrder->id,
                         'productID' => $item->productID,
@@ -263,18 +267,19 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Lỗi khi tạo lại đơn hàng: ' . $e->getMessage());
         }
     }
-    
-    public function refundOrder($tracking_code){
+
+    public function refundOrder($tracking_code)
+    {
         $order = ShopOrder::where('tracking_code', $tracking_code)->first();
 
-        if(!$order){
+        if (!$order) {
             return redirect()->back()->with('error', 'Đơn hàng không tồn tại');
-        }   
-    
+        }
+
         $GHN_Controller = new GHNController();
         $refund = $GHN_Controller->refundOrder($tracking_code);
 
-        if($refund){
+        if ($refund) {
             $order->status = 'refunded';
             $order->save();
 
@@ -285,7 +290,7 @@ class OrderController extends Controller
             $history->save();
 
             return redirect()->back()->with('success', 'Đơn hàng đã được hoàn trả thành công');
-        }else{
+        } else {
             return redirect()->back()->with('error', 'Đơn hàng không thể hoàn trả');
         }
     }

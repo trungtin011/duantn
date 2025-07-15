@@ -411,10 +411,10 @@ Route::prefix('customer')->group(function () {
         Route::get('/checkout/vnpay/payment/{order_code}', [VNPayController::class, 'vnpayPayment'])->name('checkout.vnpay.payment');
 
         Route::prefix('user/order')->group(function () {
-            Route::get('/orders', [OrderController::class, 'index'])->name('order_history');
-            Route::get('/order/{orderID}', [OrderController::class, 'show'])->name('user.order.detail');
-            Route::patch('/user/order/{order}/cancel', [OrderController::class, 'cancel'])->name('user.order.cancel');
-            Route::get('/order/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.order.reorder');
+            Route::get('/', [OrderController::class, 'index'])->name('order_history');
+            Route::get('/{orderID}', [OrderController::class, 'show'])->name('user.order.detail');
+            Route::patch('/{order}/cancel', [OrderController::class, 'cancel'])->name('user.order.cancel');
+            Route::get('/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.order.reorder');
             Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
         });
     });

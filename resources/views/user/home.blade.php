@@ -81,9 +81,9 @@
                     <li class="menu-category">
                         <a href="#" class="menu-title">Trang chủ</a>
                     </li>
-                                    <li class="menu-category">
-        <a href="{{ route('combo.index') }}" class="menu-title">Combo</a>
-    </li>
+                    <li class="menu-category">
+                        <a href="{{ route('combo.index') }}" class="menu-title">Combo</a>
+                    </li>
                     <li class="menu-category">
                         <a href="#" class="menu-title">Danh mục</a>
                         <div class="dropdown-panel">
@@ -448,7 +448,8 @@
                                     <h3 class="category-item-title">{{ $category->name }}</h3>
                                     <p class="category-item-amount">({{ $category->products_count }})</p>
                                 </div>
-                                <a href="{{ route('search', ['category' => [$category->id]]) }}" class="category-btn">Xem tất cả</a>
+                                <a href="{{ route('search', ['category' => [$category->id]]) }}" class="category-btn">Xem
+                                    tất cả</a>
                             </div>
                         </div>
                     @endforeach
@@ -459,48 +460,6 @@
         <div class="product-container">
             <div class="container">
                 <div class="sidebar has-scrollbar" data-mobile-menu>
-                    <div class="sidebar-category">
-                        <div class="sidebar-top">
-                            <h2 class="sidebar-title">Danh mục</h2>
-                            <button class="sidebar-close-btn" data-mobile-menu-close-btn>
-                                <ion-icon name="close-outline"></ion-icon>
-                            </button>
-                        </div>
-                        <ul class="sidebar-menu-category-list">
-                            @foreach ($sidebarCategories as $category)
-                                <li class="sidebar-menu-category">
-                                    <button class="sidebar-accordion-menu" data-accordion-btn>
-                                        <div class="menu-title-flex">
-                                            <img src="{{ $category->image_path ? asset('storage/' . $category->image_path) : asset('assets/images/icons/default.svg') }}"
-                                                alt="{{ $category->name }}" class="menu-title-img" width="20"
-                                                height="20">
-                                            <p class="menu-title">{{ $category->name }}</p>
-                                        </div>
-                                        <div>
-                                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
-                                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
-                                        </div>
-                                    </button>
-                                    @if ($category->subCategories->count())
-                                        <ul class="sidebar-submenu-category-list" data-accordion>
-                                            @foreach ($category->subCategories as $sub)
-                                                <li class="sidebar-submenu-category">
-                                                    <a href="#" class="sidebar-submenu-title">
-                                                        <p class="product-name colo-[#787878]">{{ $sub->name }}</p>
-                                                        <data value="{{ $sub->products->count() }}" class="stock colo-[#787878]"
-                                                            title="Sản phẩm có sẵn">
-                                                            {{ $sub->products->count() }}
-                                                        </data>
-                                                    </a>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-
                     <div class="product-showcase">
                         <h3 class="showcase-heading">Sản phẩm bán chạy</h3>
                         <div class="showcase-wrapper">
@@ -541,6 +500,48 @@
                                 @endforeach
                             </div>
                         </div>
+                    </div>
+
+                    <div class="sidebar-category mt-[30px]">
+                        <div class="sidebar-top">
+                            <h2 class="sidebar-title">Danh mục</h2>
+                            <button class="sidebar-close-btn" data-mobile-menu-close-btn>
+                                <ion-icon name="close-outline"></ion-icon>
+                            </button>
+                        </div>
+                        <ul class="sidebar-menu-category-list">
+                            @foreach ($sidebarCategories as $category)
+                                <li class="sidebar-menu-category">
+                                    <button class="sidebar-accordion-menu" data-accordion-btn>
+                                        <div class="menu-title-flex">
+                                            <img src="{{ $category->image_path ? asset('storage/' . $category->image_path) : asset('assets/images/icons/default.svg') }}"
+                                                alt="{{ $category->name }}" class="menu-title-img" width="20"
+                                                height="20">
+                                            <p class="menu-title">{{ $category->name }}</p>
+                                        </div>
+                                        <div>
+                                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                                        </div>
+                                    </button>
+                                    @if ($category->subCategories->count())
+                                        <ul class="sidebar-submenu-category-list" data-accordion>
+                                            @foreach ($category->subCategories as $sub)
+                                                <li class="sidebar-submenu-category">
+                                                    <a href="#" class="sidebar-submenu-title">
+                                                        <p class="product-name colo-[#787878]">{{ $sub->name }}</p>
+                                                        <data value="{{ $sub->products->count() }}"
+                                                            class="stock colo-[#787878]" title="Sản phẩm có sẵn">
+                                                            {{ $sub->products->count() }}
+                                                        </data>
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
                     </div>
                 </div>
 
@@ -1223,7 +1224,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                        <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                        <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }
