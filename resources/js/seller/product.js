@@ -11,14 +11,16 @@ function initializeOldData() {
     // Khôi phục thuộc tính
     const oldAttributes = window.oldAttributes || [];
     if (oldAttributes.length > 0) {
-        debugLog('Old attributes found', { count: oldAttributes.length });
+        debugLog('Tìm thấy thuộc tính cũ', { count: oldAttributes.length });
         const container = document.getElementById('attribute-container');
         container.innerHTML = ''; // Xóa thuộc tính mặc định
         oldAttributes.forEach((attr, index) => {
+            const selectedAttribute = attr.id !== 'new' ? allAttributes.find(a => a.id == attr.id) : null;
+            const attrName = attr.id === 'new' ? attr.name : (selectedAttribute ? selectedAttribute.name : '');
             const newAttribute = document.createElement('div');
             newAttribute.classList.add('flex', 'items-center', 'gap-4', 'mb-2');
             newAttribute.innerHTML = `
-                <select name="attributes[${index}][id]" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select">
+                <select name="attributes[${index}][id]" class="w-1/3 border border-gray boos300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select">
                     <option value="" disabled>Chọn hoặc nhập thuộc tính</option>
                     <option value="new" ${attr.id === 'new' ? 'selected' : ''}>Tạo thuộc tính mới</option>
                     ${allAttributes
@@ -26,7 +28,7 @@ function initializeOldData() {
                     .map(a => `<option value="${a.id}" ${attr.id == a.id ? 'selected' : ''}>${a.name}</option>`)
                     .join('')}
                 </select>
-                <input type="text" name="attributes[${index}][name]" value="${attr.name || ''}" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name ${attr.id === 'new' ? '' : 'hidden'}" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
+                <input type="text" name="attributes[${index}][name]" value="${attrName || ''}" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name ${attr.id === 'new' ? '' : 'hidden'}" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
                 <input type="text" name="attributes[${index}][values]" value="${attr.values || ''}" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" required>
                 <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
             `;
@@ -38,7 +40,7 @@ function initializeOldData() {
             });
 
             newAttribute.querySelector('.remove-attribute').addEventListener('click', () => {
-                debugLog('Removing attribute row', { index });
+                debugLog('Xóa hàng thuộc tính', { index });
                 newAttribute.remove();
                 updateAttributeIndices();
             });
@@ -150,14 +152,15 @@ function initializeOldData() {
 const allAttributes = window.allAttributes || [];
 
 // Hàm cập nhật giá trị thuộc tính khi chọn từ dropdown
+// Cập nhật giá trị thuộc tính khi chọn
 function updateAttributeValues(select) {
-    debugLog('Updating attribute values', { selectValue: select.value });
+    console.log('Cập nhật giá trị thuộc tính', { selectValue: select.value });
     const row = select.closest('.flex');
     const nameInput = row.querySelector('.attribute-name');
     const valuesInput = row.querySelector('.attribute-values');
 
     if (!nameInput || !valuesInput) {
-        debugLog('Attribute name or values input not found');
+        console.log('Không tìm thấy input tên hoặc giá trị thuộc tính');
         return;
     }
 
@@ -165,21 +168,27 @@ function updateAttributeValues(select) {
         nameInput.classList.remove('hidden');
         nameInput.value = '';
         valuesInput.value = '';
+        console.log('Chọn tạo thuộc tính mới, hiển thị input tên');
     } else {
         nameInput.classList.add('hidden');
         const selectedAttribute = allAttributes.find(attr => attr.id == select.value);
         if (selectedAttribute) {
+            nameInput.value = selectedAttribute.name;
             const valuesArray = Array.isArray(selectedAttribute.values)
                 ? selectedAttribute.values.map(val => typeof val === 'object' && val.value ? val.value : val)
                 : [];
             valuesInput.value = valuesArray.length > 0 ? valuesArray.join(', ') : '';
-            debugLog('Attribute values updated', { values: valuesArray });
+            console.log('Cập nhật giá trị thuộc tính', { name: selectedAttribute.name, values: valuesArray });
         } else {
+            nameInput.value = '';
             valuesInput.value = '';
-            debugLog('No attribute found for selected ID', { selectValue: select.value });
+            select.value = '';
+            alert('Thuộc tính được chọn không hợp lệ. Vui lòng chọn lại.');
+            console.log('Không tìm thấy thuộc tính cho ID được chọn', { selectValue: select.value });
         }
     }
 }
+
 
 // Hàm khởi tạo trạng thái ban đầu cho các dropdown thuộc tính
 function initializeAttributeSelects() {
@@ -269,7 +278,6 @@ function generateVariants() {
         return;
     }
 
-    variantContainer.innerHTML = '';
     let attributeData = [];
     let hasValidAttribute = false;
 
@@ -280,6 +288,11 @@ function generateVariants() {
             .split(',')
             .map(v => v.trim())
             .filter(v => v);
+
+        if (attrId === 'new' && !attrName) {
+            alert(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+            return;
+        }
 
         if (attrId !== 'new' && attrId) {
             const selectedAttribute = allAttributes.find(attr => attr.id == attrId);
@@ -303,6 +316,7 @@ function generateVariants() {
         return;
     }
 
+    variantContainer.innerHTML = '';
     const variants = getCombinations(attributeData.map(attr => attr.values));
     debugLog('Generated variants', variants);
 
@@ -392,7 +406,6 @@ function generateVariants() {
     updateVariantIndices();
     debugLog('Variants generated', { count: variants.length });
 }
-
 // Hàm cập nhật chỉ số biến thể
 function updateVariantIndices() {
     debugLog('Updating variant indices');
@@ -660,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const productForm = document.getElementById('product-form');
     if (productForm) {
         productForm.addEventListener('submit', (e) => {
-            debugLog('Form submitted');
+            debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
             const brandCheckboxes = document.querySelectorAll('input[name="brand_ids[]"]:checked');
             const categoryCheckboxes = document.querySelectorAll('input[name="category_ids[]"]:checked');
             const attributeSelects = document.querySelectorAll('select[name^="attributes["][name$="[id]"]');

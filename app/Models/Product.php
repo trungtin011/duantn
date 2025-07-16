@@ -139,6 +139,13 @@ class Product extends Model
         )->join('product_variant_attribute_values', 'attribute_values.id', '=', 'product_variant_attribute_values.attribute_value_id');
     }
 
+    public function attributeValuesDirect()
+    {
+        return $this->belongsToMany(AttributeValue::class, 'product_attribute_values', 'product_id', 'attribute_value_id')
+            ->withPivot('attribute_id')
+            ->withTimestamps();
+    }
+
     public function variantAttributes()
     {
         return $this->variants()
