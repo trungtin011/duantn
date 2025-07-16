@@ -220,7 +220,6 @@
                     <div class="flex items-center py-4 ml-4">
                         <label>
                             <input type="checkbox" id="select-all" class="mr-2"
-                                {{ $cartItems->pluck('id')->intersect(session('selected_products', []))->count() === $cartItems->count() ? 'checked' : '' }}>
                             Chọn tất cả
                         </label>
                     </div>
@@ -232,7 +231,7 @@
                         </span>
                     </div>
                 </div>
-                <a href="{{ route('checkout', ['flow_type' => 'cart_to_checkout']) }}"
+                <a href="{{ route('checkout') }}"
                     class="ml-4 bg-[#EF3248] text-white px-6 py-2 m-4 rounded hover:bg-[#EF3248]/80 transition">
                     Thanh toán
                 </a>
@@ -482,6 +481,7 @@
                                 quantity: checkbox.closest('.p-4')?.querySelector(
                                         '.cart-quantity-input, .combo-quantity-input')?.value ||
                                     checkbox.dataset.quantity,
+                                subtotal: checkbox.closest('.p-4')?.querySelector('.subtotal')?.dataset.subtotal,
                             });
                         }
                     });

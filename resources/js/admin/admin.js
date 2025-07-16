@@ -19,7 +19,7 @@
 //         }
 //     });
 // });
-
+console.log('admin.js loaded');
 // Notification
 document.getElementById('notification-btn').addEventListener('click', function () {
     const dropdown = document.getElementById('notification-dropdown');

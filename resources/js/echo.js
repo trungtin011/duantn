@@ -15,21 +15,22 @@ if (window.Laravel.user.role === 'seller') {
     console.log('Seller notification:', window.Laravel.user.role);
 
     window.Echo.private(`order.created.${window.Laravel.shop}`)
-        .listen('.create-order.event', (e) => {
-            console.log('Order created:', e);
-            addNotificationToSellerHome(e);
-        });
+    .listen('.create-order.event', (e) => {
+        console.log('Order created:', e);
+        addNotificationToSellerHome(e);
+    });
 
     window.Echo.channel(`shop.${window.Laravel.user.role}`)
-        .listen('.seller-notification.event', (e) => {
-            console.log('Seller notification:', e);
-            addNotificationToSellerHome(e);
-        });
-
+    .listen('.seller-notification.event', (e) => {
+        console.log('Seller notification:', e);
+        addNotificationToSellerHome(e);
+    });
+    
     window.Echo.channel('notifications.all')
         .listen('.new-notification.event', (e) => {
             console.log('Global notification:', e);
             addNotificationToSellerHome(e);
+            addNotificationToList(e);
         });
 }
 
@@ -48,14 +49,15 @@ if (window.Laravel.user.role === 'customer') {
         });
 
     window.Echo.private(`order-status-update.${window.Laravel.user.id}`)
-        .listen('.order-status-update.event', (e) => {
-            console.log('Order status update:', e);
-            addNotificationToList(e);
-        });
+    .listen('.order-status-update.event', (e) => {
+        console.log('Order status update:', e);
+        addNotificationToList(e);
+    });
 }
 
 
 function addNotificationToList(notification) {
+    console.log('Add notification to list:', notification);
     console.log('Add notification to list:', notification);
     const dropdownContent = document.querySelector('.dropdown-notification-content');
     if (!dropdownContent) return;
@@ -346,7 +348,7 @@ function addNotificationToSellerHome(notification) {
 
 // Helper để lấy label type giống blade
 function getTypeLabel(type) {
-    switch (type) {
+    switch(type) {
         case 'order': return 'Đơn hàng';
         case 'promotion': return 'Khuyến mãi';
         case 'system': return 'Hệ thống';

@@ -20,6 +20,7 @@ class CartController extends Controller
      */
     public function index()
     {
+        
         $user = Auth::user();
         $userID = Auth::check() ? Auth::id() : null;
         $sessionID = Session::getId();
@@ -33,13 +34,10 @@ class CartController extends Controller
                 }
             })
             ->get();
-
         return view('user.cart', compact('cartItems', 'user'));
     }
 
-    /**
-     * Add a single product to the cart.
-     */
+
     public function addToCart(Request $request)
     {
         $request->validate([
@@ -112,172 +110,194 @@ class CartController extends Controller
     }
 
     /**
-     * Add a combo to the cart, including all its products with applied discount, then redirect to cart page.
+     * Calculate discounted price for combo products
      */
- /**
- * Add a combo to the cart, including all its products with applied discount, then redirect to cart page.
- */
-/**
- * Add a combo to the cart, including all its products with applied discount, then redirect to cart page.
- */
-public function addComboToCart(Request $request)
-{
-    $request->validate([
-        'combo_id' => 'required|exists:combo,id',
-        'quantity' => 'required|integer|min:1',
-    ]);
-
-    $combo = Combo::with(['products.product', 'products.variant'])->findOrFail($request->combo_id);
-    $userID = Auth::check() ? Auth::id() : null;
-    $sessionID = Session::getId();
-    $quantity = $request->quantity;
-
-    // Calculate minimum stock across all combo products
-    $minStock = PHP_INT_MAX;
-    foreach ($combo->products as $comboProduct) {
-        $product = $comboProduct->product;
-        if (!$product) {
-            Log::error('Product not found for combo product', ['combo_id' => $combo->id, 'combo_product_id' => $comboProduct->id]);
-            return response()->json(['message' => 'Sản phẩm trong combo không tồn tại!'], 422);
+    private function calculateComboDiscountedPrice($combo, $basePrice, $comboProduct)
+    {
+        $discountedPrice = $basePrice;
+        
+        if ($combo->discount_type === 'percentage' && $combo->discount_value > 0) {
+            // Giảm giá theo phần trăm
+            $discountMultiplier = 1 - ($combo->discount_value / 100);
+            $discountedPrice = $basePrice * $discountMultiplier;
+        } elseif ($combo->discount_type === 'fixed' && $combo->discount_value > 0) {
+            // Giảm giá cố định - phân bổ theo tỷ lệ giá sản phẩm trong combo
+            $totalComboBasePrice = 0;
+            foreach ($combo->products as $cp) {
+                $productPrice = $cp->variant ? ($cp->variant->sale_price ?? $cp->variant->price) : ($cp->product->sale_price ?? $cp->product->price);
+                $totalComboBasePrice += $productPrice * $cp->quantity;
+            }
+            
+            if ($totalComboBasePrice > 0) {
+                // Tính tỷ lệ giá của sản phẩm này trong combo
+                $productBasePrice = $basePrice * $comboProduct->quantity;
+                $discountRatio = $productBasePrice / $totalComboBasePrice;
+                $productDiscount = $combo->discount_value * $discountRatio;
+                $discountedPrice = $basePrice - ($productDiscount / $comboProduct->quantity);
+            } else {
+                // Fallback: chia đều giảm giá cho tất cả sản phẩm
+                $discountedPrice = $basePrice - ($combo->discount_value / count($combo->products));
+            }
         }
-        $variant = $comboProduct->variant;
-        $stock = $variant ? ($variant->stock ?? 0) : ($product->stock_total ?? 0);
-        $availableStock = floor($stock / $comboProduct->quantity);
-        $minStock = min($minStock, $availableStock);
-        Log::info('Combo stock calculation', [
-            'product_id' => $product->id,
-            'variant_id' => $variant ? $variant->id : null,
-            'stock' => $stock,
-            'required_per_combo' => $comboProduct->quantity,
-            'available_combo_units' => $availableStock,
+        
+        // Đảm bảo giá không âm
+        return max(0, $discountedPrice);
+    }
+
+    public function addComboToCart(Request $request)
+    {
+        $request->validate([
+            'combo_id' => 'required|exists:combo,id',
+            'quantity' => 'required|integer|min:1',
         ]);
-    }
 
-    if ($quantity > $minStock) {
-        return response()->json([
-            'message' => 'Số lượng combo vượt quá tồn kho hiện tại!',
-            'available' => $minStock,
-        ], 422);
-    }
+        $combo = Combo::with(['products.product', 'products.variant'])->findOrFail($request->combo_id);
+        $userID = Auth::check() ? Auth::id() : null;
+        $sessionID = Session::getId();
+        $quantity = $request->quantity;
 
-    // Apply combo discount to product prices
-    $discountMultiplier = $combo->discount_type === 'percentage' && $combo->discount_value > 0
-        ? (1 - $combo->discount_value / 100)
-        : 1;
+        // Calculate minimum stock across all combo products
+        $minStock = PHP_INT_MAX;
+        foreach ($combo->products as $comboProduct) {
+            $product = $comboProduct->product;
+            if (!$product) {
+                Log::error('Product not found for combo product', ['combo_id' => $combo->id, 'combo_product_id' => $comboProduct->id]);
+                return response()->json(['message' => 'Sản phẩm trong combo không tồn tại!'], 422);
+            }
+            $variant = $comboProduct->variant;
+            $stock = $variant ? ($variant->stock ?? 0) : ($product->stock_total ?? 0);
+            $availableStock = floor($stock / $comboProduct->quantity);
+            $minStock = min($minStock, $availableStock);
+            Log::info('Combo stock calculation', [
+                'product_id' => $product->id,
+                'variant_id' => $variant ? $variant->id : null,
+                'stock' => $stock,
+                'required_per_combo' => $comboProduct->quantity,
+                'available_combo_units' => $availableStock,
+            ]);
+        }
 
-    $results = [];
-    foreach ($combo->products as $comboProduct) {
-        $product = $comboProduct->product;
-        $variant = $comboProduct->variant;
-        $productQuantity = $comboProduct->quantity * $quantity;
-        $stock = $variant ? ($variant->stock ?? 0) : ($product->stock_total ?? 0);
-        $basePrice = $variant ? ($variant->sale_price ?? $variant->price) : ($product->sale_price ?? $product->price);
-        $discountedPrice = $basePrice * $discountMultiplier;
-        $totalPrice = $discountedPrice * $productQuantity;
+        if ($quantity > $minStock) {
+            return response()->json([
+                'message' => 'Số lượng combo vượt quá tồn kho hiện tại!',
+                'available' => $minStock,
+            ], 422);
+        }
 
-        if ($productQuantity > $stock) {
+        $results = [];
+        foreach ($combo->products as $comboProduct) {
+            $product = $comboProduct->product;
+            $variant = $comboProduct->variant;
+            $productQuantity = $comboProduct->quantity * $quantity;
+            $stock = $variant ? ($variant->stock ?? 0) : ($product->stock_total ?? 0);
+            $basePrice = $variant ? ($variant->sale_price ?? $variant->price) : ($product->sale_price ?? $product->price);
+            
+            // Tính giá sau khi áp dụng giảm giá combo
+            $discountedPrice = $this->calculateComboDiscountedPrice($combo, $basePrice, $comboProduct);
+
+            $totalPrice = $discountedPrice * $productQuantity;
+
+            if ($productQuantity > $stock) {
+                $results[] = [
+                    'product_id' => $product->id,
+                    'variant_id' => $variant ? $variant->id : null,
+                    'status' => 'error',
+                    'message' => 'Số lượng sản phẩm vượt quá tồn kho!',
+                    'available' => $stock,
+                ];
+                continue;
+            }
+
+            $cartQuery = Cart::where('productID', $product->id)
+                ->where('variantID', $variant ? $variant->id : null)
+                ->where('combo_id', $combo->id)
+                ->where(function ($query) use ($userID, $sessionID) {
+                    if ($userID) {
+                        $query->where('userID', $userID);
+                    } else {
+                        $query->where('session_id', $sessionID);
+                    }
+                });
+
+            $existingCartItem = $cartQuery->first();
+
+            if ($existingCartItem) {
+                $newQuantity = $existingCartItem->quantity + $productQuantity;
+                if ($newQuantity > $stock) {
+                    $results[] = [
+                        'product_id' => $product->id,
+                        'variant_id' => $variant ? $variant->id : null,
+                        'status' => 'error',
+                        'message' => 'Số lượng sản phẩm vượt quá tồn kho sau khi cộng thêm!',
+                        'available' => $stock,
+                    ];
+                    continue;
+                }
+                $existingCartItem->quantity = $newQuantity;
+                $existingCartItem->total_price = $newQuantity * $discountedPrice;
+                if (!$existingCartItem->save()) {
+                    Log::error('Failed to save existing cart item', ['cart_id' => $existingCartItem->id, 'combo_id' => $combo->id]);
+                    $results[] = [
+                        'product_id' => $product->id,
+                        'variant_id' => $variant ? $variant->id : null,
+                        'status' => 'error',
+                        'message' => 'Lỗi khi cập nhật số lượng sản phẩm!',
+                    ];
+                    continue;
+                }
+            } else {
+                $cartData = [
+                    'userID' => $userID,
+                    'productID' => $product->id,
+                    'variantID' => $variant ? $variant->id : null,
+                    'quantity' => $productQuantity,
+                    'price' => $discountedPrice,
+                    'total_price' => $totalPrice,
+                    'session_id' => $sessionID,
+                    'buying_flag' => false,
+                    'combo_id' => $combo->id,
+                ];
+                Log::info('Creating cart item', $cartData);
+                $cartItem = Cart::create($cartData);
+                if (!$cartItem) {
+                    Log::error('Failed to create new cart item', $cartData);
+                    $results[] = [
+                        'product_id' => $product->id,
+                        'variant_id' => $variant ? $variant->id : null,
+                        'status' => 'error',
+                        'message' => 'Lỗi khi thêm sản phẩm vào giỏ hàng!',
+                    ];
+                    continue;
+                }
+            }
+
             $results[] = [
                 'product_id' => $product->id,
                 'variant_id' => $variant ? $variant->id : null,
-                'status' => 'error',
-                'message' => 'Số lượng sản phẩm vượt quá tồn kho!',
-                'available' => $stock,
+                'status' => 'success',
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng!',
             ];
-            continue;
         }
 
-        $cartQuery = Cart::where('productID', $product->id)
-            ->where('variantID', $variant ? $variant->id : null)
-            ->where('combo_id', $combo->id)
+        if (collect($results)->every(fn($r) => $r['status'] === 'success')) {
+            return redirect()->route('cart')->with('success', 'Đã thêm combo vào giỏ hàng!');
+        }
+
+        // Rollback if any product fails to add
+        Cart::where('combo_id', $combo->id)
             ->where(function ($query) use ($userID, $sessionID) {
                 if ($userID) {
                     $query->where('userID', $userID);
                 } else {
                     $query->where('session_id', $sessionID);
                 }
-            });
+            })
+            ->delete();
 
-        $existingCartItem = $cartQuery->first();
-
-        if ($existingCartItem) {
-            $newQuantity = $existingCartItem->quantity + $productQuantity;
-            if ($newQuantity > $stock) {
-                $results[] = [
-                    'product_id' => $product->id,
-                    'variant_id' => $variant ? $variant->id : null,
-                    'status' => 'error',
-                    'message' => 'Số lượng sản phẩm vượt quá tồn kho sau khi cộng thêm!',
-                    'available' => $stock,
-                ];
-                continue;
-            }
-            $existingCartItem->quantity = $newQuantity;
-            $existingCartItem->total_price = $newQuantity * $discountedPrice;
-            if (!$existingCartItem->save()) {
-                Log::error('Failed to save existing cart item', ['cart_id' => $existingCartItem->id, 'combo_id' => $combo->id]);
-                $results[] = [
-                    'product_id' => $product->id,
-                    'variant_id' => $variant ? $variant->id : null,
-                    'status' => 'error',
-                    'message' => 'Lỗi khi cập nhật số lượng sản phẩm!',
-                ];
-                continue;
-            }
-        } else {
-            $cartData = [
-                'userID' => $userID,
-                'productID' => $product->id,
-                'variantID' => $variant ? $variant->id : null,
-                'quantity' => $productQuantity,
-                'price' => $discountedPrice,
-                'total_price' => $totalPrice,
-                'session_id' => $sessionID,
-                'buying_flag' => false,
-                'combo_id' => $combo->id,
-            ];
-            Log::info('Creating cart item', $cartData);
-            $cartItem = Cart::create($cartData);
-            if (!$cartItem) {
-                Log::error('Failed to create new cart item', $cartData);
-                $results[] = [
-                    'product_id' => $product->id,
-                    'variant_id' => $variant ? $variant->id : null,
-                    'status' => 'error',
-                    'message' => 'Lỗi khi thêm sản phẩm vào giỏ hàng!',
-                ];
-                continue;
-            }
-        }
-
-        $results[] = [
-            'product_id' => $product->id,
-            'variant_id' => $variant ? $variant->id : null,
-            'status' => 'success',
-            'message' => 'Đã thêm sản phẩm vào giỏ hàng!',
-        ];
+        return response()->json(['message' => 'Một số sản phẩm không thể thêm vào giỏ hàng!', 'results' => $results], 422);
     }
 
-    if (collect($results)->every(fn($r) => $r['status'] === 'success')) {
-        return redirect()->route('cart')->with('success', 'Đã thêm combo vào giỏ hàng!');
-    }
-
-    // Rollback if any product fails to add
-    Cart::where('combo_id', $combo->id)
-        ->where(function ($query) use ($userID, $sessionID) {
-            if ($userID) {
-                $query->where('userID', $userID);
-            } else {
-                $query->where('session_id', $sessionID);
-            }
-        })
-        ->delete();
-
-    return response()->json(['message' => 'Một số sản phẩm không thể thêm vào giỏ hàng!', 'results' => $results], 422);
-}
-
-    /**
-     * Remove a cart item and all related combo items.
-     */
+   
     public function remove($id)
     {
         $userID = Auth::check() ? Auth::id() : null;
@@ -409,7 +429,9 @@ public function addComboToCart(Request $request)
                     if ($comboProduct && (!$item->variantID && !$comboProduct->variantID || $comboProduct->variantID == $item->variantID)) {
                         $newQuantity = $comboQuantity * $comboProduct->quantity;
                         $basePrice = $item->variant ? ($item->variant->sale_price ?? $item->variant->price) : ($item->product->sale_price ?? $item->product->price);
-                        $discountedPrice = $basePrice * $discountMultiplier;
+                        
+                        // Tính giá sau khi áp dụng giảm giá combo
+                        $discountedPrice = $this->calculateComboDiscountedPrice($combo, $basePrice, $comboProduct);
 
                         $item->quantity = $newQuantity;
                         $item->price = $discountedPrice;
@@ -473,9 +495,6 @@ public function addComboToCart(Request $request)
         }
     }
 
-    /**
-     * Add multiple variants to the cart at once.
-     */
     public function addMultiToCart(Request $request)
     {
         $request->validate([
@@ -571,9 +590,6 @@ public function addComboToCart(Request $request)
         return response()->json(['message' => 'Một số sản phẩm không thể thêm vào giỏ hàng!', 'results' => $results], 422);
     }
 
-    /**
-     * Update selected products in the session.
-     */
     public function updateSelectedProducts(Request $request)
     {
         $selectedIds = $request->input('selected');

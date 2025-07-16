@@ -182,7 +182,7 @@
                                 data-product-id="{{ $product->id }}">
                                 <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
                             </button>
-                            <button class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
+                            <button id="instant_buy_btn" class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
                         </div>
                     </div>
                 </div>
@@ -295,7 +295,7 @@
                 </div>
 
                 <!-- Sản phẩm liên quan -->
-                @if ($recentProducts->isNotEmpty())
+               {{--  @if ($recentProducts->isNotEmpty())
                     <div class="mt-8">
                         <h3 class="text-xl font-semibold mb-4 text-gray-800">Sản phẩm liên quan</h3>
                         <div class="swiper related-products-slider">
@@ -330,7 +330,7 @@
                             <div class="swiper-button-prev"></div>
                         </div>
                     </div>
-                @endif
+                @endif --}}
             </div>
 
             <!-- Cột bên phải (Thông tin shop) -->
@@ -523,12 +523,10 @@
                     return s.join(dec);
                 }
 
-                // Thay đổi ảnh chính
                 window.changeMainImage = function(src) {
                     mainImage.src = src;
                 };
 
-                // Reset về trạng thái mặc định
                 function resetToDefault() {
                     selectedVariantId = null;
                     selectedVariantIdInput.value = '';
@@ -1075,6 +1073,8 @@
                 attachFilterEvents();
                 attachPaginationEvents();
             });
+        </script>
+        <script>
         </script>
     @endpush
 @endsection

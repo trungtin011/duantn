@@ -416,11 +416,11 @@
 
     @yield('scripts')
     @stack('scripts')
-    <script src="{{ asset('js/admin/product.js') }}"></script>
-    <script src="{{ asset('js/admin/variant.js') }}"></script>
-    <script src="{{ asset('js/admin/admin.js') }}"></script>
-    <script src="{{ asset('js/admin/order.js') }}"></script>
-    <script src="{{ asset('js/admin/category.js') }}"></script>
+    @vite('resources/js/admin/product.js')
+    @vite('resources/js/admin/variant.js')
+    @vite('resources/js/admin/admin.js')
+    @vite('resources/js/admin/order.js')
+    @vite('resources/js/admin/category.js')
 </body>
 
 </html>
