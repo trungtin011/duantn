@@ -170,18 +170,18 @@
                                             <option value="new" {{ $attribute['id'] === 'new' ? 'selected' : '' }}>Tạo
                                                 thuộc tính mới</option>
                                             @foreach ($allAttributes as $attr)
-                                                <option value="{{ $attr->id }}"
-                                                    {{ $attribute['id'] == $attr->id ? 'selected' : '' }}>
-                                                    {{ $attr->name }}
+                                                <option value="{{ $attr['id'] }}"
+                                                    {{ $attribute['id'] == $attr['id'] ? 'selected' : '' }}>
+                                                    {{ $attr['name'] }}
                                                 </option>
                                             @endforeach
                                         </select>
                                         <input type="text" name="attributes[{{ $index }}][name]"
-                                            value="{{ $attribute['name'] ?? '' }}"
+                                            value="{{ old("attributes.$index.name") }}"
                                             class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name {{ $attribute['id'] === 'new' ? '' : 'hidden' }}"
                                             placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
                                         <input type="text" name="attributes[{{ $index }}][values]"
-                                            value="{{ $attribute['values'] ?? '' }}"
+                                            value="{{ old("attributes.$index.values") }}"
                                             class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values"
                                             placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" required>
                                         <button type="button"
@@ -195,7 +195,7 @@
                                         <option value="" disabled selected>Chọn hoặc nhập thuộc tính</option>
                                         <option value="new">Tạo thuộc tính mới</option>
                                         @foreach ($allAttributes as $attr)
-                                            <option value="{{ $attr->id }}">{{ $attr->name }}</option>
+                                            <option value="{{ $attr['id'] }}">{{ $attr['name'] }}</option>
                                         @endforeach
                                     </select>
                                     <input type="text" name="attributes[0][name]"
@@ -208,10 +208,10 @@
                                         class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
                                 </div>
                             @endif
-                            <button type="button" id="add-attribute-btn"
-                                class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Thêm thuộc
-                                tính</button>
                         </div>
+                        <button type="button" id="add-attribute-btn"
+                            class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Thêm thuộc
+                            tính</button>
                     </div>
 
                     <!-- Khu vực hiển thị biến thể -->
@@ -277,8 +277,7 @@
                                                             nhập</label>
                                                         <input type="number"
                                                             name="variants[{{ $index }}][purchase_price]"
-                                                            value="{{ $variant['purchase_price'] ?? '' }}"
-                                                            step="0.01"
+                                                            value="{{ $variant['purchase_price'] ?? '' }}" step="0.01"
                                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                             placeholder="Nhập giá nhập" required>
                                                         @error("variants.$index.purchase_price")
@@ -339,8 +338,7 @@
                                                     <div>
                                                         <label class="block text-gray-700 font-medium mb-1">Chiều rộng
                                                             (inch)</label>
-                                                        <input type="number"
-                                                            name="variants[{{ $index }}][width]"
+                                                        <input type="number" name="variants[{{ $index }}][width]"
                                                             value="{{ $variant['width'] ?? '' }}" step="0.01"
                                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                             placeholder="Chiều rộng">
@@ -727,6 +725,147 @@
 @push('scripts')
     <script>
         window.allAttributes = @json($allAttributes);
+        window.oldAttributes = @json(old('attributes', []));
+        window.oldVariants = @json(old('variants', []));
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const productForm = document.getElementById('product-form');
+            if (productForm) {
+                productForm.addEventListener('submit', (e) => {
+                    debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
+                    const brandCheckboxes = document.querySelectorAll('input[name="brand_ids[]"]:checked');
+                    const categoryCheckboxes = document.querySelectorAll(
+                        'input[name="category_ids[]"]:checked');
+                    const attributeSelects = document.querySelectorAll(
+                        'select[name^="attributes["][name$="[id]"]');
+                    const variantItems = document.querySelectorAll('#variant-container > .variant-item');
+                    let isValid = true;
+
+                    // Kiểm tra thương hiệu
+                    if (brandCheckboxes.length === 0) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn ít nhất một thương hiệu.');
+                        debugLog('Form submission prevented: No brands selected');
+                        isValid = false;
+                    }
+
+                    // Kiểm tra danh mục
+                    if (categoryCheckboxes.length === 0) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn ít nhất một danh mục.');
+                        debugLog('Form submission prevented: No categories selected');
+                        isValid = false;
+                    }
+
+                    // Kiểm tra ảnh chính
+                    if (!document.getElementById('mainImage').files.length) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn ảnh chính.');
+                        debugLog('Form submission prevented: No main image selected');
+                        isValid = false;
+                    }
+
+                    // Kiểm tra thuộc tính
+                    attributeSelects.forEach((select, index) => {
+                        const nameInput = document.querySelector(
+                            `input[name="attributes[${index}][name]"]`);
+                        const valuesInput = document.querySelector(
+                            `input[name="attributes[${index}][values]"]`);
+                        if (select.value === 'new' && (!nameInput.value || !nameInput.value
+                        .trim())) {
+                            e.preventDefault();
+                            alert(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+                            debugLog('Form submission prevented: Empty attribute name', {
+                                index
+                            });
+                            isValid = false;
+                        }
+                        if (!valuesInput.value || !valuesInput.value.trim()) {
+                            e.preventDefault();
+                            alert(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
+                            debugLog('Form submission prevented: Empty attribute values', {
+                                index
+                            });
+                            isValid = false;
+                        }
+                    });
+
+                    // Kiểm tra biến thể
+                    if (attributeSelects.length > 0 && variantItems.length === 0) {
+                        e.preventDefault();
+                        alert('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
+                        debugLog(
+                        'Form submission prevented: No variants created despite having attributes');
+                        isValid = false;
+                    }
+
+                    variantItems.forEach((item, index) => {
+                        const priceInput = item.querySelector(
+                            `input[name="variants[${index}][price]"]`);
+                        const purchasePriceInput = item.querySelector(
+                            `input[name="variants[${index}][purchase_price]"]`);
+                        const salePriceInput = item.querySelector(
+                            `input[name="variants[${index}][sale_price]"]`);
+                        const skuInput = item.querySelector(
+                        `input[name="variants[${index}][sku]"]`);
+                        const stockInput = item.querySelector(
+                            `input[name="variants[${index}][stock_total]"]`);
+
+                        if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput
+                                .value) < 0) {
+                            e.preventDefault();
+                            alert(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
+                            debugLog('Form submission prevented: Invalid price for variant', {
+                                index
+                            });
+                            isValid = false;
+                        }
+                        if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) ||
+                            parseFloat(purchasePriceInput.value) < 0) {
+                            e.preventDefault();
+                            alert(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
+                            debugLog(
+                                'Form submission prevented: Invalid purchase price for variant', {
+                                    index
+                                });
+                            isValid = false;
+                        }
+                        if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(
+                                salePriceInput.value) < 0) {
+                            e.preventDefault();
+                            alert(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
+                            debugLog('Form submission prevented: Invalid sale price for variant', {
+                                index
+                            });
+                            isValid = false;
+                        }
+                        if (!skuInput.value || !skuInput.value.trim()) {
+                            e.preventDefault();
+                            alert(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
+                            debugLog('Form submission prevented: Empty SKU for variant', {
+                                index
+                            });
+                            isValid = false;
+                        }
+                        if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput
+                                .value) < 0) {
+                            e.preventDefault();
+                            alert(
+                                `Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
+                            debugLog('Form submission prevented: Invalid stock for variant', {
+                                index
+                            });
+                            isValid = false;
+                        }
+                    });
+
+                    if (isValid) {
+                        tinymce.triggerSave();
+                        debugLog('Form submission validated successfully');
+                    }
+                });
+            }
+        });
     </script>
     @vite('resources/js/seller/product.js')
 @endpush

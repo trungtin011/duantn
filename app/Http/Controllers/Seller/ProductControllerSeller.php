@@ -73,40 +73,24 @@ class ProductControllerSeller extends Controller
      */
     public function create()
     {
-        $categories = Category::where('status', 'active')
-            ->with(['children' => function ($query) {
-                $query->where('status', 'active')
-                    ->with(['children' => function ($subQuery) {
-                        $subQuery->where('status', 'active');
-                    }]);
-            }])
-            ->whereNull('parent_id')
-            ->get();
-
-        $brands = Brand::where('status', 'active')
-            ->with(['children' => function ($query) {
-                $query->where('status', 'active')
-                    ->with(['children' => function ($subQuery) {
-                        $subQuery->where('status', 'active');
-                    }]);
-            }])
-            ->whereNull('parent_id')
-            ->get();
-
+        $brands = Brand::all();
+        $categories = Category::all();
         $allAttributes = Attribute::with(['values' => function ($query) {
             $query->whereNotNull('value')->where('value', '!=', '');
         }])
             ->whereNotNull('name')
             ->where('name', '!=', '')
-            ->get();
+            ->get()
+            ->toArray();
 
-        Log::info('Loaded data for product create', [
+        Log::info('Tải dữ liệu cho trang tạo sản phẩm', [
             'brands_count' => $brands->count(),
             'categories_count' => $categories->count(),
-            'all_attributes_count' => $allAttributes->count(),
+            'all_attributes_count' => count($allAttributes),
+            'all_attributes' => $allAttributes
         ]);
 
-        return view('seller.products.create', compact('categories', 'brands', 'allAttributes'));
+        return view('seller.products.create', compact('brands', 'categories', 'allAttributes'));
     }
 
     /**
@@ -205,74 +189,162 @@ class ProductControllerSeller extends Controller
             }
 
             // Xử lý thuộc tính
-            if ($request->filled('attributes')) {
+            if ($request->has('attributes')) {
+                Log::info('Dữ liệu attributes được gửi', [
+                    'attributes_raw' => $request->input('attributes'),
+                    'is_array' => is_array($request->input('attributes')),
+                    'attributes_count' => is_array($request->input('attributes')) ? count($request->input('attributes')) : 0
+                ]);
+
                 $attributeIds = [];
-                foreach ($request->attributes as $index => $attrData) {
-                    if (empty(trim($attrData['values']))) {
-                        Log::warning('Skipping attribute due to empty values', [
+                if (is_array($request->input('attributes'))) {
+                    foreach ($request->attributes as $index => $attrData) {
+                        Log::info('Xử lý thuộc tính', [
                             'attribute_index' => $index,
                             'attribute_data' => $attrData
                         ]);
-                        continue;
-                    }
 
-                    $attribute = null;
-                    if ($attrData['id'] === 'new' && !empty(trim($attrData['name']))) {
-                        $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
-                        Log::info('New attribute created', [
-                            'attribute_id' => $attribute->id,
-                            'attribute_name' => $attribute->name
-                        ]);
-                    } elseif ($attrData['id'] !== 'new' && !empty($attrData['id'])) {
-                        $attribute = Attribute::find($attrData['id']);
-                        if (!$attribute) {
-                            Log::warning('Attribute not found', [
-                                'attribute_id' => $attrData['id'],
-                                'attribute_index' => $index
+                        // Kiểm tra nếu values rỗng hoặc không hợp lệ
+                        if (empty(trim($attrData['values'] ?? ''))) {
+                            Log::warning('Bỏ qua thuộc tính do giá trị rỗng', [
+                                'attribute_index' => $index,
+                                'attribute_data' => $attrData
                             ]);
                             continue;
                         }
+
+                        // Tìm hoặc tạo thuộc tính
+                        $attribute = null;
+                        if (($attrData['id'] ?? '') === 'new' && !empty(trim($attrData['name'] ?? ''))) {
+                            try {
+                                $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
+                                Log::info('Tạo thuộc tính mới', [
+                                    'attribute_id' => $attribute->id,
+                                    'attribute_name' => $attribute->name
+                                ]);
+                            } catch (\Exception $e) {
+                                Log::error('Lỗi khi tạo thuộc tính mới', [
+                                    'attribute_index' => $index,
+                                    'attribute_data' => $attrData,
+                                    'error' => $e->getMessage()
+                                ]);
+                                continue;
+                            }
+                        } else {
+                            $attribute = Attribute::find($attrData['id'] ?? 0);
+                            if (!$attribute) {
+                                Log::warning('Không tìm thấy thuộc tính', [
+                                    'attribute_id' => $attrData['id'] ?? 'null',
+                                    'attribute_index' => $index
+                                ]);
+                                if (!empty(trim($attrData['name'] ?? ''))) {
+                                    try {
+                                        $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
+                                        Log::info('Tạo thuộc tính mới do không tìm thấy ID', [
+                                            'attribute_id' => $attribute->id,
+                                            'attribute_name' => $attribute->name
+                                        ]);
+                                    } catch (\Exception $e) {
+                                        Log::error('Lỗi khi tạo thuộc tính mới do không tìm thấy ID', [
+                                            'attribute_index' => $index,
+                                            'attribute_data' => $attrData,
+                                            'error' => $e->getMessage()
+                                        ]);
+                                        continue;
+                                    }
+                                } else {
+                                    Log::warning('Bỏ qua thuộc tính do không có tên hợp lệ', [
+                                        'attribute_index' => $index,
+                                        'attribute_data' => $attrData
+                                    ]);
+                                    continue;
+                                }
+                            } else {
+                                Log::info('Tìm thấy thuộc tính', [
+                                    'attribute_id' => $attribute->id,
+                                    'attribute_name' => $attribute->name
+                                ]);
+                            }
+                        }
+
+                        // Xử lý giá trị thuộc tính
+                        if ($attribute) {
+                            $values = collect(explode(',', $attrData['values']))
+                                ->map(fn($v) => trim($v))
+                                ->filter()
+                                ->toArray();
+
+                            if (empty($values)) {
+                                Log::warning('Không có giá trị thuộc tính hợp lệ', [
+                                    'attribute_id' => $attribute->id,
+                                    'attribute_values' => $attrData['values']
+                                ]);
+                                continue;
+                            }
+
+                            foreach ($values as $value) {
+                                try {
+                                    $attributeValue = AttributeValue::firstOrCreate([
+                                        'attribute_id' => $attribute->id,
+                                        'value' => $value,
+                                    ]);
+                                    Log::info('Tạo hoặc tìm thấy giá trị thuộc tính', [
+                                        'attribute_id' => $attribute->id,
+                                        'attribute_value_id' => $attributeValue->id,
+                                        'attribute_value' => $attributeValue->value
+                                    ]);
+
+                                    // Thêm liên kết vào bảng product_attribute
+                                    DB::table('product_attribute')->updateOrInsert([
+                                        'product_id' => $product->id,
+                                        'attribute_id' => $attribute->id,
+                                    ]);
+                                } catch (\Exception $e) {
+                                    Log::error('Lỗi khi tạo giá trị thuộc tính', [
+                                        'attribute_id' => $attribute->id,
+                                        'value' => $value,
+                                        'error' => $e->getMessage()
+                                    ]);
+                                    continue;
+                                }
+                            }
+
+                            $attributeIds[] = $attribute->id;
+                        } else {
+                            Log::warning('Không thể tạo hoặc tìm thấy thuộc tính', [
+                                'attribute_index' => $index,
+                                'attribute_data' => $attrData
+                            ]);
+                        }
+                    }
+
+                    if (!empty($attributeIds)) {
+                        try {
+                            $product->attributes()->sync($attributeIds);
+                            Log::info('Đã đồng bộ thuộc tính cho sản phẩm', [
+                                'product_id' => $product->id,
+                                'attribute_ids' => $attributeIds
+                            ]);
+                        } catch (\Exception $e) {
+                            Log::error('Lỗi khi đồng bộ thuộc tính', [
+                                'product_id' => $product->id,
+                                'attribute_ids' => $attributeIds,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
                     } else {
-                        Log::warning('Invalid attribute data', [
-                            'attribute_index' => $index,
-                            'attribute_data' => $attrData
-                        ]);
-                        continue;
-                    }
-
-                    $values = collect(explode(',', $attrData['values']))
-                        ->map(fn($v) => trim($v))
-                        ->filter()
-                        ->toArray();
-
-                    foreach ($values as $value) {
-                        $attributeValue = AttributeValue::firstOrCreate([
-                            'attribute_id' => $attribute->id,
-                            'value' => $value,
-                        ]);
-                        Log::info('Attribute value created', [
-                            'attribute_id' => $attribute->id,
-                            'attribute_value_id' => $attributeValue->id,
-                            'attribute_value' => $attributeValue->value
+                        Log::warning('Không có thuộc tính hợp lệ để đồng bộ', [
+                            'product_id' => $product->id
                         ]);
                     }
-
-                    $attributeIds[] = $attribute->id;
-                }
-
-                if (!empty($attributeIds)) {
-                    $product->attributes()->sync($attributeIds);
-                    Log::info('Attributes synced to product', [
-                        'product_id' => $product->id,
-                        'attribute_ids' => $attributeIds
-                    ]);
                 } else {
-                    Log::warning('No valid attributes to sync', [
-                        'product_id' => $product->id
+                    Log::warning('Dữ liệu attributes không phải mảng', [
+                        'product_id' => $product->id,
+                        'attributes' => $request->input('attributes')
                     ]);
                 }
             } else {
-                Log::info('No attributes provided', [
+                Log::info('Không có thuộc tính được cung cấp', [
                     'product_id' => $product->id
                 ]);
             }
