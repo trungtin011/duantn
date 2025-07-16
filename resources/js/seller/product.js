@@ -152,15 +152,14 @@ function initializeOldData() {
 const allAttributes = window.allAttributes || [];
 
 // Hàm cập nhật giá trị thuộc tính khi chọn từ dropdown
-// Cập nhật giá trị thuộc tính khi chọn
 function updateAttributeValues(select) {
-    console.log('Cập nhật giá trị thuộc tính', { selectValue: select.value });
+    debugLog('Cập nhật giá trị thuộc tính', { selectValue: select.value });
     const row = select.closest('.flex');
     const nameInput = row.querySelector('.attribute-name');
     const valuesInput = row.querySelector('.attribute-values');
 
     if (!nameInput || !valuesInput) {
-        console.log('Không tìm thấy input tên hoặc giá trị thuộc tính');
+        debugLog('Không tìm thấy input tên hoặc giá trị thuộc tính');
         return;
     }
 
@@ -168,28 +167,25 @@ function updateAttributeValues(select) {
         nameInput.classList.remove('hidden');
         nameInput.value = '';
         valuesInput.value = '';
-        console.log('Chọn tạo thuộc tính mới, hiển thị input tên');
+        debugLog('Chọn tạo thuộc tính mới, hiển thị input tên');
     } else {
         nameInput.classList.add('hidden');
         const selectedAttribute = allAttributes.find(attr => attr.id == select.value);
         if (selectedAttribute) {
             nameInput.value = selectedAttribute.name;
-            const valuesArray = Array.isArray(selectedAttribute.values)
-                ? selectedAttribute.values.map(val => typeof val === 'object' && val.value ? val.value : val)
-                : [];
-            valuesInput.value = valuesArray.length > 0 ? valuesArray.join(', ') : '';
-            console.log('Cập nhật giá trị thuộc tính', { name: selectedAttribute.name, values: valuesArray });
+            valuesInput.value = Array.isArray(selectedAttribute.values)
+                ? selectedAttribute.values.map(val => typeof val === 'object' ? val.value : val).join(', ')
+                : selectedAttribute.values || '';
+            debugLog('Cập nhật giá trị thuộc tính', { name: selectedAttribute.name, values: valuesInput.value });
         } else {
             nameInput.value = '';
             valuesInput.value = '';
             select.value = '';
             alert('Thuộc tính được chọn không hợp lệ. Vui lòng chọn lại.');
-            console.log('Không tìm thấy thuộc tính cho ID được chọn', { selectValue: select.value });
+            debugLog('Không tìm thấy thuộc tính cho ID được chọn', { selectValue: select.value });
         }
     }
 }
-
-
 // Hàm khởi tạo trạng thái ban đầu cho các dropdown thuộc tính
 function initializeAttributeSelects() {
     debugLog('Initializing attribute selects');
