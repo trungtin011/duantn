@@ -186,7 +186,6 @@
                             <!-- Thuộc tính & Biến thể -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <h4 class="text-xl font-semibold mb-4">Thuộc tính sản phẩm</h4>
-
                                 <div id="attribute-container">
                                     @foreach ($attributes as $index => $attribute)
                                         <div class="mb-4 flex items-center gap-4 attribute-row">
