@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ComboController extends Controller
 {
@@ -119,7 +120,7 @@ class ComboController extends Controller
         $comboData = [
             'shopID' => $shopID,
             'combo_name' => $request->name,
-            'slug' => \Str::slug($request->name),
+            'slug' => Str::slug($request->name),
             'combo_description' => $request->combo_description,
             'image' => $imagePath,
             'total_price' => $totalPrice,

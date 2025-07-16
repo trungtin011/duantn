@@ -68,3 +68,7 @@ Broadcast::channel('notifications.all', function () {
 Broadcast::channel('order.created.{shop_id}', function ($user, $shop_id) {
     return (int)$user->shop->id === (int)$shop_id;
 });
+
+Broadcast::channel('order-status-update.{user_id}', function ($user, $user_id) {
+    return (int)$user->id === (int)$user_id;
+});

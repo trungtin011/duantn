@@ -2,7 +2,6 @@
 @section('title', 'Thanh toán')
 @push('styles')
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -16,10 +15,16 @@
             margin: 0 10px;
             color: #9CA3AF;
         }
-        
+        .place-order-btn {
+            background-color:rgb(176, 9, 168);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
         .payment-card {
             transition: all 0.3s ease;
-            border: 2px solid #E5E7EB;
+            border: 2px solidrgb(46, 114, 248);
         }
         
         .payment-card:hover, .payment-card.selected {
@@ -55,6 +60,66 @@
         .expand-enter-active {
             max-height: 1000px;
             opacity: 1;
+        }
+
+        .selected-address {
+            background:rgb(240, 227, 240);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            position: relative;
+        }
+        
+        .selected-address::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            border-left: 1px solid #e5e7eb;
+            transform: rotate(45deg);
+        }
+        
+        .address-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #4f46e5;
+            color: white;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            z-index: 10;
+        }
+        
+        .change-address-btn {
+            position: absolute;
+            bottom: 60px;
+            right: 16px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .change-address-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .address-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        
+        .address-list.expanded {
+            max-height: 1000px;
         }
     </style>
 @endpush
@@ -105,19 +170,39 @@
                         <div class="mb-6">
                             <h3 class="text-lg font-semibold mb-3">Địa chỉ giao hàng</h3>
                             
-                            <div class="space-y-3 mb-4">
-                                @foreach ($user_addresses as $address)
-                                <label class="address-card bg-white p-4 rounded-lg border border-gray-200 cursor-pointer hover:border-primary transition-colors flex items-start">
-                                    <input type="radio" name="receiver_address_id" id="address2" class="mt-1 mr-3" value="{{ $address->id }}">
-                                    <div>
-                                        <p class="block font-medium">{{ $address->receiver_name }}</p>
-                                        <p class="text-gray-600 text-sm">(+84) {{ $address->receiver_phone }}</p>
-                                        <p class="text-gray-600">{{ $address->address }}, {{ $address->ward }}, {{ $address->district }}, {{ $address->province }}</p>
+                            <!-- Hiển thị địa chỉ đã chọn -->
+                            <div id="selected-address-container" class="mb-4 hidden">
+                                <div class="selected-address relative">
+                                    <span class="address-badge hidden">Mặc định</span>
+                                    <div id="selected-address-content">
+                                        <!-- Nội dung địa chỉ sẽ được điền bằng JS -->
                                     </div>
-                                </label>
-                                @endforeach
+                                    <div class="change-address-btn" onclick="toggleAddressList()">
+                                        <i class="fas fa-exchange-alt mr-1"></i> Thay đổi
+                                    </div>
+                                </div>
                             </div>
                             
+                            <!-- Danh sách địa chỉ -->
+                            <div id="address-list" class="address-list">
+                                <div class="space-y-3 mb-4">
+                                    @foreach ($user_addresses as $address)
+                                    <label class="address-card bg-white p-4 rounded-lg border border-gray-200 cursor-pointer hover:border-primary transition-colors flex items-start">
+                                        <input type="radio" name="receiver_address_id" id="address{{ $address->id }}" class="mt-1 mr-3 address-radio" value="{{ $address->id }}" 
+                                            @if($address->is_default) checked @endif
+                                            data-address="{{ json_encode($address) }}">
+                                        <div>
+                                            @if($address->is_default)
+                                                <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mb-1">Mặc định</span>
+                                            @endif
+                                            <p class="block font-medium">{{ $address->receiver_name }}</p>
+                                            <p class="text-gray-600 text-sm">(+84) {{ $address->receiver_phone }}</p>
+                                            <p class="text-gray-600">{{ $address->address }}, {{ $address->ward }}, {{ $address->district }}, {{ $address->province }}</p>
+                                        </div>
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
                             <!-- Nút Thêm địa chỉ -->
                             <button id="showAddressForm" class="w-full text-center py-3 text-primary border-2 border-dashed border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">
                                 <i class="fas fa-plus mr-2"></i> Thêm địa chỉ mới
@@ -127,19 +212,20 @@
                         <!-- Form thêm địa chỉ mới -->
                         <div id="createAddressForm" class="hidden bg-white p-5 rounded-xl border border-gray-200 mt-6 mb-8">
                             <h3 class="text-lg font-semibold mb-4">Thêm địa chỉ mới</h3>
-                            <form class="space-y-4">
+                            <form class="space-y-4" action="{{ route('account.addresses.store') }}" method="post">
+                                @csrf
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Tên Người Nhận <span class="text-red-500">*</span>
                                         </label>
-                                        <input type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <input type="text"  name="receiver_name" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Số điện thoại <span class="text-red-500">*</span>
                                         </label>
-                                        <input type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <input type="text" name="receiver_phone" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                                     </div>
                                 </div>
 
@@ -148,43 +234,43 @@
                                         Loại Địa chỉ <span class="text-red-500">*</span>
                                     </label>
                                     <div class="grid grid-cols-3 gap-2">
-                                        <button type="button" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Nhà</button>
-                                        <button type="button" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Văn phòng</button>
-                                        <button type="button" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Khác</button>
+                                        <button type="button" data-type="home" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Nhà</button>
+                                        <button type="button" data-type="office" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Văn phòng</button>
+                                        <button type="button" data-type="other" class="address-type-btn py-2 px-3 bg-gray-100 rounded-lg text-sm border border-gray-300 hover:border-primary">Khác</button>
                                     </div>
+                                    <input type="hidden" name="address_type" id="address_type_input" value="">
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
+                                    <div class="ghn-address-container">
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Tỉnh/Thành phố <span class="text-red-500">*</span>
                                         </label>
-                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="city">
+                                        <select name="province_id" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="city">
                                             <option value="">Chọn tỉnh/thành phố</option>
-                                            <option>Hồ Chí Minh</option>
-                                            <option>Hà Nội</option>
-                                            <option>Đà Nẵng</option>
                                         </select>
+                                        <input type="hidden" name="province" id="province_name">
+                                        <div class="ghn-error-message hidden" id="city-error"></div>
                                     </div>
-                                    <div>
+                                    <div class="ghn-address-container">
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Quận/Huyện <span class="text-red-500">*</span>
                                         </label>
-                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="district">
+                                        <select name="district_id" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="district" disabled>
                                             <option value="">Chọn quận/huyện</option>
-                                            <option>Quận 1  </option>
-                                            <option>Quận 3</option>
                                         </select>
+                                        <input type="hidden" name="district" id="district_name">
+                                        <div class="ghn-error-message hidden" id="district-error"></div>
                                     </div>
-                                    <div>
+                                    <div class="ghn-address-container">
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Phường/Xã <span class="text-red-500">*</span>
                                         </label>
-                                        <select class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="ward">
+                                        <select name="ward_id" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" id="ward" disabled>
                                             <option value="">Chọn phường/xã</option>
-                                            <option>Phường Bến Nghé</option>
-                                            <option>Phường Bến Thành</option>
                                         </select>
+                                        <input type="hidden" name="ward" id="ward_name">
+                                        <div class="ghn-error-message hidden" id="ward-error"></div>
                                     </div>
                                 </div>
 
@@ -192,11 +278,11 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
                                         Địa chỉ cụ thể <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <input type="text" name="address" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                                 </div>
 
                                 <div class="flex items-center">
-                                    <input type="checkbox" id="default-address" class="h-4 w-4 text-primary focus:ring-primary">
+                                    <input type="checkbox" name="is_default" id="default-address" class="h-4 w-4 text-primary focus:ring-primary">
                                     <label for="default-address" class="ml-2 text-sm text-gray-700">Đặt làm địa chỉ mặc định</label>
                                 </div>
 
@@ -204,7 +290,7 @@
                                     <button type="button" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors" id="cancelAddressForm">
                                         Hủy bỏ
                                     </button>
-                                    <button type="button" class="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors">
+                                    <button type="submit" class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors">
                                         Thêm địa chỉ
                                     </button>
                                 </div>
@@ -301,12 +387,51 @@
                                         <div class="w-2/3">
                                             <div class="text-left">
                                                 <div class="font-medium text-gray-800 mb-1">{{ $item['product']->name }}</div>
-                                                <div class="text-sm text-gray-600 mb-1">{{ $item['product']->variants->first()->variant_name }}</div>
+                                                <div class="text-sm text-gray-600 mb-1">
+                                                    @if (isset($item['is_combo']) && $item['is_combo'] && isset($item['variant']))
+                                                        {{ $item['variant']->variant_name ?? 'Không có biến thể' }}
+                                                    @elseif ($item['product']->variants && $item['product']->variants->count() > 0)
+                                                        {{ $item['product']->variants->first()->variant_name ?? 'Không có biến thể' }}
+                                                    @else
+                                                        Không có biến thể
+                                                    @endif
+                                                </div>
                                                 <div class="text-sm text-gray-600">Số lượng: x{{ $item['quantity'] }}</div>
                                             </div>
+                                            @if (isset($item['is_combo']) && $item['is_combo'])
+                                                <div class="text-xs text-primary bg-primary-soft px-2 py-1 rounded-md inline-block mb-1">
+                                                    (Thuộc Combo: <strong>{{ $item['combo_info']['combo_name'] }}</strong>)
+                                                </div>
+                                            @endif
                                             <div class="text-right flex flex-row gap-2 mt-5">
-                                                <div class="font-medium text-gray-800">{{ number_format($item['product']->variants->first()->sale_price, 0, ',', '.') }}₫</div>
-                                                <div class="text-sm text-gray-500 line-through">{{ number_format($item['product']->variants->first()->price, 0, ',', '.') }}₫</div>
+                                                @if (isset($item['is_combo']) && $item['is_combo'] && isset($item['combo_info']))
+                                                    @php
+                                                        // Sử dụng giá đã được tính sẵn từ CheckoutController
+                                                        $combo = $item['combo_info'];
+                                                        $discountedPrice = $combo['price_in_combo'];
+                                                        $originalPrice = $combo['original_price'];
+                                                    @endphp
+                                                    <div class="font-medium text-gray-800">{{ number_format($discountedPrice, 0, ',', '.') }}₫</div>
+                                                    @if($discountedPrice < $originalPrice)
+                                                        <div class="text-sm text-gray-500 line-through">{{ number_format($originalPrice, 0, ',', '.') }}₫</div>
+                                                    @endif
+                                                @else
+                                                    @php
+                                                        // Kiểm tra xem sản phẩm có variant hay không
+                                                        if ($item['product']->variants && $item['product']->variants->count() > 0) {
+                                                            $currentPrice = $item['product']->variants->first()->sale_price;
+                                                            $originalPrice = $item['product']->variants->first()->price;
+                                                        } else {
+                                                            // Sản phẩm không có variant - sử dụng giá từ product
+                                                            $currentPrice = $item['product']->sale_price ?? $item['product']->price;
+                                                            $originalPrice = $item['product']->price;
+                                                        }
+                                                    @endphp
+                                                    <div class="font-medium text-gray-800">{{ number_format($currentPrice, 0, ',', '.') }}₫</div>
+                                                    @if($currentPrice < $originalPrice)
+                                                        <div class="text-sm text-gray-500 line-through">{{ number_format($originalPrice, 0, ',', '.') }}₫</div>
+                                                    @endif
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -327,7 +452,58 @@
                             @endforeach
                         </div>
                     </div>
-                    
+                    <div class="bg-gray-50 p-6 rounded-xl">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-star mr-2 text-yellow-500"></i>
+                            Điểm tích luỹ của bạn
+                            <span class="ml-10 flex items-center">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="toggle-points-btn" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary peer-checked:bg-primary transition-colors duration-300"></div>
+                                    <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white border border-gray-300 rounded-full transition-transform duration-300 peer-checked:translate-x-5"></div>
+                                </label>
+                            </span>
+                        </h2>  
+                       
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Điểm tích luỹ:</span>
+                                <span id="user_points">{{ number_format($user_points, 0, ',', '.') }} điểm</span>
+                            </div>
+                            <div 
+                                class="flex items-center gap-2 mt-2"
+                                id="used-points-input-group"
+                                style="display: none;"
+                            >
+                                <label for="used_points" class="text-gray-700 text-sm">Nhập số điểm muốn sử dụng:</label>
+                                <input 
+                                    type="number" 
+                                    id="used_points" 
+                                    name="used_points" 
+                                    min="0" 
+                                    max="{{ $user_points }}"
+                                    step="1000"
+                                    value="0"
+                                    class="w-24 bg-gray-50 border border-gray-300 rounded-lg py-1 px-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-right"
+                                >
+                                <span class="text-gray-500 text-sm">điểm</span>
+                            </div>
+                            <small class="text-dark-500">1 điểm = 1000đ</small>
+                        </div>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const toggle = document.getElementById('toggle-points-btn');
+                            const inputGroup = document.getElementById('used-points-input-group');
+                            if (toggle && inputGroup) {
+                                function updateInputVisibility() {
+                                    inputGroup.style.display = toggle.checked ? 'flex' : 'none';
+                                }
+                                toggle.addEventListener('change', updateInputVisibility);
+                                updateInputVisibility();
+                            }
+                        });
+                    </script>
                     <!-- Tóm tắt đơn hàng -->
                     <div class="summary-card p-6 mb-6">
                         <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
@@ -343,6 +519,11 @@
                             <div class="flex justify-between text-gray-600">
                                 <span>Giảm giá:</span>
                                 <span class="text-green-600" id="discount_amount">{{ number_format(0, 0, ',', '.') }}₫</span>
+                            </div>
+
+                            <div class="flex justify-between text-gray-600">
+                                <span>Điểm tích luỹ:</span>
+                                <span class="text-green-600" id="points_amount">{{ number_format(0, 0, ',', '.') }}₫</span>
                             </div>
                             
                             <div class="flex justify-between text-gray-600">
@@ -384,6 +565,7 @@
                             <input type="hidden" name="discount_amount" id="discount_amount">
                             <input type="hidden" name="total_amount" id="total_amount">
                             <input type="hidden" name="discount_code" id="discount_code">
+                            <input type="hidden" name="user_points" id="user_points">
                         </form>
                         
                         <!-- Nút đặt hàng -->
@@ -402,570 +584,21 @@
 @endsection
 
 @push('scripts')
-    <!-- Checkout script -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let isSubmitting = false;
-            
-            document.getElementById('place-order-btn').addEventListener('click', function() {
-                if (isSubmitting) return;
-                
-                if (validateForm()) {
-                    collectAndSubmitData();
-                }
-            });
-
-            function validateForm() {
-                const selectedAddress = document.querySelector('input[name="receiver_address_id"]:checked');
-                if (!selectedAddress) {
-                    showError('Vui lòng chọn địa chỉ giao hàng');
-                    return false;
-                }
-
-                const selectedPayment = document.querySelector('input[name="payment"]:checked');
-                if (!selectedPayment) {
-                    showError('Vui lòng chọn phương thức thanh toán');
-                    return false;
-                }
-                return true;
-            }
-
-            function collectFormData() {
-                const formData = {
-                    // Địa chỉ giao hàng
-                    selected_address_id: document.querySelector('input[name="receiver_address_id"]:checked')?.value,
-                    
-                    // Phương thức thanh toán
-                    payment_method: document.querySelector('input[name="payment"]:checked')?.value,
-                    
-                    // Lời nhắn cho các shop
-                    shop_notes: collectShopNotes(),
-                    
-                    // Thông tin đơn hàng
-                    subtotal: document.getElementById('subtotal').textContent.replace(/[^\d]/g, '') || 0,
-                    discount_amount: document.getElementById('discount_amount').textContent.replace(/[^\d]/g, '') || 0,
-                    shipping_fee: document.getElementById('total_shipping_fee').textContent.replace(/[^\d]/g, '') || 0,
-                    total_amount: document.getElementById('total_amount').textContent.replace(/[^\d]/g, '') || 0,
-                    
-                    discount_code: document.querySelector('input[name="discount_code"]')?.value || null,
-                
-                    _token: '{{ csrf_token() }}'
-                };
-
-                return formData;
-            }
-
-            // Thu thập lời nhắn cho các shop
-            function collectShopNotes() {
-                const notes = {};
-                document.querySelectorAll('textarea[name^="note_for_shop"]').forEach(textarea => {
-                    const shopId = textarea.getAttribute('data-shop-id');
-                    const note = textarea.value.trim();
-                    
-                    if (note) {
-                        notes[shopId] = note;
-                    }
-                });
-                return notes;
-            }
-
-            // Lấy phí vận chuyển
-            function getShippingFee() {
-                const shippingFeeElement = document.getElementById('total_shipping_fee');
-                if (shippingFeeElement) {
-                    const feeText = shippingFeeElement.textContent;
-                    const fee = parseInt(feeText.replace(/[^\d]/g, ''));
-                    return isNaN(fee) ? 0 : fee;
-                }
-                return 0;
-            }
-
-            // Gửi dữ liệu đến backend
-            function collectAndSubmitData() {
-                isSubmitting = true;
-                
-                // Thay đổi trạng thái nút
-                const submitBtn = document.getElementById('place-order-btn');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang xử lý...';
-                submitBtn.disabled = true;
-
-                const formData = collectFormData();
-                
-                console.log('Dữ liệu gửi đi:', formData);
-
-                // Gửi request đến backend
-                fetch('{{ route("checkout.store") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Phản hồi từ server:', data);
-                    if(data.success)
-                    {
-                        showSuccess('Đặt hàng thành công!');
-                        window.location.href = data.redirectUrl;
-                    }
-                    else
-                    {
-                        showError('Có lỗi xảy ra khi đặt hàng');
-                    }
-                })
-                .catch(error => {
-                    console.error('Lỗi:', error);
-                    showError('Có lỗi xảy ra khi kết nối đến server ' + error);
-                })
-                .catch(message => {
-                    showError(message);
-                })
-                .finally(() => {
-                    // Khôi phục trạng thái nút
-                    isSubmitting = false;
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                });
-            }
-
-            // Hiển thị thông báo lỗi
-            function showError(message) {
-                // Tạo toast notification
-                const toast = document.createElement('div');
-                toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toast.innerHTML = `
-                    <div class="flex items-center">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
-                        <span>${message}</span>
-                    </div>
-                `;
-                document.body.appendChild(toast);
-                
-                // Tự động ẩn sau 5 giây
-                setTimeout(() => {
-                    toast.remove();
-                }, 5000);
-            }
-
-            // Hiển thị thông báo thành công
-            function showSuccess(message) {
-                const toast = document.createElement('div');
-                toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                toast.innerHTML = `
-                    <div class="flex items-center">
-                        <i class="fas fa-check-circle mr-2"></i>
-                        <span>${message}</span>
-                    </div>
-                `;
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.remove();
-                }, 5000);
-            }
-
-            const discountForm = document.getElementById('discount-form');
-            if (discountForm) {
-                discountForm.addEventListener('submit', async function (e) {
-                    e.preventDefault();
-                    const codeInput = discountForm.querySelector('input[name="discount_code"]');
-                    const discountCode = codeInput ? codeInput.value.trim() : '';
-                    if (!discountCode) {
-                        showError('Vui lòng nhập mã giảm giá');
-                        return;
-                    }
-                    try {
-                        const response = await fetch('{{ route("customer.apply-app-discount") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                discount_code: discountCode,
-                                subtotal: @json($subtotal),
-                            })
-                        });
-                        const data = await response.json();
-                        console.log(data);
-                        if(data.discount_amount)
-                        {
-                            document.getElementById('discount_amount').textContent = Number(data.discount_amount).toLocaleString('vi-VN');
-                            showSuccess('Áp dụng mã giảm giá thành công!');
-                            updateTotal();
-                        }
-                    } catch (error) {
-                        console.error(error);
-                        showError('Có lỗi xảy ra khi áp dụng mã giảm giá');
-                    }
-                });
-            }
-        });
+        window.checkoutData = {
+            addresses: @json($user_addresses),
+            shops: @json($shops),
+            subtotal: @json($subtotal),
+            user_points: @json($user_points),
+            csrfToken: '{{ csrf_token() }}',
+            applyDiscountUrl: '{{ route("customer.apply-app-discount") }}',
+            checkoutStoreUrl: '{{ route("checkout.store") }}'
+        };
     </script>
-    <!-- Update total -->
-    <script>
-        function parseCurrency(str) {
-            return parseFloat(str.replace(/[^\d]/g, '')) || 0;
-        }
-
-        function updateTotal($params) {
-            const subtotal = parseCurrency(document.getElementById('subtotal')?.textContent ?? '0');
-            const discount_amount = parseCurrency(document.getElementById('discount_amount')?.textContent ?? '0');
-            const total_shipping_fee = parseCurrency(document.getElementById('total_shipping_fee')?.textContent ?? '0');
-
-            const total = subtotal - discount_amount + total_shipping_fee;
-
-            document.getElementById('total_amount').textContent = new Intl.NumberFormat('vi-VN').format(total) + '₫';
-        }
-
-        updateTotal();
-    </script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com">
-    </script>
-    <!-- Tailwind CSS config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#F1416C',
-                        secondary: '#4F46E5',
-                        accent: '#10B981',
-                        light: '#F9FAFB',
-                        dark: '#1F2937'
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Xử lý hiển thị form thêm địa chỉ -->
-    <script>
-        // Xử lý hiển thị form thêm địa chỉ
-        document.getElementById('showAddressForm').addEventListener('click', function() {
-            const form = document.getElementById('createAddressForm');
-            form.classList.toggle('hidden');
-            this.textContent = form.classList.contains('hidden') 
-                ? ' Thêm địa chỉ mới' 
-                : ' Hủy thêm địa chỉ';
-        });
-
-        // Xử lý nút hủy form địa chỉ
-        document.getElementById('cancelAddressForm').addEventListener('click', function() {
-            document.getElementById('createAddressForm').classList.add('hidden');
-            document.getElementById('showAddressForm').textContent = ' Thêm địa chỉ mới';
-        });
-
-        // Xử lý chọn phương thức thanh toán
-        const paymentCards = document.querySelectorAll('.payment-card');
-        paymentCards.forEach(card => {
-            card.addEventListener('click', function() {
-                paymentCards.forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-                const radio = this.querySelector('input[type="radio"]');
-                if (radio) radio.checked = true;
-            });
-        });
-
-        // Xử lý chọn loại địa chỉ
-        const addressTypeBtns = document.querySelectorAll('.address-type-btn');
-        addressTypeBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                addressTypeBtns.forEach(b => b.classList.remove('bg-primary', 'text-white'));
-                this.classList.add('bg-primary', 'text-white');
-            });
-        });
-
-        // Hiệu ứng cho product card
-        const productCards = document.querySelectorAll('.product-card');
-        productCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.boxShadow = 'none';
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const addresses = @json($user_addresses);
-            const shops = @json($shops);
-
-            let isFetchingShippingFee = false;
-            let currentRadio = null;
-            let feeCache = {};
-
-            // Hiện loading popup
-            function showLoading(message = "Đang tính phí vận chuyển...") {
-                const overlay = document.createElement('div');
-                overlay.id = 'shipping-fee-overlay';
-                overlay.style.position = 'fixed';
-                overlay.style.top = '0';
-                overlay.style.left = '0';
-                overlay.style.width = '100vw';
-                overlay.style.height = '100vh';
-                overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
-                overlay.style.display = 'flex';
-                overlay.style.alignItems = 'center';
-                overlay.style.justifyContent = 'center';
-                overlay.style.zIndex = '9999';
-
-                overlay.innerHTML = `
-                    <div style="background: white; padding: 20px 30px; border-radius: 8px; font-size: 16px;">
-                        ${message}
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-            }
-
-            // Ẩn loading popup
-            function hideLoading() {
-                const overlay = document.getElementById('shipping-fee-overlay');
-                if (overlay) overlay.remove();
-            }
-
-            // Hiện confirm popup
-            function showConfirmPopup(callback) {
-                const overlay = document.createElement('div');
-                overlay.id = 'confirm-popup-overlay';
-                overlay.style.position = 'fixed';
-                overlay.style.top = '0';
-                overlay.style.left = '0';
-                overlay.style.width = '100vw';
-                overlay.style.height = '100vh';
-                overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
-                overlay.style.display = 'flex';
-                overlay.style.alignItems = 'center';
-                overlay.style.justifyContent = 'center';
-                overlay.style.zIndex = '10000';
-
-                overlay.innerHTML = `
-                    <div style="background: white; padding: 25px; border-radius: 8px; width: 350px; max-width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                        <h3 style="margin-top: 0; color: #333; font-size: 18px;">Xác nhận địa chỉ</h3>
-                        <p style="margin-bottom: 20px; color: #666;">Phí vận chuyển sẽ được tính dựa trên địa chỉ nhận hàng</p>
-                        <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                            <button id="confirm-cancel" style="padding: 8px 16px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; color: #333;">Hủy</button>
-                            <button id="confirm-ok" style="padding: 8px 16px; background: #4CAF50; border: none; border-radius: 4px; cursor: pointer; color: white;">Xác nhận</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-
-                document.getElementById('confirm-cancel').addEventListener('click', function () {
-                    hideConfirmPopup();
-                    callback(false);
-                });
-
-                document.getElementById('confirm-ok').addEventListener('click', function () {
-                    hideConfirmPopup();
-                    callback(true);
-                });
-            }
-
-            function hideConfirmPopup() {
-                const overlay = document.getElementById('confirm-popup-overlay');
-                if (overlay) overlay.remove();
-            }
-
-            async function fetchShippingFee(addressId, shop) {
-                try {
-                    const response = await fetch('/calculate-shipping-fee', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            address_id: addressId,
-                            shop_id: shop.id
-                        })
-                    });
-                    const data = await response.json();
-                    if (data && !data.error) {
-                        return Number(data.shipping_fee) || 0;
-                    } else {
-                        console.error('Không thể tính phí vận chuyển cho shop', shop.id, data.error);
-                        return 0;
-                    }
-                } catch (error) {
-                    console.error('Lỗi:', error);
-                    return 0;
-                }
-            }
-
-            document.querySelectorAll('input[name="receiver_address_id"]').forEach(function (radio) {
-                radio.addEventListener('change', async function () {
-                    if (isFetchingShippingFee) return;
-
-                    const selectedId = this.value;
-                    currentRadio = this;
-                    const address = addresses.find(addr => addr.id == selectedId);
-                    if (!address) return;
-
-                    isFetchingShippingFee = true;
-
-                    // Tính phí trước
-                    const feePromises = shops.map(shop => fetchShippingFee(address.id, shop));
-                    const fees = await Promise.all(feePromises);
-
-                    feeCache = {};
-                    fees.forEach((fee, index) => {
-                        feeCache[shops[index].id] = fee;
-                    });
-
-                    // Hiện popup xác nhận sau khi tính xong
-                    showConfirmPopup(function (confirmed) {
-                        if (!confirmed) {
-                            currentRadio.checked = false;
-                            isFetchingShippingFee = false;
-                            return;
-                        }
-
-                        showLoading();
-
-                        setTimeout(() => {
-                            let total_shipping_fee = 0;
-                            Object.entries(feeCache).forEach(([shopId, fee]) => {
-                                total_shipping_fee += fee;
-                                const el = document.getElementById('shipping-fee-shop-' + shopId);
-                                if (el) el.textContent = fee.toLocaleString('vi-VN') + '₫';
-                            });
-
-                            document.getElementById('total_shipping_fee').textContent = total_shipping_fee.toLocaleString('vi-VN') + '₫';
-
-                            if (typeof updateTotal === 'function') {
-                                updateTotal();
-                            }
-
-                            hideLoading();
-                            isFetchingShippingFee = false;
-                        }, 300); // delay nhỏ cho mượt
-                    });
-                });
-            });
-        });
-    </script>
-    <!-- lấy danh sách Thành phố, Quận, Huyện từ GHN -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const citySelect = document.getElementById('city');
-            const districtSelect = document.getElementById('district');
-            const wardSelect = document.getElementById('ward');
-
-            // Load danh sách tỉnh/thành phố khi trang load
-            loadProvinces();
-
-            // Xử lý khi chọn tỉnh/thành phố
-            citySelect.addEventListener('change', function() {
-                const provinceId = this.value;
-                if (provinceId) {
-                    loadDistricts(provinceId);
-                    // Reset district và ward
-                    districtSelect.innerHTML = '<option value="">Chọn quận/huyện</option>';
-                    wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
-                } else {
-                    districtSelect.innerHTML = '<option value="">Chọn quận/huyện</option>';
-                    wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
-                }
-            });
-
-            // Xử lý khi chọn quận/huyện
-            districtSelect.addEventListener('change', function() {
-                const districtId = this.value;
-                if (districtId) {
-                    loadWards(districtId);
-                    // Reset ward
-                    wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
-                } else {
-                    wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
-                }
-            });
-
-            // Load danh sách tỉnh/thành phố
-            async function loadProvinces() {
-                try {
-                    citySelect.innerHTML = '<option value="">Đang tải...</option>';
-                    
-                    const response = await fetch('/api/address/provinces');
-                    const result = await response.json();
-                    
-                    if (result.success && result.data) {
-                        citySelect.innerHTML = '<option value="">Chọn tỉnh/thành phố</option>';
-                        result.data.forEach(province => {
-                            const option = document.createElement('option');
-                            option.value = province.ProvinceID;
-                            option.textContent = province.ProvinceName;
-                            citySelect.appendChild(option);
-                        });
-                    } else {
-                        citySelect.innerHTML = '<option value="">Không thể tải danh sách tỉnh/thành phố</option>';
-                    }
-                } catch (error) {
-                    console.error('Lỗi khi tải danh sách tỉnh/thành phố:', error);
-                    citySelect.innerHTML = '<option value="">Lỗi khi tải dữ liệu</option>';
-                }
-            }
-
-            // Load danh sách quận/huyện
-            async function loadDistricts(provinceId) {
-                try {
-                    districtSelect.innerHTML = '<option value="">Đang tải...</option>';
-                    
-                    const response = await fetch(`/api/address/districts?province_id=${provinceId}`);
-                    const result = await response.json();
-                    
-                    if (result.success && result.data) {
-                        districtSelect.innerHTML = '<option value="">Chọn quận/huyện</option>';
-                        result.data.forEach(district => {
-                            const option = document.createElement('option');
-                            option.value = district.DistrictID;
-                            option.textContent = district.DistrictName;
-                            districtSelect.appendChild(option);
-                        });
-                    } else {
-                        districtSelect.innerHTML = '<option value="">Không thể tải danh sách quận/huyện</option>';
-                    }
-                } catch (error) {
-                    console.error('Lỗi khi tải danh sách quận/huyện:', error);
-                    districtSelect.innerHTML = '<option value="">Lỗi khi tải dữ liệu</option>';
-                }
-            }
-
-            // Load danh sách phường/xã
-            async function loadWards(districtId) {
-                try {
-                    wardSelect.innerHTML = '<option value="">Đang tải...</option>';
-                    
-                    const response = await fetch(`/api/address/wards?district_id=${districtId}`);
-                    const result = await response.json();
-                    
-                    if (result.success && result.data) {
-                        wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
-                        result.data.forEach(ward => {
-                            const option = document.createElement('option');
-                            option.value = ward.WardCode;
-                            option.textContent = ward.WardName;
-                            wardSelect.appendChild(option);
-                        });
-                    } else {
-                        wardSelect.innerHTML = '<option value="">Không thể tải danh sách phường/xã</option>';
-                    }
-                } catch (error) {
-                    console.error('Lỗi khi tải danh sách phường/xã:', error);
-                    wardSelect.innerHTML = '<option value="">Lỗi khi tải dữ liệu</option>';
-                }
-            }
-        });
-    </script>
+    
+    <!-- GHN Address Handler -->
+    @vite(['resources/css/ghn-address.css', 'resources/js/checkout/ghn-address.js'])
+    
+    <!-- Main Checkout Script -->
+    @vite(['resources/js/checkout/index.js'])
 @endpush

@@ -14,7 +14,35 @@ use Illuminate\Support\Facades\Log;
 use App\Enums\UserRole;
 use App\Http\Controllers\Seller\Orders\ShippingController;
 use App\Models\ShopOrder;
+use App\Events\OrderStatusUpdate;
+use App\Helpers\MailHelper;
 
+/**
+ * OrderController - Quản lý đơn hàng cho Seller
+ * 
+ * Cách sử dụng MailHelper để gửi email:
+ * 
+ * 1. Gửi email thông báo cập nhật trạng thái đơn hàng:
+ *    MailHelper::sendOrderStatusUpdateMail($shopOrder, 'confirmed');
+ * 
+ * 2. Gửi email thông báo chung:
+ *    MailHelper::sendNotificationMail($email, $subject, $view, $data);
+ * 
+ * 3. Gửi email cho nhiều người:
+ *    MailHelper::sendBulkNotificationMail($emails, $subject, $view, $data);
+ * 
+ * 4. Gửi email thông báo hủy đơn hàng:
+ *    MailHelper::sendOrderCancelledMail($shopOrder, $reason);
+ * 
+ * 5. Gửi email thông báo giao hàng thành công:
+ *    MailHelper::sendOrderDeliveredMail($shopOrder);
+ * 
+ * 6. Gửi email thông báo đặt hàng thành công:
+ *    MailHelper::sendCreateOrderMail($order, 'pending');
+ * 
+ * 7. Gửi email đặt hàng đơn giản:
+ *    MailHelper::sendSimpleCreateOrderMail($email, $orderCode, $data);
+ */
 class OrderController extends Controller
 {
     public function index()
@@ -185,9 +213,15 @@ class OrderController extends Controller
         $shop_order_history->status = 'confirmed';
         $shop_order_history->description = 'Người bán đã xác nhận đơn hàng';
         $shop_order_history->save();
+
         if ($shop_order_history) {
             $orders = Order::where('id', $order->orderID)->first();
-            $ord = Order::orderStatusUpdate($orders->id);
+            $order_status = Order::orderStatusUpdate($orders->id);
+
+            event(new OrderStatusUpdate($order, 'confirmed'));
+            
+            // Gửi email thông báo
+            MailHelper::sendOrderStatusUpdateMail($order, 'confirmed');
 
             return redirect()->back()->with('success', 'Đã nhận đơn hàng #' . $order->order_code);
         } else {
@@ -198,9 +232,8 @@ class OrderController extends Controller
     public function cancelOrder(Request $request)
     {
         $order = ShopOrder::where('id', $request->id)->with('order')->first();
-        $shop = Shop::findOrFail($request->shop_id);
-
-        $order_status = $request->status;
+        $shop = Shop::findOrFail($order->shopID);
+        $order_status = $order->status;
 
         if ($order_status === 'confirmed') {
             $order->status = 'cancelled';
@@ -228,6 +261,11 @@ class OrderController extends Controller
                 $shop_order_history->description = 'Người bán đã hủy đơn hàng';
                 $shop_order_history->save();
 
+                event(new OrderStatusUpdate($order, 'cancelled'));
+                
+                // Gửi email thông báo
+                MailHelper::sendOrderStatusUpdateMail($order, 'cancelled');
+                
                 return redirect()->back()->with('success', 'Đã hủy đơn hàng #'. $order->order_code);
             }
             else{
@@ -253,12 +291,13 @@ class OrderController extends Controller
             $shop_order_history->status = 'refunded';
             $shop_order_history->description = 'Người bán đã trả đơn hàng';
             $shop_order_history->save();
+
+            event(new OrderStatusUpdate($order, 'refunded'));
+            return redirect()->back()->with('success', 'Đã trả đơn hàng #'. $order->order_code);
         }
         else{
             return redirect()->back()->with('error', 'Lỗi trả đơn hàng #'. $order->order_code);
         }
-
-        return redirect()->back()->with('success', 'Đã trả đơn hàng #'. $order->order_code);
     }
 
     public function trackingOrder(Request $request)
@@ -321,6 +360,8 @@ class OrderController extends Controller
                     $order_status->status = $mapping['status'];
                     $order_status->description = $mapping['description'];
                     $order_status->save();
+
+                    event(new OrderStatusUpdate($order, $mapping['status']));
                 }
             }
 

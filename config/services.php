@@ -25,6 +25,9 @@ return [
         'cancel' => env('GHN_CANCEL'),
         'return' => env('GHN_RETURN'),
         'detail_order' => env('GHN_DETAIL_ORDER'),
+        'get_province_url' => env('GHN_GET_PROVINCE'),
+        'get_district_url' => env('GHN_GET_DISTRICT'),
+        'get_ward_url' => env('GHN_GET_WARD'),
     ],
 
     'broadcasting' => [
