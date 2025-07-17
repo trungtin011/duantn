@@ -25,6 +25,11 @@
             justify-content: center;
             align-items: center;
         }
+
+        .notification-toast.closed {
+            display: none;
+            /* Hoặc các hiệu ứng khác */
+        }
     </style>
 @endpush
 
@@ -431,16 +436,23 @@
 
         <div class="category">
             <div class="container">
-                <div class="category-item-container has-scrollbar">
+                <div class="category-item-container has-scrollbar flex flex-wrap gap-5 max-w-full">
+                    @php
+                        $homeCategories = $homeCategories->take(8); // Giới hạn tối đa 8 danh mục
+                    @endphp
                     @foreach ($homeCategories as $category)
-                        <div class="category-item">
-                            <div class="category-img-box">
-                                @if ($category->image_path)
+                        <div class="category-item w-[calc(25%-0.9375rem)] min-w-[140px] flex-shrink-0">
+                            <div class="category-img-box h-10 w-10 flex items-center justify-center bg-gray-200">
+                                @if ($category->image_path && file_exists(public_path('storage/' . $category->image_path)))
                                     <img src="{{ asset('storage/' . $category->image_path) }}"
-                                        alt="{{ $category->name }}" width="30">
-                                @else
+                                        alt="{{ Str::limit($category->name, 20) }}" width="30"
+                                        class="object-contain">
+                                @elseif (file_exists(public_path('assets/images/icons/' . Str::slug($category->name) . '.svg')))
                                     <img src="{{ asset('assets/images/icons/' . Str::slug($category->name) . '.svg') }}"
-                                        alt="{{ $category->name }}" width="30">
+                                        alt="{{ Str::limit($category->name, 20) }}" width="30"
+                                        class="object-contain">
+                                @else
+                                    <span class="text-xs text-gray-500">{{ Str::limit($category->name, 5) }}</span>
                                 @endif
                             </div>
                             <div class="category-content-box">
@@ -460,48 +472,6 @@
         <div class="product-container">
             <div class="container">
                 <div class="sidebar has-scrollbar" data-mobile-menu>
-                    <div class="product-showcase">
-                        <h3 class="showcase-heading">Sản phẩm bán chạy</h3>
-                        <div class="showcase-wrapper">
-                            <div class="showcase-container">
-                                @foreach ($bestSellers as $product)
-                                    <div class="showcase">
-                                        <a href="{{ route('product.show', $product->slug) }}" class="showcase-img-box">
-                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                width="75" height="75" class="showcase-img">
-                                        </a>
-                                        <div class="showcase-content">
-                                            <a href="{{ route('product.show', $product->slug) }}">
-                                                <h4 class="showcase-title">{{ $product->name }}</h4>
-                                            </a>
-                                            <div class="showcase-rating">
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    @if ($product->reviews->avg('rating') >= $i)
-                                                        <ion-icon name="star"></ion-icon>
-                                                    @elseif ($product->reviews->avg('rating') >= $i - 0.5)
-                                                        <ion-icon name="star-half-outline"></ion-icon>
-                                                    @else
-                                                        <ion-icon name="star-outline"></ion-icon>
-                                                    @endif
-                                                @endfor
-                                            </div>
-                                            <div class="price-box">
-                                                @if ($product->sale_price)
-                                                    <del>{{ number_format($product->price, 0, ',', '.') }}₫</del>
-                                                    <p class="price">
-                                                        {{ number_format($product->sale_price, 0, ',', '.') }}₫</p>
-                                                @else
-                                                    <p class="price">{{ number_format($product->price, 0, ',', '.') }}₫
-                                                    </p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="sidebar-category mt-[30px]">
                         <div class="sidebar-top">
                             <h2 class="sidebar-title">Danh mục</h2>
@@ -543,19 +513,165 @@
                             @endforeach
                         </ul>
                     </div>
+
+                    <div class="product-showcase">
+                        <h3 class="showcase-heading">Sản phẩm bán chạy</h3>
+                        <div class="showcase-wrapper">
+                            <div class="showcase-container">
+                                @foreach ($bestSellers as $product)
+                                    <div class="showcase">
+                                        <a href="{{ route('product.show', $product->slug) }}" class="showcase-img-box">
+                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                width="75" height="75" class="showcase-img">
+                                        </a>
+                                        <div class="showcase-content">
+                                            <a href="{{ route('product.show', $product->slug) }}">
+                                                <h4 class="showcase-title">{{ $product->name }}</h4>
+                                            </a>
+                                            <div class="showcase-rating">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    @if ($product->reviews->avg('rating') >= $i)
+                                                        <ion-icon name="star"></ion-icon>
+                                                    @elseif ($product->reviews->avg('rating') >= $i - 0.5)
+                                                        <ion-icon name="star-half-outline"></ion-icon>
+                                                    @else
+                                                        <ion-icon name="star-outline"></ion-icon>
+                                                    @endif
+                                                @endfor
+                                            </div>
+                                            <div class="price-box">
+                                                @if ($product->sale_price)
+                                                    <del>{{ number_format($product->price, 0, ',', '.') }}₫</del>
+                                                    <p class="price">
+                                                        {{ number_format($product->sale_price, 0, ',', '.') }}₫</p>
+                                                @else
+                                                    <p class="price">{{ number_format($product->price, 0, ',', '.') }}₫
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="product-box">
+                    @if ($flashSaleProducts->count())
+                        <div class="product-demo">
+                            <h2 class="product-title">⚡ FLASH SALE</h2>
+                            @foreach ($flashSaleProducts as $product)
+                                <div class="flash-sale-box mb-4">
+                                    {{-- Header: FLASH SALE + Countdown --}}
+                                    <div class="flash-sale-header">
+                                        <strong class="truncate w-[500px]">{{ $product->name }}</strong>
+                                        <span class="countdown-label">KẾT THÚC TRONG</span>
+                                        @if ($product->flash_sale_end_at)
+                                            <span class="countdown-timer" id="countdown-{{ $product->id }}"
+                                                data-end-time="{{ $product->flash_sale_end_at->timestamp }}">
+                                                <span class="display-number">00</span> :
+                                                <span class="display-number">00</span> :
+                                                <span class="display-number">00</span>
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    {{-- Giá và giảm giá --}}
+                                    <div class="flash-sale-price">
+                                        <span class="new-price">₫{{ number_format($product->flash_sale_price, 0) }}</span>
+                                        <span
+                                            class="old-price truncate w-[95px]">₫{{ number_format($product->price, 0) }}</span>
+                                        <span class="discount">
+                                            -{{ round((1 - $product->flash_sale_price / $product->price) * 100) }}%
+                                        </span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="product-featured">
+                        <h2 class="title">Flash Sale</h2>
+                        <div class="showcase-wrapper has-scrollbar">
+                            @foreach ($flashSaleProducts as $product)
+                                <div class="showcase-container">
+                                    <div class="showcase">
+                                        <div class="showcase-banner">
+                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                class="showcase-img">
+                                        </div>
+                                        <div class="showcase-content">
+                                            <div class="showcase-rating">
+                                                @php
+                                                    $avg = round($product->reviews->avg('rating') ?? 0);
+                                                @endphp
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <ion-icon
+                                                        name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
+                                                @endfor
+                                            </div>
+                                            <a href="{{ route('product.show', $product->slug) }}">
+                                                <h3 class="showcase-title">{{ $product->name }}</h3>
+                                            </a>
+                                            <p class="showcase-desc">
+                                                {{ Str::limit(strip_tags($product->description), 100) }}
+                                            </p>
+                                            <div class="price-box">
+                                                <p class="price">{{ number_format($product->flash_sale_price) }}₫</p>
+                                                <del>{{ number_format($product->price) }}₫</del>
+                                            </div>
+                                            <button class="add-cart-btn">Thêm vào giỏ</button>
+                                            <div class="showcase-status">
+                                                <div class="wrapper">
+                                                    <p>Đã bán: <b>{{ $product->sold_quantity ?? 0 }}</b></p>
+                                                    <p>Còn lại:
+                                                        <b>{{ $product->stock_total - $product->sold_quantity }}</b>
+                                                    </p>
+                                                </div>
+                                                <div class="showcase-status-bar"></div>
+                                            </div>
+                                            @if ($product->flash_sale_end_at)
+                                                <div class="countdown-box">
+                                                    <p class="countdown-desc">Nhanh tay! Kết thúc sau:</p>
+                                                    <div class="countdown"
+                                                        data-end-time="{{ $product->flash_sale_end_at->timestamp }}">
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Ngày</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Giờ</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Phút</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Giây</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
                     <div class="product-minimal">
                         <div class="product-showcase">
-                            @php
-                                $firstFour = $featuredProducts->take(4);
-                                $others = $featuredProducts->slice(4);
-                            @endphp
                             <h2 class="title">Sản phẩm nổi bật</h2>
                             @if ($featuredProducts->isEmpty())
                                 <p>Hiện chưa có sản phẩm nổi bật nào.</p>
                             @else
+                                @php
+                                    $featuredProducts = $featuredProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFour = $featuredProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $others = $featuredProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
                                 <div class="showcase-wrapper has-scrollbar">
                                     <div class="showcase-container">
                                         @foreach ($firstFour as $product)
@@ -618,14 +734,15 @@
                         </div>
 
                         <div class="product-showcase">
-                            @php
-                                $firstFourTrending = $trendingProducts->take(4);
-                                $remainingTrending = $trendingProducts->slice(4);
-                            @endphp
                             <h2 class="title">Đang thịnh hành</h2>
                             @if ($trendingProducts->isEmpty())
                                 <p>Hiện chưa có sản phẩm nào thịnh hành.</p>
                             @else
+                                @php
+                                    $trendingProducts = $trendingProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFourTrending = $trendingProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $remainingTrending = $trendingProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
                                 <div class="showcase-wrapper has-scrollbar">
                                     <div class="showcase-container">
                                         @foreach ($firstFourTrending as $product)
@@ -688,14 +805,15 @@
                         </div>
 
                         <div class="product-showcase">
-                            @php
-                                $firstFourTopRated = $topRatedProducts->take(4);
-                                $remainingTopRated = $topRatedProducts->slice(4);
-                            @endphp
                             <h2 class="title">Đánh giá cao</h2>
                             @if ($topRatedProducts->isEmpty())
                                 <p>Chưa có sản phẩm nào được đánh giá.</p>
                             @else
+                                @php
+                                    $topRatedProducts = $topRatedProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFourTopRated = $topRatedProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $remainingTopRated = $topRatedProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
                                 <div class="showcase-wrapper has-scrollbar">
                                     <div class="showcase-container">
                                         @foreach ($firstFourTopRated as $product)
@@ -773,77 +891,6 @@
                                     </div>
                                 </div>
                             @endif
-                        </div>
-                    </div>
-
-                    <div class="product-featured">
-                        <h2 class="title">Flash Sale</h2>
-                        <div class="showcase-wrapper has-scrollbar">
-                            @foreach ($flashSaleProducts as $product)
-                                <div class="showcase-container">
-                                    <div class="showcase">
-                                        <div class="showcase-banner">
-                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                class="showcase-img">
-                                        </div>
-                                        <div class="showcase-content">
-                                            <div class="showcase-rating">
-                                                @php
-                                                    $avg = round($product->reviews->avg('rating') ?? 0);
-                                                @endphp
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    <ion-icon
-                                                        name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
-                                                @endfor
-                                            </div>
-                                            <a href="{{ route('product.show', $product->slug) }}">
-                                                <h3 class="showcase-title">{{ $product->name }}</h3>
-                                            </a>
-                                            <p class="showcase-desc">
-                                                {{ Str::limit(strip_tags($product->description), 100) }}
-                                            </p>
-                                            <div class="price-box">
-                                                <p class="price">{{ number_format($product->flash_sale_price) }}₫</p>
-                                                <del>{{ number_format($product->price) }}₫</del>
-                                            </div>
-                                            <button class="add-cart-btn">Thêm vào giỏ</button>
-                                            <div class="showcase-status">
-                                                <div class="wrapper">
-                                                    <p>Đã bán: <b>{{ $product->sold_quantity ?? 0 }}</b></p>
-                                                    <p>Còn lại:
-                                                        <b>{{ $product->stock_total - $product->sold_quantity }}</b>
-                                                    </p>
-                                                </div>
-                                                <div class="showcase-status-bar"></div>
-                                            </div>
-                                            @if ($product->flash_sale_end_at)
-                                                <div class="countdown-box">
-                                                    <p class="countdown-desc">Nhanh tay! Kết thúc sau:</p>
-                                                    <div class="countdown"
-                                                        data-end-time="{{ $product->flash_sale_end_at->timestamp }}">
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Ngày</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Giờ</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Phút</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Giây</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
                         </div>
                     </div>
 
@@ -1224,7 +1271,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                        <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }
