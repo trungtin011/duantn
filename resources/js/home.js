@@ -26,9 +26,6 @@ toastCloseBtn.addEventListener('click', function () {
 });
 
 
-
-
-
 // mobile menu variables
 const mobileMenuOpenBtn = document.querySelectorAll('[data-mobile-menu-open-btn]');
 const mobileMenu = document.querySelectorAll('[data-mobile-menu]');
@@ -114,4 +111,38 @@ document.querySelectorAll('.countdown').forEach(function (el) {
 
   updateCountdown();
   setInterval(updateCountdown, 1000);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.countdown-timer').forEach(timer => {
+    const endTime = parseInt(timer.getAttribute('data-end-time')) * 1000; // Chuyển sang milliseconds
+    const timerId = timer.id;
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const distance = endTime - now;
+
+      if (distance < 0) {
+        document.getElementById(timerId).innerHTML = "HẾT HẠN";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      // Lấy các phần tử display-number (3 phần tử đầu tiên)
+      const displayNumbers = document.getElementById(timerId).querySelectorAll('.display-number');
+
+      // Gán giá trị, chỉ sử dụng 3 phần tử đầu (ngày, giờ, phút) vì cấu trúc mới không có giây
+      displayNumbers[0].textContent = days.toString().padStart(2, '0');
+      displayNumbers[1].textContent = hours.toString().padStart(2, '0');
+      displayNumbers[2].textContent = minutes.toString().padStart(2, '0');
+      // Không gán giây vì chỉ có 3 display-number
+    };
+
+    updateCountdown(); // Cập nhật ngay lập tức
+    setInterval(updateCountdown, 1000); // Cập nhật mỗi giây
+  });
 });
