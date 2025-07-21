@@ -65,6 +65,7 @@ use App\Http\Controllers\ShopController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\User\ComboController as UserComboController;
+use App\Http\Controllers\MessageController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -565,3 +566,16 @@ Route::get('/notifications', [NotificationController::class, 'index'])->name('no
 Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
 Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/messages/{shop_id}', [ChatController::class, 'messages'])->name('chat.messages');
+    Route::post('/chat/send/{shop_id}', [ChatController::class, 'send'])->name('chat.send');
+    Route::get('/chat/popup', [ChatController::class, 'popup'])->name('chat.popup');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/seller/chat', [\App\Http\Controllers\ChatController::class, 'sellerIndex'])->name('seller.chat');
+    Route::get('/seller/chat/messages/{customer_id}', [\App\Http\Controllers\ChatController::class, 'sellerMessages'])->name('seller.chat.messages');
+    Route::post('/seller/chat/send/{customer_id}', [\App\Http\Controllers\ChatController::class, 'sellerSend'])->name('seller.chat.send');
+});
