@@ -28,6 +28,16 @@
         <div class="flex-1 flex flex-col">
             <div id="chat-header" class="p-4 border-b font-bold flex items-center gap-3"></div>
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-gray-100"></div>
+            
+            <!-- Product Context Area -->
+            @if(isset($productContext))
+            <div id="product-context" class="p-2 border-t flex items-center gap-2 bg-gray-50" data-product-id="{{ $productContext->id }}">
+                <img src="{{ $productContext->images->first() ? \Illuminate\Support\Facades\Storage::url($productContext->images->first()->image_path) : asset('images/default_product_image.png') }}" class="w-10 h-10 rounded object-cover">
+                <div class="flex-1 text-sm truncate">{{ $productContext->name }}</div>
+                <button id="remove-product-context" class="text-gray-500 hover:text-red-500">&times;</button>
+            </div>
+            @endif
+
             <form id="chat-form" class="p-4 border-t flex" style="display:none">
                 @csrf
                 <input type="text" id="chat-input" class="flex-1 border rounded p-2" placeholder="Nhập tin nhắn...">
@@ -63,16 +73,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     chatMessages.innerHTML = '';
                     data.messages.forEach(function(msg) {
                         var div = document.createElement('div');
+                        var productHtml = '';
+                        if (msg.product) {
+                            productHtml = `<div class="mt-2 p-2 border rounded-md bg-white flex items-center gap-2 text-sm text-black">
+                                <span class="font-semibold">Sản phẩm:</span> ${msg.product.name}
+                            </div>`;
+                        }
                         // Nếu là user (mình) thì căn phải, màu xanh; shop thì căn trái, màu xám
                         if (msg.sender_type === 'user') {
                             div.className = 'mb-2 flex justify-end';
                             div.innerHTML = `<div class='inline-block bg-blue-500 text-white px-4 py-2 rounded-lg max-w-[70%] text-right shadow'>
-                                <b>Bạn:</b> ${msg.message} <span class='text-xs text-gray-200 block mt-1'>${msg.created_at}</span>
+                                <b>Bạn:</b> ${msg.message} ${productHtml} <span class='text-xs text-gray-200 block mt-1'>${msg.created_at}</span>
                             </div>`;
                         } else {
                             div.className = 'mb-2 flex justify-start';
                             div.innerHTML = `<div class='inline-block bg-white text-gray-800 px-4 py-2 rounded-lg border max-w-[70%] shadow'>
-                                <b>${data.shop.shop_name}:</b> ${msg.message} <span class='text-xs text-gray-400 block mt-1'>${msg.created_at}</span>
+                                <b>${data.shop.shop_name}:</b> ${msg.message} ${productHtml} <span class='text-xs text-gray-400 block mt-1'>${msg.created_at}</span>
                             </div>`;
                         }
                         chatMessages.appendChild(div);
@@ -83,6 +99,9 @@ document.addEventListener('DOMContentLoaded', function() {
         chatForm.addEventListener('submit', function(e) {
             e.preventDefault();
             var input = document.getElementById('chat-input');
+            var productContextDiv = document.getElementById('product-context');
+            var productId = productContextDiv ? productContextDiv.dataset.productId : null;
+
             if (!input.value.trim() || !currentShopId) return;
             fetch('/chat/send/' + currentShopId, {
                 method: 'POST',
@@ -90,14 +109,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': chatForm.querySelector('input[name=_token]').value
                 },
-                body: JSON.stringify({ message: input.value })
+                body: JSON.stringify({ message: input.value, product_id: productId })
             })
             .then(function(res) { return res.json(); })
             .then(function(msg) {
                 loadMessages(currentShopId, chatHeader.innerText);
                 input.value = '';
+                if (productContextDiv) productContextDiv.style.display = 'none'; // Ẩn product context sau khi gửi
             });
         });
+        
+        // Remove product context
+        var removeProductBtn = document.getElementById('remove-product-context');
+        if(removeProductBtn) {
+            removeProductBtn.addEventListener('click', function() {
+                var productContextDiv = document.getElementById('product-context');
+                if (productContextDiv) productContextDiv.style.display = 'none';
+            });
+        }
+
         // Tự động chọn shop đầu tiên hoặc shop_id trên URL
         const urlParams = new URLSearchParams(window.location.search);
         const shopIdParam = urlParams.get('shop_id');

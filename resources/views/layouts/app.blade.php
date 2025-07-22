@@ -25,6 +25,91 @@
     @vite('resources/css/user/notifications.css')
     @stack('styles')
     @vite('resources/js/echo.js')
+    <style>
+    .floating-support-icons {
+        position: fixed;
+        top: 50%;
+        right: 36px;
+        transform: translateY(-50%);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    .floating-support-icons.collapsed {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-50%) scale(0.7);
+    }
+    .support-icon {
+        width: 56px;
+        height: 56px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: box-shadow 0.22s, transform 0.18s, background 0.18s;
+        font-size: 30px;
+        color: #1976D2;
+        border: 2.5px solid #f3f3f3;
+        cursor: pointer;
+    }
+    .support-icon img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+    }
+    .support-icon.zalo { border-color: #008fe5; }
+    .support-icon.messenger { border-color: #0084ff; }
+    .support-icon.phone { border-color: #43a047; color: #43a047; }
+    .support-icon.email { border-color: #fbc02d; color: #fbc02d; }
+    .support-icon.chat { border-color: #ef3248; color: #ef3248; }
+    .support-icon:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        transform: scale(1.12) translateY(-2px);
+        background: #f0f4ff;
+        border-width: 3px;
+    }
+    .floating-support-toggle {
+        position: fixed;
+        top: 50%;
+        right: 36px;
+        transform: translateY(-50%);
+        z-index: 10000;
+        width: 44px;
+        height: 44px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid #ef3248;
+        color: #ef3248;
+        transition: background 0.2s, color 0.2s;
+    }
+    .floating-support-toggle:hover {
+        background: #ef3248;
+        color: #fff;
+    }
+    .floating-support-toggle ion-icon {
+        font-size: 28px;
+        transition: transform 0.2s;
+    }
+    .floating-support-icons.collapsed {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-50%) scale(0.7);
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    .floating-support-icons {
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    </style>
 </head>
 
 @auth
@@ -736,6 +821,47 @@
             © Copyright Rimel 2022. All rights reserved.
         </div>
     </footer>
+
+    <!-- Floating Support Toggle Button -->
+    <div id="floating-support-toggle" class="floating-support-toggle" onclick="toggleSupportIcons()">
+        <ion-icon id="toggle-icon" name="chevron-back-outline"></ion-icon>
+    </div>
+    <!-- Floating Support Icons -->
+    <div id="floating-support-icons" class="floating-support-icons">
+        <a href="https://zalo.me/0915571415" target="_blank" class="support-icon zalo" title="Chat Zalo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" />
+        </a>
+        <a href="https://m.me/yourfacebook" target="_blank" class="support-icon messenger" title="Messenger">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Facebook_Messenger_4_Logo.svg" alt="Messenger" />
+        </a>
+        <a href="tel:0915571415" class="support-icon phone" title="Gọi điện">
+            <ion-icon name="call"></ion-icon>
+        </a>
+        <a href="mailto:exclusive@gmail.com" class="support-icon email" title="Gửi email">
+            <ion-icon name="mail"></ion-icon>
+        </a>
+        <a href="/chat" class="support-icon chat" title="Chat trực tiếp">
+            <ion-icon name="chatbubbles"></ion-icon>
+        </a>
+    </div>
+    <script>
+        let supportIconsOpen = true;
+        function toggleSupportIcons() {
+            const icons = document.getElementById('floating-support-icons');
+            const toggle = document.getElementById('floating-support-toggle');
+            const icon = document.getElementById('toggle-icon');
+            supportIconsOpen = !supportIconsOpen;
+            if (supportIconsOpen) {
+                icons.classList.remove('collapsed');
+                icon.setAttribute('name', 'chevron-back-outline');
+                toggle.style.right = '36px';
+            } else {
+                icons.classList.add('collapsed');
+                icon.setAttribute('name', 'chevron-forward-outline');
+                toggle.style.right = '36px';
+            }
+        }
+    </script>
 
     @stack('scripts')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
