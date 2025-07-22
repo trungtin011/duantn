@@ -579,3 +579,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/seller/chat/messages/{customer_id}', [\App\Http\Controllers\ChatController::class, 'sellerMessages'])->name('seller.chat.messages');
     Route::post('/seller/chat/send/{customer_id}', [\App\Http\Controllers\ChatController::class, 'sellerSend'])->name('seller.chat.send');
 });
+
+// Route chi tiết shop
+Route::get('/shop/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');

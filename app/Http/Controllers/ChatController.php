@@ -22,13 +22,18 @@ class ChatController extends Controller
             ->distinct()->pluck('shop_id');
         $shops = Shop::whereIn('id', $shopIds)->get();
 
-        // Nếu có shop_id truyền vào (từ nút Nhắn tin), lấy shop này
         $shopProduct = null;
         if ($request->has('shop_id')) {
             $shopProduct = Shop::find($request->shop_id);
         }
 
-        return view('chat.index', compact('shops', 'shopProduct'));
+        // Lấy sản phẩm nếu có product_id
+        $productContext = null;
+        if ($request->has('product_id')) {
+            $productContext = \App\Models\Product::find($request->product_id);
+        }
+
+        return view('chat.index', compact('shops', 'shopProduct', 'productContext'));
     }
 
     // Lấy lịch sử chat với 1 shop
@@ -39,7 +44,8 @@ class ChatController extends Controller
 
         $shop = Shop::findOrFail($shop_id);
 
-        $messages = ShopQaMessage::where('shop_id', $shop_id)
+        $messages = ShopQaMessage::with('product:id,name,slug') // Eager load product
+            ->where('shop_id', $shop_id)
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'asc')
             ->get();
@@ -61,7 +67,8 @@ class ChatController extends Controller
         if ($user->role != UserRole::CUSTOMER) abort(403);
 
         $request->validate([
-            'message' => 'required|string|max:1000'
+            'message' => 'required|string|max:1000',
+            'product_id' => 'nullable|exists:products,id' // Validate product_id
         ]);
 
         $msg = ShopQaMessage::create([
@@ -69,6 +76,7 @@ class ChatController extends Controller
             'user_id' => $user->id,
             'sender_type' => 'user',
             'message' => $request->message,
+            'product_id' => $request->product_id, // Lưu product_id
             'created_at' => now()
         ]);
 

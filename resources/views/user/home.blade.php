@@ -9,26 +9,133 @@
 @push('styles')
     @vite(['resources/css/user/style-prefix.css', 'resources/css/user/style-home.css'])
     <style>
-        .quick-view-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+        /* Xếp hạng shop sidebar */
+        .ranking-header {
+            padding: 15px 0 10px 0;
+            border-bottom: 1px solid #eee;
         }
-
-        .quick-view-modal.active {
+        .ranking-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .ranking-legend {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
+        .legend-item {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .legend-item.diamond { background: #E3F2FD; color: #1976D2; }
+        .legend-item.gold { background: #FFF3E0; color: #F57C00; }
+        .legend-item.silver { background: #ECEFF1; color: #455A64; }
+        .legend-item.bronze { background: #EFEBE9; color: #795548; }
 
-        .notification-toast.closed {
-            display: none;
-            /* Hoặc các hiệu ứng khác */
+        .shop-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        .shop-item:hover {
+            background: #f8f9fa;
+        }
+        .shop-item.top-0 { background: #fff9c4; }
+        .shop-item.top-1 { background: #f5f5f5; }
+        .shop-item.top-2 { background: #ffe0b2; }
+
+        .shop-rank-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .rank-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+        }
+        .shop-tier {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .shop-tier.diamond { background: #E3F2FD; color: #1976D2; }
+        .shop-tier.gold { background: #FFF3E0; color: #F57C00; }
+        .shop-tier.silver { background: #ECEFF1; color: #455A64; }
+        .shop-tier.bronze { background: #EFEBE9; color: #795548; }
+
+        .shop-main-content {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .shop-avatar img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #eee;
+        }
+        .shop-details {
+            flex: 1;
+        }
+        .shop-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #333;
+            font-size: 15px;
+        }
+        .shop-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .stars {
+            color: #ffd700;
+            display: flex;
+            gap: 1px;
+            font-size: 15px;
+        }
+        .rating-text {
+            color: #666;
+            font-size: 13px;
+        }
+        .shop-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0 0 0;
+            margin-bottom: 8px;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #666;
+        }
+        .shop-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            width: 100%;
+            padding: 7px 0;
+            background: #f5f5f5;
+            border-radius: 5px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .shop-link:hover {
+            background: #e0e0e0;
         }
     </style>
 @endpush
@@ -474,41 +581,71 @@
                 <div class="sidebar has-scrollbar" data-mobile-menu>
                     <div class="sidebar-category mt-[30px]">
                         <div class="sidebar-top">
-                            <h2 class="sidebar-title">Danh mục</h2>
+                            <h2 class="sidebar-title">Xếp hạng shop </h2>
                             <button class="sidebar-close-btn" data-mobile-menu-close-btn>
                                 <ion-icon name="close-outline"></ion-icon>
                             </button>
                         </div>
                         <ul class="sidebar-menu-category-list">
-                            @foreach ($sidebarCategories as $category)
-                                <li class="sidebar-menu-category">
-                                    <button class="sidebar-accordion-menu" data-accordion-btn>
-                                        <div class="menu-title-flex">
-                                            <img src="{{ $category->image_path ? asset('storage/' . $category->image_path) : asset('assets/images/icons/default.svg') }}"
-                                                alt="{{ $category->name }}" class="menu-title-img" width="20"
-                                                height="20">
-                                            <p class="menu-title">{{ $category->name }}</p>
+                            <li class="sidebar-menu-category">
+                                <div class="ranking-header">
+                                    <h3 class="ranking-title">Top Shop</h3>
+                                    <div class="ranking-legend">
+                                        <span class="legend-item diamond">Kim cương</span>
+                                        <span class="legend-item gold">Vàng</span>
+                                        <span class="legend-item silver">Bạc</span>
+                                        <span class="legend-item bronze">Đồng</span>
+                                    </div>
+                                </div>
+                            </li>
+                            @foreach($rankingShops as $index => $shop)
+                                <li class="sidebar-menu-category shop-item {{ $index < 3 ? 'top-'.$index : '' }}">
+                                    <div class="shop-rank-info">
+                                        <span class="rank-number">#{{ $index + 1 }}</span>
+                                        <span class="shop-tier {{ $shop->tier }}">
+                                            <ion-icon name="{{ $shop->tier_icon }}-outline"></ion-icon>
+                                            {{ ucfirst($shop->tier) }}
+                                        </span>
+                                    </div>
+                                    <div class="shop-main-content">
+                                        <div class="shop-avatar">
+                                            <img src="{{ asset('storage/' . $shop->shop_logo) }}" alt="{{ $shop->shop_name }}">
                                         </div>
-                                        <div>
-                                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
-                                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                                        <div class="shop-details">
+                                            <h4 class="shop-name">{{ $shop->shop_name }}</h4>
+                                            <div class="shop-rating">
+                                                <div class="stars">
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        @if($shop->shop_rating >= $i)
+                                                            <ion-icon name="star"></ion-icon>
+                                                        @elseif($shop->shop_rating >= $i - 0.5)
+                                                            <ion-icon name="star-half"></ion-icon>
+                                                        @else
+                                                            <ion-icon name="star-outline"></ion-icon>
+                                                        @endif
+                                                    @endfor
+                                                </div>
+                                                <span class="rating-text">{{ number_format($shop->shop_rating, 1) }}</span>
+                                            </div>
                                         </div>
-                                    </button>
-                                    @if ($category->subCategories->count())
-                                        <ul class="sidebar-submenu-category-list" data-accordion>
-                                            @foreach ($category->subCategories as $sub)
-                                                <li class="sidebar-submenu-category">
-                                                    <a href="#" class="sidebar-submenu-title">
-                                                        <p class="product-name colo-[#787878]">{{ $sub->name }}</p>
-                                                        <data value="{{ $sub->products->count() }}"
-                                                            class="stock colo-[#787878]" title="Sản phẩm có sẵn">
-                                                            {{ $sub->products->count() }}
-                                                        </data>
-                                                    </a>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @endif
+                                    </div>
+                                    <div class="shop-stats">
+                                        <div class="stat-item">
+                                            <ion-icon name="cash-outline"></ion-icon>
+                                            <span>{{ $shop->formatted_sales }}đ</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <ion-icon name="cube-outline"></ion-icon>
+                                            <span>{{ $shop->total_products }}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <ion-icon name="people-outline"></ion-icon>
+                                            <span>{{ $shop->total_followers }}</span>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('shop.show', $shop->id) }}" class="shop-link">
+                                        Xem shop <ion-icon name="arrow-forward-outline"></ion-icon>
+                                    </a>
                                 </li>
                             @endforeach
                         </ul>

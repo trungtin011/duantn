@@ -365,7 +365,7 @@
                         <div class="flex justify-center gap-3">
                             <button
                                 class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
-                                onclick="window.location.href='/chat?shop_id={{ $product->shop->id }}'">
+                                onclick="window.location.href='/chat?shop_id={{ $product->shop->id }}&product_id={{ $product->id }}'">
                                 <i class="fa-solid fa-comment"></i> Nhắn tin
                             </button>
                             <a href="{{ route('shop.profile', $product->shop->id) }}"
