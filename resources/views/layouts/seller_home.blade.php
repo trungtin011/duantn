@@ -58,10 +58,12 @@
                 <!-- Dropdown menu -->
                 <div class="absolute right-0 top-10 z-50 min-w-[200px] bg-white border border-gray-200 rounded shadow-lg hidden group-hover:block group-focus-within:block"
                     id="user-menu-dropdown">
-                    <a href="{{ route('seller.settings') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
+                    <a href="{{ route('seller.settings') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
                             class="fas fa-cog mr-2"></i>Cài đặt cửa hàng
                     </a>
-                    <a href="{{ route('seller.profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
+                    <a href="{{ route('seller.profile') }}"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 border-b border-gray-200"><i
                             class="fas fa-user mr-2"></i>Thông tin cá nhân
                     </a>
                     <a href="{{ route('logout') }}"
@@ -108,6 +110,9 @@
                                 Sản Phẩm</a></li>
                         <li><a class="block hover:text-orange-500" href="{{ route('seller.products.create') }}">Thêm Sản
                                 Phẩm</a></li>
+                        <li><a class="block hover:text-orange-500" href="{{ route('seller.categories.index') }}">Danh
+                                Mục Sản Phẩm</a></li>
+
                     </ul>
                 </li>
                 <li>
