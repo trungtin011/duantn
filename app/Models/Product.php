@@ -184,6 +184,10 @@ public function shopCategory()
 {
     return $this->belongsTo(ShopCategory::class, 'shop_category_id');
 }
+public function categories()
+{
+    return $this->belongsToMany(ShopCategory::class, 'category_product');
+}
 
 
 }

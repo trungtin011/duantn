@@ -7,6 +7,7 @@ use App\Models\ShopAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ShopCategory;
+
 class ShopController extends Controller
 {
     public function show($id)
@@ -39,14 +40,25 @@ class ShopController extends Controller
         return back()->with('success', 'Bạn đã huỷ theo dõi shop.');
     }
     public function searchProducts(Request $request, Shop $shop)
-{
-    $query = $request->input('query');
+    {
+        $query = $request->input('query');
 
-    $products = $shop->products()
-        ->where('name', 'like', '%' . $query . '%')
-        ->with('images', 'reviews')
-        ->get();
+        $products = $shop->products()
+            ->where('name', 'like', '%' . $query . '%')
+            ->with('images', 'reviews')
+            ->get();
 
-    return view('shop.profile', compact('shop', 'products', 'query'));
-}
+        return view('shop.profile', compact('shop', 'products', 'query'));
+    }
+    public function productsByCategory($shopId, $categoryId)
+    {
+        $shop = Shop::with('categories', 'products.images', 'owner', 'followers', 'address')->findOrFail($shopId);
+
+        $category = $shop->categories()->findOrFail($categoryId);
+
+        // Lấy sản phẩm thuộc danh mục này trong shop
+        $products = $category->products()->where('shopID', $shop->id)->with('images', 'reviews')->get();
+
+        return view('shop.profile', compact('shop', 'products'));
+    }
 }

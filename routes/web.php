@@ -30,6 +30,8 @@ use App\Http\Controllers\LoginQRController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\QrLoginController;
+use App\Http\Controllers\ShopCategoryController;
+use App\Http\Middleware\IsSeller;
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -317,6 +319,10 @@ Route::middleware(['auth'])->prefix('account/password')->group(function () {
 
     // Xác nhận đổi mật khẩu
     Route::post('/reset', [UserController::class, 'confirmNewPassword'])->name('account.password.request.confirm');
+});
+
+Route::middleware(['auth'])->prefix('seller')->name('seller.')->group(function () {
+    Route::resource('categories', ShopCategoryController::class);
 });
 
 
