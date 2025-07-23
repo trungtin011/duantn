@@ -431,7 +431,7 @@ class DatabaseSeeder extends Seeder
         DB::table('attributes')->insert([
             [
                 'id' => 1,
-                'name' => 'Color',
+                'name' => 'Màu sắc',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -442,7 +442,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'attribute_id' => 1,
-                'value' => 'Black',
+                'value' => 'Đen',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
