@@ -240,6 +240,9 @@
                                 <a href="{{ route('seller.combo.index') }}" class="link_admin">Tạo combo</a>
                             </li>
                             <li class="text-sm text-[#64748b]">
+                                <a href="{{ route('seller.ads_campaigns.index') }}" class="link_admin">Quản lý quảng cáo</a>
+                            </li>
+                            <li class="text-sm text-[#64748b]">
                                 <a href="#" class="link_admin">Kênh Marketing</a>
                             </li>
                             <li class="text-sm text-[#64748b]">
