@@ -1,7 +1,5 @@
 @extends('layouts.app')
-
 @section('title', 'Chi tiết sản phẩm')
-
 @section('content')
     <div class="container mx-auto px-4 py-8">
         <!-- Breadcrumb -->
@@ -295,7 +293,7 @@
                 </div>
 
                 <!-- Sản phẩm liên quan -->
-               {{--  @if ($recentProducts->isNotEmpty())
+                @if ($recentProducts->isNotEmpty())
                     <div class="mt-8">
                         <h3 class="text-xl font-semibold mb-4 text-gray-800">Sản phẩm liên quan</h3>
                         <div class="swiper related-products-slider">
@@ -330,7 +328,7 @@
                             <div class="swiper-button-prev"></div>
                         </div>
                     </div>
-                @endif --}}
+                @endif
             </div>
 
             <!-- Cột bên phải (Thông tin shop) -->

@@ -743,6 +743,7 @@ class ProductController extends Controller
             return response()->json(['message' => 'Bạn cần đăng nhập để mua sản phẩm'], 401);
         }
 
+        // Validate request
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'variant_id' => 'nullable|exists:variants,id',

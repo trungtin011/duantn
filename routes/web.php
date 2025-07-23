@@ -421,6 +421,9 @@ Route::prefix('customer')->group(function () {
     });
 });
 
+// thông báo mua hàng của người dùng
+Route::get('/recent-purchases', [HomeController::class, 'getRecentPurchases'])->name('recent.purchases');
+
 Route::get('/danh-muc/{slug}', function ($slug) {
     // Logic để lấy danh sách sản phẩm dựa trên slug của danh mục
     // Ví dụ: Truy vấn từ bảng categories và sản phẩm liên quan
@@ -559,7 +562,6 @@ Route::get('/account/password/verify-code', [UserController::class, 'showVerifyC
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
-    Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
+Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
 Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
-
