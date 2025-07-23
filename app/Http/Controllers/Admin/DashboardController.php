@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use App\Models\Product;
+use App\Models\ProductCategories;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Đơn hàng đã nhận
         $deliveredOrders = DB::table('orders')
             ->where('order_status', 'delivered')
             ->count();
@@ -72,14 +73,18 @@ class DashboardController extends Controller
             return $item->products_sold ?? 0;
         }, $salesData);
 
-        // Category Chart
-        $categoryData = DB::select("SELECT c.name AS category_name, SUM(p.sold_quantity) AS total_sold FROM products p JOIN categories c ON p.category = c.name GROUP BY c.name ORDER BY total_sold DESC");
-        $categoryLabels = array_map(function ($item) {
-            return $item->category_name;
-        }, $categoryData);
-        $categoryValues = array_map(function ($item) {
-            return $item->total_sold ?? 0;
-        }, $categoryData);
+
+        $categoryData = ProductCategories::selectRaw('categories.name as category_name, SUM(products.sold_quantity) as total_sold')
+            ->join('categories', 'product_categories.category_id', '=', 'categories.id')
+            ->join('products', 'product_categories.product_id', '=', 'products.id')
+            ->groupBy('categories.name')
+            ->orderByDesc('total_sold')
+            ->get();
+
+        $categoryLabels = $categoryData->pluck('category_name')->toArray();
+        $categoryValues = $categoryData->pluck('total_sold')->map(function ($val) {
+            return $val ?? 0;
+        })->toArray();
 
         // Recent Orders
         $recentOrders = DB::table('orders as o')
@@ -104,7 +109,18 @@ class DashboardController extends Controller
             });
 
         // Product List
-        $products = DB::select("SELECT p.name, p.sku AS product_id, p.category, p.sale_price AS price, p.status FROM products p ORDER BY p.created_at DESC LIMIT 10");
+        $products = DB::select("
+            SELECT 
+                p.name, 
+                p.sku AS product_id, 
+                pc.category_id, 
+                p.sale_price AS price, 
+                p.status 
+            FROM products p
+            LEFT JOIN product_categories pc ON p.id = pc.product_id
+            ORDER BY p.created_at DESC 
+            LIMIT 10
+        ");
 
         // Categories for filter
         $categories = DB::table('categories')->select('id', 'name')->get();

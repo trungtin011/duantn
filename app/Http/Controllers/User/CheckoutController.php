@@ -363,7 +363,6 @@ class CheckoutController extends Controller
         return redirect()->route('checkout.success', ['order_code' => $order->order_code]);
     }
 
-
     public function successPayment($order_code)
     {
         $order = Order::with(['address', 'items'])->where('order_code', $order_code)->first();
@@ -522,5 +521,4 @@ class CheckoutController extends Controller
             return null;
         }
     }
-
 }

@@ -430,7 +430,6 @@
 
             <div class="">
                 <div class="relative rounded-b-md bg-white px-10 py-7 mb-̀[30px]">
-                    <!-- table -->
                     <table class="w-full text-base text-left text-gray-400">
                         <thead class="bg-white">
                             <tr class="border-b border-[#f2f2f6] text-xs">
@@ -463,7 +462,6 @@
                                         </a>
                                     </td>
                                     <td class="py-3 px-[16px]">{{ $product->product_id }}</td>
-                                    <td class="py-3 px-[16px]">{{ $product->category }}</td>
                                     <td class="py-3 px-[16px]">{{ number_format($product->price) }} VNĐ</td>
                                     <td class="py-3 px-[16px]">
                                         <span
