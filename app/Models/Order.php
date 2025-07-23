@@ -53,8 +53,9 @@ class Order extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class, 'order_id', 'id');
+        return $this->hasMany(OrderItem::class, 'orderID', 'id');
     }
+
 
     public function address(): HasOne
     {
@@ -115,16 +116,15 @@ class Order extends Model
 
     public function orderItems()
     {
-        return $this->hasMany(OrderItem::class, 'order_id');
+        return $this->hasMany(OrderItem::class, 'orderID');
     }
 
     public function orderAddress()
     {
-        return $this->hasOne(OrderAddress::class, 'order_id');
+        return $this->hasOne(OrderAddress::class, 'orderID');
     }
-
     public function orderStatusHistory()
     {
-        return $this->hasMany(OrderStatusHistory::class, 'order_id');
+        return $this->hasMany(OrderStatusHistory::class, 'orderID');
     }
 }
