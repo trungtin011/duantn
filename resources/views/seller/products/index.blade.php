@@ -79,7 +79,9 @@
                                 {{ $product->name }}
                             </span>
                         </td>
-                        <td class="py-4 text-[13px]">{{ $product->sku }}</td>
+                        <td class="py-4 text-[13px]">
+                            {{ $product->sku }}
+                        </td>
                         <td class="py-4 text-[13px]">
                             @php
                                 $displayStock = $product->stock_total ?? 0;

@@ -18,7 +18,6 @@
                     class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Hủy</a>
             </div>
         </div>
-
         <!-- Error Messages -->
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
@@ -29,6 +28,7 @@
                 </ul>
             </div>
         @endif
+
 
         <!-- Main Content -->
         <form id="product-form" action="{{ route('seller.products.store') }}" method="POST" enctype="multipart/form-data">
@@ -60,9 +60,21 @@
                             @enderror
                         </div>
                     </div>
-
+                    <!-- Chọn loại sản phẩm -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-1">Loại sản phẩm <span
+                                class="text-red-500">*</span></label>
+                        <div>
+                            <label>
+                                <input type="radio" name="product_type" value="simple" checked> Sản phẩm đơn
+                            </label>
+                            <label class="ml-4">
+                                <input type="radio" name="product_type" value="variant"> Sản phẩm có biến thể
+                            </label>
+                        </div>
+                    </div>
                     <!-- Product Data Section -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                    <div id="simple-product-data" class="bg-white p-6 rounded-lg shadow-sm mb-6">
                         <h4 class="text-xl font-semibold mb-4">Dữ liệu sản phẩm</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                             <div>
@@ -157,7 +169,7 @@
                     </div>
 
                     <!-- Thuộc tính sản phẩm -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                    <div id="attribute-section" class="bg-white p-6 rounded-lg shadow-sm mb-6">
                         <h4 class="text-xl font-semibold mb-4">Thuộc tính sản phẩm</h4>
                         <div id="attribute-container" class="mb-4">
                             <label class="block text-gray-700 font-medium mb-1">Thuộc tính sản phẩm</label>
@@ -997,11 +1009,11 @@
                         <div class="mb-4">
                             <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                             ${variant.map((value, attrIndex) => `
-                                                <div class="flex items-center gap-4 mb-2">
-                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                </div>
-                                            `).join('')}
+                                                    <div class="flex items-center gap-4 mb-2">
+                                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                    </div>
+                                                `).join('')}
                         </div>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
@@ -1294,14 +1306,19 @@
                 debugLog('Product form not found');
                 return;
             }
-
             debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
             const brandCheckboxes = document.querySelectorAll('input[name="brand_ids[]"]:checked');
             const categoryCheckboxes = document.querySelectorAll('input[name="category_ids[]"]:checked');
-            const attributeSelects = document.querySelectorAll('select[name^="attributes["][name$="[id]"]');
-            const variantItems = document.querySelectorAll('#variant-container > .variant-item');
             let isValid = true;
 
+            // Kiểm tra loại sản phẩm
+            const productTypeInput = document.querySelector('input[name="product_type"]:checked');
+            if (!productTypeInput) {
+                console.log('Không có radio product_type nào được chọn!');
+            } else {
+                console.log('Giá trị product_type được chọn:', productTypeInput.value);
+            }
+            const productType = productTypeInput ? productTypeInput.value : null;
             // Kiểm tra thương hiệu
             if (brandCheckboxes.length === 0) {
                 e.preventDefault();
@@ -1309,7 +1326,6 @@
                 debugLog('Form submission prevented: No brands selected');
                 isValid = false;
             }
-
             // Kiểm tra danh mục
             if (categoryCheckboxes.length === 0) {
                 e.preventDefault();
@@ -1317,7 +1333,6 @@
                 debugLog('Form submission prevented: No categories selected');
                 isValid = false;
             }
-
             // Kiểm tra ảnh chính
             if (!document.getElementById('mainImage').files.length) {
                 e.preventDefault();
@@ -1326,86 +1341,89 @@
                 isValid = false;
             }
 
-            // Kiểm tra thuộc tính
-            attributeSelects.forEach((select, index) => {
-                const nameInput = document.querySelector(`input[name="attributes[${index}][name]"]`);
-                const valuesInput = document.querySelector(`input[name="attributes[${index}][values]"]`);
-                if (select.value === 'new' && (!nameInput.value || !nameInput.value.trim())) {
+            // Kiểm tra loại sản phẩm
+            if (productType === 'variant') {
+                const attributeSelects = document.querySelectorAll('select[name^="attributes["][name$="[id]"]');
+                const variantItems = document.querySelectorAll('#variant-container > .variant-item');
+                // Kiểm tra thuộc tính
+                attributeSelects.forEach((select, index) => {
+                    const nameInput = document.querySelector(`input[name="attributes[${index}][name]"]`);
+                    const valuesInput = document.querySelector(`input[name="attributes[${index}][values]"]`);
+                    if (select.value === 'new' && (!nameInput.value || !nameInput.value.trim())) {
+                        e.preventDefault();
+                        alert(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+                        debugLog('Form submission prevented: Empty attribute name', {
+                            index
+                        });
+                        isValid = false;
+                    }
+                    if (!valuesInput.value || !valuesInput.value.trim()) {
+                        e.preventDefault();
+                        alert(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
+                        debugLog('Form submission prevented: Empty attribute values', {
+                            index
+                        });
+                        isValid = false;
+                    }
+                });
+                // Kiểm tra biến thể
+                if (attributeSelects.length > 0 && variantItems.length === 0) {
                     e.preventDefault();
-                    alert(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
-                    debugLog('Form submission prevented: Empty attribute name', {
-                        index
-                    });
+                    alert('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
+                    debugLog('Form submission prevented: No variants created despite having attributes');
                     isValid = false;
                 }
-                if (!valuesInput.value || !valuesInput.value.trim()) {
-                    e.preventDefault();
-                    alert(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
-                    debugLog('Form submission prevented: Empty attribute values', {
-                        index
-                    });
-                    isValid = false;
-                }
-            });
-
-            // Kiểm tra biến thể
-            if (attributeSelects.length > 0 && variantItems.length === 0) {
-                e.preventDefault();
-                alert('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
-                debugLog('Form submission prevented: No variants created despite having attributes');
-                isValid = false;
+                variantItems.forEach((item, index) => {
+                    const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
+                    const purchasePriceInput = item.querySelector(
+                        `input[name="variants[${index}][purchase_price]"]`);
+                    const salePriceInput = item.querySelector(`input[name="variants[${index}][sale_price]"]`);
+                    const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
+                    const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
+                    if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
+                        e.preventDefault();
+                        alert(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
+                        debugLog('Form submission prevented: Invalid price for variant', {
+                            index
+                        });
+                        isValid = false;
+                    }
+                    if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
+                            purchasePriceInput.value) < 0) {
+                        e.preventDefault();
+                        alert(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
+                        debugLog('Form submission prevented: Invalid purchase price for variant', {
+                            index
+                        });
+                        isValid = false;
+                    }
+                    if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput.value) <
+                        0) {
+                        e.preventDefault();
+                        alert(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
+                        debugLog('Form submission prevented: Invalid sale price for variant', {
+                            index
+                        });
+                        isValid = false;
+                    }
+                    if (!skuInput.value || !skuInput.value.trim()) {
+                        e.preventDefault();
+                        alert(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
+                        debugLog('Form submission prevented: Empty SKU for variant', {
+                            index
+                        });
+                        isValid = false;
+                    }
+                    if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
+                        e.preventDefault();
+                        alert(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
+                        debugLog('Form submission prevented: Invalid stock for variant', {
+                            index
+                        });
+                        isValid = false;
+                    }
+                });
             }
-
-            variantItems.forEach((item, index) => {
-                const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
-                const purchasePriceInput = item.querySelector(`input[name="variants[${index}][purchase_price]"]`);
-                const salePriceInput = item.querySelector(`input[name="variants[${index}][sale_price]"]`);
-                const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
-                const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
-
-                if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                    e.preventDefault();
-                    alert(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
-                    debugLog('Form submission prevented: Invalid price for variant', {
-                        index
-                    });
-                    isValid = false;
-                }
-                if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(purchasePriceInput
-                        .value) < 0) {
-                    e.preventDefault();
-                    alert(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
-                    debugLog('Form submission prevented: Invalid purchase price for variant', {
-                        index
-                    });
-                    isValid = false;
-                }
-                if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput.value) < 0) {
-                    e.preventDefault();
-                    alert(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
-                    debugLog('Form submission prevented: Invalid sale price for variant', {
-                        index
-                    });
-                    isValid = false;
-                }
-                if (!skuInput.value || !skuInput.value.trim()) {
-                    e.preventDefault();
-                    alert(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
-                    debugLog('Form submission prevented: Empty SKU for variant', {
-                        index
-                    });
-                    isValid = false;
-                }
-                if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                    e.preventDefault();
-                    alert(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
-                    debugLog('Form submission prevented: Invalid stock for variant', {
-                        index
-                    });
-                    isValid = false;
-                }
-            });
-
             if (isValid) {
                 tinymce.triggerSave();
                 debugLog('Form submission validated successfully');
@@ -1540,6 +1558,58 @@
             initializeAttributesAndVariants();
             initializeSubCategoryToggles();
             initializeSubBrandToggles();
+
+            // Ẩn/hiện thuộc tính và biến thể theo loại sản phẩm
+            const radios = document.querySelectorAll('input[name="product_type"]');
+            const variantSection = document.getElementById('variants-section');
+            const attributeSection = document.getElementById('attribute-section');
+
+            const simpleProductData = document.getElementById('simple-product-data');
+            function toggleSections() {
+                if (document.querySelector('input[name="product_type"]:checked').value === 'variant') {
+                    variantSection.style.display = '';
+                    attributeSection.style.display = '';
+                    if (simpleProductData) simpleProductData.style.display = 'none';
+                    // Bỏ required khỏi các input trong simple product data
+                    document.querySelectorAll('#simple-product-data input, #simple-product-data select, #simple-product-data textarea').forEach(input => {
+                        if (input.required) {
+                            input.setAttribute('data-original-required', 'true');
+                            input.required = false;
+                        }
+                    });
+                    // Thêm lại required cho các input trong attribute/variant
+                    document.querySelectorAll('#attribute-section [name$="[values]"]').forEach(input => {
+                        input.required = true;
+                    });
+                    document.querySelectorAll('#variant-container input, #variant-container select, #variant-container textarea').forEach(input => {
+                        if (input.hasAttribute('data-original-required')) {
+                            input.required = true;
+                        }
+                    });
+                } else {
+                    variantSection.style.display = 'none';
+                    attributeSection.style.display = 'none';
+                    if (simpleProductData) simpleProductData.style.display = '';
+                    // Thêm lại required cho các input trong simple product data nếu trước đó có
+                    document.querySelectorAll('#simple-product-data input, #simple-product-data select, #simple-product-data textarea').forEach(input => {
+                        if (input.hasAttribute('data-original-required')) {
+                            input.required = true;
+                        }
+                    });
+                    // Bỏ required khỏi các input trong attribute/variant
+                    document.querySelectorAll('#attribute-section [name$="[values]"]').forEach(input => {
+                        input.required = false;
+                    });
+                    document.querySelectorAll('#variant-container input, #variant-container select, #variant-container textarea').forEach(input => {
+                        if (input.required) {
+                            input.setAttribute('data-original-required', 'true');
+                            input.required = false;
+                        }
+                    });
+                }
+            }
+            radios.forEach(radio => radio.addEventListener('change', toggleSections));
+            toggleSections();
         });
     </script>
 @endpush
