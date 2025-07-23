@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Validator;
 
 use App\Models\{
     UserAddress,
@@ -24,7 +25,8 @@ use App\Models\{
     CouponUser,
     Customer,
     PointTransaction,
-    Combo
+    Combo,
+    UserCouponUsed
 };
 
 use App\Http\Controllers\VNPayController;
@@ -34,9 +36,7 @@ use App\Events\CreateOrderEvent;
 
 class CheckoutController extends Controller
 {
-    /**
-     * Calculate discounted price for combo products
-     */
+    
     private function calculateComboDiscountedPrice($combo, $basePrice, $comboProduct)
     {
         $discountedPrice = $basePrice;
@@ -139,7 +139,10 @@ class CheckoutController extends Controller
 
     public function index(Request $request)
     {   
+        $customer = Customer::where('userID', Auth::user()->id)->first();
         $user_coupon = CouponUser::where('user_id', Auth::user()->id)->first();
+        $public_coupons = $this->getAvailableCoupons($customer);
+
         $items = $this->getItems();
         if (!$items) {
             return redirect()->back()->with('error', 'Không có sản phẩm được chọn');
@@ -151,10 +154,40 @@ class CheckoutController extends Controller
             $shop_ids[] = $item['product']->shopID;
         }
         $shop_ids = array_unique($shop_ids);
-        $shops = Shop::whereIn('id', $shop_ids)->get();
+        $shops = Shop::whereIn('id', $shop_ids)
+        ->with('coupons')
+        ->get();
         $user_addresses = UserAddress::where('userID', Auth::user()->id)->get();
         $user_points = Customer::where('userID', Auth::user()->id)->pluck('total_points')->first();
-        return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_coupon', 'subtotal', 'user_points'));
+        return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_coupon', 'subtotal', 'user_points','public_coupons'));
+    }
+
+    protected function getAvailableCoupons($customer)
+    {
+        $userRank = $customer->ranking ?? 'bronze';
+        $ranks = ['bronze' => 1, 'silver' => 2, 'gold' => 3, 'diamond' => 4];
+        $userRankValue = $ranks[$userRank] ?? 1;
+
+        $isFirstOrder = Order::where('userID', Auth::user()->id)->count() == 0;
+
+        $publicCoupons = Coupon::where('is_public', 1)
+            ->where('shop_id', null)
+            ->where('end_date', '>', now())
+            ->where(function($query) use ($userRank, $ranks, $userRankValue, $isFirstOrder) {
+                $query->where('rank_limit', 'all');
+                foreach ($ranks as $rank => $value) {
+                    if ($value <= $userRankValue) {
+                        $query->orWhere('rank_limit', $rank);
+                    }
+                }
+                if ($isFirstOrder) {
+                    $query->orWhere('type_coupon', 'first_order');
+                }
+            })
+            ->where('status', 'active')
+            ->get();
+
+        return $publicCoupons;
     }
 
     public function store(Request $request)
@@ -269,9 +302,6 @@ class CheckoutController extends Controller
             ], 422);
         }
         
-        $coupon_code = $request->discount_code;
-        $coupon = Coupon::where('code', $coupon_code)->first() ?? null;
-        $coupon_id = $coupon ? $coupon->id : null;
         $total_price = $request->total_amount;
         $shop_notes = $request->shop_notes ?? [];
         $used_points = $request->used_points;
@@ -280,10 +310,9 @@ class CheckoutController extends Controller
             'user_address' => $user_address->id,
             'total_price' => $total_price,
             'payment_method' => $request->payment_method,
+            'total_discount' => $request->total_discount ?? 0,
             'order_code' => 'DH' . '-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
             'order_status' => 'pending',
-            'coupon_id' => $coupon_id,
-            'coupon_discount' => $request->discount_amount,
             'note' => $request->order_note,
             'used_points' => $used_points,
         ]);
@@ -300,7 +329,6 @@ class CheckoutController extends Controller
             $quantity = $item['quantity'];
             
             if (isset($item['is_combo']) && $item['is_combo'] && isset($item['combo_info'])) {
-                // Sử dụng giá combo đã được tính sẵn
                 $unit_price = $item['combo_info']['price_in_combo'];
                 $original_price = $item['combo_info']['original_price'];
                 $discount_amount = $original_price - $unit_price;
@@ -354,6 +382,7 @@ class CheckoutController extends Controller
             'note' => $request->order_note,
             'address_type' => $user_address->address_type,
         ]);
+
 
         return $order;
     }
@@ -520,5 +549,69 @@ class CheckoutController extends Controller
             ]);
             return null;
         }
+    }
+
+    public function applyShopDiscount(Request $request)
+    {
+        $coupon = Coupon::where('code', $request->coupon_code)->first();
+        if (!$coupon) {
+            return response()->json(['error' => 'Mã giảm giá không hợp lệ'], 422);
+        }
+
+        $shop = Shop::find($request->shop_id);
+        if (!$shop) {
+            return response()->json(['error' => 'Shop không tồn tại'], 422);
+        }
+
+        if ($coupon->shop_id && $coupon->shop_id != $shop->id) {
+            return response()->json(['error' => 'Mã giảm giá không áp dụng cho shop này'], 422);
+        }
+
+        if (!$coupon->is_active || $coupon->status != 'active') {
+            return response()->json(['error' => 'Mã giảm giá không còn hiệu lực'], 422);
+        }
+
+        if ($coupon->max_uses_total !== null && $coupon->used_count >= $coupon->max_uses_total) {
+            return response()->json(['error' => 'Mã giảm giá đã hết lượt sử dụng'], 422);
+        }
+
+        $now = now();
+        if ($coupon->start_date && $now->lt($coupon->start_date)) {
+            return response()->json(['error' => 'Mã giảm giá chưa bắt đầu'], 422);
+        }
+        if ($coupon->end_date && $now->gt($coupon->end_date)) {
+            return response()->json(['error' => 'Mã giảm giá đã hết hạn'], 422);
+        }
+
+        if ($coupon->rank_limit && $coupon->rank_limit !== 'all') {
+            $user = Auth::user();
+            if (!$user || $user->rank < $coupon->rank_limit) {
+                return response()->json(['error' => 'Bạn không đủ điều kiện sử dụng mã giảm giá này, ít nhất cần đạt cấp độ ' . $coupon->rank_limit], 422);
+            }
+        }
+        
+        if ($coupon->max_uses_per_user !== null) {
+            $user = Auth::user();
+            if ($user) {
+                $userUsedCount = UserCouponUsed::where('user_id', $user->id)
+                    ->where('coupon_id', $coupon->id)
+                    ->first();
+                if (!$userUsedCount) {
+                    $userUsedCount = (object)['used_count' => 0];
+                }
+                if ($userUsedCount->used_count >= $coupon->max_uses_per_user) {
+                    return response()->json(['error' => 'Bạn đã sử dụng hết số lần cho phép của mã này'], 422);
+                }
+            }
+        }
+
+        if ($coupon->min_order_amount !== null) {
+            $orderAmount = $request->total_amount ?? null;
+            if ($orderAmount === null || $orderAmount < $coupon->min_order_amount) {
+                return response()->json(['error' => 'đơn hàng cần đạt tối thiểu ' . $coupon->min_order_amount . 'đ' . ' hiện tại là ' . $orderAmount . 'đ'], 422);
+            }
+        }
+
+        return response()->json(['success' => true, 'used_coupon_data' => $coupon]);
     }
 }

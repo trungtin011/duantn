@@ -2,6 +2,7 @@
 function initializeShippingCalculator(addresses, shops, csrfToken) {
     let isFetchingShippingFee = false;
     let feeCache = {};
+    let lastAddressId = null;
 
     function showLoading(message = "Đang tính phí vận chuyển...") {
         const overlay = document.createElement('div');
@@ -39,30 +40,40 @@ function initializeShippingCalculator(addresses, shops, csrfToken) {
 
     async function calculateAndDisplayShippingFee(address) {
         if (!address || isFetchingShippingFee) return;
-        isFetchingShippingFee = true;
-        showLoading();
-
-        try {
-            const feePromises = shops.map(shop => fetchShippingFee(address.id, shop));
-            const fees = await Promise.all(feePromises);
-
-            feeCache = {};
-            fees.forEach((fee, index) => {
-                feeCache[shops[index].id] = fee;
-            });
-
+        // Nếu đã có phí cho địa chỉ này trong cache thì chỉ hiển thị lại, không gọi API
+        if (lastAddressId === address.id && Object.keys(feeCache).length > 0) {
             let total_shipping_fee = 0;
             Object.entries(feeCache).forEach(([shopId, fee]) => {
                 total_shipping_fee += fee;
                 const el = document.getElementById('shipping-fee-shop-' + shopId);
                 if (el) el.textContent = fee.toLocaleString('vi-VN') + '₫';
             });
-
             document.getElementById('total_shipping_fee').textContent = total_shipping_fee.toLocaleString('vi-VN') + '₫';
-            
             if (typeof window.updateTotal === 'function') {
                 window.updateTotal();
             }
+            return;
+        }
+        isFetchingShippingFee = true;
+        showLoading();
+        try {
+            const feePromises = shops.map(shop => fetchShippingFee(address.id, shop));
+            const fees = await Promise.all(feePromises);
+            feeCache = {};
+            fees.forEach((fee, index) => {
+                feeCache[shops[index].id] = fee;
+            });
+            let total_shipping_fee = 0;
+            Object.entries(feeCache).forEach(([shopId, fee]) => {
+                total_shipping_fee += fee;
+                const el = document.getElementById('shipping-fee-shop-' + shopId);
+                if (el) el.textContent = fee.toLocaleString('vi-VN') + '₫';
+            });
+            document.getElementById('total_shipping_fee').textContent = total_shipping_fee.toLocaleString('vi-VN') + '₫';
+            if (typeof window.updateTotal === 'function') {
+                window.updateTotal();
+            }
+            lastAddressId = address.id;
         } finally {
             hideLoading();
             isFetchingShippingFee = false;

@@ -86,7 +86,7 @@ class Shop extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class, 'shop_orderID', 'id');
+        return $this->hasMany(ItemsOrder::class, 'shop_orderID', 'id');
     }
 
     public function seller()

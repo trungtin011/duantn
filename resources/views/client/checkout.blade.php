@@ -9,7 +9,20 @@
             font-family: 'Inter', sans-serif;
             background-color: #f5f7fa;
         }
-        
+        #discount-modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .discount-card {
+            border-left: 4px solid #4F46E5;
+            transition: all 0.2s ease;
+        }
+
+        .discount-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
         .breadcrumb-item:not(:last-child)::after {
             content: '>';
             margin: 0 10px;
@@ -145,16 +158,6 @@
                 <p class="text-gray-600">Kiểm tra thông tin đơn hàng và thanh toán</p>
             </div>
             
-            <!-- Thông báo -->
-            <div class="mb-8">
-                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mb-4 hidden" id="error-notification">
-                    <p>Mã giảm giá không hợp lệ. Vui lòng kiểm tra lại.</p>
-                </div>
-                
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded mb-4 hidden" id="success-notification">
-                    <p>Áp dụng mã giảm giá thành công! Bạn được giảm 50,000 VND.</p>
-                </div>
-            </div>
 
             <!-- Main Container -->
             <div class="flex flex-col lg:flex-row gap-8">
@@ -361,19 +364,110 @@
                         
                         <div class="space-y-5">
                             @foreach ($groupedItems as $shopId => $shopData)
-                            <!-- Shop {{ $shopData['shop']->name }} -->
                             <div class="bg-white rounded-xl overflow-hidden shadow-sm">
-                                <div class="bg-gray-100 px-4 py-3 border-b">
+                                <div class="bg-gray-300 px-4 py-3 border-b">
                                     <h3 class="font-semibold text-gray-800  items-center">
                                         <i class="fas fa-store mr-2 text-gray-600"></i>
-                                          {{$shopData['shop']->shop_name }} - Phí giao hàng : <span id="shipping-fee-shop-{{ $shopData['shop']->id }}">{{ number_format($shopData['shop']->shipping_fee, 0, ',', '.') }}₫</span>
+                                          {{$shopData['shop']->shop_name }}
                                     </h3>
                                 </div>
-                                
+                                <div class="w-full flex flex-col px-4 py-2 bg-gray-100 border-t">
+                                <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                                    <!-- Phần giá bên trái -->
+                                    <div class="space-y-1 mb-3 md:mb-0">
+                                        <div class="flex items-center">
+                                            <span class="text-gray-600 text-sm mr-2">Tổng giá sản phẩm:</span>
+                                            <span class="font-semibold text-gray-800 text-base" id="total-product-price-shop-{{ $shopData['shop']->id }}">
+                                                {{ number_format(collect($shopData['items'])->sum(function($item) {
+                                                    if (isset($item['is_combo']) && $item['is_combo'] && isset($item['combo_info'])) {
+                                                        return $item['combo_info']['price_in_combo'] * $item['quantity'];
+                                                    } else {
+                                                        $variant = $item['product']->variants->first();
+                                                        $price = $variant ? ($variant->sale_price ?? $variant->price) : 0;
+                                                        return $price * $item['quantity'];
+                                                    }
+                                                }), 0, ',', '.') }}₫
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-gray-600 text-sm mr-2">Phí giao hàng:</span>
+                                            <span class="font-semibold text-gray-800 text-base" id="shipping-fee-shop-{{ $shopData['shop']->id }}">
+                                                {{ number_format($shopData['shop']->shipping_fee, 0, ',', '.') }}₫
+                                            </span>
+                                        </div>
+                                            <div class="flex items-center hidden" id="discount-context-shop-{{ $shopData['shop']->id }}">
+                                                <span class="text-gray-600 text-sm mr-2">Giảm giá:</span>
+                                                <span class="font-semibold text-green-500 text-base" id="discount-amount-shop-{{ $shopData['shop']->id }}"></span>
+                                            </div>
+                                    </div>
+                                    <div class="flex flex-col items-center justify-center">
+                                        <div class="w-px h-10 bg-black rounded"></div>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        class="bg-black text-white px-4 py-1 rounded-md hover:bg-accent-dark transition whitespace-nowrap"
+                                        onclick="showDiscountsModal({{ $shopData['shop']->id }})"
+                                    >
+                                        Mã giảm giá
+                                    </button>
+                                    
+                                    @foreach ($shopData['shop']->coupons as $coupon)
+                                        <div id="discounts-modal-{{ $shopData['shop']->id }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                                            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                                                <div class="mt-3 text-center">
+                                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Mã giảm giá của Shop: {{ $shopData['shop']->shop_name }}</h3>
+                                                    <div class="mt-2 px-7 py-3">
+                                                        <div class="space-y-4 max-h-96 overflow-y-auto">
+                                                            @if($shopData['shop']->coupons && $shopData['shop']->coupons->count() > 0)
+                                                                @foreach($shopData['shop']->coupons as $coupon)
+                                                                <div class="border rounded-lg p-4 flex justify-between items-center">
+                                                                    <div>
+                                                                        <h4 class="font-bold text-lg">{{ $coupon->code }}</h4>
+                                                                        <p>{{ $coupon->description }}</p>
+                                                                        <p class="text-sm text-gray-500">
+                                                                            Giảm: 
+                                                                            @if($coupon->discount_type == 'percentage')
+                                                                                {{ $coupon->discount_value }}%
+                                                                            @else
+                                                                                {{ number_format($coupon->discount_value, 0, ',', '.') }}₫
+                                                                            @endif
+                                                                        </p>
+                                                                        <p class="text-sm text-gray-500">HSD: {{ $coupon->end_date->format('d/m/Y') }}</p>
+                                                                    </div>
+                                                                    <button 
+                                                                        type="button" 
+                                                                        class="use-shop-coupon-btn bg-black text-white px-4 py-2 rounded"
+                                                                        data-shop-id="{{ $shopData['shop']->id }}"
+                                                                        data-coupon-code="{{ $coupon->code }}"
+                                                                    >
+                                                                        Sử dụng
+                                                                    </button>
+                                                                </div>
+                                                                @endforeach
+                                                            @else
+                                                                <p class="text-gray-500 py-4">Shop chưa có mã giảm giá nào.</p>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    <div class="items-center px-4 py-3">
+                                                        <button 
+                                                            onclick="closeDiscountsModal({{ $shopData['shop']->id }})" 
+                                                            class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                                                        >
+                                                            Đóng
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endforeach
+
+                                </div>
+                            </div>
                                 <div class="p-6 w-full">
                                     @foreach ($shopData['items'] as $index => $item)
                                     <!-- Sản phẩm {{ $index + 1 }} -->
-                                    <div class="product-card  flex flex-row gap-2 items-center py-1 w-full {{ $index < count($shopData['items']) - 1 ? 'border-b border-gray-100' : '' }}" style="align-items: center;">
+                                    <div class="product-card flex flex-row gap-2 items-center py-1" style="align-items: center;{{ $index < count($shopData['items']) - 1 ? 'border-bottom:1px solid #f3f4f6;' : '' }}">
                                         <!-- Ảnh sản phẩm - chiếm 1/3 -->
                                         <div class="w-1/3 pr-4">
                                             <img
@@ -434,6 +528,8 @@
                                                 @endif
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="w-full flex">
                                     </div>
                                     @endforeach
                                     
@@ -515,23 +611,26 @@
                                 <span>Tạm tính:</span>
                                 <span id="subtotal">{{ number_format($subtotal, 0, ',', '.') }}₫</span>
                             </div>
-                            
-                            <div class="flex justify-between text-gray-600">
-                                <span>Giảm giá:</span>
-                                <span class="text-green-600" id="discount_amount">{{ number_format(0, 0, ',', '.') }}₫</span>
-                            </div>
-
-                            <div class="flex justify-between text-gray-600">
-                                <span>Điểm tích luỹ:</span>
-                                <span class="text-green-600" id="points_amount">{{ number_format(0, 0, ',', '.') }}₫</span>
-                            </div>
-                            
+                        
                             <div class="flex justify-between text-gray-600">
                                 <span>Phí vận chuyển:</span>
                                 <span id="total_shipping_fee">
                                     {{ number_format(0, 0, ',', '.') }}₫
                                 </span>
-                                
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Giảm giá từ sàn:</span>
+                                <span class="text-green-600" id="discount_amount">{{ number_format(0, 0, ',', '.') }}₫</span>
+                            </div>
+
+                            <div class="flex justify-between text-gray-600">
+                                <span>Giảm theo điểm tích luỹ:</span>
+                                <span class="text-green-600" id="points_amount">{{ number_format(0, 0, ',', '.') }}₫</span>
+                            </div>
+
+                            <div class="flex justify-between text-gray-600">
+                                <span> Tổng giảm phí vận chuyển:</span>
+                                <span class="text-green-600" id="discount_shipping_fee">{{ number_format(0, 0, ',', '.') }}₫</span>
                             </div>
                             
                             <div class="border-t border-gray-200 my-3 pt-3 flex justify-between text-lg font-bold">
@@ -546,13 +645,20 @@
                         </div>
                         
                         <!-- Mã giảm giá -->
-                        <form class="mb-6" id="discount-form">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Mã giảm giá</label>
-                            <div class="flex gap-2">
-                                <input type="text" name="discount_code" placeholder="Nhập mã giảm giá" class="discount-input flex-1 bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors">Áp dụng</button>
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Mã giảm giá</label>
+                                <button type="button" id="show-discounts-btn" class="text-primary text-sm font-medium hover:underline">
+                                    <i class="fas fa-tag mr-1"></i> Xem mã giảm giá
+                                </button>
                             </div>
-                        </form>
+                                <form class="mb-6" id="discount-form">
+                                    <div class="flex gap-2">
+                                        <input type="text" name="discount_code" placeholder="Nhập mã giảm giá" class="discount-input flex-1 bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors">Áp dụng</button>
+                                    </div>
+                                </form>
+                        </div>
                         
                         <!-- Form ẩn để lưu trữ dữ liệu -->
                         <form id="checkout-form" method="POST" action="{{ route('checkout.store') }}" style="display: none;">
@@ -566,6 +672,9 @@
                             <input type="hidden" name="total_amount" id="total_amount">
                             <input type="hidden" name="discount_code" id="discount_code">
                             <input type="hidden" name="user_points" id="user_points">
+                            @foreach ($groupedItems as $shopId => $shopData)
+                                <input type="hidden" name="shop_discount_code[{{ $shopId }}]" id="hidden_shop_discount_code_{{ $shopId }}">
+                            @endforeach
                         </form>
                         
                         <!-- Nút đặt hàng -->
@@ -581,6 +690,51 @@
             </div>
         </div>
     </div>
+    <div id="discount-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Mã giảm giá của bạn</h3>
+                <div class="mt-2 px-7 py-3">
+                    <div class="space-y-4 max-h-96 overflow-y-auto">
+                        @if($user_coupon || $public_coupons)
+                            <!-- Mã giảm giá cá nhân -->
+                            @if($user_coupon)
+                                <div class="border rounded-lg p-4 flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-bold text-lg">{{ $user_coupon->coupon->code }}</h4>
+                                        <p>{{ $user_coupon->coupon->description }}</p>
+                                        <p class="text-sm text-gray-500">HSD: {{ $user_coupon->coupon->end_date->format('d/m/Y') }}</p>
+                                        
+                                    </div>
+                                    <button type="button" class="use-coupon-btn bg-black text-white px-4 py-2 rounded" data-code="{{ $user_coupon->coupon->code }}">Sử dụng</button>
+                                </div>
+                            @endif
+                            
+                            <!-- Mã giảm giá công khai -->
+                            @if($public_coupons)            
+                                @foreach($public_coupons as $item)
+                                    <div class="border rounded-lg p-4 flex justify-between items-center">
+                                        <div>
+                                            <h4 class="font-bold text-lg">{{ $item->code }}</h4>
+                                            <p>{{ $item->description }}</p>
+                                            <p class="text-sm text-gray-500">HSD: {{ $item->end_date->format('d/m/Y') }}</p>
+                                        </div>
+                                        <button type="button" class="use-coupon-btn bg-black text-white px-4 py-2 rounded" data-code="{{ $item->code }}">Sử dụng</button>
+                                    </div>
+                                @endforeach
+                            @endif
+                        @else
+                            <p class="text-gray-500 py-4">Bạn chưa có mã giảm giá nào.</p>
+                        @endif
+                    </div>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-discount-modal" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
@@ -595,10 +749,162 @@
             checkoutStoreUrl: '{{ route("checkout.store") }}'
         };
     </script>
-    
-    <!-- GHN Address Handler -->
     @vite(['resources/css/ghn-address.css', 'resources/js/checkout/ghn-address.js'])
-    
-    <!-- Main Checkout Script -->
     @vite(['resources/js/checkout/index.js'])
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('discount-modal');
+        const showBtn = document.getElementById('show-discounts-btn');
+        const closeBtn = document.getElementById('close-discount-modal');
+        const discountInput = document.querySelector('input[name="discount_code"]');
+        
+        if (showBtn) {
+            showBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+        }
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+        
+        // Đóng modal khi click bên ngoài
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+        
+        document.querySelectorAll('.use-coupon-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const code = btn.getAttribute('data-code');
+                discountInput.value = code;
+                modal.classList.add('hidden');
+                showSuccess('Mã đã sẵn sàng, bạn chỉ cần nhấn "Áp dụng" để nhận ưu đãi');
+            });
+        });
+
+        document.getElementById('place-order-btn').addEventListener('click', function() {
+            document.querySelectorAll('.shop-discount-input').forEach(function(input) {
+                var shopId = input.name.match(/\d+/)[0];
+                var hiddenInput = document.getElementById('hidden_shop_discount_code_' + shopId);
+                if (hiddenInput) {
+                    hiddenInput.value = input.value;
+                }
+            });
+            document.getElementById('checkout-form').submit();
+        });
+        });
+    </script>
+    <script>
+    // Hàm hiển thị popup mã giảm giá
+    function showDiscountsModal(shopId) {
+        const modal = document.getElementById(`discounts-modal-${shopId}`);
+        if (modal) {
+            modal.classList.remove('hidden');
+            // Enable lại các nút khi mở modal
+            document.querySelectorAll(`.use-shop-coupon-btn[data-shop-id="${shopId}"]`).forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+        }
+    }
+    
+    function closeDiscountsModal(shopId) {
+        const modal = document.getElementById(`discounts-modal-${shopId}`);
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.use-shop-coupon-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const shopId = btn.getAttribute('data-shop-id');
+                const code = btn.getAttribute('data-coupon-code');
+                const discountAmountInput = document.getElementById('discount-amount-shop-' + shopId);
+                const discountContextInput = document.getElementById('discount-context-shop-' + shopId);
+                const totalAmountShop = parseInt(document.getElementById('total-product-price-shop-'+shopId).innerText.replace(/[^\d]/g, ''));
+                closeDiscountsModal(shopId);
+
+                fetch(`{{ route('customer.apply-shop-discount') }}`, { 
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ shop_id: shopId, coupon_code: code, total_amount: totalAmountShop }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const { type_coupon, discount_type, discount_value } = data.used_coupon_data;
+                        if (type_coupon === 'shipping') {
+                            const shippingFeeInput = document.getElementById('shipping-fee-shop-' + shopId);
+                            if (shippingFeeInput) {
+                                let currentShipping = parseInt(shippingFeeInput.innerHTML.replace(/[^\d]/g, ''));
+                                let newShipping = currentShipping;
+                                if (discount_type === 'percentage') {
+                                    newShipping = currentShipping - Math.round(currentShipping * discount_value / 100);
+                                } else if (discount_type === 'fixed') {
+                                    newShipping = currentShipping - discount_value;
+                                }
+                                if (newShipping < 0) newShipping = 0;
+                                shippingFeeInput.innerText = newShipping.toLocaleString('vi-VN') + '₫';
+                            }
+                            discountContextInput.classList.remove('hidden');
+                            discountAmountInput.innerText = (currentShipping - newShipping).toLocaleString('vi-VN') + '₫';
+                        } else if (type_coupon === 'order') {
+                            const totalProductPriceInput = document.getElementById('total-product-price-shop-' + shopId);
+                            if (totalProductPriceInput) {
+                                let currentTotal = parseInt(totalProductPriceInput.innerHTML.replace(/[^\d]/g, ''));
+                                let newTotal = currentTotal;
+                                if (discount_type === 'percentage') {
+                                    newTotal = currentTotal - Math.round(currentTotal * discount_value / 100);
+                                } else if (discount_type === 'fixed') {
+                                    newTotal = currentTotal - discount_value;
+                                }
+                                if (newTotal < 0) newTotal = 0;
+                                totalProductPriceInput.innerText = newTotal.toLocaleString('vi-VN') + '₫';
+                                discountContextInput.classList.remove('hidden');
+                                discountAmountInput.innerText = (currentTotal - newTotal).toLocaleString('vi-VN') + '₫';
+                            }
+                        }
+                        // Disable các nút "Sử dụng" coupon cho shop này
+                        document.querySelectorAll(`.use-shop-coupon-btn[data-shop-id="${shopId}"]`).forEach(btn => {
+                            btn.disabled = true;
+                            btn.classList.add('opacity-50', 'cursor-not-allowed');
+                        });
+                    } else if (data.error) {
+                        if (typeof data.error === 'object') {
+                            let messages = [];
+                            for (const key in data.error) {
+                                if (Array.isArray(data.error[key])) {
+                                    messages = messages.concat(data.error[key]);
+                                } else {
+                                    messages.push(data.error[key]);
+                                }
+                            }
+                            alert(messages.join('\n'));
+                        } else {
+                            alert(data.error);
+                        }
+                    }
+                });
+            });
+        });
+        
+        window.addEventListener('click', function(e) {
+            document.querySelectorAll('[id^="discounts-modal-"]').forEach(modal => {
+                if (e.target === modal) {
+                    const shopId = modal.id.split('-').pop();
+                    closeDiscountsModal(shopId);
+                }
+            });
+        });
+    });
+</script>
+
 @endpush

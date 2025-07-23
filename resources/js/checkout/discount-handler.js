@@ -25,7 +25,7 @@ function initializeDiscountHandler(subtotal, applyDiscountUrl, csrfToken) {
                 if(data.discount_amount) {
                     document.getElementById('discount_amount').textContent = Number(data.discount_amount).toLocaleString('vi-VN');
                     showSuccess('Áp dụng mã giảm giá thành công!');
-                    window.updateTotal(); // Assume updateTotal is global or imported
+                    window.updateTotal();
                 } else {
                     showError(data.message || 'Mã giảm giá không hợp lệ.');
                 }
@@ -36,7 +36,7 @@ function initializeDiscountHandler(subtotal, applyDiscountUrl, csrfToken) {
         });
     }
 
-    function showError(message) {
+    window.showError = function(message) {
         const toast = document.createElement('div');
         toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-down';
         toast.innerHTML = `<div class="flex items-center"><i class="fas fa-exclamation-circle mr-2"></i><span>${message}</span></div>`;
@@ -46,7 +46,7 @@ function initializeDiscountHandler(subtotal, applyDiscountUrl, csrfToken) {
         }, 5000);
     }
 
-    function showSuccess(message) {
+    window.showSuccess = function(message) {
         const toast = document.createElement('div');
         toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-down';
         toast.innerHTML = `<div class="flex items-center"><i class="fas fa-check-circle mr-2"></i><span>${message}</span></div>`;

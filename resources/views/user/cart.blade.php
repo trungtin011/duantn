@@ -232,7 +232,8 @@
                     </div>
                 </div>
                 <a href="{{ route('checkout') }}"
-                    class="ml-4 bg-[#EF3248] text-white px-6 py-2 m-4 rounded hover:bg-[#EF3248]/80 transition">
+                    class="ml-4 bg-[#EF3248] text-white px-6 py-2 m-4 rounded hover:bg-[#EF3248]/80 transition" 
+                    id="checkout-button">
                     Thanh toán
                 </a>
             </div>
@@ -447,7 +448,7 @@
                                     timer: 1500,
                                     showConfirmButton: false,
                                 });
-                                window.location.reload(); // Tải lại để cập nhật tổng
+                                window.location.reload(); 
                             })
                             .catch(err => {
                                 console.error('Lỗi chi tiết:', err);
@@ -466,6 +467,7 @@
 
                 // Xử lý checkbox và tổng thanh toán
                 const selectAllCheckbox = document.getElementById('select-all');
+                const checkoutButton = document.getElementById('checkout-button');
                 const checkboxes = document.querySelectorAll('.cart-checkbox, .combo-checkbox');
                 const totalElement = document.getElementById('cart-total');
 
@@ -546,6 +548,37 @@
                     }
                 }
 
+                function saveCheckboxState() {
+                    const checkedIds = [];
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) {
+                            checkedIds.push(cb.dataset.comboId || cb.dataset.id);
+                        }
+                    });
+                    localStorage.setItem('cart_checked_ids', JSON.stringify(checkedIds));
+                }
+
+                function restoreCheckboxState() {
+                    const checkedIds = JSON.parse(localStorage.getItem('cart_checked_ids') || '[]');
+                    checkboxes.forEach(cb => {
+                        const id = cb.dataset.comboId || cb.dataset.id;
+                        cb.checked = checkedIds.includes(id);
+                    });
+                }
+
+                restoreCheckboxState();
+                updateTotal();
+
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.addEventListener('change', function() {
+                        checkboxes.forEach(cb => {
+                            cb.checked = selectAllCheckbox.checked;
+                        });
+                        updateTotal();
+                        saveCheckboxState();
+                    });
+                }
+
                 checkboxes.forEach(cb => {
                     cb.addEventListener('change', () => {
                         // Cập nhật trạng thái chọn tất cả
@@ -555,27 +588,49 @@
                         }
 
                         updateTotal();
-                        updateSelectedProductsInSession();
+                        // Không gọi updateSelectedProductsInSession() ở đây nữa
+                        saveCheckboxState();
                     });
                 });
 
-                if (selectAllCheckbox) {
-                    selectAllCheckbox.addEventListener('change', () => {
-                        const isChecked = selectAllCheckbox.checked;
-                        checkboxes.forEach(cb => {
-                            cb.checked = isChecked;
-                            const row = cb.closest('.p-4');
-                            cb.dataset.quantity = row.querySelector(
-                                    '.cart-quantity-input, .combo-quantity-input')?.value || cb.dataset
-                                .quantity;
+                if (selectAllCheckbox && checkoutButton) {
+                    checkoutButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const selected = getSelectedProductAndCartIds();
+                        if (selected.length === 0) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Chưa chọn sản phẩm',
+                                text: 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!'
+                            });
+                            return;
+                        }
+                        fetch('/customer/cart/selected', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': token,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({ selected }),
+                        })
+                        .then(res => {
+                            if (!res.ok) throw new Error('Không thể cập nhật session!');
+                            return res.json();
+                        })
+                        .then(data => {
+                            // Sau khi backend xác nhận, chuyển trang
+                            window.location.href = checkoutButton.href;
+                        })
+                        .catch(err => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi',
+                                text: 'Không thể cập nhật session! Vui lòng thử lại.'
+                            });
                         });
-                        updateTotal();
-                        updateSelectedProductsInSession();
                     });
                 }
-
-                updateTotal();
-                updateSelectedProductsInSession();
             });
         </script>
     @endpush

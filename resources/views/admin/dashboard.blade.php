@@ -12,8 +12,6 @@
                     </ol>
                 </nav>
             </div>
-            {{-- The "Add Product" button is not in the Dashboard image, removing it --}}
-            {{-- <a href="#" class="btn btn-primary btn-admin-primary">Add Product</a> --}}
         </div>
     </div>
 
@@ -210,12 +208,19 @@
         </div>
     </div>
 
+    <div class="row mb-4 g-3">
+        <div class="col-md-12">
+            <div class="bg-white rounded-md p-0 h-[555px]">
+                <h5 class="px-4 pt-4 font-semibold">Thương hiệu bán chạy nhất</h5>
+                <canvas id="brandChart" class="p-5"></canvas>
+            </div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-12 gap-6 mb-6">
         <div class="bg-white p-8 col-span-12 xl:col-span-4 2xl:col-span-3 rounded-md">
             <div class="flex items-center justify-between mb-8">
-                <h2 class="">
-                    Giao dịch
-                </h2>
+                <h2 class="">Giao dịch</h2>
                 <a href="#"
                     class="text-decoration-none text-[#3e97ff] hover:text-info/60 hover:border-info/60 text-sm border-bottom dashed">Xem
                     tất cả</a>
@@ -236,7 +241,7 @@
                                 </p>
                             </div>
                         </div>
-                        <p class="text-sm font-medium text-success mb-0">${{ number_format($order->amount, 2) }}</p>
+                        <p class="text-sm font-medium text-success mb-0">{{ number_format($order->amount) }} VNĐ</p>
                     </div>
                 @endforeach
             </div>
@@ -252,21 +257,11 @@
                 <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-400 uppercase">
                         <tr>
-                            <th scope="col" class="py-3">
-                                Sản phẩm
-                            </th>
-                            <th scope="col" class="py-3">
-                                ID sản phẩm
-                            </th>
-                            <th scope="col" class="py-3">
-                                Giá
-                            </th>
-                            <th scope="col" class="py-3">
-                                Trạng thái
-                            </th>
-                            <th scope="col" class="py-3">
-                                Hành động
-                            </th>
+                            <th scope="col" class="py-3">Sản phẩm</th>
+                            <th scope="col" class="py-3">ID sản phẩm</th>
+                            <th scope="col" class="py-3">Giá</th>
+                            <th scope="col" class="py-3">Trạng thái</th>
+                            <th scope="col" class="py-3">Hành động</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-gray-900 font-normal">
@@ -370,7 +365,8 @@
             <div class="grid grid-cols-12 border-b border-[#f2f2f6] rounded-t-md bg-white px-[35px] py-[17px] pb-[25px]">
                 <div class="table-information col-span-4">
                     <h3 class="font-medium tracking-wide text-slate-800 text-lg mb-2 leading-none">Danh sách sản phẩm</h3>
-                    <p class="text-slate-500 mb-0 text-xs">Trung bình {{ number_format($avgDailyRevenue) }} đơn hàng mỗi ngày</p>
+                    <p class="text-slate-500 mb-0 text-xs">Trung bình {{ number_format($avgDailyRevenue) }} đơn hàng mỗi
+                        ngày</p>
                 </div>
                 <div class="table-actions space-x-9 flex justify-end items-center col-span-8">
                     <div class="table-action-item">
@@ -429,7 +425,8 @@
             </div>
 
             <div class="">
-                <div class="relative rounded-b-md bg-white px-10 py-7 mb-̀[30px]">
+                <div class="relative rounded-b-md bg-white px-10 py-7 mb-[30px]">
+                    <!-- table -->
                     <table class="w-full text-base text-left text-gray-400">
                         <thead class="bg-white">
                             <tr class="border-b border-[#f2f2f6] text-xs">
@@ -462,6 +459,7 @@
                                         </a>
                                     </td>
                                     <td class="py-3 px-[16px]">{{ $product->product_id }}</td>
+                                    <td class="py-3 px-[16px]">{{ $product->category_name ?? 'Không có danh mục' }}</td>
                                     <td class="py-3 px-[16px]">{{ number_format($product->price) }} VNĐ</td>
                                     <td class="py-3 px-[16px]">
                                         <span
@@ -525,7 +523,7 @@
             data: {
                 labels: @json($labels),
                 datasets: [{
-                        label: 'Sales',
+                        label: 'Doanh thu',
                         data: @json($sales),
                         borderColor: 'rgba(59, 130, 246, 1)',
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
@@ -533,7 +531,7 @@
                         tension: 0.3
                     },
                     {
-                        label: 'Visitors',
+                        label: 'Lượt truy cập',
                         data: @json($visitors),
                         borderColor: 'rgba(163, 230, 53, 1)',
                         backgroundColor: 'rgba(163, 230, 53, 0.2)',
@@ -541,7 +539,7 @@
                         tension: 0.3
                     },
                     {
-                        label: 'Products',
+                        label: 'Sản phẩm bán ra',
                         data: @json($products),
                         borderColor: 'rgba(251, 191, 36, 1)',
                         backgroundColor: 'rgba(251, 191, 36, 0.2)',
@@ -578,6 +576,32 @@
                         'rgba(239, 68, 68, 1)',
                         'rgba(163, 230, 53, 1)',
                         'rgba(251, 191, 36, 1)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Brand Chart
+        var ctxBrand = document.getElementById('brandChart').getContext('2d');
+        var brandChart = new Chart(ctxBrand, {
+            type: 'pie',
+            data: {
+                labels: @json($brandLabels),
+                datasets: [{
+                    data: @json($brandValues),
+                    backgroundColor: [
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)'
                     ]
                 }]
             },
