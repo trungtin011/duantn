@@ -593,28 +593,28 @@ return new class extends Migration
         //     $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
         // });
 
-        Schema::create('product_reviews', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->tinyInteger('rating')->comment('1-5 sao');
-            $table->text('comment')->nullable();
-            $table->string('image_path')->nullable();
-            $table->string('video_path')->nullable();
-            $table->timestamps();
+        // Schema::create('product_reviews', function (Blueprint $table) {
+        //     $table->bigIncrements('id');
+        //     $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        //     $table->foreignId('product_id')->constrained()->onDelete('cascade');
+        //     $table->tinyInteger('rating')->comment('1-5 sao');
+        //     $table->text('comment')->nullable();
+        //     $table->string('image_path')->nullable();
+        //     $table->string('video_path')->nullable();
+        //     $table->timestamps();
 
-            $table->unique(['user_id', 'product_id']);
-        });
-        // Bảng review_images
-        Schema::create('review_images', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->unsignedBigInteger('review_id');
-            $table->text('image_path');
-            $table->timestamps();
+        //     $table->unique(['user_id', 'product_id']);
+        // });
+        // // Bảng review_images
+        // Schema::create('review_images', function (Blueprint $table) {
+        //     $table->bigIncrements('id');
+        //     $table->unsignedBigInteger('review_id');
+        //     $table->text('image_path');
+        //     $table->timestamps();
 
-            // Sửa lại tên bảng được tham chiếu đúng
-            $table->foreign('review_id')->references('id')->on('product_reviews')->onDelete('cascade');
-        });
+        //     // Sửa lại tên bảng được tham chiếu đúng
+        //     $table->foreign('review_id')->references('id')->on('product_reviews')->onDelete('cascade');
+        // });
 
 
         // Bảng wishlist

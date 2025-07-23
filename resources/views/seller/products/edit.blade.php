@@ -1078,18 +1078,18 @@
                     let newAttribute = document.createElement('div');
                     newAttribute.classList.add('mb-4', 'flex', 'items-center', 'gap-4', 'attribute-row');
                     newAttribute.innerHTML = `
-                <select name="attributes[${index}][id]" class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select" onchange="updateAttributeValues(this)">
-                    <option value="" disabled selected>Chọn hoặc nhập thuộc tính</option>
-                    <option value="new">Tạo thuộc tính mới</option>
-                    ${allAttributes
-                        .filter(attr => attr.id && attr.name)
-                        .map(attr => `<option value="${attr.id}">${attr.name}</option>`)
-                        .join('')}
-                </select>
-                <input type="text" name="attributes[${index}][name]" class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name hidden" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
-                <input type="text" name="attributes[${index}][values]" class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)">
-                <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
-            `;
+                    <select name="attributes[${index}][id]" class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select" onchange="updateAttributeValues(this)">
+                        <option value="" disabled selected>Chọn hoặc nhập thuộc tính</option>
+                        <option value="new">Tạo thuộc tính mới</option>
+                        ${allAttributes
+                            .filter(attr => attr.id && attr.name)
+                            .map(attr => `<option value="${attr.id}">${attr.name}</option>`)
+                            .join('')}
+                    </select>
+                        <input type="text" name="attributes[${index}][name]" class="w-1/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name hidden" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
+                        <input type="text" name="attributes[${index}][values]" class="w-2/3 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng)">
+                        <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
+                    `;
                     container.appendChild(newAttribute);
                     debugLog('New attribute row added', {
                         index
@@ -1158,74 +1158,74 @@
                         variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6',
                             'bg-white', 'relative', 'variant-item');
                         let variantHTML = `
-                    <div class="flex justify-between items-center mb-3">
-                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
-                        <div class="flex space-x-3">
-                            <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
-                            <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
-                                <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="variant-content transition-all duration-300 ease-in-out hidden">
-                        <input type="hidden" name="variants[${index}][index]" value="${index}">
-                        <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required>
+                            <div class="flex justify-between items-center mb-3">
+                                <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
+                                <div class="flex space-x-3">
+                                    <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
+                                    <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                        <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
-                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required>
+                            <div class="variant-content transition-all duration-300 ease-in-out hidden">
+                                <input type="hidden" name="variants[${index}][index]" value="${index}">
+                                <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                        <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                                        <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                        <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                        <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                                        <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                        <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
+                                        <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
+                                        <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
+                                        <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng">
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
+                                    ${variant.map((value, attrIndex) => `
+                                                                <div class="flex items-center gap-4 mb-2">
+                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                </div>
+                                                            `).join('')}
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
+                                    <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
+                                    <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
-                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
-                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
-                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
-                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao">
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
-                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng">
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
-                            ${variant.map((value, attrIndex) => `
-                                        <div class="flex items-center gap-4 mb-2">
-                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                        </div>
-                                    `).join('')}
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                            <input type="file" name="variant_images[${index}][]" multiple class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" accept="image/*" onchange="previewVariantImage(event, ${index})">
-                            <div id="preview-images-${index}" class="mt-2 flex flex-wrap gap-2"></div>
-                        </div>
-                    </div>
-                `;
+                        `;
                         variantDiv.innerHTML = variantHTML;
                         variantContainer.appendChild(variantDiv);
                         variantDiv.querySelector('.remove-variant').addEventListener('click', function() {
@@ -1285,6 +1285,38 @@
                         debugLog('Remove attribute button clicked');
                         this.parentElement.remove();
                     });
+                });
+
+                // Khởi tạo TinyMCE
+                tinymce.init({
+                    selector: '#description',
+                    height: 300,
+                    plugins: 'image link lists table',
+                    toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | link image table',
+                    images_upload_url: '{{ route('seller.upload.image') }}',
+                    file_picker_types: 'image',
+                    file_picker_callback: (cb, value, meta) => {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', 'image/*');
+                        input.onchange = function() {
+                            const file = this.files[0];
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const id = 'blobid' + new Date().getTime();
+                                const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                                const base64 = reader.result.split(',')[1];
+                                const blobInfo = blobCache.create(id, file, base64);
+                                blobCache.add(blobInfo);
+                                cb(blobInfo.blobUri(), {
+                                    title: file.name
+                                });
+                            };
+                            reader.readAsDataURL(file);
+                        };
+                        input.click();
+                    },
+                    setup: editor => editor.on('change', () => editor.save())
                 });
 
                 // Gắn xử lý sự kiện submit form

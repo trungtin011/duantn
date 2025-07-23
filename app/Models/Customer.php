@@ -50,9 +50,9 @@ class Customer extends Model
     public function updateRanking()
     {
         $newRanking = match(true) {
-            $this->total_spent >= 10000000 => 'diamond',
-            $this->total_spent >= 5000000 => 'gold',
-            $this->total_spent >= 2000000 => 'silver',
+            $this->total_spent >= 50000000 => 'diamond',
+            $this->total_spent >= 10000000 => 'gold',
+            $this->total_spent >= 5000000 => 'silver',
             default => 'bronze'
         };
 

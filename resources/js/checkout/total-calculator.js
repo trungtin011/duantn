@@ -9,7 +9,8 @@ function updateTotal() {
     const total_shipping_fee = parseCurrency(document.getElementById('total_shipping_fee')?.textContent ?? '0');
     const points_amount = parseCurrency(document.getElementById('points_amount')?.textContent ?? '0');
 
-    const total = subtotal - discount_amount + total_shipping_fee - points_amount;
+    let total = subtotal - discount_amount + total_shipping_fee - points_amount;
+
 
     const totalAmountEl = document.getElementById('total_amount');
     if (totalAmountEl) {

@@ -73,18 +73,37 @@ class DashboardController extends Controller
             return $item->products_sold ?? 0;
         }, $salesData);
 
+        // Category Chart
+        $categoryData = DB::select("
+            SELECT c.name AS category_name, SUM(p.sold_quantity) AS total_sold 
+            FROM products p 
+            JOIN product_categories pc ON p.id = pc.product_id
+            JOIN categories c ON pc.category_id = c.id
+            GROUP BY c.id, c.name 
+            ORDER BY total_sold DESC
+        ");
+        $categoryLabels = array_map(function ($item) {
+            return $item->category_name;
+        }, $categoryData);
+        $categoryValues = array_map(function ($item) {
+            return $item->total_sold ?? 0;
+        }, $categoryData);
 
-        $categoryData = ProductCategories::selectRaw('categories.name as category_name, SUM(products.sold_quantity) as total_sold')
-            ->join('categories', 'product_categories.category_id', '=', 'categories.id')
-            ->join('products', 'product_categories.product_id', '=', 'products.id')
-            ->groupBy('categories.name')
-            ->orderByDesc('total_sold')
-            ->get();
-
-        $categoryLabels = $categoryData->pluck('category_name')->toArray();
-        $categoryValues = $categoryData->pluck('total_sold')->map(function ($val) {
-            return $val ?? 0;
-        })->toArray();
+        // Brand Chart
+        $brandData = DB::select("
+            SELECT b.name AS brand_name, SUM(p.sold_quantity) AS total_sold 
+            FROM products p 
+            JOIN product_brands pb ON p.id = pb.product_id
+            JOIN brand b ON pb.brand_id = b.id
+            GROUP BY b.id, b.name 
+            ORDER BY total_sold DESC
+        ");
+        $brandLabels = array_map(function ($item) {
+            return $item->brand_name;
+        }, $brandData);
+        $brandValues = array_map(function ($item) {
+            return $item->total_sold ?? 0;
+        }, $brandData);
 
         // Recent Orders
         $recentOrders = DB::table('orders as o')
@@ -97,8 +116,8 @@ class DashboardController extends Controller
                 'o.created_at',
                 'o.total_price as amount',
                 'o.order_status as status',
-                'p.name as product_name', // Thêm tên sản phẩm
-                'p.sale_price as price'   // Giữ giá sản phẩm
+                'p.name as product_name',
+                'p.sale_price as price'
             )
             ->orderByDesc('o.created_at')
             ->limit(5)
@@ -110,14 +129,12 @@ class DashboardController extends Controller
 
         // Product List
         $products = DB::select("
-            SELECT 
-                p.name, 
-                p.sku AS product_id, 
-                pc.category_id, 
-                p.sale_price AS price, 
-                p.status 
-            FROM products p
+            SELECT p.name, p.sku AS product_id, p.sale_price AS price, p.status, 
+                   MIN(c.name) AS category_name
+            FROM products p 
             LEFT JOIN product_categories pc ON p.id = pc.product_id
+            LEFT JOIN categories c ON pc.category_id = c.id
+            GROUP BY p.id, p.name, p.sku, p.sale_price, p.status
             ORDER BY p.created_at DESC 
             LIMIT 10
         ");
@@ -140,6 +157,8 @@ class DashboardController extends Controller
             'products',
             'categoryLabels',
             'categoryValues',
+            'brandLabels',
+            'brandValues',
             'recentOrders',
             'categories'
         ));
