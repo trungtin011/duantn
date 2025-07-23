@@ -39,6 +39,7 @@ use App\Http\Controllers\Seller\ComboController;
 use App\Http\Controllers\Seller\ReviewController as SellerReviewController;
 use App\Http\Controllers\Seller\SellerSettingsController;
 use App\Http\Controllers\Seller\ChatSettingsController;
+use App\Http\Controllers\Seller\AdsCampaignController; // Thêm dòng này
 
 //user
 use App\Http\Controllers\User\CheckoutController;
@@ -280,6 +281,19 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.home');
     })->name('seller.dashboard');
 
+    // Ads Campaigns Routes
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
+
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
         Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
@@ -512,6 +526,19 @@ Route::post('/customer/apply-app-discount', [UserCouponController::class, 'apply
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/order-review/store', [OrderReviewController::class, 'store'])->name('reviews.store');
+
+    // Ads Campaigns Routes
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
 });
 
 Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
@@ -582,3 +609,19 @@ Route::middleware(['auth'])->group(function () {
 
 // Route chi tiết shop
 Route::get('/shop/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
+
+
+Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.')->group(function () {
+    // Ads Campaigns Routes (Added as a separate group to avoid conflicts)
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Seller\AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [App\Http\Controllers\Seller\AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
+});

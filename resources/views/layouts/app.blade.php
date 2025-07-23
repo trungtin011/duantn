@@ -109,6 +109,36 @@
     .floating-support-icons {
         transition: opacity 0.2s, transform 0.2s;
     }
+    /* Loader Spinner */
+    .loader {
+      width: 50px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 8px solid #0000;
+      border-right-color: #ffa50097;
+      position: relative;
+      animation: l24 1s infinite linear;
+    }
+    .loader:before,
+    .loader:after {
+      content: "";
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: inherit;
+      animation: inherit;
+      animation-duration: 2s;
+    }
+    .loader:after {
+      animation-duration: 2s;
+    }
+    #global-loader {
+      transition: opacity 0.5s ease;
+      opacity: 1;
+    }
+    @keyframes l24 {
+      100% {transform: rotate(1turn)}
+    }
     </style>
 </head>
 
@@ -116,13 +146,17 @@
     <script>
         window.addEventListener('beforeunload', function() {
             navigator.sendBeacon('/update-session', JSON.stringify({
-                user_id: {{ Auth::id() }}
+                user_id: "{{ Auth::id() }}"
             }));
         });
     </script>
 @endauth
 
 <body class="font-[Inter]">
+    <!-- Loader Fullscreen -->
+    <div id="global-loader" style="position:fixed;z-index:99999;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;">
+        <div class="loader"></div>
+    </div>
     <!-- Top Header -->
     <div class="bg-black text-white py-3">
         <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -864,12 +898,19 @@
     </script>
 
     @stack('scripts')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
-        window.Laravel = {
-            user: @json(Auth::user())
-        };
+        // Ẩn loader khi toàn bộ trang đã load (bao gồm ảnh, css, js...) với hiệu ứng mờ dần
+        window.addEventListener('load', function() {
+            var loader = document.getElementById('global-loader');
+            if(loader) {
+                loader.style.opacity = '0';
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 500); // Thời gian khớp với transition
+            }
+        });
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 </body>
 
