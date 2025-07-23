@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
+    protected $table = 'items_order'; // 👈 THÊM DÒNG NÀY
+
     protected $fillable = [
         'order_id',
         'product_id',
@@ -35,15 +37,18 @@ class OrderItem extends Model
         'is_reviewed' => 'boolean'
     ];
 
+    protected $appends = ['subtotal']; // 👈 Để dùng accessor subtotal
+
     // Relationships
     public function order()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Order::class, 'orderID');
     }
 
-    public function product()
+
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'productID');
+        return $this->belongsTo(Product::class, 'product_id'); // 👈 Sửa từ productID
     }
 
     public function variant(): BelongsTo
@@ -52,12 +57,12 @@ class OrderItem extends Model
     }
 
     // Methods
-    public function getSubtotalAttribute()
+    public function getSubtotalAttribute(): float
     {
         return $this->quantity * $this->unit_price;
     }
 
-    public function getDiscountAmountAttribute()
+    public function getDiscountAmountAttribute(): float
     {
         return $this->subtotal - $this->total_price;
     }
