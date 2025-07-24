@@ -1,12 +1,6 @@
 
 @extends('layouts.seller_home')
 
-@section('head')
-    @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/admin/combo.css') }}">
-    @endpush
-@endsection
-
 @section('content')
     <div class="admin-page-header mb-5">
         <h1 class="admin-page-title text-2xl">Tạo Combo Mới</h1>
@@ -224,114 +218,116 @@
         </form>
     </section>
 
-    <script>
-        let productIndex = 2;
+    @push('scripts')
+        <script>
+            let productIndex = 2;
 
-        const productData = {
-            @foreach ($products as $product)
-                "{{ $product->id }}": {
-                    price: {{ $product->sale_price ?? $product->price }},
-                    variants: @json($product->variants)
-                },
-            @endforeach
-        };
+            const productData = @json($productDataForJs);
 
-        function addProduct() {
-            const productList = document.getElementById('product-list');
-            const newProduct = `
-                <div class="product-item flex flex-col md:flex-row md:items-end gap-4 relative">
-                    <div class="flex-1">
-                        <label class="text-[12px] text-gray-500">Sản phẩm</label>
-                        <select name="products[${productIndex}][productID]"
-                            class="product-select w-full border border-[#F2F2F6] rounded-md p-2 h-9 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                            required onchange="updateVariants(this, ${productIndex}); calculateTotal()">
-                            <option value="">Chọn sản phẩm</option>
-                            @foreach ($products as $product)
-                                <option value="{{ $product->id }}"
-                                    data-price="{{ $product->sale_price ?? $product->price }}"
-                                    data-variants='{{ json_encode($product->variants) }}'>
-                                    {{ $product->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex-1">
-                        <label class="text-[12px] text-gray-500">Biến thể</label>
-                        <select name="products[${productIndex}][variantID]"
-                            class="variant-select w-full border border-[#F2F2F6] rounded-md p-2 h-9 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                            onchange="calculateTotal()">
-                            <option value="">Không chọn biến thể</option>
-                        </select>
-                    </div>
-                    <div class="w-full md:w-[120px]">
-                        <label class="text-[12px] text-gray-500">Số lượng</label>
-                        <input type="number" name="products[${productIndex}][quantity]"
-                            class="quantity-input w-full border border-[#F2F2F6] rounded-md p-2 h-9 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                            value="1" min="1" required oninput="calculateTotal()">
-                    </div>
-                    <button type="button" onclick="removeProduct(this)"
-                        class="absolute top-0 right-0 text-red-500 text-sm hover:text-red-700 px-2 py-1" title="Xoá">
-                        X
-                    </button>
-                </div>`;
-            productList.insertAdjacentHTML('beforeend', newProduct);
-            productIndex++;
-        }
+            const productOptionsHtml = `
+                <option value="">Chọn sản phẩm</option>
+                @foreach ($products as $product)
+                    <option value="{{ $product->id }}"
+                        data-price="{{ $product->sale_price ?? $product->price }}"
+                        data-variants='{{ json_encode($product->variants) }}'>
+                        {{ $product->name }}
+                    </option>
+                @endforeach
+            `;
 
-        function removeProduct(button) {
-            const productItems = document.querySelectorAll('.product-item');
-            if (productItems.length > 2) {
-                button.parentElement.remove();
-                calculateTotal();
-            } else {
-                alert('Combo phải có ít nhất 2 sản phẩm.');
+            function addProduct() {
+                const productList = document.getElementById('product-list');
+                const newProduct = `
+                    <div class="product-item flex flex-col md:flex-row md:items-end gap-4 relative">
+                        <div class="flex-1">
+                            <label class="text-[12px] text-gray-500">Sản phẩm</label>
+                            <select name="products[${productIndex}][productID]"
+                                class="product-select w-full border border-[#F2F2F6] rounded-md p-2 h-9 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                                required onchange="updateVariants(this, ${productIndex}); calculateTotal()">
+                                ${productOptionsHtml}
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-[12px] text-gray-500">Biến thể</label>
+                            <select name="products[${productIndex}][variantID]"
+                                class="variant-select w-full border border-[#F2F2F6] rounded-md p-2 h-9 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                                onchange="calculateTotal()">
+                                <option value="">Không chọn biến thể</option>
+                            </select>
+                        </div>
+                        <div class="w-full md:w-[120px]">
+                            <label class="text-[12px] text-gray-500">Số lượng</label>
+                            <input type="number" name="products[${productIndex}][quantity]"
+                                class="quantity-input w-full border border-[#F2F2F6] rounded-md p-2 h-9 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                                value="1" min="1" required oninput="calculateTotal()">
+                        </div>
+                        <button type="button" onclick="removeProduct(this)"
+                            class="absolute top-0 right-0 text-red-500 text-sm hover:text-red-700 px-2 py-1" title="Xoá">
+                            X
+                        </button>
+                    </div>`;
+                productList.insertAdjacentHTML('beforeend', newProduct);
+                productIndex++;
             }
-        }
 
-        function updateVariants(select, index) {
-            const productID = select.value;
-            const variantSelect = select.parentElement.parentElement.querySelector('.variant-select');
-            variantSelect.innerHTML = '<option value="">Không chọn biến thể</option>';
-
-            if (productID && productData[productID]) {
-                const variants = productData[productID].variants;
-                variants.forEach(variant => {
-                    const option = document.createElement('option');
-                    option.value = variant.id;
-                    option.textContent = variant.name || `Biến thể ${variant.id}`;
-                    option.dataset.price = variant.sale_price || variant.price;
-                    variantSelect.appendChild(option);
-                });
-            }
-        }
-
-        function calculateTotal() {
-            let total = 0;
-            const productItems = document.querySelectorAll('.product-item');
-            productItems.forEach(item => {
-                const productSelect = item.querySelector('.product-select');
-                const variantSelect = item.querySelector('.variant-select');
-                const quantityInput = item.querySelector('.quantity-input');
-                let price = productSelect.options[productSelect.selectedIndex]?.dataset.price || 0;
-                if (variantSelect.value) {
-                    price = variantSelect.options[variantSelect.selectedIndex].dataset.price || price;
+            function removeProduct(button) {
+                const productItems = document.querySelectorAll('.product-item');
+                if (productItems.length > 2) {
+                    button.parentElement.remove();
+                    calculateTotal();
+                } else {
+                    alert('Combo phải có ít nhất 2 sản phẩm.');
                 }
-                const quantity = parseInt(quantityInput.value) || 0;
-                total += price * quantity;
-            });
-
-            const discountValue = parseFloat(document.getElementById('discount_value').value) || 0;
-            const discountType = document.getElementById('discount_type').value;
-            let finalPrice = total;
-
-            if (discountType === 'percentage' && discountValue > 0) {
-                finalPrice -= (total * discountValue) / 100;
-            } else if (discountType === 'fixed' && discountValue > 0) {
-                finalPrice -= discountValue;
             }
 
-            finalPrice = Math.max(0, finalPrice);
-            document.getElementById('total_price').value = Math.round(finalPrice);
-        }
-    </script>
+            function updateVariants(select, index) {
+                const productID = select.value;
+                const variantSelect = select.parentElement.parentElement.querySelector('.variant-select');
+                variantSelect.innerHTML = '<option value="">Không chọn biến thể</option>';
+
+                if (productID && productData[productID]) {
+                    const variants = productData[productID].variants;
+                    variants.forEach(variant => {
+                        const option = document.createElement('option');
+                        option.value = variant.id;
+                        option.textContent = variant.name || `Biến thể ${variant.id}`;
+                        option.dataset.price = parseFloat(variant.price);
+                        variantSelect.appendChild(option);
+                    });
+                }
+            }
+
+            function calculateTotal() {
+                let total = 0;
+                const productItems = document.querySelectorAll('.product-item');
+                productItems.forEach(item => {
+                    const productSelect = item.querySelector('.product-select');
+                    const variantSelect = item.querySelector('.variant-select');
+                    const quantityInput = item.querySelector('.quantity-input');
+                    let price = parseFloat(productSelect.options[productSelect.selectedIndex]?.dataset.price) || 0;
+                    if (variantSelect.value) {
+                        price = parseFloat(variantSelect.options[variantSelect.selectedIndex].dataset.price) || price;
+                    }
+                    const quantity = parseInt(quantityInput.value) || 0;
+                    total += price * quantity;
+                });
+
+                const discountValue = parseFloat(document.getElementById('discount_value').value) || 0;
+                const discountType = document.getElementById('discount_type').value;
+                let finalPrice = total;
+
+                if (discountType === 'percentage' && discountValue > 0) {
+                    finalPrice -= (total * discountValue) / 100;
+                } else if (discountType === 'fixed' && discountValue > 0) {
+                    finalPrice -= discountValue;
+                }
+
+                finalPrice = Math.max(0, finalPrice);
+                document.getElementById('total_price').value = Math.round(finalPrice);
+            }
+
+            // Initial calculation when the page loads
+            document.addEventListener('DOMContentLoaded', calculateTotal);
+        </script>
+    @endpush
 @endsection
