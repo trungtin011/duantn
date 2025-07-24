@@ -216,6 +216,10 @@
                             <li class="text-sm text-[#64748b]">
                                 <a href="{{ route('seller.products.create') }}" class="link_admin">Thêm Sản Phẩm</a>
                             </li>
+                            <li>
+                                <a class="link_admin" href="{{ route('seller.categories.index') }}">Danh
+                                    Mục Sản Phẩm</a>
+                            </li>
                         </ul>
                     </div>
 

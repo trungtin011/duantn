@@ -323,10 +323,10 @@ class DatabaseSeeder extends Seeder
         DB::table('brand')->insert([
             [
                 'id' => 1,
-                'name' => 'Brand A',
-                'slug' => 'brand-a',
+                'name' => 'Apple',
+                'slug' => 'apple',
                 'description' => 'Premium brand',
-                'image_path' => '/brands/brand-a.png',
+                'image_path' => '/brands/apple.png',
                 'meta_title' => null,
                 'meta_description' => null,
                 'meta_keywords' => null,
@@ -341,8 +341,8 @@ class DatabaseSeeder extends Seeder
         DB::table('categories')->insert([
             [
                 'id' => 1,
-                'name' => 'Electronics',
-                'slug' => 'electronics',
+                'name' => 'Công nghệ',
+                'slug' => 'cong-nghe',
                 'description' => null,
                 'image_path' => null,
                 'meta_title' => null,
@@ -360,17 +360,15 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'shopID' => 1,
-                'name' => 'Smartphone X',
-                'slug' => 'smartphone-x',
+                'name' => 'iPhone 15 Pro Max',
+                'slug' => 'iphone-15-pro-max',
                 'description' => 'High-end smartphone',
-                'price' => 10000000,
-                'purchase_price' => 8000000,
-                'sale_price' => 9000000,
+                'price' => 30000000,
+                'purchase_price' => 24000000,
+                'sale_price' => 27000000,
                 'sold_quantity' => 10,
                 'stock_total' => 500,
                 'sku' => 'SPX001',
-                'brand' => 'Brand A',
-                'category' => 'Electronics',
                 'status' => 'active',
                 'meta_title' => null,
                 'meta_description' => null,
@@ -382,15 +380,29 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
+        DB::table('product_categories')->insert([
+            [
+                'product_id' => 1,
+                'category_id' => 1,
+            ],
+        ]);
+
+        DB::table('product_brands')->insert([
+            [
+                'product_id' => 1,
+                'brand_id' => 1,
+            ],
+        ]);
+
         // Bảng product_variants
         DB::table('product_variants')->insert([
             [
                 'id' => 1,
                 'productID' => 1,
-                'variant_name' => 'Black 128GB',
-                'price' => 9000000,
-                'purchase_price' => 7200000,
-                'sale_price' => 8500000,
+                'variant_name' => 'Đen 128GB',
+                'price' => 27000000,
+                'purchase_price' => 21600000,
+                'sale_price' => 27000000,
                 'stock' => 500,
                 'sku' => 'SPX001-BLACK',
                 'status' => 'active',
@@ -403,7 +415,7 @@ class DatabaseSeeder extends Seeder
         DB::table('product_images')->insert([
             [
                 'productID' => 1,
-                'image_path' => '/products/smartphone-x-black.png',
+                'image_path' => '/products/iphone-15-pro-max-black.jpg',
                 'variantID' => 1,
                 'is_default' => 1,
                 'display_order' => 1,
@@ -539,11 +551,11 @@ class DatabaseSeeder extends Seeder
                 'shop_orderID' => 1,
                 'productID' => 1,
                 'variantID' => 1,
-                'product_name' => 'Smartphone X',
-                'brand' => 'Brand A',
-                'category' => 'Electronics',
-                'variant_name' => 'Black 128GB',
-                'product_image' => '/products/smartphone-x-black.png',
+                'product_name' => 'iPhone 15 Pro Max',
+                'brand' => 'Apple',
+                'category' => 'Công nghệ',
+                'variant_name' => 'Đen 128GB',
+                'product_image' => '/products/iphone-15-pro-max-black.jpg',
                 'quantity' => 1,
                 'unit_price' => 8500000,
                 'total_price' => 8500000,
@@ -721,8 +733,8 @@ class DatabaseSeeder extends Seeder
                     'sold_quantity' => 1 * $productId,
                     'stock_total' => 10 * $productId,
                     'sku' => "SKU{$shopId}{$productId}",
-                    'brand' => 'Brand A',
-                    'category' => 'Electronics',
+                    'brand' => 'Apple',
+                    'category' => 'Công nghệ',
                     'status' => 'active',
                     'meta_title' => null,
                     'meta_description' => null,

@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
+
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\Seller\ComboController;
 use App\Http\Controllers\Seller\ReviewController as SellerReviewController;
 use App\Http\Controllers\Seller\SellerSettingsController;
 use App\Http\Controllers\Seller\ChatSettingsController;
+use App\Http\Controllers\Seller\CategoryController;
 
 //user
 use App\Http\Controllers\User\CheckoutController;
@@ -65,6 +67,7 @@ use App\Http\Controllers\ShopController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\User\ComboController as UserComboController;
+use App\Http\Controllers\ShopCategoryController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -304,6 +307,14 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::get('/variable', [ProductController::class, 'variable'])->name('product.variable');
     });
 
+    Route::prefix('categories')->group(function () {
+        Route::get('/', [CategoryController::class, 'index'])->name('seller.categories.index');
+        Route::post('/', [CategoryController::class, 'store'])->name('seller.categories.store');
+        Route::get('/{id}/edit', [CategoryController::class, 'edit'])->name('seller.categories.edit');
+        Route::put('/{id}', [CategoryController::class, 'update'])->name('seller.categories.update');
+        Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('seller.categories.destroy');
+    });
+
     Route::get('/orders', function () {
         return view('seller.orders');
     })->name('seller.orders');
@@ -322,8 +333,10 @@ Route::prefix('customer')->group(function () {
     // Route xem nhanh sản phẩm
     Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
     Route::get('/search', [ProductController::class, 'search'])->name('search');
-    // Route Hồ sơ người dùng
-    Route::get('/profile/{id}', [ShopController::class, 'show'])->name('shop.profile');
+    // Route Hồ sơ shop
+    Route::get('/profileShop/{id}', [ShopController::class, 'show'])->name('shop.profile');
+    // Tìm kiếm sp của shop
+    Route::get('/shop/{shop}/search', [ShopController::class, 'searchProducts'])->name('shop.search');
     // Route follow shop
     Route::post('/shop/follow/{shop}', [ShopController::class, 'follow'])->name('shop.follow');
     // Route unfollow shop
