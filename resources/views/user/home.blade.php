@@ -1,1241 +1,1447 @@
 @extends('layouts.app')
-
 @section('title', 'Trang chủ')
-@section('content')
-    <!-- Main Banner -->
-    <section class="container mx-auto py-8 flex flex-col sm:flex-row relative">
-        <!-- Sidebar Menu with Dropdown -->
-        <div class="w-full h-[100px] sm:h-full overflow-y-scroll sm:overflow-y-hidden px-2 sm:w-1/4 sm:pr-10">
-            <ul class="space-y-2">
-                <li>
-                    <div id="dropdownToggle">
-                        <button
-                            class="focus:outline-none text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
-                            Thời trang phụ nữ
-                            <!-- Arrow icon -->
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[21px] h-[21px] ml-1 arrow-icon">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                            </svg>
+@section('meta-description',
+    'Trang chủ của website bán hàng trực tuyến, nơi bạn có thể tìm thấy các sản phẩm mới nhất
+    và ưu đãi hấp dẫn.')
+@section('meta-keywords', 'trang chủ, mua sắm trực tuyến, sản phẩm mới, ưu đãi, thời trang, điện tử')
 
-                        </button>
-                        <div id="dropdownMenu"
-                            class="dropdown-content hidden text-base shadow-lg font-emibold absolute sm:top-[32px] sm:left-[384px] z-10 sm:w-[1152px] sm:h-[400px] top-[58px] left-0 right-0 mx-auto z-10 w-max-w-4xl h-auto bg-white mt-2 sm:mt-0">
-                            <div class="sm:flex h-[100%]">
-                                <div class="flex flex-col gap-[25px] p-4">
-                                    <div
-                                        class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/48630b7c76a7b62bc070c9e227097847@resize_w320_nl.webp"
-                                                alt="phone" class="w-[100px] h-[100px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Giày dép nữ</span>
-                                        </a>
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/75ea42f9eca124e9cb3cde744c060e4d@resize_w320_nl.webp"
-                                                alt="phone" class="w-[100px] h-[100px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Thời trang nữ</span>
-                                        </a>
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/8e71245b9659ea72c1b4e737be5cf42e@resize_w320_nl.webp"
-                                                alt="phone" class="w-[100px] h-[100px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Phụ kiện & trang sức
-                                                nữ</span>
-                                        </a>
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/fa6ada2555e8e51f369718bbc92ccc52@resize_w320_nl.webp"
-                                                alt="phone" class="w-[100px] h-[100px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Túi ví nữ</span>
-                                        </a>
-                                    </div>
-                                    <div
-                                        class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
-                                                alt="phone" class="w-[80px] h-[80px] mt-[15px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Mẹ & bé</span>
-                                        </a>
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/ef1f336ecc6f97b790d5aae9916dcb72@resize_w320_nl.webp"
-                                                alt="phone" class="w-[80px] h-[80px] mt-[15px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Sắc đẹp</span>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="hidden sm:flex sm:justify-center sm:items-center">
-                                    <img src="{{ asset('images/thoitrangnu.jpg') }}" alt="banner"
-                                        class="object-cover w-[100%] h-[400px] object-cover">
-                                </div>
-                            </div>
-                        </div>
+<!-- Custom style -->
+@push('styles')
+    @vite(['resources/css/user/style-prefix.css', 'resources/css/user/style-home.css'])
+    <style>
+        .quick-view-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .quick-view-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .notification-toast.closed {
+            display: none;
+            /* Hoặc các hiệu ứng khác */
+        }
+    </style>
+@endpush
+
+@section('content')
+    <div class="overlay" data-overlay></div>
+    <div class="modal" data-modal>
+        <div class="modal-close-overlay" data-modal-overlay></div>
+        <div class="modal-content">
+            <button class="modal-close-btn" data-modal-close>
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+            <div class="newsletter-img">
+                <img src="{{ asset('assets/images/newsletter.png') }}" alt="Đăng ký nhận tin" width="400" height="400">
+            </div>
+            <div class="newsletter">
+                <form action="#">
+                    <div class="newsletter-header">
+                        <h3 class="newsletter-title">Đăng ký nhận tin.</h3>
+                        <p class="newsletter-desc">
+                            Hãy đăng ký <b>Anon</b> để nhận thông tin sản phẩm mới và cập nhật khuyến mãi.
+                        </p>
                     </div>
+                    <input type="email" name="email" class="email-field" placeholder="Địa chỉ Email" required>
+                    <button type="submit" class="btn-newsletter">Đăng ký</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @foreach ($purchasedProducts as $product)
+        <div class="notification-toast" data-toast>
+            <button class="toast-close-btn" data-toast-close>
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+            <div class="toast-banner">
+                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" width="80" height="70">
+            </div>
+            <div class="toast-detail">
+                <p class="toast-message">Ai đó vừa mua sản phẩm</p>
+                <p class="toast-title">{{ $product->name }}</p>
+                <p class="toast-meta">
+                    <time datetime="{{ $product->updated_at->toIso8601String() }}">
+                        {{ $product->updated_at->diffForHumans() }}
+                    </time> trước
+                </p>
+            </div>
+        </div>
+    @endforeach
+
+    <header>
+        <nav class="desktop-navigation-menu">
+            <div class="container">
+                <ul class="desktop-menu-category-list">
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Trang chủ</a>
+                    </li>
+                    <li class="menu-category">
+                        <a href="{{ route('combo.index') }}" class="menu-title">Combo</a>
+                    </li>
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Danh mục</a>
+                        <div class="dropdown-panel">
+                            <ul class="dropdown-panel-list">
+                                @if ($parentCategory)
+                                    <li class="menu-title">
+                                        <a href="#">{{ $parentCategory->name ?? 'Danh mục' }}</a>
+                                    </li>
+                                    @foreach ($subCategories as $subcategory)
+                                        <li class="panel-list-item">
+                                            <a href="#">{{ $subcategory->name }}</a>
+                                        </li>
+                                    @endforeach
+                                    @if ($parentCategory->image_path)
+                                        <li class="panel-list-item">
+                                            <a href="#" class="overflow-hidden">
+                                                <img src="{{ asset('storage/' . $parentCategory->image_path) }}"
+                                                    alt="{{ $parentCategory->name }} banner" class="object-cover">
+                                            </a>
+                                        </li>
+                                    @else
+                                        <li class="panel-list-item">
+                                            <a href="#">
+                                                <img src="{{ asset('assets/images/electronics-banner-1.jpg') }}"
+                                                    alt="headphone collection" width="250" height="119">
+                                            </a>
+                                        </li>
+                                    @endif
+                                @endif
+                            </ul>
+
+                            @foreach ($fashionSub as $subCategory)
+                                <ul class="dropdown-panel-list">
+                                    <li class="menu-title">
+                                        <a href="#">{{ $subCategory->name }}</a>
+                                    </li>
+                                    @foreach ($subCategory->subCategories as $child)
+                                        <li class="panel-list-item">
+                                            <a href="#">{{ $child->name }}</a>
+                                        </li>
+                                    @endforeach
+                                    @if ($subCategory->image_path)
+                                        <li class="panel-list-item">
+                                            <a href="#" class="overflow-hidden">
+                                                <img src="{{ asset('storage/' . $subCategory->image_path) }}"
+                                                    alt="{{ $subCategory->name }} banner" class="object-cover">
+                                            </a>
+                                        </li>
+                                    @else
+                                        <li class="panel-list-item">
+                                            <a href="#">
+                                                @if ($subCategory->name === 'Nam')
+                                                    <img src="{{ asset('assets/images/mens-banner.jpg') }}"
+                                                        alt="Men's Fashion" width="250" height="119">
+                                                @elseif ($subCategory->name === 'Nữ')
+                                                    <img src="{{ asset('assets/images/womens-banner.jpg') }}"
+                                                        alt="Women's Fashion" width="250" height="119">
+                                                @else
+                                                    <img src="{{ asset('assets/images/default.jpg') }}" alt="Fashion"
+                                                        width="250" height="119">
+                                                @endif
+                                            </a>
+                                        </li>
+                                    @endif
+                                </ul>
+                            @endforeach
+
+                            <ul class="dropdown-panel-list">
+                                <li class="menu-title"><a href="#">{{ $parentCategory->name ?? 'Danh mục' }}</a></li>
+                                @foreach ($filteredSubCategories as $child)
+                                    <li class="panel-list-item">
+                                        <a href="#">{{ $child->name }}</a>
+                                    </li>
+                                @endforeach
+                                @if (isset($parentCategory) && $parentCategory->image_path)
+                                    <li class="panel-list-item">
+                                        <a href="#" class="overflow-hidden">
+                                            <img src="{{ asset('storage/' . $parentCategory->image_path) }}"
+                                                alt="{{ $parentCategory->name }} banner" class="object-cover">
+                                        </a>
+                                    </li>
+                                @else
+                                    <li class="panel-list-item">
+                                        <a href="#">
+                                            <img src="{{ asset('assets/images/electronics-banner-1.jpg') }}"
+                                                alt="headphone collection" width="250" height="119">
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    </li>
+                    @foreach ($fashionSub as $subCategory)
+                        <li class="menu-category">
+                            <a href="#" class="menu-title">{{ $subCategory->name }}</a>
+                            <ul class="dropdown-list">
+                                @foreach ($subCategory->subCategories as $child)
+                                    <li class="dropdown-item">
+                                        <a href="#">{{ $child->name }}</a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </li>
+                    @endforeach
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Trang sức</a>
+                        <ul class="dropdown-list">
+                            @foreach ($jewelrySub as $item)
+                                <li class="dropdown-item">
+                                    <a href="#">{{ $item->name }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Nước hoa</a>
+                        <ul class="dropdown-list">
+                            @foreach ($perfumeSub as $item)
+                                <li class="dropdown-item">
+                                    <a href="#">{{ $item->name }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Blog</a>
+                    </li>
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Ưu đãi hấp dẫn</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="mobile-bottom-navigation">
+            <button class="action-btn" data-mobile-menu-open-btn>
+                <ion-icon name="menu-outline"></ion-icon>
+            </button>
+            <button class="action-btn">
+                <ion-icon name="bag-handle-outline"></ion-icon>
+                <span class="count">0</span>
+            </button>
+            <button class="action-btn">
+                <ion-icon name="home-outline"></ion-icon>
+            </button>
+            <button class="action-btn">
+                <ion-icon name="heart-outline"></ion-icon>
+                <span class="count">0</span>
+            </button>
+            <button class="action-btn" data-mobile-menu-open-btn>
+                <ion-icon name="grid-outline"></ion-icon>
+            </button>
+        </div>
+
+        <nav class="mobile-navigation-menu has-scrollbar" data-mobile-menu>
+            <div class="menu-top">
+                <h2 class="menu-title">Menu</h2>
+                <button class="menu-close-btn" data-mobile-menu-close-btn>
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+            <ul class="mobile-menu-category-list">
+                <li class="menu-category">
+                    <a href="#" class="menu-title">Home</a>
                 </li>
-                <li>
-                    <button id="dropdownToggleSecond"
-                        class="focus:outline-none text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-[18px] font-semibold">
-                        Thời trang nam
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-[21px] h-[21px] ml-1 arrow-icon-second">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                        </svg>
+                <li class="menu-category">
+                    <button class="accordion-menu" data-accordion-btn>
+                        <p class="menu-title">Men's</p>
+                        <div>
+                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                        </div>
                     </button>
-                    <div id="dropdownMenuSecond"
-                        class="dropdown-content hidden text-base shadow-lg font-emibold absolute sm:top-[32px] sm:left-[384px] z-10 sm:w-[1152px] sm:h-[400px] top-[88px] left-0 right-0 mx-auto z-10 w-max-w-4xl h-auto bg-white mt-2 sm:mt-0">
-                        <div class="sm:flex h-[100%]">
-                            <div class="flex flex-col gap-[25px] p-4">
-                                <div
-                                    class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
-                                    <a href="#" class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/74ca517e1fa74dc4d974e5d03c3139de@resize_w320_nl.webp"
-                                            alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Giày dép nam</span>
-                                    </a>
-                                    <a href="#" class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/687f3967b7c2fe6a134a2c11894eea4b@resize_w320_nl.webp"
-                                            alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Thời trang nam</span>
-                                    </a>
-                                    <a href="#" class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/86c294aae72ca1db5f541790f7796260@resize_w320_nl.webp"
-                                            alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Đồng hồ nam</span>
-                                    </a>
-                                    <a href="#" class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
-                                            alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Thể thao nam</span>
-                                    </a>
-                                </div>
-                                <div
-                                    class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
-                                    <a href="#"
-                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
-                                            alt="phone" class="w-[80px] h-[80px] mt-[15px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Mẹ & bé</span>
-                                    </a>
-                                    <a href="#"
-                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/ef1f336ecc6f97b790d5aae9916dcb72@resize_w320_nl.webp"
-                                            alt="phone" class="w-[80px] h-[80px] mt-[15px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Sắc đẹp</span>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="hidden sm:flex sm:justify-center sm:items-center">
-                                <img src="{{ asset('images/thoitrangnam.jpg') }}" alt="banner"
-                                    class="object-cover w-[100%] h-[400px] object-cover">
-                            </div>
+                    <ul class="submenu-category-list" data-accordion>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Shirt</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Shorts & Jeans</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Safety Shoes</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Wallet</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <button class="accordion-menu" data-accordion-btn>
+                        <p class="menu-title">Women's</p>
+                        <div>
+                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
                         </div>
-                    </div>
+                    </button>
+                    <ul class="submenu-category-list" data-accordion>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Dress & Frock</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Earrings</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Necklace</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Makeup Kit</a>
+                        </li>
+                    </ul>
                 </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Đồ điện tử</a>
+                <li class="menu-category">
+                    <button class="accordion-menu" data-accordion-btn>
+                        <p class="menu-title">Jewelry</p>
+                        <div>
+                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                        </div>
+                    </button>
+                    <ul class="submenu-category-list" data-accordion>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Earrings</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Couple Rings</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Necklace</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Bracelets</a>
+                        </li>
+                    </ul>
                 </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">phong cách sống</a>
+                <li class="menu-category">
+                    <button class="accordion-menu" data-accordion-btn>
+                        <p class="menu-title">Perfume</p>
+                        <div>
+                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                        </div>
+                    </button>
+                    <ul class="submenu-category-list" data-accordion>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Clothes Perfume</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Deodorant</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Flower Fragrance</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Air Freshener</a>
+                        </li>
+                    </ul>
                 </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thuốc</a>
+                <li class="menu-category">
+                    <a href="#" class="menu-title">Blog</a>
                 </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thể thao</a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Đồ chơi trẻ em</a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Thực phẩm thú
-                        cưng
-                    </a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-[18px] font-semibold">Sức khỏe và sắc
-                        đẹp
-                    </a>
+                <li class="menu-category">
+                    <a href="#" class="menu-title">Hot Offers</a>
                 </li>
             </ul>
-        </div>
-        <!-- Banner -->
-        <div class="relative w-full sm:w-3/4 hidden sm:block">
-            <div class="slider-container">
-                <div class="slides" id="slides">
-                    <!-- Slide 1 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
-                        </div>
-                    </div>
-                    <!-- Slide 2 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
-                        </div>
-                    </div>
-                    <!-- Slide 3 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
+            <div class="menu-bottom">
+                <ul class="menu-category-list">
+                    <li class="menu-category">
+                        <button class="accordion-menu" data-accordion-btn>
+                            <p class="menu-title">Language</p>
+                            <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
+                        </button>
+                        <ul class="submenu-category-list" data-accordion>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">English</a>
+                            </li>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">Español</a>
+                            </li>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">Frençh</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="menu-category">
+                        <button class="accordion-menu" data-accordion-btn>
+                            <p class="menu-title">Currency</p>
+                            <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
+                        </button>
+                        <ul class="submenu-category-list" data-accordion>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">USD $</a>
+                            </li>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">EUR €</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="menu-social-container">
+                    <li><a href="#" class="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-twitter"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-linkedin"></ion-icon></a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="banner">
+            <div class="container">
+                <div class="slider-container has-scrollbar">
+                    <div class="slider-item">
+                        <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="women's latest fashion sale"
+                            class="banner-img">
+                        <div class="banner-content">
+                            <p class="banner-subtitle">Trending item</p>
+                            <h2 class="banner-title">Women's latest fashion sale</h2>
+                            <p class="banner-text">starting at $ <b>20</b>.00</p>
+                            <a href="#" class="banner-btn">Shop now</a>
                         </div>
                     </div>
-                    <!-- Slide 4 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
+                    <div class="slider-item">
+                        <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses" class="banner-img">
+                        <div class="banner-content">
+                            <p class="banner-subtitle">Trending accessories</p>
+                            <h2 class="banner-title">Modern sunglasses</h2>
+                            <p class="banner-text">starting at $ <b>15</b>.00</p>
+                            <a href="#" class="banner-btn">Shop now</a>
                         </div>
                     </div>
-                    <!-- Slide 5 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
+                    <div class="slider-item">
+                        <img src="{{ asset('assets/images/banner-3.jpg') }}" alt="new fashion summer sale"
+                            class="banner-img">
+                        <div class="banner-content">
+                            <p class="banner-subtitle">Sale Offer</p>
+                            <h2 class="banner-title">New fashion summer sale</h2>
+                            <p class="banner-text">starting at $ <b>29</b>.99</p>
+                            <a href="#" class="banner-btn">Shop now</a>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Pagination -->
-            <div class="flex justify-center gap-3 mt-4 absolute bottom-3 left-0 right-0">
-                <button style="background-color: #BDBDBD;"
-                    class="pagination-button p-2 w-[20px] h-[20px] rounded-full active" data-index="0"></button>
-                <button style="background-color: #BDBDBD;" class="pagination-button p-2 w-[20px] h-[20px] rounded-full"
-                    data-index="1"></button>
-                <button style="background-color: #BDBDBD;" class="pagination-button p-2 w-[20px] h-[20px] rounded-full"
-                    data-index="2"></button>
-                <button style="background-color: #BDBDBD;" class="pagination-button p-2 w-[20px] h-[20px] rounded-full"
-                    data-index="3"></button>
-                <button style="background-color: #BDBDBD;" class="pagination-button p-2 w-[20px] h-[20px] rounded-full"
-                    data-index="4"></button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Khuyến mãi with Countdown Timer -->
-    <section class="container mx-auto py-8">
-        <div class="flex gap-3 items-center mb-3">
-            <div style="background-color: #EF3248;" class="rounded h-[35px] w-[10px] sm:h-[45px] sm:w-[20px]"></div>
-            <span style="color: #BDBDBD;" class="font-bold text-timer sm:text-[16px]">Hôm nay</span>
-        </div>
-        <div class="flex justify-between items-center mb-[60px]">
-            <div class="flex items-center sm:justify-start justify-between w-full">
-                <h2 class="sm:text-[36px] text-[24px] font-bold sm:mr-[87px]">Khuyến mãi</h2>
-                <div class="flex sm:space-x-4 text-lg">
-                    <div class="">
-                        <p class="text-timer px-2 py-1">Ngày</p>
-                        <span id="days" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
-                    </div>
-                    <div class="">
-                        <p class="text-timer px-2 py-1">Giờ</p>
-                        <span id="hours" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
-                    </div>
-                    <div class="">
-                        <p class="text-timer px-2 py-1">Phút</p>
-                        <span id="minutes" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
-                    </div>
-                    <div class="">
-                        <p class="text-timer px-2 py-1">Giây</p>
-                        <span id="seconds" class="text-[18px] sm:text-[32px] text-timer-number px-2 py-1 rounded">00</span>
-                    </div>
-                </div>
-            </div>
-            <div class="sm:flex sm:items-center sm:gap-2 sm:block hidden">
-                <button style="background-color: #F5F5F5;"
-                    class="prev-slide p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center" data-index="1"><i
-                        class="fa-solid fa-arrow-left text-[20px]"></i></button>
-                <button style="background-color: #F5F5F5;"
-                    class="next-slide p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center" data-index="1"><i
-                        class="fa-solid fa-arrow-right text-[20px]"></i></button>
-            </div>
         </div>
 
-        <div class="container-fluid p-0 h-[400px] overflow-hidden">
-            <div class="swiper-container">
-                <div class="swiper-wrapper">
-                    <!-- Sản phẩm 1 -->
-                    @foreach ($products as $product)
-                        <div class="swiper-slide slide-promotion w-1/4">
-                            <div class="card_product flex flex-col gap-[8px] object-cover">
-                                <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                    @if ($product->is_new || $product->is_best_seller || $product->is_hot)
-                                        <div class="absolute top-2 center-2 flex flex-col gap-1 z-10 ">
-                                            @if ($product->is_new)
-                                                <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">Mới</span>
-                                            @endif
-                                            @if ($product->is_best_seller)
-                                                <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">Bán
-                                                    chạy</span>
-                                            @endif
-                                            @if ($product->is_hot)
-                                                <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">Hot</span>
-                                            @endif
-                                        </div>
-                                    @endif
-                                    <div class="absolute top-0 right-0 w-full">
-                                        <div class="flex justify-between p-3">
-                                            <div
-                                                class="bg-[#BDBDBD] rounded-[5px] w-[55px] h-[26px] flex items-center justify-center">
-                                                <span class="text-white px-2 py-1">
-                                                    -{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%
-                                                </span>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-[8px]">
-                                                <button
-                                                    class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                        stroke-width="1.5" stroke="currentColor" class="w-[22px] h-[20px]">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                    </svg>
-                                                </button>
-                                                <a href="{{ route('product.show', $product->slug) }}"
-                                                    class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                        stroke-width="1.5" stroke="currentColor" class="w-[22px] h-[20px]">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                    </svg>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-center items-center h-full">
-                                        <img src="{{ asset($product->images->first()->image_path ?? 'images/default.png') }}"
-                                            class="w-[172px] h-[152px] object-cover" alt="{{ $product->name }}">
-                                    </div>
-                                    <div
-                                        class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                        <button class="text-white">Thêm vào giỏ hàng</button>
-                                    </div>
+        <div class="category">
+            <div class="container">
+                <div class="category-item-container has-scrollbar flex flex-wrap gap-5 max-w-full">
+                    @php
+                        $homeCategories = $homeCategories->take(8); // Giới hạn tối đa 8 danh mục
+                    @endphp
+                    @foreach ($homeCategories as $category)
+                        <div class="category-item w-[calc(25%-0.9375rem)] min-w-[140px] flex-shrink-0">
+                            <div class="category-img-box h-10 w-10 flex items-center justify-center bg-gray-200">
+                                @if ($category->image_path && file_exists(public_path('storage/' . $category->image_path)))
+                                    <img src="{{ asset('storage/' . $category->image_path) }}"
+                                        alt="{{ Str::limit($category->name, 20) }}" width="30"
+                                        class="object-contain">
+                                @elseif (file_exists(public_path('assets/images/icons/' . Str::slug($category->name) . '.svg')))
+                                    <img src="{{ asset('assets/images/icons/' . Str::slug($category->name) . '.svg') }}"
+                                        alt="{{ Str::limit($category->name, 20) }}" width="30"
+                                        class="object-contain">
+                                @else
+                                    <span class="text-xs text-gray-500">{{ Str::limit($category->name, 5) }}</span>
+                                @endif
+                            </div>
+                            <div class="category-content-box">
+                                <div class="category-content-flex">
+                                    <h3 class="category-item-title">{{ $category->name }}</h3>
+                                    <p class="category-item-amount">({{ $category->products_count }})</p>
                                 </div>
-                                <h3 class="text-[20px] mt-2">{{ $product->name }}</h3>
-                                <div class="flex items-center gap-[12px]">
-                                    <p class="text-[#7F7F7F]">${{ number_format($product->sale_price / 23000, 2) }}</p>
-                                    <p class="text-[#BDBDBD] line-through">
-                                        ${{ number_format($product->price / 23000, 2) }}</p>
-                                </div>
-                                <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                    <div>
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            <i class="fa-solid fa-star"></i>
-                                        @endfor
-                                    </div>
-                                    <div class="text-[#7F7F7F] font-bold">({{ $product->reviews->count() }})</div>
-                                </div>
+                                <a href="{{ route('search', ['category' => [$category->id]]) }}" class="category-btn">Xem
+                                    tất cả</a>
                             </div>
                         </div>
                     @endforeach
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- Danh mục sản phẩm -->
-    <section class="container mx-auto py-8">
-        <div class="flex gap-3 items-center mb-3">
-            <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
-            <span style="color: #BDBDBD;" class="font-bold">Danh mục</span>
-        </div>
-        <div class="flex flex-col gap-[60px]">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center justify-center">
-                    <h2 class="text-[36px] font-bold mr-[87px]">Danh mục sản phẩm</h2>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="prev-slide-category" style="background-color: #F5F5F5;"
-                        class="prev-slide-category p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center">
-                        <i class="fa-solid fa-arrow-left text-[20px]"></i>
-                    </button>
-                    <button id="next-slide-category" style="background-color: #F5F5F5;"
-                        class="next-slide-category p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center">
-                        <i class="fa-solid fa-arrow-right text-[20px]"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="overflow-hidden">
-                <div id="category-slider" class="flex flex-row flex-nowrap gap-[33px] transition-transform duration-500">
-                    <!-- Danh mục 1: Phones -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[56px] h-[56px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-                            </svg>
-                            <p class="text-[20px] mt-3">Phones</p>
+        <div class="product-container">
+            <div class="container">
+                <div class="sidebar has-scrollbar" data-mobile-menu>
+                    <div class="sidebar-category mt-[30px]">
+                        <div class="sidebar-top">
+                            <h2 class="sidebar-title">Danh mục</h2>
+                            <button class="sidebar-close-btn" data-mobile-menu-close-btn>
+                                <ion-icon name="close-outline"></ion-icon>
+                            </button>
                         </div>
-                    </div>
-                    <!-- Danh mục 2: Computers -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[56px] h-[56px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
-                            </svg>
-                            <p class="text-[20px] mt-3">Computers</p>
-                        </div>
-                    </div>
-                    <!-- Danh mục 3: SmartWatch -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                fill="#000000" height="800px" width="800px" version="1.1" id="Layer_1" viewBox="0 0 512 512"
-                                xml:space="preserve" class="w-[56px] h-[56px]">
-                                <g transform="translate(1 1)">
-                                    <g>
-                                        <g>
-                                            <path
-                                                d="M404.333,212.333h-12.8V129.56c0-24.747-20.48-45.227-45.227-45.227h-1.067l-5.76-10.24     c-5.973-9.387-8.533-20.48-8.533-30.72C330.947,18.627,308.76-1,281.453-1h-87.04c-27.307,0-49.493,19.627-49.493,44.373     c0,10.24-3.413,21.333-8.533,30.72l-5.76,10.24h-1.067c-24.747,0-45.227,20.48-45.227,45.227v250.88     c0,24.747,20.48,45.227,45.227,45.227h1.067l5.76,10.24c5.973,9.387,8.533,20.48,8.533,30.72     c0,24.747,22.187,44.373,49.493,44.373h87.04c27.307,0,49.493-19.627,50.347-44.373c0-10.24,3.413-21.333,8.533-30.72l5.76-10.24     h0.213c24.747,0,45.227-20.48,45.227-45.227v-82.773h12.8c11.947,0,21.333-9.387,21.333-21.333v-42.667     C425.667,221.72,416.28,212.333,404.333,212.333z M151.747,82.627c6.827-11.947,10.24-25.6,10.24-39.253     c0-15.36,14.507-27.307,32.427-27.307h87.04c17.92,0,32.427,11.947,32.427,27.307c0,13.653,3.413,27.307,10.24,39.253     l0.853,1.707H150.04L151.747,82.627z M323.267,427.373c-6.827,11.947-10.24,25.6-10.24,39.253     c0,15.36-14.507,27.307-32.427,27.307h-87.04c-17.92,0-32.427-11.947-32.427-27.307c0-13.653-3.413-27.307-10.24-39.253     l-0.853-1.707h174.08L323.267,427.373z M374.467,380.44c0,15.36-12.8,28.16-28.16,28.16H129.56c-15.36,0-28.16-12.8-28.16-28.16     V129.56c0-15.36,12.8-28.16,28.16-28.16h216.747c15.36,0,28.16,12.8,28.16,28.16v82.773v85.333V380.44z M408.6,276.333     c0,2.56-1.707,4.267-4.267,4.267h-12.8v-51.2h12.8c2.56,0,4.267,1.707,4.267,4.267V276.333z" />
-                                            <path
-                                                d="M348.013,313.88h-17.067c-3.413,0-5.973,2.56-7.68,5.12l-15.36,31.573L288.28,278.04     c-0.853-3.413-3.413-5.12-6.827-5.973c-3.413,0-6.827,1.707-8.533,4.267l-23.04,38.4H229.4c-2.56,0-5.12,0.853-6.827,3.413     l-23.893,35.84L178.2,278.04c-0.853-3.413-3.413-5.12-6.827-5.973c-3.413-0.853-6.827,0.853-8.533,3.413l-31.573,47.787h-12.8     c-5.12,0-8.533,3.413-8.533,8.533c0,5.12,3.413,8.533,8.533,8.533h17.067c2.56,0,5.12-1.707,6.827-3.413l23.893-35.84     l20.48,75.947c0.853,3.413,3.413,5.12,6.827,5.973c0.853,0,0.853,0,1.707,0c2.56,0,5.12-1.707,6.827-3.413l31.573-47.787H255     c2.56,0,5.973-1.707,5.973-5.12l15.36-25.6l20.48,74.24c0.853,3.413,4.267,5.973,7.68,5.973c3.413,0.853,6.827-0.853,8.533-4.267     l23.04-46.08h11.947c5.12,0,8.533-3.413,8.533-8.533S353.133,313.88,348.013,313.88z" />
-                                            <path
-                                                d="M178.2,152.6h119.467c4.267,0,8.533-3.413,8.533-8.533c0-5.12-3.413-8.533-8.533-8.533H178.2     c-5.12,0-8.533,3.413-8.533,8.533C169.667,149.187,173.08,152.6,178.2,152.6z" />
-                                            <path
-                                                d="M297.667,169.667h-25.6c-5.12,0-8.533,3.413-8.533,8.533s3.413,8.533,8.533,8.533h25.6c4.267,0,8.533-3.413,8.533-8.533     S302.787,169.667,297.667,169.667z" />
-                                            <path
-                                                d="M178.2,186.733h59.733c4.267,0,8.533-3.413,8.533-8.533s-3.413-8.533-8.533-8.533H178.2c-5.12,0-8.533,3.413-8.533,8.533     S173.08,186.733,178.2,186.733z" />
-                                            <path
-                                                d="M246.467,203.8c-5.12,0-8.533,3.413-8.533,8.533c0,5.12,3.413,8.533,8.533,8.533h51.2c4.267,0,8.533-3.413,8.533-8.533     c0-5.12-3.413-8.533-8.533-8.533H246.467z" />
-                                            <path
-                                                d="M178.2,220.867h34.133c4.267,0,8.533-3.413,8.533-8.533c0-5.12-3.413-8.533-8.533-8.533H178.2     c-5.12,0-8.533,3.413-8.533,8.533C169.667,217.453,173.08,220.867,178.2,220.867z" />
-                                        </g>
-                                    </g>
-                                </g>
-                            </svg>
-                            <p class="text-[20px] mt-3">SmartWatch</p>
-                        </div>
-                    </div>
-                    <!-- Danh mục 4: Camera -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[56px] h-[56px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                            </svg>
-                            <p class="text-[20px] mt-3">Camera</p>
-                        </div>
-                    </div>
-                    <!-- Danh mục 5: HeadPhones -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                <g id="SVGRepo_iconCarrier" class="w-[56px] h-[56px]">
-                                    <path
-                                        d="M21 18V12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12V18M6.75 21C6.05302 21 5.70453 21 5.41473 20.9424C4.22466 20.7056 3.29436 19.7753 3.05764 18.5853C3 18.2955 3 17.947 3 17.25V15.6C3 15.0399 3 14.7599 3.10899 14.546C3.20487 14.3578 3.35785 14.2049 3.54601 14.109C3.75992 14 4.03995 14 4.6 14H6.4C6.96005 14 7.24008 14 7.45399 14.109C7.64215 14.2049 7.79513 14.3578 7.89101 14.546C8 14.7599 8 15.0399 8 15.6V19.75C8 19.9823 8 20.0985 7.98079 20.1951C7.90188 20.5918 7.59178 20.9019 7.19509 20.9808C7.09849 21 6.98233 21 6.75 21ZM17.25 21C17.0177 21 16.9015 21 16.8049 20.9808C16.4082 20.9019 16.0981 20.5918 16.0192 20.1951C16 20.0985 16 19.9823 16 19.75V15.6C16 15.0399 16 14.7599 16.109 14.546C16.2049 14.3578 16.3578 14.2049 16.546 14.109C16.7599 14 17.0399 14 17.6 14H19.4C19.9601 14 20.2401 14 20.454 14.109C20.6422 14.2049 20.7951 14.3578 20.891 14.546C21 14.7599 21 15.0399 21 15.6V17.25C21 17.947 21 18.2955 20.9424 18.5853C20.7056 19.7753 19.7753 20.7056 18.5853 20.9424C18.2955 21 17.947 21 17.25 21Z"
-                                        stroke="#000000" stroke-width="0.4800000000000001" stroke-linecap="round"
-                                        stroke-linejoin="round"></path>
-                                </g>
-                            </svg>
-                            <p class="text-[20px] mt-3">HeadPhones</p>
-                        </div>
-                    </div>
-                    <!-- Danh mục 6: Gaming -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                <g id="SVGRepo_iconCarrier" class="w-[56px] h-[56px]">
-                                    <path
-                                        d="M6 12H10M8 10V14M16 13H16.01M18 11H18.01M5.2 18H18.8C19.9201 18 20.4802 18 20.908 17.782C21.2843 17.5903 21.5903 17.2843 21.782 16.908C22 16.4802 22 15.9201 22 14.8V9.2C22 8.0799 22 7.51984 21.782 7.09202C21.5903 6.71569 21.2843 6.40973 20.908 6.21799C20.4802 6 19.9201 6 18.8 6H5.2C4.0799 6 3.51984 6 3.09202 6.21799C2.71569 6.40973 2.40973 6.71569 2.21799 7.09202C2 7.51984 2 8.07989 2 9.2V14.8C2 15.9201 2 16.4802 2.21799 16.908C2.40973 17.2843 2.71569 17.5903 3.09202 17.782C3.51984 18 4.07989 18 5.2 18Z"
-                                        stroke="#000000" stroke-width="0.9600000000000002" stroke-linecap="round"
-                                        stroke-linejoin="round"></path>
-                                </g>
-                            </svg>
-                            <p class="text-[20px] mt-3">Gaming</p>
-                        </div>
-                    </div>
-                    <!-- Danh mục 7: Tablets -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[56px] h-[56px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 18.75a6 6 0 0 0 0-12v12Zm10.5-6a9.75 9.75 0 0 1-9.75 9.75H11.25A9.75 9.75 0 0 1 1.5 12.75v-1.5A9.75 9.75 0 0 1 11.25 1.5h1.5A9.75 9.75 0 0 1 22.5 11.25v1.5Z" />
-                            </svg>
-                            <p class="text-[20px] mt-3">Tablets</p>
-                        </div>
-                    </div>
-                    <!-- Danh mục 8: Laptops -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[56px] h-[56px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
-                            </svg>
-                            <p class="text-[20px] mt-3">Laptops</p>
-                        </div>
-                    </div>
-                    <!-- Danh mục 9: Accessories -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[56px] h-[56px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 0 0 2.25-2.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v2.25A2.25 2.25 0 0 0 6 10.5Zm9.75 0h2.25A2.25 2.25 0 0 0 20.25 8.25V6a2.25 2.25 0 0 0-2.25-2.25h-2.25A2.25 2.25 0 0 0 13.5 6v2.25a2.25 2.25 0 0 0 2.25 2.25Z" />
-                            </svg>
-                            <p class="text-[20px] mt-3">Accessories</p>
-                        </div>
-                    </div>
-                    <!-- Danh mục 10: Wearables -->
-                    <div class="flex-shrink-0 w-[223px]">
-                        <div
-                            class="flex flex-col items-center border-2 border-[#CFCFCF] rounded-[4px] p-3 w-[223px] h-[145px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[56px] h-[56px]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 8.25v7.5m3.75-3.75h-7.5M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Zm0-18v1.5m0 15V18m-1.5-15h1.5m-1.5 15h1.5" />
-                            </svg>
-                            <p class="text-[20px] mt-3">Wearables</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Sản phẩm bán chạy -->
-    <section class="container mx-auto py-8">
-        <div class="flex gap-3 items-center mb-3">
-            <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
-            <span style="color: #BDBDBD;" class="font-bold">Tháng này</span>
-        </div>
-        <div class="flex justify-between items-center mb-[60px]">
-            <div class="flex items-center justify-center">
-                <h2 class="text-[36px] font-bold mr-[87px]">Sản phẩm bán chạy</h2>
-            </div>
-            <div class="flex items-center gap-2">
-                <button style="background-color: #F5F5F5;"
-                    class="prev-slide-best-seller p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center"
-                    data-index="1"><i class="fa-solid fa-arrow-left text-[20px]"></i></button>
-                <button style="background-color: #F5F5F5;"
-                    class="next-slide-best-seller p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center"
-                    data-index="1"><i class="fa-solid fa-arrow-right text-[20px]"></i></button>
-            </div>
-        </div>
-        <div class="container-fluid p-0 h-[400px] overflow-hidden">
-            <div class="swiper-container-best-seller">
-                <div class="swiper-wrapper">
-                    <!-- Sản phẩm 1 -->
-                    <div class="swiper-slide slide-best-seller w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-end p-3">
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
+                        <ul class="sidebar-menu-category-list">
+                            @foreach ($sidebarCategories as $category)
+                                <li class="sidebar-menu-category">
+                                    <button class="sidebar-accordion-menu" data-accordion-btn>
+                                        <div class="menu-title-flex">
+                                            <img src="{{ $category->image_path ? asset('storage/' . $category->image_path) : asset('assets/images/icons/default.svg') }}"
+                                                alt="{{ $category->name }}" class="menu-title-img" width="20"
+                                                height="20">
+                                            <p class="menu-title">{{ $category->name }}</p>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 2 -->
-                    <div class="swiper-slide slide-best-seller w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-end p-3">
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
+                                        <div>
+                                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 3 -->
-                    <div class="swiper-slide slide-best-seller w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-end p-3">
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 4 -->
-                    <div class="swiper-slide slide-best-seller w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-end p-3">
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 5 -->
-                    <div class="swiper-slide slide-best-seller w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-end p-3">
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Sản phẩm 6 -->
-                    <div class="swiper-slide slide-best-seller w-1/4">
-                        <!-- Nội dung sản phẩm 1 -->
-                        <div class="card_product flex flex-col gap-[8px] object-cover">
-                            <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                <div class="absolute top-0 right-0 w-full">
-                                    <div class="flex justify-end p-3">
-                                        <div class="flex flex-col items-center gap-[8px]">
-                                            <button
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                </svg>
-                                            </button>
-                                            <a href="#"
-                                                class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke-width="1.5" stroke="currentColor"
-                                                    class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                </svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-center items-center h-full">
-                                    <img src="{{ asset('images/gamepad.png') }}" class="w-[172px] h-[152px] object-cover"
-                                        alt="HAVIT HV-G92 Gamepad">
-                                </div>
-                                <div
-                                    class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                    <button class="text-white">Thêm vào giỏ hàng</button>
-                                </div>
-                            </div>
-                            <h3 class="text-[20px] mt-2">HAVIT HV-G92 Gamepad</h3>
-                            <div class="flex items-center gap-[12px]">
-                                <p class="text-[#7F7F7F]">$60</p>
-                                <p class="text-[#BDBDBD] line-through">$100</p>
-                            </div>
-                            <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                <div>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                    <i class="fa-solid fa-star"></i>
-                                </div>
-                                <div class="text-[#7F7F7F] font-bold">(86)</div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Banner phụ -->
-    <section class="container mx-auto py-8">
-        <div class="bg-black text-white min-h-[600px] flex flex-col md:flex-row">
-            <!-- Bên trái: Text + Nút + Đồng hồ -->
-            <div class="w-full md:w-5/12 flex flex-col justify-center p-8 md:p-[55px] gap-10">
-                <div class="flex flex-col gap-8">
-                    <span class="text-[20px] text-[#00FF66] font-semibold">Danh mục</span>
-                    <h2 class="text-[40px] md:text-[63px] font-bold leading-tight">Nâng cao trải nghiệm âm nhạc</h2>
-                    <div class="flex items-center gap-6 flex-wrap">
-                        <div
-                            class="w-[62px] h-[62px] rounded-full bg-white text-black flex flex-col items-center justify-center">
-                            <span class="text-[18px] font-bold">23</span>
-                            <span class="text-[13px]">Giờ</span>
-                        </div>
-                        <div
-                            class="w-[62px] h-[62px] rounded-full bg-white text-black flex flex-col items-center justify-center">
-                            <span class="text-[18px] font-bold">05</span>
-                            <span class="text-[13px]">Ngày</span>
-                        </div>
-                        <div
-                            class="w-[62px] h-[62px] rounded-full bg-white text-black flex flex-col items-center justify-center">
-                            <span class="text-[18px] font-bold">05</span>
-                            <span class="text-[13px]">Phút</span>
-                        </div>
-                        <div
-                            class="w-[62px] h-[62px] rounded-full bg-white text-black flex flex-col items-center justify-center">
-                            <span class="text-[18px] font-bold">05</span>
-                            <span class="text-[13px]">Giây</span>
-                        </div>
-                    </div>
-                </div>
-                <button class="bg-[#00FF66] text-white text-[20px] font-semibold px-6 py-3 w-[179px] h-[58px] rounded-md">
-                    Mua ngay
-                </button>
-            </div>
-
-            <!-- Bên phải: Ảnh sản phẩm -->
-            <div class="w-full md:w-7/12 relative flex justify-center items-center p-8 md:p-[55px]">
-                <!-- Vòng sáng -->
-                <div class="w-[310px] h-[300px] rounded-full absolute z-0"
-                    style="background: radial-gradient(circle, #D9D9D9 100%); filter: blur(150px);">
-                </div>
-                <!-- Ảnh loa -->
-                <div class="relative z-10">
-                    <img src="{{ asset('images/jbl_boombox.png') }}" alt="Loa JBL" class="object-cover max-w-full h-auto">
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- Khám phá sản phẩm -->
-    <section class="container mx-auto py-8">
-        <div class="flex gap-3 items-center mb-3">
-            <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
-            <span style="color: #BDBDBD;" class="font-bold">Sản phẩm của chúng tôi</span>
-        </div>
-        <div class="flex justify-between items-center mb-[60px]">
-            <div class="flex items-center justify-center">
-                <h2 class="text-[36px] font-bold mr-[87px]">Khám phá sản phẩm của chúng tôi</h2>
-            </div>
-            <div class="flex items-center gap-2">
-                <button style="background-color: #F5F5F5;"
-                    class="prev-slide-explore p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center"
-                    data-index="1"><i class="fa-solid fa-arrow-left text-[20px]"></i></button>
-                <button style="background-color: #F5F5F5;"
-                    class="next-slide-explore p-2 w-[46px] h-[46px] rounded-full flex items-center justify-center"
-                    data-index="1"><i class="fa-solid fa-arrow-right text-[20px]"></i></button>
-            </div>
-        </div>
-        <div class="container-fluid p-0 h-[700px] overflow-hidden">
-            <div class="swiper-container-explore">
-                {{-- <div class="swiper-wrapper flex gap-[40px]">
-                    <?php foreach ($rows as $row): ?>
-                    <div class="swiper-slide slide-explore">
-                        <div class="flex gap-[5px]">
-                            <?php foreach ($row as $product): ?>
-                            <div class="w-1/4">
-                                <div class="card_product_explore flex flex-col gap-[8px] object-cover w-[355px]">
-                                    <div class="background-card bg-[#F5F5F5] h-[210px] relative">
-                                        <div class="absolute top-0 right-0 w-full">
-                                            <div class="flex justify-end p-3">
-                                                <div class="flex flex-col items-center gap-[8px]">
-                                                    <button
-                                                        class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                            class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                                        </svg>
-                                                    </button>
-                                                    <a href="#"
-                                                        class="bg-[#FFF] rounded-full p-[5px] w-[34px] h-[34px] flex items-center justify-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                            class="w-[22px] h-[20px] text-center items-center justify-center flex">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                        </svg>
+                                    </button>
+                                    @if ($category->subCategories->count())
+                                        <ul class="sidebar-submenu-category-list" data-accordion>
+                                            @foreach ($category->subCategories as $sub)
+                                                <li class="sidebar-submenu-category">
+                                                    <a href="#" class="sidebar-submenu-title">
+                                                        <p class="product-name colo-[#787878]">{{ $sub->name }}</p>
+                                                        <data value="{{ $sub->products->count() }}"
+                                                            class="stock colo-[#787878]" title="Sản phẩm có sẵn">
+                                                            {{ $sub->products->count() }}
+                                                        </data>
                                                     </a>
-                                                </div>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <div class="product-showcase">
+                        <h3 class="showcase-heading">Sản phẩm bán chạy</h3>
+                        <div class="showcase-wrapper">
+                            <div class="showcase-container">
+                                @foreach ($bestSellers as $product)
+                                    <div class="showcase">
+                                        <a href="{{ route('product.show', $product->slug) }}" class="showcase-img-box">
+                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                width="75" height="75" class="showcase-img">
+                                        </a>
+                                        <div class="showcase-content">
+                                            <a href="{{ route('product.show', $product->slug) }}">
+                                                <h4 class="showcase-title">{{ $product->name }}</h4>
+                                            </a>
+                                            <div class="showcase-rating">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    @if ($product->reviews->avg('rating') >= $i)
+                                                        <ion-icon name="star"></ion-icon>
+                                                    @elseif ($product->reviews->avg('rating') >= $i - 0.5)
+                                                        <ion-icon name="star-half-outline"></ion-icon>
+                                                    @else
+                                                        <ion-icon name="star-outline"></ion-icon>
+                                                    @endif
+                                                @endfor
+                                            </div>
+                                            <div class="price-box">
+                                                @if ($product->sale_price)
+                                                    <del>{{ number_format($product->price, 0, ',', '.') }}₫</del>
+                                                    <p class="price">
+                                                        {{ number_format($product->sale_price, 0, ',', '.') }}₫</p>
+                                                @else
+                                                    <p class="price">{{ number_format($product->price, 0, ',', '.') }}₫
+                                                    </p>
+                                                @endif
                                             </div>
                                         </div>
-                                        <div class="flex justify-center items-center h-full">
-                                            <img src="{{ asset('images/' . $product['image']) }}"
-                                                class="w-[172px] h-[152px] object-cover" alt="{{ $product['name'] }}">
-                                        </div>
-                                        <div
-                                            class="card-button-container absolute bottom-0 flex justify-center items-center w-full h-[41px] bg-[#000]">
-                                            <button class="text-white">Thêm vào giỏ hàng</button>
-                                        </div>
                                     </div>
-                                    <h3 class="text-[20px] mt-2">{{ $product['name'] }}</h3>
-                                    <div class="flex items-center gap-[12px]">
-                                        <p class="text-[#7F7F7F]">${{ $product['price'] }}</p>
-                                        <p class="text-[#BDBDBD] line-through">${{ $product['old_price'] }}</p>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-box">
+                    @if ($flashSaleProducts->count())
+                        <div class="product-demo">
+                            <h2 class="product-title">⚡ FLASH SALE</h2>
+                            @foreach ($flashSaleProducts as $product)
+                                <div class="flash-sale-box mb-4">
+                                    {{-- Header: FLASH SALE + Countdown --}}
+                                    <div class="flash-sale-header">
+                                        <strong class="truncate w-[500px]">{{ $product->name }}</strong>
+                                        <span class="countdown-label">KẾT THÚC TRONG</span>
+                                        @if ($product->flash_sale_end_at)
+                                            <span class="countdown-timer" id="countdown-{{ $product->id }}"
+                                                data-end-time="{{ $product->flash_sale_end_at->timestamp }}">
+                                                <span class="display-number">00</span> :
+                                                <span class="display-number">00</span> :
+                                                <span class="display-number">00</span>
+                                            </span>
+                                        @endif
                                     </div>
-                                    <div class="flex text-[#FF9F1C] h-[20px] gap-[8px]">
-                                        <div>
-                                            @for ($i = 1; $i <= 5; $i++) @if ($i <=$product['rating']) <i
-                                                class="fa-solid fa-star"></i>
-                                                @else
-                                                <i class="fa-regular fa-star"></i>
-                                                @endif
-                                                @endfor
-                                        </div>
-                                        <div class="text-[#7F7F7F] font-bold">({{ $product['reviews'] }})</div>
+
+                                    {{-- Giá và giảm giá --}}
+                                    <div class="flash-sale-price">
+                                        <span class="new-price">₫{{ number_format($product->flash_sale_price, 0) }}</span>
+                                        <span
+                                            class="old-price truncate w-[95px]">₫{{ number_format($product->price, 0) }}</span>
+                                        <span class="discount">
+                                            -{{ round((1 - $product->flash_sale_price / $product->price) * 100) }}%
+                                        </span>
                                     </div>
                                 </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="product-featured">
+                        <h2 class="title">Flash Sale</h2>
+                        <div class="showcase-wrapper has-scrollbar">
+                            @foreach ($flashSaleProducts as $product)
+                                <div class="showcase-container">
+                                    <div class="showcase">
+                                        <div class="showcase-banner">
+                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                class="showcase-img">
+                                        </div>
+                                        <div class="showcase-content">
+                                            <div class="showcase-rating">
+                                                @php
+                                                    $avg = round($product->reviews->avg('rating') ?? 0);
+                                                @endphp
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <ion-icon
+                                                        name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
+                                                @endfor
+                                            </div>
+                                            <a href="{{ route('product.show', $product->slug) }}">
+                                                <h3 class="showcase-title">{{ $product->name }}</h3>
+                                            </a>
+                                            <p class="showcase-desc">
+                                                {{ Str::limit(strip_tags($product->description), 100) }}
+                                            </p>
+                                            <div class="price-box">
+                                                <p class="price">{{ number_format($product->flash_sale_price) }}₫</p>
+                                                <del>{{ number_format($product->price) }}₫</del>
+                                            </div>
+                                            <button class="add-cart-btn">Thêm vào giỏ</button>
+                                            <div class="showcase-status">
+                                                <div class="wrapper">
+                                                    <p>Đã bán: <b>{{ $product->sold_quantity ?? 0 }}</b></p>
+                                                    <p>Còn lại:
+                                                        <b>{{ $product->stock_total - $product->sold_quantity }}</b>
+                                                    </p>
+                                                </div>
+                                                <div class="showcase-status-bar"></div>
+                                            </div>
+                                            @if ($product->flash_sale_end_at)
+                                                <div class="countdown-box">
+                                                    <p class="countdown-desc">Nhanh tay! Kết thúc sau:</p>
+                                                    <div class="countdown"
+                                                        data-end-time="{{ $product->flash_sale_end_at->timestamp }}">
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Ngày</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Giờ</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Phút</p>
+                                                        </div>
+                                                        <div class="countdown-content">
+                                                            <p class="display-number">00</p>
+                                                            <p class="display-text">Giây</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="product-minimal">
+                        <div class="product-showcase">
+                            <h2 class="title">Sản phẩm nổi bật</h2>
+                            @if ($featuredProducts->isEmpty())
+                                <p>Hiện chưa có sản phẩm nổi bật nào.</p>
+                            @else
+                                @php
+                                    $featuredProducts = $featuredProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFour = $featuredProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $others = $featuredProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
+                                <div class="showcase-wrapper has-scrollbar">
+                                    <div class="showcase-container">
+                                        @foreach ($firstFour as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="#" class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="price-box">
+                                                        @if ($product->sale_price)
+                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                        @else
+                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="showcase-container">
+                                        @foreach ($others as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="#" class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="price-box">
+                                                        @if ($product->sale_price)
+                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                        @else
+                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="product-showcase">
+                            <h2 class="title">Đang thịnh hành</h2>
+                            @if ($trendingProducts->isEmpty())
+                                <p>Hiện chưa có sản phẩm nào thịnh hành.</p>
+                            @else
+                                @php
+                                    $trendingProducts = $trendingProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFourTrending = $trendingProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $remainingTrending = $trendingProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
+                                <div class="showcase-wrapper has-scrollbar">
+                                    <div class="showcase-container">
+                                        @foreach ($firstFourTrending as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="#" class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="price-box">
+                                                        @if ($product->sale_price)
+                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                        @else
+                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="showcase-container">
+                                        @foreach ($remainingTrending as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="#" class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="price-box">
+                                                        @if ($product->sale_price)
+                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                        @else
+                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="product-showcase">
+                            <h2 class="title">Đánh giá cao</h2>
+                            @if ($topRatedProducts->isEmpty())
+                                <p>Chưa có sản phẩm nào được đánh giá.</p>
+                            @else
+                                @php
+                                    $topRatedProducts = $topRatedProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFourTopRated = $topRatedProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $remainingTopRated = $topRatedProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
+                                <div class="showcase-wrapper has-scrollbar">
+                                    <div class="showcase-container">
+                                        @foreach ($firstFourTopRated as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="#" class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="showcase-rating">
+                                                        @php
+                                                            $avg = round($product->reviews_avg_rating ?? 0);
+                                                        @endphp
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <ion-icon
+                                                                name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
+                                                        @endfor
+                                                    </div>
+                                                    <div class="price-box">
+                                                        @if ($product->sale_price)
+                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                        @else
+                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="showcase-container">
+                                        @foreach ($remainingTopRated as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="#" class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="showcase-rating">
+                                                        @php
+                                                            $avg = round($product->reviews_avg_rating ?? 0);
+                                                        @endphp
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <ion-icon
+                                                                name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
+                                                        @endfor
+                                                    </div>
+                                                    <div class="price-box">
+                                                        @if ($product->sale_price)
+                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                        @else
+                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="product-main">
+                        <h2 class="title">Sản phẩm mới</h2>
+                        <div class="product-grid">
+                            @foreach ($newProducts as $product)
+                                <div class="showcase">
+                                    <div class="showcase-banner">
+                                        @php
+                                            $images = $product->images;
+                                            $defaultImage = $images->where('is_default', 1)->first();
+                                            $secondImage = $images->where('is_default', 0)->first(); // hoặc đơn giản: $images->get(1);
+                                        @endphp
+                                        <img src="{{ $defaultImage ? asset('storage/' . $defaultImage->image_path) : asset('images/default.jpg') }}"
+                                            alt="{{ $product->name }}" class="product-img default h-[200px]"
+                                            width="300">
+
+                                        <img src="{{ $secondImage ? asset('storage/' . $secondImage->image_path) : asset('images/default.jpg') }}"
+                                            alt="{{ $product->name }}" class="product-img hover h-[200px]"
+                                            width="300">
+                                        @if ($product->created_at >= now()->subDays(7))
+                                            <p class="showcase-badge angle pink">Mới</p>
+                                        @elseif ($product->sale_price)
+                                            <p class="showcase-badge">
+                                                {{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%
+                                            </p>
+                                            <p class="showcase-badge angle black">sale</p>
+                                        @endif
+                                        <div class="showcase-actions">
+                                            <button class="btn-action toggle-wishlist-btn"
+                                                data-product-id="{{ $product->id }}"
+                                                data-is-wishlisted="{{ Auth::check() && Auth::user()->wishlist()->where('productID', $product->id)->exists() ? '1' : '0' }}">
+                                                <ion-icon
+                                                    name="{{ Auth::check() && Auth::user()->wishlist()->where('productID', $product->id)->exists() ? 'heart' : 'heart-outline' }}"></ion-icon>
+                                            </button>
+                                            <button class="btn-action quick-view-btn"
+                                                data-product-slug="{{ $product->slug }}">
+                                                <ion-icon name="eye-outline"></ion-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="showcase-content">
+                                        <a href="#" class="showcase-category">
+                                            {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                        </a>
+                                        <a href="{{ route('product.show', $product->slug) }}">
+                                            <h3 class="showcase-title">{{ $product->name }}</h3>
+                                        </a>
+                                        <div class="showcase-rating">
+                                            @php
+                                                $avg = round($product->reviews->avg('rating') ?? 0);
+                                            @endphp
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <ion-icon name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
+                                            @endfor
+                                        </div>
+                                        <div class="price-box">
+                                            @if ($product->sale_price)
+                                                <p class="price">{{ number_format($product->sale_price, 0, ',', '.') }}₫
+                                                </p>
+                                                <del>{{ number_format($product->price, 0, ',', '.') }}₫</del>
+                                            @else
+                                                <p class="price">{{ number_format($product->price, 0, ',', '.') }}₫</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonials-box">
+            <div class="container flex gap-[30px]">
+                <div class="testimonial">
+                    <h2 class="title">Đánh giá khách hàng</h2>
+
+                    @foreach ($testimonials as $review)
+                        <div class="testimonial-card">
+                            <img src="{{ $review->user->avatar_url ?? asset('images/default_avatar.png') }}"
+                                alt="{{ $review->user->name ?? 'Khách hàng ảnh' }}" class="testimonial-banner"
+                                width="80" height="80">
+
+                            <p class="testimonial-name">{{ $review->user->name ?? 'Khách hàng ẩn danh' }}</p>
+                            <p class="testimonial-title">
+                                {{ $review->product->name ?? 'Sản phẩm đã mua' }}
+                            </p>
+
+                            <img src="{{ asset('assets/images/icons/quotes.svg') }}" alt="quotation"
+                                class="quotation-img" width="26">
+
+                            <p class="testimonial-desc">
+                                {{ Str::limit($review->comment, 120) }}
+                            </p>
+                        </div>
+                    @endforeach
+                    @if ($testimonials->isEmpty())
+                        <p>Chưa có đánh giá nào từ khách hàng.</p>
+                    @endif
+                </div>
+
+                <div class="cta-container">
+                    <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection" class="cta-banner">
+                    <a href="#" class="cta-content">
+                        <p class="discount">25% Discount</p>
+                        <h2 class="cta-title">Summer collection</h2>
+                        <p class="cta-text">Starting @ $10</p>
+                        <button class="cta-btn">Shop now</button>
+                    </a>
+                </div>
+                <div class="service">
+                    <h2 class="title">Dịch vụ của chúng tôi</h2>
+                    <div class="service-container">
+                        <a href="#" class="service-item">
+                            <div class="service-icon">
+                                <ion-icon name="rocket-outline"></ion-icon>
                             </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div> --}}
-            </div>
-        </div>
-        <div class="flex justify-center items-center mt-5">
-            <button class="px-4 py-2 rounded-[4px] w-[264px] h-[56px] text-[#000] hover:bg-[#000] hover:text-[#FFF]"
-                style="border: 1px solid #000;">
-                Xem tất cả sản phẩm
-            </button>
-        </div>
-    </section>
+                            <div class="service-content">
+                                <h3 class="service-title">Giao hàng nhanh</h3>
+                                <p class="service-desc">Nhận hàng trong 1–3 ngày</p>
+                            </div>
+                        </a>
 
-    <!-- Hàng mới về -->
-    <section class="container mx-auto py-8">
-        <div class="flex gap-3 items-center mb-3">
-            <div style="background-color: #BDBDBD;" class="rounded h-[45px] w-[20px]"></div>
-            <span style="color: #BDBDBD;" class="font-bold">Nổi bật</span>
-        </div>
-        <div class="flex justify-between items-center mb-[60px]">
-            <div class="flex items-center justify-center">
-                <h2 class="text-[36px] font-bold mr-[87px]">Hàng mới về</h2>
-            </div>
-        </div>
-        <div class="flex gap-[30px]">
-            <div class="relative w-[744px] h-[600px] bg-[#0D0D0D] flex items-end justify-center rounded-[4px]">
-                <img src="{{ asset('images/ps5_slim.png') }}" alt="banner" class="object-cover w-[511px] h-[511px]">
-                <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[16px] w-[400px]">
-                    <h2 class="text-[28px] font-bold">PlayStation 5 Slim</h2>
-                    <p class="text-[18px]">PlayStation 5 Slim là bản nâng cấp của PlayStation 5, với thiết kế nhỏ gọn và
-                        hiệu suất cao hơn.</p>
-                    <button class="text-white buy-now-btn flex items-center">
-                        <span style="border-bottom: 1px solid #858585; padding-bottom: 5px; font-size: 18px;">Mua
-                            ngay</span>
-                    </button>
-                </div>
-            </div>
-            <div class="w-[744px] flex flex-col justify-center items-center gap-[30px]">
-                <div class="relative flex justify-end items-center w-[100%] h-[284px] bg-[#0D0D0D] rounded-[4px]">
-                    <img src="{{ asset('images/attractive_woman1.png') }}" alt="banner"
-                        class="object-cover w-[432px] h-[284px]">
-                    <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[16px] w-[400px]">
-                        <h2 class="text-[28px] font-bold">Bộ sưu tập của phụ nữ</h2>
-                        <p class="text-[18px]">Bộ sưu tập phụ nữ nổi bật mang đến cho bạn cảm giác khác biệt.</p>
-                        <button class="text-white buy-now-btn flex items-center">
-                            <span style="border-bottom: 1px solid #858585; padding-bottom: 5px; font-size: 18px;">Mua
-                                ngay</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="w-[100%] flex gap-[30px]">
-                    <div class="relative flex justify-center items-center w-[364px] h-[284px] bg-[#0D0D0D] rounded-[4px]">
-                        <img src="{{ asset('images/speaker.png') }}" alt="banner" class="object-cover w-[190px] h-[221px]">
-                        <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[10px] w-[400px]">
-                            <h2 class="text-[28px] font-bold">Loa</h2>
-                            <p class="text-[18px]">Loa không dây Amazon</p>
-                            <button class="text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #858585; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="relative flex justify-center items-center w-[364px] h-[284px] bg-[#0D0D0D] rounded-[4px]">
-                        <img src="{{ asset('images/perfume.png') }}" alt="banner" class="object-cover w-[201px] h-[203px]">
-                        <div class="absolute bottom-[30px] left-[35px] text-white flex flex-col gap-[10px] w-[400px]">
-                            <h2 class="text-[28px] font-bold">Nước hoa</h2>
-                            <p class="text-[18px]">NƯỚC HOA GUCCI INTENSE OUD</p>
-                            <button class="text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #858585; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                        <a href="#" class="service-item">
+                            <div class="service-icon">
+                                <ion-icon name="call-outline"></ion-icon>
+                            </div>
+                            <div class="service-content">
+                                <h3 class="service-title">Hỗ trợ 24/7</h3>
+                                <p class="service-desc">Tư vấn mọi lúc mọi nơi</p>
+                            </div>
+                        </a>
 
-    <!-- Dịch vụ -->
-    <section class="container mx-auto py-8">
-        <div class="flex gap-3 items-center gap-[88px]">
-            <div class="flex flex-col items-center justify-center gap-[30px] w-1/3">
-                <div class="bg-[#C1C1C1] rounded-full flex items-center justify-center w-[80px] h-[80px]">
-                    <div class="bg-[#000] rounded-full flex items-center justify-center w-[58px] h-[58px]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                            class="bi bi-truck text-center text-[30px] text-[#fff] w-[30px]" viewBox="0 0 16 16">
-                            <path
-                                d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2" />
-                        </svg>
+                        <a href="#" class="service-item">
+                            <div class="service-icon">
+                                <ion-icon name="return-up-back-outline"></ion-icon>
+                            </div>
+                            <div class="service-content">
+                                <h3 class="service-title">Đổi trả dễ dàng</h3>
+                                <p class="service-desc">Miễn phí trong 7 ngày</p>
+                            </div>
+                        </a>
                     </div>
-                </div>
-                <div class="flex flex-col gap-[10px] text-center">
-                    <h2 class="text-[24px] font-bold">Giao hàng miễn phí và nhanh chóng</h2>
-                    <p class="text-[14px]">Miễn phí vận chuyển cho đơn hàng trên 1 trăm nghìn đồng</p>
-                </div>
-            </div>
-            <div class="flex flex-col items-center justify-center gap-[30px] w-1/3">
-                <div class="bg-[#C1C1C1] rounded-full flex items-center justify-center w-[80px] h-[80px]">
-                    <div class="bg-[#000] rounded-full flex items-center justify-center w-[58px] h-[58px]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                            class="bi bi-headset text-center text-[30px] text-[#fff] w-[30px]" viewBox="0 0 16 16">
-                            <path
-                                d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5" />
-                        </svg>
-                    </div>
-                </div>
-                <div class="flex flex-col gap-[10px] text-center">
-                    <h2 class="text-[24px] font-bold">Chăm sóc khách hàng 24/7</h2>
-                    <p class="text-[14px]">Hỗ trợ khách hàng thân thiện 24/7</p>
-                </div>
-            </div>
-            <div class="flex flex-col items-center justify-center gap-[30px] w-1/3">
-                <div class="bg-[#C1C1C1] rounded-full flex items-center justify-center w-[80px] h-[80px]">
-                    <div class="bg-[#000] rounded-full flex items-center justify-center w-[58px] h-[58px]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                            class="bi bi-shield-check text-center text-[30px] text-[#fff] w-[30px]" viewBox="0 0 16 16">
-                            <path
-                                d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56" />
-                            <path
-                                d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0" />
-                        </svg>
-                    </div>
-                </div>
-                <div class="flex flex-col gap-[10px] text-center">
-                    <h2 class="text-[24px] font-bold">Đảm bảo hoàn tiền</h2>
-                    <p class="text-[14px]">Đảm bảo hoàn tiền trong 30 ngày</p>
+
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- JavaScript -->
-    <script src="{{ asset('js/home.js') }}"></script>
+        <div class="blog">
+            <div class="container">
+                <div class="blog-container has-scrollbar">
+                    @foreach ($blogs as $blog)
+                        <div class="blog-card">
+                            <a href="{{ route('blog.detail', $blog->slug) }}">
+                                <img src="{{ asset($blog->image_path) }}" alt="{{ $blog->title }}" width="300"
+                                    class="blog-banner">
+                            </a>
+                            <div class="blog-content">
+                                <a href="#" class="blog-category">{{ $blog->category }}</a>
+                                <a href="{{ route('blog.detail', $blog->slug) }}">
+                                    <h3 class="blog-title">{{ $blog->title }}</h3>
+                                </a>
+                                <p class="blog-meta">
+                                    By <cite>{{ $blog->author ?? 'Admin' }}</cite> /
+                                    <time
+                                        datetime="{{ $blog->created_at->format('Y-m-d') }}">{{ $blog->created_at->format('M d, Y') }}</time>
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                    @if ($blogs->isEmpty())
+                        <p>Hiện chưa có bài viết nào.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- Modal Quick View -->
+    <div id="quick-view-modal" class="quick-view-modal">
+        <div class="w-[1200px] bg-[#fff] rounded-[10px]">
+            <div class="flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-gray-300 border-dashed mb-4">
+                    <h3>Xem nhanh</h3>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="quick-view-body"></div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        @vite(['resources/js/home.js'])
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = document.getElementById('quick-view-modal');
+                const closeBtn = modal.querySelector('.close-btn');
+                closeBtn.addEventListener('click', function() {
+                    modal.classList.remove('active');
+                });
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+            document.addEventListener('DOMContentLoaded', function() {
+                // Xử lý toggle wishlist
+                document.querySelectorAll('.toggle-wishlist-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const productId = this.getAttribute('data-product-id');
+                        const isWishlisted = this.getAttribute('data-is-wishlisted') === '1';
+                        const icon = this.querySelector('ion-icon');
+
+                        axios.post(`/customer/product/${productId}/toggle-wishlist`, {}, {
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                }
+                            })
+                            .then(response => {
+                                if (response.data.success) {
+                                    this.setAttribute('data-is-wishlisted', response.data
+                                        .isWishlisted ? '1' : '0');
+                                    icon.setAttribute('name', response.data.isWishlisted ? 'heart' :
+                                        'heart-outline');
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        toast: true,
+                                        icon: 'success',
+                                        title: 'Thành công',
+                                        text: response.data.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        toast: true,
+                                        icon: 'error',
+                                        title: 'Lỗi',
+                                        text: response.data.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: error.response?.status === 401 ?
+                                        'Vui lòng đăng nhập để sử dụng chức năng này!' :
+                                        'Đã có lỗi xảy ra!',
+                                    showConfirmButton: error.response?.status === 401,
+                                    confirmButtonText: 'Đăng nhập',
+                                }).then(result => {
+                                    if (result.isConfirmed && error.response?.status ===
+                                        401) {
+                                        window.location.href = '/login';
+                                    }
+                                });
+                            });
+                    });
+                });
+
+                // Xử lý quick view
+                document.querySelectorAll('.quick-view-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const slug = this.getAttribute('data-product-slug');
+                        const modal = document.getElementById('quick-view-modal');
+                        const modalBody = modal.querySelector('.quick-view-body');
+
+                        axios.get(`/customer/products/${slug}/quick-view`)
+                            .then(response => {
+                                if (response.data.success) {
+                                    modalBody.innerHTML = response.data.html;
+
+                                    // ✅ Gán dữ liệu biến thể
+                                    window.variantData = response.data.variantData;
+                                    console.log('✅ Gán variantData từ Laravel:', window
+                                        .variantData);
+
+                                    modal.classList.add('active');
+
+                                    if (typeof initQuickViewScripts === 'function') {
+                                        initQuickViewScripts();
+                                    }
+                                } else {
+                                    Swal.fire('Lỗi', response.data.message, 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Lỗi tải QuickView:', error);
+                                Swal.fire('Lỗi', 'Không thể tải sản phẩm!', 'error');
+                            });
+                    });
+                });
+
+            });
+
+            function initQuickViewScripts() {
+                const mainImage = document.getElementById('main-image');
+                const priceDisplay = document.getElementById('price-display');
+                const stockInfo = document.getElementById('stock_info');
+                const quantityInput = document.getElementById('quantity');
+                const decreaseBtn = document.getElementById('decreaseQty');
+                const increaseBtn = document.getElementById('increaseQty');
+                const selectedVariantIdInput = document.getElementById('selected_variant_id');
+                const addToCartButtons = document.querySelectorAll('.add-to-cart');
+                const variantButtons = document.querySelectorAll('button[data-value]');
+                const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                let selectedVariantId = null;
+
+                if (!mainImage || !priceDisplay || !stockInfo || !quantityInput || !selectedVariantIdInput) {
+                    console.warn('Thiếu phần tử DOM trong quick view, dừng init.');
+                    return;
+                }
+
+                const hasVariants = variantButtons.length > 0;
+                if (!hasVariants) {
+                    selectedVariantId = 'default'; // sản phẩm không có biến thể
+                    selectedVariantIdInput.value = 'default';
+                }
+
+                // Thay ảnh chính khi click ảnh phụ
+                document.querySelectorAll('.sub-image').forEach(img => {
+                    img.addEventListener('click', function() {
+                        const newSrc = this.dataset.src;
+                        if (mainImage && newSrc) mainImage.src = newSrc;
+                    });
+                });
+
+                // Format số
+                function number_format(number, decimals = 0, dec_point = ',', thousands_sep = '.') {
+                    number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
+                    let n = !isFinite(+number) ? 0 : +number;
+                    let prec = Math.abs(decimals);
+                    let s = (prec ? (Math.round(n * Math.pow(10, prec)) / Math.pow(10, prec)).toFixed(prec) : '' + Math.round(
+                        n)).split('.');
+                    s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, thousands_sep);
+                    if ((s[1] || '').length < prec) {
+                        s[1] = (s[1] || '') + '0'.repeat(prec - s[1].length);
+                    }
+                    return s.join(dec_point);
+                }
+
+                // Tăng/giảm số lượng
+                if (decreaseBtn) {
+                    decreaseBtn.addEventListener('click', () => {
+                        let qty = parseInt(quantityInput.value);
+                        if (qty > 1) quantityInput.value = qty - 1;
+                    });
+                }
+
+                if (increaseBtn) {
+                    increaseBtn.addEventListener('click', () => {
+                        let qty = parseInt(quantityInput.value);
+                        const stock = parseInt(stockInfo.textContent.split(' ')[0]) || 0;
+                        if (qty < stock) quantityInput.value = qty + 1;
+                    });
+                }
+
+
+                // Reset về trạng thái mặc định
+                function resetToDefault(defaultImage, price, originalPrice, stock) {
+                    selectedVariantId = null;
+                    selectedVariantIdInput.value = 'default';
+                    if (mainImage && defaultImage) mainImage.src = defaultImage;
+
+                    priceDisplay.innerHTML = `
+                        <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
+                        ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
+                                                                                                                                                                                                                                                                                                                <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                    `;
+                    stockInfo.textContent = `${stock} sản phẩm có sẵn`;
+                }
+
+                // Xử lý chọn biến thể
+                variantButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const value = button.getAttribute('data-value');
+                        const attributeName = button.getAttribute('data-attribute-name');
+                        const optionsContainer = button.closest(`[id$="-options"]`);
+                        const allButtons = optionsContainer.querySelectorAll('button[data-value]');
+
+                        if (button.classList.contains('bg-gray-200') && button.classList.contains(
+                                'border-gray-500')) {
+                            button.classList.remove('bg-gray-200', 'border-gray-500');
+                            button.classList.add('border-gray-300');
+                            resetToDefault(button.dataset.defaultImage, button.dataset.price, button.dataset
+                                .originalPrice, button.dataset.stock);
+                            return;
+                        }
+
+                        allButtons.forEach(btn => {
+                            btn.classList.remove('bg-gray-200', 'border-gray-500');
+                            btn.classList.add('border-gray-300');
+                        });
+
+                        button.classList.remove('border-gray-300');
+                        button.classList.add('bg-gray-200', 'border-gray-500');
+
+                        const selectedAttributes = {};
+                        document.querySelectorAll('[id$="-options"] button[data-value].bg-gray-200').forEach(
+                            btn => {
+                                const attrName = btn.getAttribute('data-attribute-name');
+                                const attrValue = btn.getAttribute('data-value');
+                                selectedAttributes[attrName] = attrValue;
+                            });
+
+                        const variantData = window.variantData || {};
+                        let matched = null;
+
+                        for (let id in variantData) {
+                            let variant = variantData[id];
+                            let matchedAll = true;
+                            for (let attr in selectedAttributes) {
+                                if (!variant.attributes || variant.attributes[attr] !== selectedAttributes[
+                                        attr]) {
+                                    matchedAll = false;
+                                    break;
+                                }
+                            }
+                            if (matchedAll) {
+                                matched = {
+                                    id,
+                                    ...variant
+                                };
+                                break;
+                            }
+                        }
+
+                        console.log('Đã chọn attributes:', selectedAttributes);
+                        console.log('Dữ liệu variantData:', variantData);
+                        console.log('Biến thể phù hợp:', matched);
+
+                        if (matched) {
+                            selectedVariantId = matched.id;
+                            selectedVariantIdInput.value = matched.id;
+
+                            // Hiển thị lại giá
+                            if (priceDisplay) {
+                                priceDisplay.innerHTML = `
+                                    <span class="text-red-600 text-2xl font-bold">${number_format(matched.price)} VNĐ</span>
+                                    <span class="text-gray-500 line-through text-md">${number_format(matched.original_price)} VNĐ</span>
+                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${matched.discount_percentage}%</span>
+                                `;
+                            }
+
+                            if (mainImage) {
+                                console.log('Hiển thị ảnh biến thể:', matched.image);
+                                mainImage.src = matched.image || '/storage/product_images/default.jpg';
+                            }
+                            if (stockInfo) stockInfo.textContent = `${matched.stock} sản phẩm có sẵn`;
+                        } else {
+                            // Không tìm thấy biến thể phù hợp → reset
+                            selectedVariantId = null;
+                            selectedVariantIdInput.value = '';
+                            resetToDefault(
+                                mainImage?.dataset.default || '/storage/product_images/default.jpg',
+                                parseFloat(priceDisplay?.dataset.price || 0),
+                                parseFloat(priceDisplay?.dataset.originalPrice || 0),
+                                parseInt(stockInfo?.dataset.stock || 0)
+                            );
+
+                        }
+
+                    });
+                });
+
+                // Xử lý thêm vào giỏ hàng
+                addToCartButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        if (!selectedVariantId && hasVariants) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vui lòng chọn biến thể!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        const quantity = parseInt(quantityInput.value);
+                        const stock = parseInt(stockInfo.textContent.split(' ')[0]);
+
+                        if (quantity > stock) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vượt quá số lượng tồn kho!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        fetch('/customer/cart/add', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    product_id: button.getAttribute('data-product-id'),
+                                    variant_id: selectedVariantId,
+                                    quantity: quantity
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'success',
+                                    title: data.message || 'Thêm vào giỏ thành công',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể thêm sản phẩm vào giỏ!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                    });
+                });
+            }
+
+
+            if (typeof initQuickViewScripts === 'function') {
+                initQuickViewScripts();
+            }
+        </script>
+    @endpush
 @endsection

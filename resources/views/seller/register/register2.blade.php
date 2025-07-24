@@ -26,7 +26,7 @@
                     <p>
                         Việc thu thập Thông Tin Thuế và Thông Tin Định Danh là bắt buộc
                         theo quy định của Luật an ninh mạng, Thương mại điện tử và Thuế của Việt Nam. Thông Tin Thuế và
-                        Thông Tin Định Danh sẽ được bảo vệ theo chính sách bảo mật của Shopee. Thông tin Người bán cung cấp
+                        Thông Tin Định Danh sẽ được bảo vệ theo chính sách bảo mật của ZynoxMall. Thông tin Người bán cung cấp
                         sẽ được sử dụng cho mục đích khấu trừ thuế (nếu có) và xuất hóa đơn do Người bán hoàn toàn chịu
                         trách nhiệm về tính chính xác của các thông tin đã cung cấp.
                     </p>
@@ -55,6 +55,9 @@
                                 <span>Công ty</span>
                             </label>
                         </div>
+                        @error('business_type')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Địa chỉ đăng ký kinh doanh -->
@@ -76,10 +79,22 @@
                                     <!-- Option phường/xã sẽ được render bằng JS -->
                                 </select>
                             </div>
+                            @error('business_province')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                            @error('business_district')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                            @error('business_ward')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                             <input type="text" name="business_address_detail"
                                 class="w-full border rounded px-3 py-2 text-sm mt-2"
                                 placeholder="Số nhà, tên đường..."
                                 value="{{ old('business_address_detail', session('register.business_address_detail')) }}">
+                            @error('business_address_detail')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
@@ -91,6 +106,9 @@
                         <div class="w-full sm:w-1/3">
                             <input type="email" name="invoice_email" class="w-full border rounded px-3 py-2"
                                 value="{{ old('invoice_email', session('register.invoice_email')) }}">
+                            @error('invoice_email')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                             <p class="text-sm text-gray-500 mt-1">Hóa đơn điện tử của bạn sẽ được gửi đến địa chỉ email này
                             </p>
                         </div>
@@ -103,23 +121,15 @@
                         <div class="w-full sm:w-1/3">
                             <input type="text" name="tax_code" class="w-full border rounded px-3 py-2"
                                 value="{{ old('tax_code', session('register.tax_code')) }}">
+                            @error('tax_code')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                             <p class="text-sm text-gray-500 mt-1">
                                 Mã số thuế là mã số thuế kinh doanh. <a href="#" class="text-blue-600 underline">Tìm
                                     hiểu thêm.</a>
                             </p>
                         </div>
                     </div>
-
-                    <!-- Hiển thị lỗi validate -->
-                    @if ($errors->any())
-                        <div class="mb-4 text-red-600">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
                     <!-- hr -->
                     <hr class="my-10">

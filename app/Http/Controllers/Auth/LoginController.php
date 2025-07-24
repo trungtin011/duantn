@@ -9,6 +9,7 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\DB;
 
 class LoginController extends Controller
 {
@@ -45,33 +46,28 @@ class LoginController extends Controller
         $key = 'login-attempt:' . strtolower($request->login) . ':' . $request->ip();
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-
-            // Kiểm tra trạng thái của người dùng
-            if ($user->isBanned()) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-                return redirect()->route('login')->withErrors([
-                    'login' => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
-                ]);
-            }
-
             $request->session()->regenerate();
             RateLimiter::clear($key);
-            return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
+
+            // Chuyển hướng đến URL mà người dùng muốn truy cập trước đó, hoặc về 'home' nếu không có
+            return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
         }
 
         RateLimiter::hit($key, 300);
         return back()->withErrors([
             'login' => 'Tài khoản hoặc mật khẩu không đúng.',
-        ])->withInput($request->only('login', 'remember'))
-            ->withInput($request->only('login'));
+        ])->withInput($request->only('login', 'remember'));
     }
 
     public function logout(Request $request)
     {
+        // Cập nhật last_activity trong bảng sessions trước khi đăng xuất
+        if (Auth::check()) {
+            DB::table('sessions')
+                ->where('user_id', Auth::id())
+                ->update(['last_activity' => time()]);
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -131,7 +127,7 @@ class LoginController extends Controller
             ]
         );
         Auth::login($user);
-        return redirect()->route('account.dashboard')->with('success', 'Đăng nhập bằng Facebook thành công!');
+        return redirect()->route('home')->with('success', 'Đăng nhập bằng Facebook thành công!');
     }
 
     public function redirectToFacebook()
@@ -141,5 +137,15 @@ class LoginController extends Controller
         return $socialiteProvider
             ->scopes(['email'])
             ->redirect();
+    }
+    public function showQrWaiting($token)
+    {
+        $qrConfirmUrl = route('qr.confirm.login', ['token' => $token]);
+        $qr_svg = \QrCode::format('svg')->size(200)->generate($qrConfirmUrl);
+
+        return view('auth.waiting-qr', [
+            'qr_svg' => $qr_svg,
+            'token' => $token,
+        ]);
     }
 }

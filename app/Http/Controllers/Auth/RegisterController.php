@@ -28,14 +28,12 @@ class RegisterController extends Controller
         ], [
          'username.required' => 'Tên đăng nhập là bắt buộc.',
             'username.required' => 'Tên đăng nhập là bắt buộc.',
-            
             'username.unique' => 'Tên đăng nhập đã tồn tại.',
-
             'fullname.required' => 'Họ và tên là bắt buộc.',
             'phone.required' => 'Số điện thoại là bắt buộc.',
             'phone.unique' => 'Số điện thoại đã tồn tại.',
             'email.required' => 'Email là bắt buộc.',
-            'email.unique' => 'Email đã tồn tại.',
+            'email.unique' => 'Email đã tồn tại.',  
             'password.required' => 'Mật khẩu là bắt buộc.',
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
             'password.confirmed' => 'Xác nhận mật khẩu không khớp.',

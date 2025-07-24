@@ -103,7 +103,7 @@ class PostController extends Controller
         $data = $request->all();
 
         // Xử lý slug
-        $slug = \Str::slug($request->title);
+        $slug = Str::slug($request->title);
         if (Post::where('slug', $slug)->where('id', '!=', $id)->exists()) {
             $slug .= '-' . time();
         }
@@ -131,16 +131,4 @@ class PostController extends Controller
         $post->delete();
         return redirect()->route('post.index')->with('success', 'Post deleted successfully!');
     }
-}
-use App\Models\Review;
-
-for ($i = 0; $i < 5; $i++) {
-    Review::create([
-        'userID' => 1,
-        'productID' => 4,
-        'shopID' => 1,        // ID shop có thật
-        'rating' => 5,
-        'comment' => 'Sản phẩm rất tốt!',
-        'created_at' => now()->subDays(rand(0, 4)), // trong 5 ngày gần đây
-    ]);
 }
