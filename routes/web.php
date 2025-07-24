@@ -61,7 +61,6 @@ Route::get('/user/order/order-detail', function () {
     return view('user.order.orderDetail');
 })->name('order_detail');
 
-
 // Route giỏ hàng
 Route::get('/cart', [CartController::class, 'index'])->name('cart');
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
