@@ -42,11 +42,9 @@ class CheckoutController extends Controller
         $discountedPrice = $basePrice;
         
         if ($combo->discount_type === 'percentage' && $combo->discount_value > 0) {
-            // Giảm giá theo phần trăm
             $discountMultiplier = 1 - ($combo->discount_value / 100);
             $discountedPrice = $basePrice * $discountMultiplier;
         } elseif ($combo->discount_type === 'fixed' && $combo->discount_value > 0) {
-            // Giảm giá cố định - phân bổ theo tỷ lệ giá sản phẩm trong combo
             $totalComboBasePrice = 0;
             foreach ($combo->products as $cp) {
                 $productPrice = $cp->variant ? ($cp->variant->sale_price ?? $cp->variant->price) : ($cp->product->sale_price ?? $cp->product->price);
@@ -54,18 +52,15 @@ class CheckoutController extends Controller
             }
             
             if ($totalComboBasePrice > 0) {
-                // Tính tỷ lệ giá của sản phẩm này trong combo
                 $productBasePrice = $basePrice * $comboProduct->quantity;
                 $discountRatio = $productBasePrice / $totalComboBasePrice;
                 $productDiscount = $combo->discount_value * $discountRatio;
                 $discountedPrice = $basePrice - ($productDiscount / $comboProduct->quantity);
             } else {
-                // Fallback: chia đều giảm giá cho tất cả sản phẩm
                 $discountedPrice = $basePrice - ($combo->discount_value / count($combo->products));
             }
         }
         
-        // Đảm bảo giá không âm
         return max(0, $discountedPrice);
     }
 
@@ -76,7 +71,6 @@ class CheckoutController extends Controller
         if (empty($selected_products)) {
             return false;
         }
-        $subtotal = 0;
         foreach ($selected_products as $selected) {
             if (!empty($selected['combo_id'])) {
                 $combo = Combo::with('products.product.variants')->find($selected['combo_id']);
@@ -111,7 +105,6 @@ class CheckoutController extends Controller
                         ];
                     }
                 }
-                $subtotal += $selected['subtotal'];
             } 
             else if (!empty($selected['product_id'])) {
                 $item = Product::with(['variants' => function($query) use ($selected) {
@@ -130,15 +123,15 @@ class CheckoutController extends Controller
                         'is_combo' => false,
                     ];
                 }
-                $subtotal += $selected['subtotal'];
             }
         }
-        $items['subtotal'] = $subtotal;
         return $items;
     }
 
     public function index(Request $request)
-    {   
+    {
+        session()->forget('used_coupon_data'); 
+
         $customer = Customer::where('userID', Auth::user()->id)->first();
         $user_coupon = CouponUser::where('user_id', Auth::user()->id)->first();
         $public_coupons = $this->getAvailableCoupons($customer);
@@ -147,8 +140,6 @@ class CheckoutController extends Controller
         if (!$items) {
             return redirect()->back()->with('error', 'Không có sản phẩm được chọn');
         }
-        $subtotal = $items['subtotal'];
-        unset($items['subtotal']);
         $shop_ids = [];
         foreach ($items as $item) {
             $shop_ids[] = $item['product']->shopID;
@@ -159,7 +150,7 @@ class CheckoutController extends Controller
         ->get();
         $user_addresses = UserAddress::where('userID', Auth::user()->id)->get();
         $user_points = Customer::where('userID', Auth::user()->id)->pluck('total_points')->first();
-        return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_coupon', 'subtotal', 'user_points','public_coupons'));
+        return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_coupon', 'user_points','public_coupons'));
     }
 
     protected function getAvailableCoupons($customer)
@@ -553,6 +544,13 @@ class CheckoutController extends Controller
 
     public function applyShopDiscount(Request $request)
     {
+        $used_coupon_already = session('used_coupon_data');
+        if($used_coupon_already) {
+            if($request->coupon_code == $used_coupon_already['code']) {
+                return response()->json(['error' => 'Bạn đã sử dụng mã giảm giá này, vui lòng chọn mã giảm giá khác'], 422);
+            }
+        }
+
         $coupon = Coupon::where('code', $request->coupon_code)->first();
         if (!$coupon) {
             return response()->json(['error' => 'Mã giảm giá không hợp lệ'], 422);
@@ -612,6 +610,31 @@ class CheckoutController extends Controller
             }
         }
 
-        return response()->json(['success' => true, 'used_coupon_data' => $coupon]);
+        $discount_value_coupon = $coupon->calculateDiscount((int)$request->total_amount);
+        if($coupon->max_discount_amount !== null) {
+            if($discount_value_coupon > $coupon->max_discount_amount) {
+                $discount_value_coupon = $coupon->max_discount_amount;
+            }
+        }
+
+        $used_coupon_data = [
+            'id' => (int) $coupon->id,
+            'code' => $coupon->code,
+            'discount_value' => (int) $discount_value_coupon,
+            'max_discount_amount' => $coupon->max_discount_amount !== null ? (int) $coupon->max_discount_amount : null,
+            'min_order_amount' => $coupon->min_order_amount !== null ? (int) $coupon->min_order_amount : null,
+            'max_uses_per_user' => $coupon->max_uses_per_user !== null ? (int) $coupon->max_uses_per_user : null,
+            'max_uses_total' => $coupon->max_uses_total !== null ? (int) $coupon->max_uses_total : null,
+            'rank_limit' => $coupon->rank_limit,
+            'start_date' => $coupon->start_date,
+            'end_date' => $coupon->end_date,
+            'is_active' => (int) $coupon->is_active,    
+            'status' => $coupon->status,
+            'discount_type' => $coupon->discount_type,
+            'type_coupon' => $coupon->type_coupon,
+            'order_amount' => (int) $request->total_amount,
+        ];
+        session(['used_coupon_data' => $used_coupon_data]);
+        return response()->json(['success' => true, 'used_coupon_data' => $used_coupon_data]);
     }
 }

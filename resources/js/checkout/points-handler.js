@@ -3,7 +3,6 @@ function initializePointsHandler(user_points) {
     const totalPoints = document.getElementById('user_points');
     const usedPoints = document.getElementById('used_points');
 
-    console.log(user_points);
 
     validatePoints();
 

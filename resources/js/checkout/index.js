@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     initializeCheckoutFormHandler();
-    initializeDiscountHandler(a.subtotal, a.applyDiscountUrl, a.csrfToken);
+    initializeDiscountHandler(window.calculateSubtotal(), a.applyDiscountUrl, a.csrfToken);
     initializePointsHandler(a.user_points);
     initializeTotalCalculator();
     initializeUIHandler();

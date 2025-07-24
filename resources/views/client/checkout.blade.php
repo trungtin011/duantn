@@ -609,7 +609,7 @@
                         <div class="space-y-3 mb-4">
                             <div class="flex justify-between text-gray-600">
                                 <span>Tạm tính:</span>
-                                <span id="subtotal">{{ number_format($subtotal, 0, ',', '.') }}₫</span>
+                                <span id="subtotal">{{ number_format(0, 0, ',', '.') }}₫</span>
                             </div>
                         
                             <div class="flex justify-between text-gray-600">
@@ -742,7 +742,6 @@
         window.checkoutData = {
             addresses: @json($user_addresses),
             shops: @json($shops),
-            subtotal: @json($subtotal),
             user_points: @json($user_points),
             csrfToken: '{{ csrf_token() }}',
             applyDiscountUrl: '{{ route("customer.apply-app-discount") }}',
@@ -799,112 +798,105 @@
         });
     </script>
     <script>
-    // Hàm hiển thị popup mã giảm giá
-    function showDiscountsModal(shopId) {
-        const modal = document.getElementById(`discounts-modal-${shopId}`);
-        if (modal) {
-            modal.classList.remove('hidden');
-            // Enable lại các nút khi mở modal
-            document.querySelectorAll(`.use-shop-coupon-btn[data-shop-id="${shopId}"]`).forEach(btn => {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            });
+        function showDiscountsModal(shopId) {
+            const modal = document.getElementById(`discounts-modal-${shopId}`);
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.querySelectorAll(`.use-shop-coupon-btn[data-shop-id="${shopId}"]`).forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                });
+            }
         }
-    }
-    
-    function closeDiscountsModal(shopId) {
-        const modal = document.getElementById(`discounts-modal-${shopId}`);
-        if (modal) {
-            modal.classList.add('hidden');
+        
+        function closeDiscountsModal(shopId) {
+            const modal = document.getElementById(`discounts-modal-${shopId}`);
+            if (modal) {
+                modal.classList.add('hidden');
+            }
         }
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.use-shop-coupon-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const shopId = btn.getAttribute('data-shop-id');
-                const code = btn.getAttribute('data-coupon-code');
-                const discountAmountInput = document.getElementById('discount-amount-shop-' + shopId);
-                const discountContextInput = document.getElementById('discount-context-shop-' + shopId);
-                const totalAmountShop = parseInt(document.getElementById('total-product-price-shop-'+shopId).innerText.replace(/[^\d]/g, ''));
-                closeDiscountsModal(shopId);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.use-shop-coupon-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const shopId = btn.getAttribute('data-shop-id');
+                    const code = btn.getAttribute('data-coupon-code'); 
+                    const discountAmountInput = document.getElementById('discount-amount-shop-' + shopId);
+                    const discountContextInput = document.getElementById('discount-context-shop-' + shopId);
+                    const totalAmountElem = document.getElementById('total-product-price-shop-'+shopId);
 
-                fetch(`{{ route('customer.apply-shop-discount') }}`, { 
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ shop_id: shopId, coupon_code: code, total_amount: totalAmountShop }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const { type_coupon, discount_type, discount_value } = data.used_coupon_data;
-                        if (type_coupon === 'shipping') {
-                            const shippingFeeInput = document.getElementById('shipping-fee-shop-' + shopId);
-                            if (shippingFeeInput) {
-                                let currentShipping = parseInt(shippingFeeInput.innerHTML.replace(/[^\d]/g, ''));
-                                let newShipping = currentShipping;
-                                if (discount_type === 'percentage') {
-                                    newShipping = currentShipping - Math.round(currentShipping * discount_value / 100);
-                                } else if (discount_type === 'fixed') {
-                                    newShipping = currentShipping - discount_value;
+                    if (!totalAmountElem.dataset.originalPrice) {
+                        totalAmountElem.dataset.originalPrice = totalAmountElem.innerText.replace(/[^\d]/g, '');
+                    }
+                    const totalAmountShop = parseInt(totalAmountElem.dataset.originalPrice);
+                    closeDiscountsModal(shopId);
+
+                    fetch(`{{ route('customer.apply-shop-discount') }}`, { 
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ shop_id: shopId, coupon_code: code, total_amount: totalAmountShop }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const { type_coupon, discount_type, discount_value } = data.used_coupon_data;
+                            if (type_coupon === 'shipping') {
+                                const shippingFeeInput = document.getElementById('shipping-fee-shop-' + shopId);
+                                if (shippingFeeInput) {
+                                    let currentShipping = parseInt(shippingFeeInput.innerHTML.replace(/[^\d]/g, ''));
+                                    let newShipping = currentShipping;
+                                    if (discount_type === 'percentage') {
+                                        newShipping = currentShipping - Math.round(currentShipping * discount_value / 100);
+                                    } else if (discount_type === 'fixed') {
+                                        newShipping = currentShipping - discount_value;
+                                    }
+                                    if (newShipping < 0) newShipping = 0;
+                                    shippingFeeInput.innerText = newShipping.toLocaleString('vi-VN') + '₫';
                                 }
-                                if (newShipping < 0) newShipping = 0;
-                                shippingFeeInput.innerText = newShipping.toLocaleString('vi-VN') + '₫';
-                            }
-                            discountContextInput.classList.remove('hidden');
-                            discountAmountInput.innerText = (currentShipping - newShipping).toLocaleString('vi-VN') + '₫';
-                        } else if (type_coupon === 'order') {
-                            const totalProductPriceInput = document.getElementById('total-product-price-shop-' + shopId);
-                            if (totalProductPriceInput) {
-                                let currentTotal = parseInt(totalProductPriceInput.innerHTML.replace(/[^\d]/g, ''));
-                                let newTotal = currentTotal;
-                                if (discount_type === 'percentage') {
-                                    newTotal = currentTotal - Math.round(currentTotal * discount_value / 100);
-                                } else if (discount_type === 'fixed') {
-                                    newTotal = currentTotal - discount_value;
-                                }
-                                if (newTotal < 0) newTotal = 0;
-                                totalProductPriceInput.innerText = newTotal.toLocaleString('vi-VN') + '₫';
                                 discountContextInput.classList.remove('hidden');
-                                discountAmountInput.innerText = (currentTotal - newTotal).toLocaleString('vi-VN') + '₫';
+                                discountAmountInput.innerText = (currentShipping - newShipping).toLocaleString('vi-VN') + '₫';
+                                updateTotal();
+                            } else{
+                                const totalAmountShop = parseInt(totalAmountElem.dataset.originalPrice);
+                                let newTotal = totalAmountShop;
+                                newTotal = totalAmountShop - data.used_coupon_data.discount_value;
+                                totalAmountElem.innerText = newTotal.toLocaleString('vi-VN') + '₫';
+                                discountContextInput.classList.remove('hidden');
+                                discountAmountInput.innerText = data.used_coupon_data.discount_value.toLocaleString('vi-VN') + '₫';
+                                updateTotal();
                             }
-                        }
-                        // Disable các nút "Sử dụng" coupon cho shop này
-                        document.querySelectorAll(`.use-shop-coupon-btn[data-shop-id="${shopId}"]`).forEach(btn => {
-                            btn.disabled = true;
-                            btn.classList.add('opacity-50', 'cursor-not-allowed');
-                        });
-                    } else if (data.error) {
-                        if (typeof data.error === 'object') {
-                            let messages = [];
-                            for (const key in data.error) {
-                                if (Array.isArray(data.error[key])) {
-                                    messages = messages.concat(data.error[key]);
-                                } else {
-                                    messages.push(data.error[key]);
+                        } else if (data.error) {
+                            console.log(data.error);
+                            if (typeof data.error === 'object') {
+                                let messages = [];
+                                for (const key in data.error) {
+                                    if (Array.isArray(data.error[key])) {
+                                        messages = messages.concat(data.error[key]);
+                                    } else {
+                                        messages.push(data.error[key]);
+                                    }
                                 }
+                                alert(messages.join('\n'));
+                            } else {
+                                alert(data.error);
                             }
-                            alert(messages.join('\n'));
-                        } else {
-                            alert(data.error);
                         }
+                    });
+                });
+            });
+            
+            window.addEventListener('click', function(e) {
+                document.querySelectorAll('[id^="discounts-modal-"]').forEach(modal => {
+                    if (e.target === modal) {
+                        const shopId = modal.id.split('-').pop();
+                        closeDiscountsModal(shopId);
                     }
                 });
             });
         });
-        
-        window.addEventListener('click', function(e) {
-            document.querySelectorAll('[id^="discounts-modal-"]').forEach(modal => {
-                if (e.target === modal) {
-                    const shopId = modal.id.split('-').pop();
-                    closeDiscountsModal(shopId);
-                }
-            });
-        });
-    });
-</script>
+    </script>
 
 @endpush
