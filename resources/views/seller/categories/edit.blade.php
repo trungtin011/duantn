@@ -1,14 +1,8 @@
-@extends('layouts.admin')
-
-@section('head')
-    @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/admin/categories.css') }}">
-    @endpush
-@endsection
+@extends('layouts.seller_home')
 
 @section('content')
-    <div class="admin-page-header">
-        <h1 class="admin-page-title">Chỉnh sửa danh mục</h1>
+    <div class="mt-[32px] mb-[24px]">
+        <h1 class="font-semibold text-[28px]">Chỉnh sửa danh mục</h1>
         <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Trang chủ</a> / <a
                 href="{{ route('admin.categories.index') }}" class="admin-breadcrumb-link">Danh mục</a> / Chỉnh sửa</div>
     </div>
@@ -16,7 +10,7 @@
     <div class="row g-3">
         {{-- Left Column: Add/Edit Category Form --}}
         <div class="col-md-4">
-            <div class="admin-card">
+            <div class="p-[24px] bg-white rounded-[8px]">
                 <form action="{{ route('admin.categories.update', $category->id) }}" method="POST"
                     enctype="multipart/form-data">
                     @csrf
@@ -105,7 +99,7 @@
 
         {{-- Right Column: Danh sách danh mục con --}}
         <div class="col-md-8">
-            <div class="admin-card">
+            <div class="p-[24px] bg-white rounded-[8px]">
                 <h5 class="mb-3 admin-card-title">Danh mục con</h5>
                 <div class="table-responsive admin-table-container">
                     <table class="w-full text-xs text-left text-gray-400 border-gray-100">

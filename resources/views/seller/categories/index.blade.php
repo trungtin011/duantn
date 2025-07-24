@@ -1,21 +1,15 @@
-@extends('layouts.admin')
-
-@section('head')
-    @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/admin/categories.css') }}">
-    @endpush
-@endsection
+@extends('layouts.seller_home')
 
 @section('content')
-    <div class="admin-page-header">
-        <h1 class="admin-page-title">Danh mục</h1>
+    <div class="mt-[32px] mb-[24px]">
+        <h1 class="font-semibold text-[28px]">Danh mục</h1>
         <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Trang chủ</a> / Danh mục</div>
     </div>
     @include('layouts.notification')
     <div class="row g-3">
         {{-- Left Column: Add/Edit Category Form --}}
         <div class="col-md-4">
-            <div class="admin-card">
+            <div class="p-[24px] bg-white rounded-[8px]">
                 <form action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <h5 class="mb-3 admin-card-title">Tải lên ảnh</h5>
@@ -104,7 +98,7 @@
 
         {{-- Right Column: Category List Table --}}
         <div class="col-md-8">
-            <div class="admin-card">
+            <div class="p-[24px] bg-white rounded-[8px]">
                 <div class="table-responsive admin-table-container">
                     <table class="w-full text-xs text-left text-gray-400 border-gray-100">
                         <thead class="text-gray-300 font-semibold border-b border-gray-100">
