@@ -83,9 +83,9 @@
         <nav class="desktop-navigation-menu">
             <div class="container">
                 <ul class="desktop-menu-category-list">
-                    <li class="menu-category">
+                    {{-- <li class="menu-category">
                         <a href="#" class="menu-title">Trang chủ</a>
-                    </li>
+                    </li> --}}
                     <li class="menu-category">
                         <a href="{{ route('combo.index') }}" class="menu-title">Combo</a>
                     </li>
@@ -540,12 +540,12 @@
                                                 @endfor
                                             </div>
                                             <div class="price-box">
-                                                @if ($product->sale_price)
-                                                    <del>{{ number_format($product->price, 0, ',', '.') }}₫</del>
+                                                @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                    <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                                     <p class="price">
-                                                        {{ number_format($product->sale_price, 0, ',', '.') }}₫</p>
+                                                        {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
                                                 @else
-                                                    <p class="price">{{ number_format($product->price, 0, ',', '.') }}₫
+                                                    <p class="price">{{ number_format($product->display_price, 0, ',', '.') }}₫
                                                     </p>
                                                 @endif
                                             </div>
@@ -560,7 +560,7 @@
                 <div class="product-box">
                     @if ($flashSaleProducts->count())
                         <div class="product-demo">
-                            <h2 class="product-title">⚡ FLASH SALE</h2>
+                            <h2 class="product-title">Flash Sale</h2>
                             @foreach ($flashSaleProducts as $product)
                                 <div class="flash-sale-box mb-4">
                                     {{-- Header: FLASH SALE + Countdown --}}
@@ -590,7 +590,8 @@
                             @endforeach
                         </div>
                     @endif
-                    <div class="product-featured">
+
+                    {{-- <div class="product-featured">
                         <h2 class="title">Flash Sale</h2>
                         <div class="showcase-wrapper has-scrollbar">
                             @foreach ($flashSaleProducts as $product)
@@ -620,7 +621,7 @@
                                                 <p class="price">{{ number_format($product->flash_sale_price) }}₫</p>
                                                 <del>{{ number_format($product->price) }}₫</del>
                                             </div>
-                                            <button class="add-cart-btn">Thêm vào giỏ</button>
+                                            <button class="add-cart-btn">Thêm vào giỏ hàng</button>
                                             <div class="showcase-status">
                                                 <div class="wrapper">
                                                     <p>Đã bán: <b>{{ $product->sold_quantity ?? 0 }}</b></p>
@@ -659,7 +660,9 @@
                                 </div>
                             @endforeach
                         </div>
-                    </div>
+                    </div> --}}
+
+                    @include('partials.combo_products')
 
                     <div class="product-minimal">
                         <div class="product-showcase">
@@ -689,12 +692,12 @@
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
-                                                        @if ($product->sale_price)
-                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">{{ number_format($product->display_price) }}₫
                                                             </p>
-                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
                                                         @else
-                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                            <p class="price">{{ number_format($product->display_price) }}₫</p>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -717,12 +720,12 @@
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
-                                                        @if ($product->sale_price)
-                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">{{ number_format($product->display_price) }}₫
                                                             </p>
-                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
                                                         @else
-                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                            <p class="price">{{ number_format($product->display_price) }}₫</p>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -760,12 +763,12 @@
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
-                                                        @if ($product->sale_price)
-                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">{{ number_format($product->display_price) }}₫
                                                             </p>
-                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
                                                         @else
-                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                            <p class="price">{{ number_format($product->display_price) }}₫</p>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -788,12 +791,12 @@
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
-                                                        @if ($product->sale_price)
-                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">{{ number_format($product->display_price) }}₫
                                                             </p>
-                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
                                                         @else
-                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                            <p class="price">{{ number_format($product->display_price) }}₫</p>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -840,12 +843,12 @@
                                                         @endfor
                                                     </div>
                                                     <div class="price-box">
-                                                        @if ($product->sale_price)
-                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">{{ number_format($product->display_price) }}₫
                                                             </p>
-                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
                                                         @else
-                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                            <p class="price">{{ number_format($product->display_price) }}₫</p>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -877,12 +880,12 @@
                                                         @endfor
                                                     </div>
                                                     <div class="price-box">
-                                                        @if ($product->sale_price)
-                                                            <p class="price">{{ number_format($product->sale_price) }}₫
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">{{ number_format($product->display_price) }}₫
                                                             </p>
-                                                            <del>{{ number_format($product->price) }}₫</del>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
                                                         @else
-                                                            <p class="price">{{ number_format($product->price) }}₫</p>
+                                                            <p class="price">{{ number_format($product->display_price) }}₫</p>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -949,12 +952,12 @@
                                             @endfor
                                         </div>
                                         <div class="price-box">
-                                            @if ($product->sale_price)
-                                                <p class="price">{{ number_format($product->sale_price, 0, ',', '.') }}₫
+                                            @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                <p class="price">{{ number_format($product->display_price, 0, ',', '.') }}₫
                                                 </p>
-                                                <del>{{ number_format($product->price, 0, ',', '.') }}₫</del>
+                                                <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                             @else
-                                                <p class="price">{{ number_format($product->price, 0, ',', '.') }}₫</p>
+                                                <p class="price">{{ number_format($product->display_price, 0, ',', '.') }}₫</p>
                                             @endif
                                         </div>
                                     </div>
@@ -1070,7 +1073,6 @@
                 </div>
             </div>
         </div>
-    </main>
 
 
     <!-- Modal Quick View -->
@@ -1197,6 +1199,46 @@
                     });
                 });
 
+                // Add Combo to Cart functionality (moved outside initQuickViewScripts)
+                document.querySelectorAll('.add-combo-cart-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const comboId = this.getAttribute('data-combo-id');
+
+                        fetch('/cart/add-combo', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ combo_id: comboId })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: data.success ? 'success' : 'error',
+                                    title: data.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error adding combo to cart:', error);
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể thêm combo vào giỏ!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                    });
+                });
+
             });
 
             function initQuickViewScripts() {
@@ -1221,6 +1263,16 @@
                 if (!hasVariants) {
                     selectedVariantId = 'default'; // sản phẩm không có biến thể
                     selectedVariantIdInput.value = 'default';
+                    // Explicitly display default product price for simple products on modal open
+                    const defaultPrice = parseFloat(priceDisplay.dataset.price);
+                    const defaultOriginalPrice = parseFloat(priceDisplay.dataset.originalPrice);
+                    const defaultStock = parseInt(stockInfo.dataset.stock);
+                    resetToDefault(
+                        mainImage?.src || '/storage/product_images/default.jpg', // Use main image src as default
+                        defaultPrice,
+                        defaultOriginalPrice,
+                        defaultStock
+                    );
                 }
 
                 // Thay ảnh chính khi click ảnh phụ
@@ -1436,6 +1488,7 @@
                             });
                     });
                 });
+
             }
 
 

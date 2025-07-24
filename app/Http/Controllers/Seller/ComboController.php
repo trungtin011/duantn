@@ -37,6 +37,9 @@ class ComboController extends Controller
 
         $combos = $query->latest()->paginate(10);
 
+        // Temporarily dump data for debugging
+        // dd($combos);
+
         return view('seller.combo.index', compact('combos'));
     }
 
@@ -48,7 +51,20 @@ class ComboController extends Controller
         }
         $products = Product::where('shopID', $shop->id)->where('status', 'active')->with('variants')->get();
 
-        return view('seller.combo.create', compact('products'));
+        $productDataForJs = $products->mapWithKeys(function ($product) {
+            return [$product->id => [
+                'price' => $product->sale_price ?? $product->price,
+                'variants' => $product->variants->map(function ($variant) {
+                    return [
+                        'id' => $variant->id,
+                        'name' => $variant->name,
+                        'price' => $variant->sale_price ?? $variant->price,
+                    ];
+                })
+            ]];
+        });
+
+        return view('seller.combo.create', compact('products', 'productDataForJs'));
     }
 
     public function store(Request $request)
@@ -155,7 +171,7 @@ class ComboController extends Controller
             ]);
         }
 
-        return redirect()->route('seller.combo.index')->with('success', 'Combo created successfully.');
+        return redirect()->route('seller.combo.index')->with('success', 'Combo đã được tạo thành công.');
     }
 
     public function update(Request $request, $id)
@@ -231,7 +247,7 @@ class ComboController extends Controller
         // Update combo
         $comboData = [
             'combo_name' => $request->name,
-            'slug' => \Str::slug($request->name),
+            'slug' => Str::slug($request->name),
             'combo_description' => $request->combo_description,
             'image' => $imagePath,
             'total_price' => $totalPrice,
@@ -268,7 +284,7 @@ class ComboController extends Controller
             ]);
         }
 
-        return redirect()->route('seller.combo.index')->with('success', 'Combo updated successfully.');
+        return redirect()->route('seller.combo.index')->with('success', 'Combo đã được cập nhật thành công.');
     }
 
     public function edit($id)
@@ -304,6 +320,6 @@ class ComboController extends Controller
         // Delete combo
         $combo->delete();
 
-        return redirect()->route('seller.combo.index')->with('success', 'Combo deleted successfully.');
+        return redirect()->route('seller.combo.index')->with('success', 'Combo đã được xóa thành công.');
     }
 }
