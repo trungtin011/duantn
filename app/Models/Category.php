@@ -23,19 +23,23 @@ class Category extends Model
         'status' => 'string',
     ];
 
-    // Mối quan hệ với SubCategory
-    // public function subCategories()
-    // {
-    //     return $this->hasMany(SubCategory::class, 'categoryID', 'id');
-    // }
-    
     public function subCategories()
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
 
-    public function parentCategory()
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    public function parent()
     {
         return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_categories', 'category_id', 'product_id');
     }
 }

@@ -22,9 +22,23 @@ class Brand extends Model
         'status' => 'string',
     ];
 
-    // Mối quan hệ với SubBrand
     public function subBrands()
     {
-        return $this->hasMany(SubBrand::class, 'brandID');
+        return $this->hasMany(Brand::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Brand::class, 'parent_id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Brand::class, 'parent_id');
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_brands', 'brand_id', 'product_id');
     }
 }

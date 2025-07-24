@@ -4,27 +4,37 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
-use App\Enums\UserRole;
-use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class CheckRole
 {
     public function handle($request, Closure $next, $role)
     {
         if (!Auth::check()) {
+            Log::info('CheckRole: User not authenticated');
             return redirect()->route('403');
         }
 
         $user = Auth::user();
 
-        // Kiểm tra nếu người dùng bị khóa
+        Log::info('CheckRole', [
+            'user_id' => $user->id,
+            'user_role' => $user->role->value ?? 'null',
+            'required_role' => $role,
+            'is_banned' => $user->isBanned(),
+        ]);
+
         if ($user->isBanned()) {
-            Auth::logout(); // Đăng xuất người dùng nếu họ bị khóa
+            Log::info('CheckRole: User is banned', ['user_id' => $user->id]);
+            Auth::logout();
             return redirect()->route('403');
         }
 
-        // Kiểm tra vai trò
-        if ($user->role !== $role && !in_array($user->role, UserRole::cases())) {
+        if ($user->role->value !== $role) {
+            Log::info('CheckRole: Role mismatch', [
+                'user_role' => $user->role->value ?? 'null',
+                'required_role' => $role
+            ]);
             return redirect()->route('403');
         }
 

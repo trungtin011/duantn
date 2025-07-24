@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\Review;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class UpdateProductBadges extends Command
 {

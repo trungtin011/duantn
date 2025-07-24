@@ -17,17 +17,28 @@ class Attribute extends Model
         return $this->hasMany(AttributeValue::class, 'attribute_id');
     }
 
-    public function products(): HasMany
+    // public function products(): HasMany
+    // {
+    //     return $this->hasManyThrough(
+    //         Product::class,
+    //         ProductVariant::class,
+    //         'id',
+    //         'id',
+    //         'id',
+    //         'productID'
+    //     )->join('product_variant_attribute_values', 'product_variants.id', '=', 'product_variant_attribute_values.product_variant_id')
+    //         ->join('attribute_values', 'product_variant_attribute_values.attribute_value_id', '=', 'attribute_values.id')
+    //         ->where('attribute_values.attribute_id', $this->id);
+    // }
+
+    public function products()
     {
-        return $this->hasManyThrough(
-            Product::class,
-            ProductVariant::class,
-            'id',
-            'id',
-            'id',
-            'productID'
-        )->join('product_variant_attribute_values', 'product_variants.id', '=', 'product_variant_attribute_values.product_variant_id')
-            ->join('attribute_values', 'product_variant_attribute_values.attribute_value_id', '=', 'attribute_values.id')
-            ->where('attribute_values.attribute_id', $this->id);
+        return $this->belongsToMany(Product::class, 'product_attribute')
+            ->withPivot('id');
+    }
+
+    public function values()
+    {
+        return $this->hasMany(AttributeValue::class, 'attribute_id', 'id');
     }
 }

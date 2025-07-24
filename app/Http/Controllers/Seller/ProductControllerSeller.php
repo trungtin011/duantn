@@ -11,12 +11,14 @@ use App\Models\Product;
 use App\Models\ProductDimension;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
-use App\Models\ProductVariantAttributeValue; // Thêm model mới
+use App\Models\ProductVariantAttributeValue;
+use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ProductControllerSeller extends Controller
 {
@@ -25,153 +27,432 @@ class ProductControllerSeller extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['variants', 'images']);
+        $seller = Auth::user()->seller;
+        $shop = $seller->shops->first(); // Hoặc dùng session('current_shop_id') nếu bạn có hỗ trợ đa shop
 
+        if (!$shop) {
+            return back()->with('error', 'Bạn chưa có shop để quản lý sản phẩm.');
+        }
+
+        $query = Product::with(['variants', 'images'])
+            ->where('shopID', $shop->id); // 🔐 Lọc sản phẩm đúng shop
+
+        // Tìm kiếm
         if ($request->filled('search')) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('sku', 'LIKE', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                    ->orWhere('sku', 'like', "%{$searchTerm}%");
+            });
         }
 
+        // Lọc trạng thái
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            switch ($request->status) {
+                case 'low_stock':
+                    $query->where('stock_total', '<=', 5)->where('stock_total', '>', 0);
+                    break;
+                case 'out_of_stock':
+                    $query->where('stock_total', 0);
+                    break;
+                case 'scheduled':
+                case 'active':
+                case 'inactive':
+                    $query->where('status', $request->status);
+                    break;
+            }
         }
 
-        $products = $query->paginate(5);
+        $products = $query->latest()->paginate(10);
 
         return view('seller.products.index', compact('products'));
     }
-
 
     /**
      * Hiển thị form thêm sản phẩm đơn giản
      */
     public function create()
     {
-        $categories = Category::where('status', 'active')->get();
-        $brands = Brand::where('status', 'active')->get();
-        return view('seller.products.create', compact('categories', 'brands'));
+        $brands = Brand::all();
+        $categories = Category::all();
+        $allAttributes = Attribute::with(['values' => function ($query) {
+            $query->whereNotNull('value')->where('value', '!=', '');
+        }])
+            ->whereNotNull('name')
+            ->where('name', '!=', '')
+            ->get()
+            ->map(function ($attr) {
+                return [
+                    'id' => $attr->id,
+                    'name' => $attr->name,
+                    'values' => $attr->values->pluck('value')->toArray(),
+                ];
+            })
+            ->toArray();
+
+        Log::info('Dữ liệu allAttributes trong create', [
+            'allAttributes' => $allAttributes,
+        ]);
+
+        return view('seller.products.create', compact('brands', 'categories', 'allAttributes'));
     }
 
-    /**
-     * Lưu sản phẩm đơn giản
+    /** 
+     * Lưu sản phẩm mới
      */
     public function store(Request $request)
     {
+        Log::info('Request all', $request->all());
+        $request->validate(
+            $this->validationRules(),
+            $this->validationMessages()
+        );
+
         try {
             DB::beginTransaction();
 
-            $rules = [
-                'name' => 'required|string|max:100',
-                'description' => 'nullable|string',
-                'brand' => 'required|string|max:100',
-                'category' => 'required|string|max:100',
-                'sku' => 'required|string|max:100|unique:products,sku',
-                'price' => 'required|numeric|min:0',
-                'purchase_price' => 'required|numeric|min:0',
-                'sale_price' => 'required|numeric|min:0',
-                'stock_total' => 'required|integer|min:0',
-                'meta_title' => 'nullable|string|max:255',
-                'meta_description' => 'nullable|string|max:320',
-                'meta_keywords' => 'nullable|string|max:255',
-                'attributes' => 'nullable|array',
-                'variants' => 'nullable|array',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            ];
+            Log::info('Creating new product', [
+                'request_data' => $request->except(['main_image', 'images', 'variant_images']),
+                'has_main_image' => $request->hasFile('main_image'),
+                'has_additional_images' => $request->hasFile('images'),
+                'has_variants' => $request->filled('variants'),
+                'variants_data' => $request->variants,
+                'user_id' => Auth::id() ?? 'guest'
+            ]);
 
-            $request->validate($rules);
+            // Kiểm tra seller và shop
+            $seller = Auth::user()->seller;
+            if (!$seller) {
+                Log::error('Seller not found for user ID: ' . Auth::id());
+                return back()->withErrors('Bạn cần đăng ký làm seller trước.')->withInput();
+            }
 
+            $shop = $seller->shops()->first();
+            if (!$shop) {
+                $shop = Shop::create([
+                    'ownerID' => $seller->userID,
+                    'shop_name' => 'Default Shop for Seller ' . $seller->id,
+                    'shop_phone' => '0900000000',
+                    'shop_email' => 'default_' . $seller->id . '@example.com',
+                    'shop_description' => 'Mô tả mặc định cho shop của seller ' . $seller->id,
+                    'shop_logo' => '/logos/default.png',
+                    'shop_banner' => '/banners/default.png',
+                    'shop_status' => 'active',
+                ]);
+                Log::info('Created default shop for seller', ['seller_id' => $seller->id, 'shop_id' => $shop->id]);
+            }
+
+            if ($request->sale_price < $request->purchase_price) {
+                return back()->withErrors(['sale_price' => 'Giá bán không được nhỏ hơn giá nhập.'])->withInput();
+            }
+
+            // Kiểm tra loại sản phẩm
+            $isVariant = $request->product_type === 'variant';
+
+            // Xử lý meta_keywords
             $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
 
-            // Lưu sản phẩm chính
+            // Lưu sản phẩm
             $product = Product::create([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description ?: '',
-                'brand' => $request->brand,
-                'category' => $request->category,
-                'sku' => $request->sku,
-                'price' => $request->price,
-                'purchase_price' => $request->purchase_price,
-                'sale_price' => $request->sale_price,
-                'stock_total' => $request->stock_total,
+                'sku' => $isVariant ? null : $request->sku,
+                'price' => $isVariant ? null : $request->price,
+                'purchase_price' => $isVariant ? null : $request->purchase_price,
+                'sale_price' => $isVariant ? null : $request->sale_price,
+                'stock_total' => $isVariant ? null : $request->stock_total,
                 'meta_title' => $request->meta_title,
                 'meta_description' => $request->meta_description,
                 'meta_keywords' => $metaKeywords,
                 'is_featured' => $request->has('is_featured') ? 1 : 0,
-                'is_variant' => $request->filled('variants') ? 1 : 0,
+                'is_variant' => $isVariant ? 1 : 0,
                 'status' => $request->save_draft ? 'draft' : 'active',
                 'sold_quantity' => 0,
-                'created_at' => now(),
+                'shopID' => $shop->id,
             ]);
 
-            // Lưu kích thước
-            ProductDimension::create([
-                'productID' => $product->id,
-                'variantID' => null,
-                'length' => $request->length ?? 0,
-                'width' => $request->width ?? 0,
-                'height' => $request->height ?? 0,
-                'weight' => $request->weight ?? 0,
+            Log::info('Product created', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'has_variants' => $request->filled('variants'),
             ]);
 
-            // Lưu thuộc tính
-            if ($request->filled('attributes')) {
-                foreach ($request->attributes as $attributeInput) {
-                    $attribute = Attribute::firstOrCreate(['name' => $attributeInput['name']]);
-                    $values = explode(',', $attributeInput['values']);
-                    foreach ($values as $value) {
-                        $value = trim($value);
-                        if ($value) {
-                            AttributeValue::firstOrCreate([
-                                'attribute_id' => $attribute->id,
-                                'value' => $value,
-                            ]);
-                        }
-                    }
-                }
+            // Lưu danh mục
+            if ($request->filled('category_ids') && is_array($request->category_ids)) {
+                $product->categories()->sync($request->category_ids);
+                Log::info('Categories synced', [
+                    'product_id' => $product->id,
+                    'category_ids' => $request->category_ids
+                ]);
             }
 
-            // Lưu biến thể và ảnh trong các giao dịch riêng biệt
-            if ($request->filled('variants')) {
-                foreach ($request->variants as $variantData) {
-                    DB::beginTransaction(); // Bắt đầu giao dịch cho từng biến thể
-                    try {
-                        $variant = ProductVariant::create([
-                            'productID' => $product->id,
-                            'variant_name' => $variantData['name'],
-                            'price' => $variantData['price'],
-                            'purchase_price' => $variantData['purchase_price'],
-                            'sale_price' => $variantData['sale_price'],
-                            'stock' => $variantData['stock_total'],
-                            'sku' => $variantData['sku'],
-                            'status' => 'active',
+            // Lưu thương hiệu
+            if ($request->filled('brand_ids') && is_array($request->brand_ids)) {
+                $product->brands()->sync($request->brand_ids);
+                Log::info('Brands synced', [
+                    'product_id' => $product->id,
+                    'brand_ids' => $request->brand_ids
+                ]);
+            }
+
+            // Xử lý thuộc tính
+            if ($isVariant && $request->has('attributes')) {
+                Log::info('Dữ liệu attributes được gửi', [
+                    'attributes_raw' => $request->input('attributes'),
+                    'is_array' => is_array($request->input('attributes')),
+                    'attributes_count' => is_array($request->input('attributes')) ? count($request->input('attributes')) : 0
+                ]);
+
+                $attributeIds = [];
+                if (is_array($request->input('attributes'))) {
+                    foreach ($request->input('attributes', []) as $index => $attrData) {
+                        Log::info('Xử lý thuộc tính', [
+                            'attribute_index' => $index,
+                            'attribute_data' => $attrData
                         ]);
 
-                        ProductDimension::create([
-                            'productID' => $product->id,
-                            'variantID' => $variant->id,
-                            'length' => $variantData['length'] ?? 0,
-                            'width' => $variantData['width'] ?? 0,
-                            'height' => $variantData['height'] ?? 0,
-                            'weight' => $variantData['weight'] ?? 0,
-                        ]);
+                        // Bỏ qua nếu thiếu id hoặc name
+                        if (empty($attrData['id']) && empty(trim($attrData['name'] ?? ''))) {
+                            Log::warning('Bỏ qua thuộc tính do thiếu id và tên', [
+                                'attribute_index' => $index,
+                                'attribute_data' => $attrData
+                            ]);
+                            continue;
+                        }
 
-                        if (isset($variantData['attributes'])) {
-                            foreach ($variantData['attributes'] as $attrData) {
-                                $attribute = Attribute::firstOrCreate(['name' => $attrData['attribute_name']]);
-                                $attributeValue = AttributeValue::firstOrCreate([
+                        // Tìm hoặc tạo thuộc tính
+                        $attribute = null;
+                        if (!empty($attrData['id']) && $attrData['id'] !== 'new') {
+                            $attribute = Attribute::find($attrData['id']);
+                            if (!$attribute) {
+                                Log::warning('Không tìm thấy thuộc tính với ID', [
+                                    'attribute_id' => $attrData['id'],
+                                    'attribute_index' => $index,
+                                    'database_attributes' => Attribute::pluck('id')->toArray()
+                                ]);
+                                continue;
+                            }
+                            Log::info('Tìm thấy thuộc tính', [
+                                'attribute_id' => $attribute->id,
+                                'attribute_name' => $attribute->name
+                            ]);
+                        } elseif (!empty(trim($attrData['name'] ?? ''))) {
+                            try {
+                                $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
+                                Log::info($attribute->wasRecentlyCreated ? 'Tạo thuộc tính mới' : 'Tìm thấy thuộc tính với name', [
                                     'attribute_id' => $attribute->id,
-                                    'value' => $attrData['value'],
+                                    'attribute_name' => $attribute->name
                                 ]);
-                                ProductVariantAttributeValue::create([
-                                    'product_variant_id' => $variant->id,
-                                    'attribute_value_id' => $attributeValue->id,
+                            } catch (\Exception $e) {
+                                Log::error('Lỗi khi tạo hoặc tìm thuộc tính', [
+                                    'attribute_index' => $index,
+                                    'attribute_data' => $attrData,
+                                    'error' => $e->getMessage(),
+                                    'trace' => $e->getTraceAsString()
                                 ]);
+                                continue;
                             }
                         }
 
-                        if ($request->hasFile("variant_images.{$variantData['index']}")) {
-                            foreach ($request->file("variant_images.{$variantData['index']}") as $image) {
+                        if ($attribute) {
+                            $attributeIds[] = $attribute->id;
+                            Log::info('Thêm attribute_id vào danh sách đồng bộ', [
+                                'attribute_id' => $attribute->id,
+                                'attribute_index' => $index
+                            ]);
+
+                            // Xử lý giá trị thuộc tính (nếu có)
+                            if (!empty(trim($attrData['values'] ?? ''))) {
+                                $values = collect(explode(',', $attrData['values']))
+                                    ->map(fn($v) => trim($v))
+                                    ->filter()
+                                    ->toArray();
+
+                                if (empty($values)) {
+                                    Log::warning('Không có giá trị thuộc tính hợp lệ', [
+                                        'attribute_id' => $attribute->id,
+                                        'attribute_values' => $attrData['values']
+                                    ]);
+                                } else {
+                                    foreach ($values as $value) {
+                                        try {
+                                            $attributeValue = AttributeValue::firstOrNew([
+                                                'attribute_id' => $attribute->id,
+                                                'value' => $value,
+                                            ]);
+                                            if (!$attributeValue->exists) {
+                                                $attributeValue->save();
+                                                Log::info('Tạo giá trị thuộc tính', [
+                                                    'attribute_id' => $attribute->id,
+                                                    'attribute_value_id' => $attributeValue->id,
+                                                    'attribute_value' => $attributeValue->value
+                                                ]);
+                                            }
+                                        } catch (\Exception $e) {
+                                            Log::error('Lỗi khi tạo giá trị thuộc tính', [
+                                                'attribute_id' => $attribute->id,
+                                                'value' => $value,
+                                                'error' => $e->getMessage(),
+                                                'trace' => $e->getTraceAsString()
+                                            ]);
+                                        }
+                                    }
+                                }
+                            } else {
+                                Log::info('Không có giá trị thuộc tính được cung cấp', [
+                                    'attribute_id' => $attribute->id
+                                ]);
+                            }
+
+                            // Thêm liên kết vào bảng product_attribute (nếu không có biến thể)
+                            if (!$request->filled('variants')) {
+                                try {
+                                    DB::table('product_attribute')->updateOrInsert(
+                                        [
+                                            'product_id' => $product->id,
+                                            'attribute_id' => $attribute->id,
+                                        ],
+                                        [
+                                            'created_at' => now(),
+                                            'updated_at' => now()
+                                        ]
+                                    );
+                                    Log::info('Liên kết product_attribute được tạo hoặc cập nhật', [
+                                        'product_id' => $product->id,
+                                        'attribute_id' => $attribute->id
+                                    ]);
+                                } catch (\Exception $e) {
+                                    Log::error('Lỗi khi liên kết product_attribute', [
+                                        'product_id' => $product->id,
+                                        'attribute_id' => $attribute->id,
+                                        'error' => $e->getMessage(),
+                                        'trace' => $e->getTraceAsString()
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+
+                    if (!empty($attributeIds)) {
+                        try {
+                            $product->attributes()->sync($attributeIds);
+                            Log::info('Đã đồng bộ thuộc tính cho sản phẩm', [
+                                'product_id' => $product->id,
+                                'attribute_ids' => $attributeIds
+                            ]);
+                        } catch (\Exception $e) {
+                            Log::error('Lỗi khi đồng bộ thuộc tính', [
+                                'product_id' => $product->id,
+                                'attribute_ids' => $attributeIds,
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                            ]);
+                        }
+                    } else {
+                        Log::warning('Không có thuộc tính hợp lệ để đồng bộ', [
+                            'product_id' => $product->id,
+                            'attributes' => $request->input('attributes')
+                        ]);
+                    }
+                } else {
+                    Log::warning('Dữ liệu attributes không phải mảng', [
+                        'product_id' => $product->id,
+                        'attributes' => $request->input('attributes')
+                    ]);
+                }
+            } else {
+                Log::info('Không có thuộc tính được cung cấp', [
+                    'product_id' => $product->id
+                ]);
+            }
+
+            // Xử lý biến thể
+            if ($isVariant && $request->filled('variants')) {
+                Log::info('Processing variants', ['variants_count' => count($request->variants)]);
+                foreach ($request->variants as $index => $variantData) {
+                    // Kiểm tra dữ liệu biến thể hợp lệ
+                    if (empty($variantData['name']) || empty($variantData['sku']) || empty($variantData['price']) || empty($variantData['purchase_price']) || empty($variantData['sale_price']) || empty($variantData['stock_total'])) {
+                        Log::warning('Skipping invalid variant data', [
+                            'index' => $index,
+                            'variant_data' => $variantData
+                        ]);
+                        continue;
+                    }
+
+                    // Tạo biến thể
+                    $variant = ProductVariant::create([
+                        'productID' => $product->id,
+                        'variant_name' => $variantData['name'],
+                        'price' => $variantData['price'] ?? 0,
+                        'purchase_price' => $variantData['purchase_price'] ?? 0,
+                        'sale_price' => $variantData['sale_price'] ?? 0,
+                        'stock' => $variantData['stock_total'] ?? 0,
+                        'sku' => $variantData['sku'],
+                        'status' => 'active',
+                    ]);
+
+                    Log::info('Variant created', [
+                        'variant_id' => $variant->id,
+                        'variant_name' => $variant->variant_name,
+                        'product_id' => $product->id
+                    ]);
+
+                    // Lưu kích thước
+                    ProductDimension::create([
+                        'productID' => $product->id,
+                        'variantID' => $variant->id,
+                        'length' => $variantData['length'] ?? null,
+                        'width' => $variantData['width'] ?? null,
+                        'height' => $variantData['height'] ?? null,
+                        'weight' => $variantData['weight'] ?? null,
+                    ]);
+
+                    Log::info('Dimension created for variant', [
+                        'variant_id' => $variant->id,
+                        'product_id' => $product->id
+                    ]);
+
+                    // Xử lý thuộc tính của biến thể
+                    if (!empty($variantData['attributes'])) {
+                        foreach ($variantData['attributes'] as $attrIndex => $attrData) {
+                            if (empty(trim($attrData['name'])) || empty(trim($attrData['value']))) {
+                                Log::warning('Skipping invalid variant attribute', [
+                                    'variant_id' => $variant->id,
+                                    'attribute_data' => $attrData,
+                                    'attr_index' => $attrIndex
+                                ]);
+                                continue;
+                            }
+
+                            $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
+                            $attributeValue = AttributeValue::firstOrCreate([
+                                'attribute_id' => $attribute->id,
+                                'value' => trim($attrData['value']),
+                            ]);
+
+                            ProductVariantAttributeValue::create([
+                                'product_variant_id' => $variant->id,
+                                'attribute_value_id' => $attributeValue->id,
+                            ]);
+
+                            Log::info('Variant attribute value linked', [
+                                'variant_id' => $variant->id,
+                                'attribute_value_id' => $attributeValue->id,
+                                'attribute_value' => $attributeValue->value
+                            ]);
+                        }
+                    } else {
+                        Log::warning('No attributes provided for variant', [
+                            'variant_id' => $variant->id,
+                            'variant_name' => $variant->variant_name
+                        ]);
+                    }
+
+                    // Xử lý ảnh biến thể
+                    if ($request->hasFile("variant_images.$index")) {
+                        foreach ($request->file("variant_images.$index") as $image) {
+                            if ($image->isValid()) {
                                 $path = $image->store('product_images', 'public');
                                 ProductImage::create([
                                     'productID' => $product->id,
@@ -180,164 +461,75 @@ class ProductControllerSeller extends Controller
                                     'is_default' => 0,
                                     'display_order' => 0,
                                     'alt_text' => "{$variant->variant_name} - Image",
-                                    'created_at' => now(),
+                                ]);
+                                Log::info('Variant image saved', [
+                                    'variant_id' => $variant->id,
+                                    'image_path' => $path
+                                ]);
+                            } else {
+                                Log::warning('Invalid image file for variant', [
+                                    'variant_id' => $variant->id,
+                                    'index' => $index
                                 ]);
                             }
                         }
-
-                        DB::commit(); // Hoàn thành giao dịch cho biến thể
-                    } catch (\Exception $e) {
-                        DB::rollBack();
-                        throw $e; // Ném lỗi để xử lý ở giao dịch ngoài
                     }
                 }
+            } else if (!$isVariant) {
+                // Sản phẩm đơn: lưu kích thước mặc định nếu không có biến thể
+                ProductDimension::create([
+                    'productID' => $product->id,
+                    'variantID' => null,
+                    'length' => $request->length ?? null,
+                    'width' => $request->width ?? null,
+                    'height' => $request->height ?? null,
+                    'weight' => $request->weight ?? null,
+                ]);
             }
 
-            // Lưu ảnh sản phẩm chính
-            $displayOrder = 0;
+            // Lưu ảnh chính
+            if ($request->hasFile('main_image') && $request->file('main_image')->isValid()) {
+                $path = $request->file('main_image')->store('product_images', 'public');
+                ProductImage::create([
+                    'productID' => $product->id,
+                    'variantID' => null,
+                    'image_path' => $path,
+                    'is_default' => 1,
+                    'display_order' => 0,
+                    'alt_text' => "{$product->name} - Ảnh chính",
+                ]);
+                Log::info('Main image saved', ['image_path' => $path]);
+            }
+
+            // Lưu ảnh phụ
             if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $index => $image) {
-                    $path = $image->store('product_images', 'public');
-                    ProductImage::create([
-                        'productID' => $product->id,
-                        'variantID' => null,
-                        'image_path' => $path,
-                        'is_default' => ($index === 0) ? 1 : 0,
-                        'display_order' => $displayOrder++,
-                        'alt_text' => "{$product->name} - Image {$index}",
-                        'created_at' => now(),
-                    ]);
+                $displayOrder = 1;
+                foreach ($request->file('images') as $image) {
+                    if ($image->isValid()) {
+                        $path = $image->store('product_images', 'public');
+                        ProductImage::create([
+                            'productID' => $product->id,
+                            'variantID' => null,
+                            'image_path' => $path,
+                            'is_default' => 0,
+                            'display_order' => $displayOrder++,
+                            'alt_text' => "{$product->name} - Ảnh phụ {$displayOrder}",
+                        ]);
+                        Log::info('Additional image saved', ['image_path' => $path]);
+                    }
                 }
             }
 
             DB::commit();
-
-            return redirect()->route('seller.products.index')->with('success', 'Sản phẩm đã được tạo thành công vào ' . now()->format('H:i:s d/m/Y'));
+            return redirect()->route('seller.products.index')->with('success', 'Sản phẩm đã được tạo thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi khi thêm sản phẩm: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm sản phẩm: ' . $e->getMessage())->withInput();
-        }
-    }
-
-    /**
-     * Hiển thị form thêm biến thể cho sản phẩm
-     */
-    public function createVariant($productId)
-    {
-        $product = Product::findOrFail($productId);
-        $attributes = Attribute::all();
-        return view('seller.products.create-variant', compact('product', 'attributes'));
-    }
-
-    /**
-     * Lưu biến thể cho sản phẩm
-     */
-    public function storeVariant(Request $request, $productId)
-    {
-        try {
-            $product = Product::findOrFail($productId);
-
-            $rules = [
-                'variants.*.name' => 'required|string|max:100',
-                'variants.*.price' => 'required|numeric|min:0',
-                'variants.*.purchase_price' => 'required|numeric|min:0',
-                'variants.*.sale_price' => 'required|numeric|min:0',
-                'variants.*.stock' => 'required|integer|min:0',
-                'variants.*.sku' => 'required|string|max:100|unique:product_variants,sku',
-                'variants.*.length' => 'required|numeric|min:0',
-                'variants.*.width' => 'nullable|numeric|min:0',
-                'variants.*.height' => 'nullable|numeric|min:0',
-                'variants.*.weight' => 'nullable|numeric|min:0',
-                'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-                'variants.*.attributes.*.attribute_name' => 'required|string|max:100',
-                'variants.*.attributes.*.value' => 'required|string|max:100',
-            ];
-
-            $request->validate($rules);
-
-            $product->update(['is_variant' => 1]);
-
-            foreach ($request->variants as $variantData) {
-                $variant = ProductVariant::create([
-                    'productID' => $product->id,
-                    'variant_name' => $variantData['name'],
-                    'price' => $variantData['price'],
-                    'purchase_price' => $variantData['purchase_price'],
-                    'sale_price' => $variantData['sale_price'],
-                    'stock' => $variantData['stock'],
-                    'sku' => $variantData['sku'],
-                    'status' => 'active',
-                ]);
-
-                // Lưu kích thước
-                ProductDimension::create([
-                    'productID' => $product->id,
-                    'variantID' => $variant->id,
-                    'length' => $variantData['length'],
-                    'width' => $variantData['width'] ?? 0,
-                    'height' => $variantData['height'] ?? 0,
-                    'weight' => $variantData['weight'] ?? 0,
-                ]);
-
-                // Lưu ảnh
-                if ($request->hasFile("variants.{$variantData['index']}.image")) {
-                    $path = $request->file("variants.{$variantData['index']}.image")->store('product_images', 'public');
-                    ProductImage::create([
-                        'productID' => $product->id,
-                        'variantID' => $variant->id,
-                        'image_path' => $path,
-                        'is_default' => 1,
-                        'display_order' => 0,
-                        'alt_text' => $variantData['name'] . ' - Variant Image',
-                        'created_at' => now(),
-                    ]);
-                }
-                
-                if (isset($variantData['attributes'])) {
-                    foreach ($variantData['attributes'] as $attrData) {
-                        $attribute = Attribute::firstOrCreate(['name' => $attrData['attribute_name']]);
-                        Log::info('Created/Found Attribute: ' . json_encode($attribute));
-                
-                        $attributeValue = AttributeValue::firstOrCreate([
-                            'attribute_id' => $attribute->id,
-                            'value' => $attrData['value'],
-                        ]);
-                        Log::info('Created/Found AttributeValue: ' . json_encode($attributeValue));
-                
-                        ProductVariantAttributeValue::create([
-                            'product_variant_id' => $variant->id,
-                            'attribute_value_id' => $attributeValue->id,
-                        ]);
-                        Log::info('Created ProductVariantAttributeValue for variant_id: ' . $variant->id);
-                    }
-                }
-            }
-
-            return redirect()->route('seller.products.index')->with('success', 'Biến thể đã được thêm thành công vào ' . now()->format('H:i:s d/m/Y'));
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi thêm biến thể: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm biến thể: ' . $e->getMessage())->withInput();
-        }
-    }
-
-    public function uploadImage(Request $request)
-    {
-        try {
-            if ($request->hasFile('file')) {
-                $image = $request->file('file');
-                $path = $image->store('destination_images', 'public'); // Lưu vào thư mục public/product_images
-
-                // Trả về URL của hình ảnh
-                $url = Storage::disk('public')->url($path);
-                return response()->json([
-                    'location' => $url
-                ]);
-            }
-            return response()->json(['error' => 'Không có file nào được upload'], 400);
-        } catch (\Exception $e) {
-            Log::error('Lỗi upload hình ảnh: ' . $e->getMessage());
-            return response()->json(['error' => 'Có lỗi xảy ra khi upload hình ảnh'], 500);
+            Log::error('Product creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['main_image', 'images', 'variant_images'])
+            ]);
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -346,9 +538,93 @@ class ProductControllerSeller extends Controller
      */
     public function edit($id)
     {
-        $categories = Category::where('status', 'active')->get();
+        // Tải sản phẩm với các quan hệ cần thiết
+        $product = Product::with([
+            'variants.attributeValues.attribute', // Tải biến thể và thuộc tính liên quan
+            'images', // Tải ảnh sản phẩm
+            'dimensions', // Tải kích thước
+            'attributes.values', // Tải thuộc tính và tất cả giá trị
+            'brands', // Tải thương hiệu
+            'categories' // Tải danh mục
+        ])->findOrFail($id);
+
+        Log::info('Product loaded', [
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'brand_ids' => $product->brands->pluck('id')->toArray(),
+            'category_ids' => $product->categories->pluck('id')->toArray(),
+            'variants_count' => $product->variants->count(),
+            'images_count' => $product->images->count(),
+            'dimensions_count' => $product->dimensions->count(),
+            'attributes_count' => $product->attributes->count(),
+        ]);
+
+        // Lấy ID các giá trị thuộc tính được sử dụng bởi biến thể
+        $usedValueIds = DB::table('product_variant_attribute_values')
+            ->join('product_variants', 'product_variants.id', '=', 'product_variant_attribute_values.product_variant_id')
+            ->where('product_variants.productID', $product->id)
+            ->pluck('attribute_value_id')
+            ->toArray();
+
+        Log::info('Used attribute value IDs', [
+            'product_id' => $product->id,
+            'used_value_ids' => $usedValueIds,
+        ]);
+
+        // Lấy thuộc tính của sản phẩm với các giá trị đã được sử dụng
+        $attributes = $product->attributes()->with(['values' => function ($query) use ($usedValueIds) {
+            $query->whereIn('id', $usedValueIds)->orWhereNull('id');
+        }])->get();
+
+        // Ghi log chi tiết về thuộc tính
+        foreach ($attributes as $attribute) {
+            Log::info('Product attribute loaded', [
+                'attribute_id' => $attribute->id,
+                'attribute_name' => $attribute->name,
+                'values' => $attribute->values->pluck('value')->toArray(),
+                'values_count' => $attribute->values->count(),
+                'pivot' => $attribute->pivot ? $attribute->pivot->toArray() : null,
+            ]);
+        }
+
+        // Tải tất cả thuộc tính có sẵn (để hiển thị trong dropdown)
+        $allAttributes = Attribute::with(['values' => function ($query) {
+            $query->whereNotNull('value')->where('value', '!=', '');
+        }])
+            ->whereNotNull('name')
+            ->where('name', '!=', '')
+            ->get();
+
+        // Ghi log chi tiết về tất cả thuộc tính
+        Log::info('All attributes loaded', [
+            'all_attributes' => $allAttributes->map(function ($attr) {
+                return [
+                    'id' => $attr->id,
+                    'name' => $attr->name,
+                    'values' => $attr->values->pluck('value')->toArray(),
+                ];
+            })->toArray(),
+        ]);
+
+        // Tải danh sách thương hiệu (chỉ lấy trạng thái active)
         $brands = Brand::where('status', 'active')->get();
-        return view('seller.products.create', compact('categories', 'brands'));
+        // Tải danh sách danh mục
+        $categories = Category::all();
+
+        Log::info('Brands, categories, and all attributes loaded', [
+            'brands_count' => $brands->count(),
+            'categories_count' => $categories->count(),
+            'all_attributes_count' => $allAttributes->count(),
+            'attributes' => $attributes->map(function ($attr) {
+                return [
+                    'id' => $attr->id,
+                    'name' => $attr->name,
+                    'values' => $attr->values->pluck('value')->toArray(),
+                ];
+            })->toArray(),
+        ]);
+
+        return view('seller.products.edit', compact('product', 'attributes', 'allAttributes', 'brands', 'categories'));
     }
 
     /**
@@ -356,43 +632,37 @@ class ProductControllerSeller extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate(
+            $this->validationRules(true, $id),
+            $this->validationMessages()
+        );
+
         try {
-            DB::beginTransaction(); // Đảm bảo dữ liệu nhất quán
+            DB::beginTransaction();
 
-            // Xác thực dữ liệu
-            $rules = [
-                'name' => 'required|string|max:100',
-                'description' => 'nullable|string',
-                'brand' => 'required|string|max:100',
-                'category' => 'required|string|max:100',
-                'sku' => 'required|string|max:100|unique:products,sku',
-                'price' => 'required|numeric|min:0',
-                'purchase_price' => 'required|numeric|min:0',
-                'sale_price' => 'required|numeric|min:0',
-                'stock_total' => 'required|integer|min:0',
-                'meta_title' => 'nullable|string|max:255',
-                'meta_description' => 'nullable|string|max:320',
-                'meta_keywords' => 'nullable|string|max:255',
-                'attributes' => 'nullable|array',
-                'variants' => 'nullable|array',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            ];
-
-            $request->validate($rules);
-
-            // Xử lý `meta_keywords` nếu trống
-            $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
-
-            // Tìm sản phẩm cần cập nhật
             $product = Product::findOrFail($id);
+
+            // Kiểm tra quyền sở hữu
+            $seller = Auth::user()->seller;
+            $shop = $seller->shops()->where('id', $product->shopID)->first();
+            if (!$shop) {
+                Log::warning('Unauthorized attempt to update product', [
+                    'product_id' => $product->id,
+                    'seller_user_id' => $seller->userID,
+                    'shop_id' => $product->shopID,
+                ]);
+                return redirect()->back()->with('error', 'Bạn không có quyền chỉnh sửa sản phẩm này.');
+            }
+
+            Log::info('Updating product', ['product_id' => $id, 'request_data' => $request->except(['images', 'variant_images'])]);
+
+            $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
 
             // Cập nhật thông tin sản phẩm
             $product->update([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
-                'description' => $request->description,
-                'brand' => $request->brand,
-                'category' => $request->category,
+                'description' => $request->description ?: '',
                 'sku' => $request->sku,
                 'price' => $request->price,
                 'purchase_price' => $request->purchase_price,
@@ -406,43 +676,177 @@ class ProductControllerSeller extends Controller
                 'status' => $request->save_draft ? 'draft' : 'active',
             ]);
 
-            // Cập nhật thuộc tính & giá trị
-            ProductVariantAttributeValue::where('product_id', $product->id)->delete(); // Xóa dữ liệu cũ
-            if ($request->filled('attributes')) {
-                foreach ($request->attributes as $attributeInput) {
-                    $attribute = Attribute::firstOrCreate(['name' => $attributeInput['name']]);
-
-                    foreach (explode(',', $attributeInput['values']) as $value) {
-                        $attributeValue = AttributeValue::firstOrCreate([
-                            'attribute_id' => $attribute->id,
-                            'value' => trim($value),
-                        ]);
-
-                        ProductVariantAttributeValue::create([
-                            'product_id' => $product->id,
-                            'attribute_id' => $attribute->id,
-                            'attribute_value_id' => $attributeValue->id,
-                        ]);
-                    }
+            // Xử lý danh mục
+            $newCategoryIds = $request->input('category_ids', []);
+            Log::info('New category IDs from request', ['category_ids' => $newCategoryIds]);
+            $currentCategoryIds = $product->categories()->pluck('category_id')->toArray();
+            Log::info('Current category IDs', ['current_category_ids' => $currentCategoryIds]);
+            sort($newCategoryIds);
+            sort($currentCategoryIds);
+            if ($newCategoryIds !== $currentCategoryIds) {
+                if (!empty($newCategoryIds)) {
+                    $product->categories()->sync($newCategoryIds);
+                    Log::info('Categories synced', [
+                        'product_id' => $product->id,
+                        'category_ids' => $newCategoryIds,
+                        'category_names' => Category::whereIn('id', $newCategoryIds)->pluck('name')->toArray(),
+                    ]);
+                } else {
+                    $product->categories()->detach();
+                    Log::info('Categories detached', [
+                        'product_id' => $product->id,
+                        'previous_category_ids' => $currentCategoryIds,
+                    ]);
                 }
+            } else {
+                Log::info('No changes in categories, skipping sync.', [
+                    'product_id' => $product->id,
+                    'category_ids' => $newCategoryIds,
+                ]);
             }
 
-            // Cập nhật kích thước sản phẩm
-            ProductDimension::where('productID', $product->id)->delete();
-            ProductDimension::create([
-                'productID' => $product->id,
-                'variantID' => null,
-                'length' => $request->length ?? 0,
-                'width' => $request->width ?? 0,
-                'height' => $request->height ?? 0,
-                'weight' => $request->weight ?? 0,
-                'shipping_cost' => $request->shipping_cost ?? 0,
-            ]);
+            // Xử lý thương hiệu
+            $newBrandIds = $request->input('brand_ids', []);
+            Log::info('New brand IDs from request', ['brand_ids' => $newBrandIds]);
+            $currentBrandIds = $product->brands()->pluck('brand_id')->toArray();
+            Log::info('Current brand IDs', ['current_brand_ids' => $currentBrandIds]);
+            sort($newBrandIds);
+            sort($currentBrandIds);
+            if ($newBrandIds !== $currentBrandIds) {
+                if (!empty($newBrandIds)) {
+                    $product->brands()->sync($newBrandIds);
+                    Log::info('Brands synced', [
+                        'product_id' => $product->id,
+                        'brand_ids' => $newBrandIds,
+                        'brand_names' => Brand::whereIn('id', $newBrandIds)->pluck('name')->toArray(),
+                    ]);
+                } else {
+                    $product->brands()->detach();
+                    Log::info('Brands detached', [
+                        'product_id' => $product->id,
+                        'previous_brand_ids' => $currentBrandIds,
+                    ]);
+                }
+            } else {
+                Log::info('No changes in brands, skipping sync.', [
+                    'product_id' => $product->id,
+                    'brand_ids' => $newBrandIds,
+                ]);
+            }
 
-            // Cập nhật biến thể sản phẩm
-            ProductVariant::where('productID', $product->id)->delete(); // Xóa biến thể cũ
+            // Xử lý thuộc tính sản phẩm
+            if ($request->has('attributes')) {
+                $existingAttributeValues = $product->attributes()
+                    ->with('values')
+                    ->get()
+                    ->mapWithKeys(function ($attr) {
+                        return [$attr->name => array_values($attr->values->pluck('value')->sort()->toArray())];
+                    })
+                    ->toArray();
+
+                $newAttributeValues = collect($request->input('attributes', []))
+                    ->filter(function ($attr) {
+                        return (!empty(trim($attr['id'])) || !empty(trim($attr['name']))) && !empty(trim($attr['values']));
+                    })
+                    ->mapWithKeys(function ($attr) {
+                        $name = $attr['id'] === 'new' ? trim($attr['name']) : Attribute::find($attr['id'])->name;
+                        return [
+                            $name => array_values(collect(explode(',', $attr['values']))
+                                ->map(fn($v) => trim($v))
+                                ->filter()
+                                ->sort()
+                                ->toArray())
+                        ];
+                    })
+                    ->toArray();
+
+                if ($newAttributeValues != $existingAttributeValues) {
+                    $product->attributes()->detach();
+                    Log::info('Old attributes detached', ['product_id' => $product->id]);
+
+                    $attributeIds = [];
+
+                    foreach ($request->input('attributes', []) as $attrData) {
+                        if (empty(trim($attrData['values']))) {
+                            continue;
+                        }
+
+                        $attribute = null;
+                        if ($attrData['id'] === 'new' && !empty(trim($attrData['name']))) {
+                            // Tạo thuộc tính mới
+                            $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
+                            Log::info('New attribute created', [
+                                'attribute_id' => $attribute->id,
+                                'attribute_name' => $attribute->name,
+                            ]);
+                        } elseif (!empty($attrData['id']) && $attrData['id'] !== 'new') {
+                            // Sử dụng thuộc tính có sẵn
+                            $attribute = Attribute::find($attrData['id']);
+                            if (!$attribute) {
+                                Log::warning('Attribute not found', ['attribute_id' => $attrData['id']]);
+                                continue;
+                            }
+                        }
+
+                        if ($attribute) {
+                            $attributeIds[] = $attribute->id;
+
+                            $values = collect(explode(',', $attrData['values']))
+                                ->map(fn($v) => trim($v))
+                                ->filter()
+                                ->toArray();
+
+                            foreach ($values as $value) {
+                                $attributeValue = AttributeValue::firstOrNew([
+                                    'attribute_id' => $attribute->id,
+                                    'value' => $value,
+                                ]);
+
+                                if (!$attributeValue->exists) {
+                                    $attributeValue->save();
+                                    Log::info('Attribute value created', [
+                                        'attribute_id' => $attribute->id,
+                                        'attribute_value_id' => $attributeValue->id,
+                                        'attribute_value' => $attributeValue->value
+                                    ]);
+                                }
+
+                                if (!$request->filled('variants')) {
+                                    DB::table('product_attribute')->updateOrInsert([
+                                        'product_id' => $product->id,
+                                        'attribute_id' => $attribute->id,
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+
+                    if (!empty($attributeIds)) {
+                        $product->attributes()->sync($attributeIds);
+                        Log::info('New attributes attached to product', [
+                            'product_id' => $product->id,
+                            'attribute_ids' => $attributeIds
+                        ]);
+                    }
+                } else {
+                    Log::info('Attributes not changed, skipping update.', ['product_id' => $product->id]);
+                }
+            } else {
+                Log::info('No attributes provided in request, retaining existing attributes.', ['product_id' => $product->id]);
+            }
+
+            // Xử lý biến thể
+            $existingVariants = $product->variants()->with('images')->get();
+            $variantImageMap = [];
+            foreach ($existingVariants as $variant) {
+                $variantImageMap[$variant->variant_name] = $variant->images->pluck('image_path')->toArray();
+            }
+
+            $product->variants()->delete();
+            $product->dimensions()->whereNotNull('variantID')->delete();
+
             if ($request->filled('variants')) {
-                foreach ($request->variants as $variantData) {
+                foreach ($request->variants as $variantIndex => $variantData) {
                     $variant = ProductVariant::create([
                         'productID' => $product->id,
                         'variant_name' => $variantData['name'],
@@ -454,7 +858,6 @@ class ProductControllerSeller extends Controller
                         'status' => 'active',
                     ]);
 
-                    // Cập nhật kích thước biến thể
                     ProductDimension::create([
                         'productID' => $product->id,
                         'variantID' => $variant->id,
@@ -462,129 +865,357 @@ class ProductControllerSeller extends Controller
                         'width' => $variantData['width'] ?? 0,
                         'height' => $variantData['height'] ?? 0,
                         'weight' => $variantData['weight'] ?? 0,
-                        'shipping_cost' => $variantData['shipping_cost'] ?? 0,
                     ]);
+
+                    if (isset($variantData['attributes'])) {
+                        foreach ($variantData['attributes'] as $attrData) {
+                            if (!isset($attrData['name']) || !isset($attrData['value']) || empty(trim($attrData['name'])) || empty(trim($attrData['value']))) {
+                                continue;
+                            }
+
+                            $attribute = Attribute::firstOrCreate(['name' => trim($attrData['name'])]);
+                            $attributeValue = AttributeValue::firstOrNew([
+                                'attribute_id' => $attribute->id,
+                                'value' => trim($attrData['value']),
+                            ]);
+                            if (!$attributeValue->exists) {
+                                $attributeValue->save();
+                            }
+
+                            ProductVariantAttributeValue::create([
+                                'product_variant_id' => $variant->id,
+                                'attribute_value_id' => $attributeValue->id,
+                            ]);
+
+                            Log::info('Variant attribute value linked', [
+                                'variant_id' => $variant->id,
+                                'attribute_value_id' => $attributeValue->id,
+                                'attribute_value' => $attributeValue->value
+                            ]);
+                        }
+                    }
+
+                    if ($request->hasFile("variant_images.{$variantIndex}")) {
+                        ProductImage::where('productID', $product->id)->where('variantID', $variant->id)->delete();
+
+                        foreach ($request->file("variant_images.{$variantIndex}") as $image) {
+                            $path = $image->store('product_images', 'public');
+                            ProductImage::create([
+                                'productID' => $product->id,
+                                'variantID' => $variant->id,
+                                'image_path' => $path,
+                                'is_default' => 0,
+                                'display_order' => 0,
+                                'alt_text' => "{$variant->variant_name} - Image",
+                            ]);
+                            Log::info('Variant image saved', [
+                                'variant_id' => $variant->id,
+                                'image_path' => $path
+                            ]);
+                        }
+                    } else {
+                        if (isset($variantImageMap[$variantData['name']])) {
+                            foreach ($variantImageMap[$variantData['name']] as $imagePath) {
+                                ProductImage::create([
+                                    'productID' => $product->id,
+                                    'variantID' => $variant->id,
+                                    'image_path' => $imagePath,
+                                    'is_default' => 0,
+                                    'display_order' => 0,
+                                    'alt_text' => "{$variant->variant_name} - Image",
+                                ]);
+                                Log::info('Existing variant image retained', [
+                                    'variant_id' => $variant->id,
+                                    'image_path' => $imagePath
+                                ]);
+                            }
+                        }
+                    }
                 }
             }
 
-            // Cập nhật ảnh sản phẩm
-            ProductImage::where('productID', $product->id)->delete(); // Xóa ảnh cũ
-            $displayOrder = 0;
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $index => $image) {
+            // Xử lý ảnh chính và ảnh phụ
+            $hasMainImage = $request->hasFile('main_image');
+            $hasAdditionalImages = $request->hasFile('images');
+
+            if ($hasMainImage) {
+                ProductImage::where('productID', $product->id)
+                    ->whereNull('variantID')
+                    ->where('is_default', 1)
+                    ->delete();
+
+                $mainImage = $request->file('main_image');
+                $path = $mainImage->store('product_images', 'public');
+
+                ProductImage::create([
+                    'productID' => $product->id,
+                    'variantID' => null,
+                    'image_path' => $path,
+                    'is_default' => 1,
+                    'display_order' => 0,
+                    'alt_text' => "{$product->name} - Ảnh chính",
+                ]);
+            }
+
+            $existingImages = ProductImage::where('productID', $product->id)
+                ->whereNull('variantID')
+                ->where('is_default', 0)
+                ->pluck('image_path')
+                ->toArray();
+
+            $retainedImages = $request->input('existing_images', []);
+            $imagesToDelete = array_diff($existingImages, $retainedImages);
+            if (!empty($imagesToDelete)) {
+                ProductImage::where('productID', $product->id)
+                    ->whereNull('variantID')
+                    ->where('is_default', 0)
+                    ->whereIn('image_path', $imagesToDelete)
+                    ->delete();
+                Log::info('Deleted additional images', ['image_paths' => $imagesToDelete]);
+            }
+
+            if ($hasAdditionalImages) {
+                $lastOrder = ProductImage::where('productID', $product->id)
+                    ->whereNull('variantID')
+                    ->max('display_order') ?? 0;
+
+                foreach ($request->file('images') as $image) {
                     $path = $image->store('product_images', 'public');
+                    $lastOrder++;
+
                     ProductImage::create([
                         'productID' => $product->id,
                         'variantID' => null,
                         'image_path' => $path,
-                        'is_default' => ($index === 0) ? 1 : 0,
-                        'display_order' => $displayOrder++,
-                        'alt_text' => "{$product->name} - Image {$index}",
+                        'is_default' => 0,
+                        'display_order' => $lastOrder,
+                        'alt_text' => "{$product->name} - Ảnh phụ {$lastOrder}",
+                    ]);
+                    Log::info('Additional image saved', [
+                        'product_id' => $product->id,
+                        'image_path' => $path
                     ]);
                 }
             }
 
-            DB::commit();
+            $product->dimensions()->updateOrCreate(
+                ['productID' => $product->id, 'variantID' => null],
+                [
+                    'length' => $request->length ?? 0,
+                    'width' => $request->width ?? 0,
+                    'height' => $request->height ?? 0,
+                    'weight' => $request->weight ?? 0,
+                ]
+            );
 
+            DB::commit();
             return redirect()->route('seller.products.index')->with('success', 'Sản phẩm đã được cập nhật thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Product update failed', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())->withInput();
         }
     }
 
     /**
      * Xóa sản phẩm (soft delete)
+     * @param int $id ID của sản phẩm cần xóa
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy($id)
     {
         try {
             DB::beginTransaction();
 
-            $product = Product::findOrFail($id);
+            // Kiểm tra seller
+            $seller = Auth::user()->seller;
+            if (!$seller) {
+                Log::error('Seller not found for user ID: ' . Auth::id());
+                return redirect()->back()->with('error', 'Bạn cần đăng ký làm seller trước.');
+            }
 
-            // Lấy tất cả các variant_id của sản phẩm
-            $variantIds = ProductVariant::where('productID', $product->id)->pluck('id');
+            // Tìm sản phẩm cần xóa
+            $product = Product::with(['shop', 'variants', 'images', 'dimensions'])->findOrFail($id);
 
-            // Xóa các liên kết
-            ProductVariant::where('productID', $product->id)->delete();
-            ProductImage::where('productID', $product->id)->delete();
-            ProductVariantAttributeValue::whereIn('product_variant_id', $variantIds)->delete(); // Sửa tại đây
-            ProductDimension::where('productID', $product->id)->delete();
+            // Kiểm tra quyền sở hữu
+            if ($product->shop->ownerID !== $seller->userID) {
+                Log::warning('Unauthorized attempt to delete product', [
+                    'product_id' => $product->id,
+                    'seller_user_id' => $seller->userID,
+                    'shop_owner_id' => $product->shop->ownerID,
+                ]);
+                return redirect()->back()->with('error', 'Bạn không có quyền xóa sản phẩm này.');
+            }
 
-            // Xóa sản phẩm
+            Log::info('Starting product soft delete', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'shop_id' => $product->shopID,
+                'seller_user_id' => $seller->userID,
+            ]);
+
+            // Soft delete các bản ghi liên quan
+            $variantCount = ProductVariant::where('productID', $product->id)->count();
+            ProductVariant::where('productID', $product->id)->delete(); // Soft delete
+
+            $imageCount = ProductImage::where('productID', $product->id)->count();
+            ProductImage::where('productID', $product->id)->delete(); // Soft delete
+
+            $dimensionCount = ProductDimension::where('productID', $product->id)->count();
+            ProductDimension::where('productID', $product->id)->delete(); // Soft delete
+
+            // Xóa liên kết thuộc tính của biến thể
+            $variantIds = $product->variants->pluck('id');
+            $attributeValueCount = ProductVariantAttributeValue::whereIn('product_variant_id', $variantIds)->count();
+            ProductVariantAttributeValue::whereIn('product_variant_id', $variantIds)->delete(); // Soft delete
+
+            // Soft delete sản phẩm chính
             $product->delete();
+
+            Log::info('Product soft delete completed', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'variants_deleted' => $variantCount,
+                'images_deleted' => $imageCount,
+                'dimensions_deleted' => $dimensionCount,
+                'variant_attribute_values_deleted' => $attributeValueCount,
+            ]);
 
             DB::commit();
             return redirect()->route('seller.products.index')->with('success', 'Sản phẩm đã được xóa thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi xóa sản phẩm ID ' . $id . ': ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            Log::error('Product soft delete failed', [
+                'product_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa sản phẩm. Vui lòng thử lại.');
         }
     }
 
-    /**
-     * Hiển thị chi tiết sản phẩm
-     */
-    public function show($id)
+    // Tái sử dụng cho store & update
+    protected function validationRules($isUpdate = false, $productId = null)
     {
-        $product = Product::with(['variants', 'images', 'dimensions'])->findOrFail($id);
-        return view('seller.products.show', compact('product'));
+        $skuRule = $isUpdate
+            ? 'required|string|max:100|unique:products,sku,' . $productId
+            : 'required|string|max:100|unique:products,sku';
+
+        $variantSkuRule = $isUpdate
+            ? 'required|string|max:100|distinct'
+            : 'required|string|max:100|unique:product_variants,sku';
+
+        $rules = [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'brand_ids' => 'required|array|min:1',
+            'brand_ids.*' => 'exists:brand,id',
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'exists:categories,id',
+            'length' => 'nullable|numeric|min:0',
+            'width' => 'nullable|numeric|min:0',
+            'height' => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:320',
+            'meta_keywords' => 'nullable|string|max:255',
+            'product_type' => 'required|in:simple,variant',
+            'main_image' => ($isUpdate ? 'nullable' : 'required') . '|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+        ];
+        if (request('product_type') === 'variant') {
+            $rules = array_merge($rules, [
+                'attributes' => 'required|array|min:1',
+                'attributes.*.name' => 'nullable|string|max:100',
+                'attributes.*.values' => 'nullable|string',
+                'variants' => 'required|array|min:1',
+                'variants.*.name' => 'required|string|max:255',
+                'variants.*.price' => 'required|numeric|min:0',
+                'variants.*.purchase_price' => 'required|numeric|min:0',
+                'variants.*.sale_price' => 'required|numeric|min:0',
+                'variants.*.sku' => $variantSkuRule,
+                'variants.*.stock_total' => 'required|integer|min:0',
+                'variants.*.length' => 'nullable|numeric|min:0',
+                'variants.*.width' => 'nullable|numeric|min:0',
+                'variants.*.height' => 'nullable|numeric|min:0',
+                'variants.*.weight' => 'nullable|numeric|min:0',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+                'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+            ]);
+        } else {
+            $rules = array_merge($rules, [
+                'sku' => $skuRule,
+                'price' => 'required|numeric|min:0',
+                'purchase_price' => 'required|numeric|min:0',
+                'sale_price' => 'required|numeric|min:0',
+                'stock_total' => 'required|integer|min:0',
+            ]);
+        }
+        return $rules;
+    }
+
+    protected function validationMessages()
+    {
+        return [
+            'name.required' => 'Vui lòng nhập tên sản phẩm.',
+            'name.max' => 'Tên sản phẩm không được vượt quá :max ký tự.',
+            'sku.required' => 'Vui lòng nhập mã SKU.',
+            'sku.unique' => 'Mã SKU này đã tồn tại.',
+            'brand_ids.required' => 'Vui lòng chọn ít nhất một thương hiệu.',
+            'brand_ids.min' => 'Vui lòng chọn ít nhất một thương hiệu.',
+            'brand_ids.*.exists' => 'Thương hiệu được chọn không tồn tại.',
+            'category_ids.required' => 'Vui lòng chọn ít nhất một danh mục.',
+            'category_ids.min' => 'Vui lòng chọn ít nhất một danh mục.',
+            'category_ids.*.exists' => 'Danh mục được chọn không tồn tại.',
+            'price.required' => 'Vui lòng nhập giá gốc.',
+            'price.numeric' => 'Giá gốc phải là số.',
+            'price.min' => 'Giá gốc không được nhỏ hơn 0.',
+            'purchase_price.required' => 'Vui lòng nhập giá nhập.',
+            'sale_price.required' => 'Vui lòng nhập giá bán.',
+            'stock_total.required' => 'Vui lòng nhập số lượng tồn kho.',
+            'stock_total.integer' => 'Số lượng tồn kho phải là số nguyên.',
+            'stock_total.min' => 'Tồn kho không được nhỏ hơn 0.',
+            'meta_title.max' => 'Tiêu đề SEO không vượt quá :max ký tự.',
+            'meta_description.max' => 'Mô tả SEO không vượt quá :max ký tự.',
+            'meta_keywords.max' => 'Từ khóa SEO không vượt quá :max ký tự.',
+            'variants.*.name.required' => 'Vui lòng nhập tên phiên bản.',
+            'variants.*.sku.required' => 'Vui lòng nhập mã SKU cho phiên bản.',
+            'variants.*.sku.unique' => 'Mã SKU phiên bản đã tồn tại.',
+            'variants.*.price.required' => 'Vui lòng nhập giá gốc cho phiên bản.',
+            'variants.*.purchase_price.required' => 'Vui lòng nhập giá nhập cho phiên bản.',
+            'variants.*.sale_price.required' => 'Vui lòng nhập giá bán cho phiên bản.',
+            'variants.*.stock_total.required' => 'Vui lòng nhập tồn kho cho phiên bản.',
+            'variants.*.stock_total.integer' => 'Tồn kho phiên bản phải là số nguyên.',
+            'variants.*.stock_total.min' => 'Tồn kho phiên bản không được nhỏ hơn 0.',
+            'images.*.image' => 'Mỗi tệp tải lên phải là hình ảnh.',
+            'images.*.mimes' => 'Chỉ chấp nhận ảnh định dạng: jpeg, png, jpg, webp, svg.',
+            'images.*.max' => 'Ảnh không được vượt quá 5MB.',
+            'variant_images.*.*.image' => 'Ảnh phiên bản phải là hình ảnh.',
+            'variant_images.*.*.mimes' => 'Ảnh phiên bản chỉ chấp nhận định dạng jpeg, png, jpg, webp, svg.',
+            'variant_images.*.*.max' => 'Ảnh phiên bản không được vượt quá 5MB.',
+            'main_image.required' => 'Vui lòng chọn ảnh chính cho sản phẩm.',
+            'main_image.image' => 'Ảnh chính phải là hình ảnh.',
+            'main_image.mimes' => 'Ảnh chính chỉ chấp nhận định dạng jpeg, png, jpg, webp, svg.',
+            'main_image.max' => 'Ảnh chính không được vượt quá 5MB.',
+        ];
     }
 
     /**
-     * Lấy danh sách thương hiệu phụ
+     * Lấy tất cả ID của danh mục/thương hiệu cha
+     * @param array $ids Mảng ID ban đầu
+     * @param string $model Tên model (Brand hoặc Category)
+     * @return array
      */
-    public function getSubBrands(Request $request)
+    protected function getAllParentIds($ids, $model)
     {
-        try {
-            $brand = $request->query('brand');
-            if ($brand) {
-                $subBrands = Brand::where('name', $brand)->first()?->subBrands()->where('status', 'active')->get(['name']);
-                return response()->json($subBrands ?? []);
+        $parentIds = [];
+        foreach ($ids as $id) {
+            $item = $model::find($id);
+            if ($item && $item->parent_id) {
+                $parentIds[] = $item->parent_id;
+                // Gọi đệ quy để lấy tất cả parent IDs
+                $parentIds = array_merge($parentIds, $this->getAllParentIds([$item->parent_id], $model));
             }
-            return response()->json([]);
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi lấy sub-brands: ' . $e->getMessage());
-            return response()->json(['error' => 'Không thể lấy danh sách thương hiệu phụ'], 500);
         }
-    }
-
-    /**
-     * Lấy danh sách danh mục phụ
-     */
-    public function getSubCategories(Request $request)
-    {
-        try {
-            $category = $request->query('category');
-            if ($category) {
-                $subCategories = Category::where('name', $category)->first()?->subCategories()->where('status', 'active')->get(['name']);
-                return response()->json($subCategories ?? []);
-            }
-            return response()->json([]);
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi lấy sub-categories: ' . $e->getMessage());
-            return response()->json(['error' => 'Không thể lấy danh sách danh mục phụ'], 500);
-        }
-    }
-
-    public function getAttributes()
-    {
-        $attributes = Attribute::all()->pluck('name');
-        return response()->json($attributes);
-    }
-
-    public function getAttributeValues(Request $request)
-    {
-        $attributeName = $request->query('attribute');
-        if ($attributeName) {
-            $values = AttributeValue::whereHas('attribute', function ($query) use ($attributeName) {
-                $query->where('name', $attributeName);
-            })->pluck('value')->toArray();
-
-            return response()->json($values);
-        }
-        return response()->json([], 200); // Trả về mảng rỗng nếu không có thuộc tính
+        return array_unique($parentIds);
     }
 }

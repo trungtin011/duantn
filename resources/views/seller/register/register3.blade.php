@@ -21,13 +21,7 @@
             <form action="{{ route('seller.register.step4.post') }}" method="POST" enctype="multipart/form-data" class="rounded-2xl p-6">
                 @csrf
                 @if ($errors->any())
-                    <div class="bg-red-100 text-red-700 border border-red-300 p-3 rounded text-sm mb-4">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                    <!-- Đã chuyển lỗi validate xuống từng trường -->
                 @endif
                 <div class="min-h-screen bg-white flex items-center justify-center">
                     <div class="rounded-2xl p-6 flex flex-col gap-10">
@@ -60,95 +54,144 @@
                                     Hộ chiếu
                                 </label>
                             </div>
+                            @error('id_type')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
-                        <!-- Số giấy tờ -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                            <label class="col-span-1 text-sm font-medium text-gray-700 text-end">
-                                <sup class="text-red-500 text-[12px]">*</sup> Số giấy tờ
-                            </label>
-                            <input type="text" name="id_number" maxlength="20" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('id_number') }}">
-                        </div>
+                        <!-- Các trường nhập liệu định danh, bọc trong div để dễ ẩn/hiện -->
+                        <div id="identity-fields" @if(!$errors->any() && !old('id_number')) style="display:none;" @endif class="space-y-6 mt-6">
 
-                        <!-- Họ và tên -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4">
-                            <label class="col-span-1 text-sm font-medium text-gray-700 text-end">
-                                <sup class="text-red-500 text-[12px]">*</sup> Họ & Tên
-                            </label>
-                            <div class="col-span-4 space-y-1">
-                                <input type="text" name="full_name" maxlength="100" required class="w-full md:w-1/2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('full_name') }}">
-                                <p class="text-xs text-gray-500">Theo CMND/CCCD/Hộ Chiếu</p>
+                            <!-- Phần Thông tin cá nhân -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">📄 Thông tin cá nhân</h3>
+                                <div class="space-y-4 p-4 border rounded-lg bg-gray-50">
+                                    <!-- Họ và tên -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end pt-2">Họ & Tên</label>
+                                        <div class="col-span-4 space-y-1">
+                                            <input type="text" name="full_name" maxlength="100" required class="w-full md:w-1/2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('full_name') }}">
+                                            @error('full_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                            <p class="text-xs text-gray-500">Theo CMND/CCCD/Hộ Chiếu</p>
+                                        </div>
+                                    </div>
+                                    <!-- Giới tính -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Giới tính</label>
+                                        <div class="col-span-4 flex items-center gap-6 text-sm">
+                                            <label><input type="radio" name="gender" value="male" {{ old('gender') == 'male' ? 'checked' : '' }}> Nam</label>
+                                            <label><input type="radio" name="gender" value="female" {{ old('gender') == 'female' ? 'checked' : '' }}> Nữ</label>
+                                            @error('gender') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                        </div>
+                                    </div>
+                                    <!-- Ngày sinh -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Ngày sinh</label>
+                                        <input type="date" name="birthday" required class="col-span-2 border rounded px-3 py-2 text-sm" value="{{ old('birthday') }}">
+                                        @error('birthday') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    <!-- Quốc tịch -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Quốc tịch</label>
+                                        <input type="text" name="nationality" maxlength="50" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('nationality') }}">
+                                        @error('nationality') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    <!-- Quê quán -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Quê quán</label>
+                                        <input type="text" name="hometown" maxlength="100" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('hometown') }}">
+                                        @error('hometown') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    <!-- Nơi thường trú -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Nơi thường trú</label>
+                                        <input type="text" name="residence" maxlength="100" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('residence') }}">
+                                        @error('residence') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Phần Thông tin CCCD -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">🪪 Thông tin CCCD</h3>
+                                <div class="space-y-4 p-4 border rounded-lg bg-gray-50">
+                                    <!-- Số giấy tờ -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Số CCCD</label>
+                                        <input type="text" name="id_number" maxlength="20" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('id_number') }}">
+                                        @error('id_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    <!-- Ngày cấp -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Ngày cấp</label>
+                                        <input type="date" name="identity_card_date" required class="col-span-2 border rounded px-3 py-2 text-sm" value="{{ old('identity_card_date') }}">
+                                        @error('identity_card_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    <!-- Nơi cấp -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Nơi cấp</label>
+                                        <input type="text" name="identity_card_place" maxlength="255" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('identity_card_place') }}">
+                                        @error('identity_card_place') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                    <!-- Đặc điểm nhận dạng -->
+                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Đặc điểm nhận dạng</label>
+                                        <input type="text" name="dac_diem_nhan_dang" maxlength="255" class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('dac_diem_nhan_dang') }}">
+                                        @error('dac_diem_nhan_dang') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Ngày sinh -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                            <label class="col-span-1 text-sm font-medium text-gray-700 text-end">
-                                <sup class="text-red-500 text-[12px]">*</sup> Ngày sinh
+                        <!-- Ảnh mặt trước CCCD -->
+                        <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4 mb-4">
+                            <label class="col-span-1 block text-sm font-medium text-gray-700 text-end pt-2">
+                                <sup class="text-red-500 text-[12px]">*</sup> Ảnh mặt trước CCCD
                             </label>
-                            <input type="date" name="birthday" required class="col-span-2 border rounded px-3 py-2 text-sm" value="{{ old('birthday') }}">
-                        </div>
-
-                        <!-- Quốc tịch -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                            <label class="col-span-1 text-sm font-medium text-gray-700 text-end">
-                                <sup class="text-red-500 text-[12px]">*</sup> Quốc tịch
-                            </label>
-                            <input type="text" name="nationality" maxlength="50" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('nationality') }}">
-                        </div>
-
-                        <!-- Quê quán -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                            <label class="col-span-1 text-sm font-medium text-gray-700 text-end">
-                                <sup class="text-red-500 text-[12px]">*</sup> Quê quán
-                            </label>
-                            <input type="text" name="hometown" maxlength="100" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('hometown') }}">
-                        </div>
-
-                        <!-- Nơi thường trú -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                            <label class="col-span-1 text-sm font-medium text-gray-700 text-end">
-                                <sup class="text-red-500 text-[12px]">*</sup> Nơi thường trú
-                            </label>
-                            <input type="text" name="residence" maxlength="100" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('residence') }}">
-                        </div>
-
-                        <!-- Ảnh chụp giấy tờ -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4">
-                            <label class="col-span-1 block text-sm font-medium text-gray-700 text-end">
-                                <sup class="text-red-500 text-[12px]">*</sup> Ảnh chụp giấy tờ
-                            </label>
-                            <div class="col-span-4 w-full md:w-1/3 flex flex-col items-center justify-center border border-dashed border-gray-400 rounded p-6 text-center space-y-2 relative">
-                                <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="col-span-4 w-full md:w-1/3 flex flex-col items-center justify-center border border-dashed border-blue-400 rounded p-6 text-center space-y-2 relative bg-blue-50">
+                                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
-                                <p class="text-sm text-gray-500">Vui lòng cung cấp ảnh chụp thẻ CMND/CCCD/hộ chiếu của bạn<br>Các thông tin phải rõ ràng (Kích thước ảnh không vượt quá 5.0 MB)</p>
+                                <p class="text-sm text-blue-700">Tải lên ảnh mặt trước CCCD (không vượt quá 5MB)</p>
                                 <input type="file" name="file" accept="image/*" class="hidden" id="filechoose" required>
-                                <button type="button" onclick="document.getElementById('filechoose').click()" class="px-4 py-2 bg-blue-500 text-white rounded text-sm">Tải ảnh lên</button>
+                                <button type="button" onclick="document.getElementById('filechoose').click()" class="px-4 py-2 bg-blue-500 text-white rounded text-sm">Chọn ảnh mặt trước</button>
                                 <img id="filepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
+                                @error('file')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
-
-                        <!-- Ảnh chụp cầm giấy tờ -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4">
-                            <label class="col-span-1 block text-sm font-medium text-gray-700 text-end">
-                                Ảnh chụp cầm giấy tờ
+                        <!-- Ảnh mặt sau CCCD -->
+                        <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4 mb-4">
+                            <label class="col-span-1 block text-sm font-medium text-gray-700 text-end pt-2">
+                                <sup class="text-red-500 text-[12px]">*</sup> Ảnh mặt sau CCCD
                             </label>
-                            <div class="col-span-4 w-full md:w-1/3 flex flex-col items-center justify-center border border-dashed border-gray-400 rounded p-6 text-center space-y-2 relative">
-                                <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="col-span-4 w-full md:w-1/3 flex flex-col items-center justify-center border border-dashed border-green-400 rounded p-6 text-center space-y-2 relative bg-green-50">
+                                <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
-                                <p class="text-sm text-gray-500">(Không bắt buộc) Ảnh bạn cầm giấy tờ định danh<br>Kích thước ảnh không vượt quá 5.0 MB</p>
-                                <input type="file" name="holding_file" accept="image/*" class="hidden" id="holdingfilechoose">
-                                <button type="button" onclick="document.getElementById('holdingfilechoose').click()" class="px-4 py-2 bg-blue-500 text-white rounded text-sm">Tải ảnh lên</button>
-                                <img id="holdingfilepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
+                                <p class="text-sm text-green-700">Tải lên ảnh mặt sau CCCD (không vượt quá 5MB)</p>
+                                <input type="file" name="backfile" accept="image/*" class="hidden" id="backfilechoose" required>
+                                <button type="button" onclick="document.getElementById('backfilechoose').click()" class="px-4 py-2 bg-green-600 text-white rounded text-sm">Chọn ảnh mặt sau</button>
+                                <img id="backfilepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
+                                <div id="scan-cccd-back-error" class="text-red-500 text-xs mt-2"></div>
                             </div>
                         </div>
+                        <!-- Nút Quét CCCD đặt dưới cả hai khối -->
+                        <div class="flex justify-end mt-4 mb-2">
+                            <button type="button" id="scan-cccd-btn" class="px-4 py-2 bg-yellow-500 text-white rounded text-sm">Quét CCCD</button>
+                        </div>
+                        <div id="scan-cccd-loading" style="display:none;" class="mt-2"><span class="loader"></span> Đang quét...</div>
+                        <div id="scan-cccd-error" class="text-red-500 text-xs mt-2"></div>
+                        <div id="scan-cccd-success" class="text-green-600 text-sm mt-2" style="display:none;"></div>
 
                         <!-- Xác nhận -->
                         <div class="flex items-center space-x-2 text-sm bg-gray-100 p-3 rounded">
                             <input type="checkbox" id="confirm" name="confirm" required>
                             <label for="confirm">Tôi xác nhận tất cả dữ liệu đã cung cấp là chính xác và trung thực. Tôi đã đọc và đồng ý với <a href="" class="text-blue-500 hover:underline">Chính Sách Bảo Mật</a>.</label>
+                            @error('confirm')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -197,35 +240,114 @@
                 preview.style.display = 'none';
             }
         });
-        document.getElementById('holdingfilechoose').addEventListener('change', function(e) {
+        document.getElementById('backfilechoose').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            const preview = document.getElementById('holdingfilepreview');
             if (file) {
                 const maxSize = 5 * 1024 * 1024; // 5MB
                 if (file.size > maxSize) {
                     alert('Kích thước tệp vượt quá 5MB. Vui lòng chọn tệp nhỏ hơn.');
                     e.target.value = '';
-                    preview.style.display = 'none';
+                    document.getElementById('backfilepreview').style.display = 'none';
                 } else {
-                    const fileName = file.name;
-                    const label = document.createElement('p');
-                    label.textContent = `Tệp đã chọn: ${fileName}`;
-                    label.className = 'text-sm text-gray-500 mt-2';
-                    const container = this.parentElement;
-                    const existingLabel = container.querySelector('p.text-sm');
-                    if (existingLabel) existingLabel.remove();
-                    container.appendChild(label);
-                    // Hiển thị preview ảnh
                     const reader = new FileReader();
                     reader.onload = function(ev) {
-                        preview.src = ev.target.result;
-                        preview.style.display = 'block';
+                        document.getElementById('backfilepreview').src = ev.target.result;
+                        document.getElementById('backfilepreview').style.display = 'block';
                     };
                     reader.readAsDataURL(file);
                 }
             } else {
-                preview.style.display = 'none';
+                document.getElementById('backfilepreview').style.display = 'none';
             }
+        });
+        // CCCD scan integration (gửi 2 file từ input đã có)
+        const scanBtn = document.getElementById('scan-cccd-btn');
+        const fileInput = document.getElementById('filechoose'); // mặt trước
+        const loadingDiv = document.getElementById('scan-cccd-loading');
+        const errorDiv = document.getElementById('scan-cccd-error');
+        scanBtn.addEventListener('click', function() {
+            errorDiv.textContent = '';
+            document.getElementById('scan-cccd-success').style.display = 'none';
+            document.getElementById('scan-cccd-success').textContent = '';
+            if (!fileInput.files[0] || !document.getElementById('backfilechoose').files[0]) {
+                errorDiv.textContent = 'Vui lòng chọn đủ ảnh mặt trước và mặt sau CCCD trước khi quét.';
+                return;
+            }
+            const formData = new FormData();
+            formData.append('front_image', fileInput.files[0]);
+            formData.append('back_image', document.getElementById('backfilechoose').files[0]);
+            loadingDiv.style.display = 'block';
+            scanBtn.disabled = true;
+            fetch('http://127.0.0.1:5000/process_cccd', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingDiv.style.display = 'none';
+                scanBtn.disabled = false;
+                if (data.error) {
+                    errorDiv.textContent = data.error;
+                    return;
+                }
+                // ƯU TIÊN DỮ LIỆU FINAL_DATA (kiểu mới)
+                if (data.full_name) document.querySelector('input[name="full_name"]').value = data.full_name;
+                if (data.identity_number) document.querySelector('input[name="id_number"]').value = data.identity_number;
+                if (data.birth_date) {
+                    if (data.birth_date.length === 10) {
+                        document.querySelector('input[name="birthday"]').value = data.birth_date;
+                    } else {
+                        const parts = data.birth_date.split('-');
+                        if (parts.length === 3) {
+                            document.querySelector('input[name="birthday"]').value = `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+                        }
+                    }
+                }
+                if (data.nationality) document.querySelector('input[name="nationality"]').value = data.nationality;
+                if (data.residence) document.querySelector('input[name="residence"]').value = data.residence;
+                if (data.hometown) document.querySelector('input[name="hometown"]').value = data.hometown;
+
+                // BỔ SUNG CÁC TRƯỜNG CÒN LẠI
+                if (data.gender) {
+                    const radios = document.querySelectorAll('input[name="gender"]');
+                    radios.forEach(radio => {
+                        if (radio.value === data.gender.toLowerCase()) radio.checked = true;
+                    });
+                }
+                if (data.identity_card_date) {
+                    const parts = data.identity_card_date.split('-');
+                    if (parts.length === 3) {
+                        document.querySelector('input[name="identity_card_date"]').value = `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+                    }
+                }
+                if (data.identity_card_place) document.querySelector('input[name="identity_card_place"]').value = data.identity_card_place;
+                if (data.dac_diem_nhan_dang) document.querySelector('input[name="dac_diem_nhan_dang"]').value = data.dac_diem_nhan_dang;
+
+                // Nếu không có final_data thì fallback sang mat_truoc
+                if (!data.full_name && data.mat_truoc) {
+                    if (data.mat_truoc.ho_ten) document.querySelector('input[name="full_name"]').value = data.mat_truoc.ho_ten;
+                }
+                if (!data.identity_number && data.mat_truoc) {
+                    if (data.mat_truoc.so_CCCD) document.querySelector('input[name="id_number"]').value = data.mat_truoc.so_CCCD;
+                }
+                if (!data.birth_date && data.mat_truoc && data.mat_truoc.ngay_sinh) {
+                    const parts = data.mat_truoc.ngay_sinh.split('/');
+                    if (parts.length === 3) {
+                        document.querySelector('input[name="birthday"]').value = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                    }
+                }
+                if (!data.nationality && data.mat_truoc && data.mat_truoc.quoc_tich) document.querySelector('input[name="nationality"]').value = data.mat_truoc.quoc_tich;
+                if (!data.residence && data.mat_truoc && data.mat_truoc.noi_thuong_tru) document.querySelector('input[name="residence"]').value = data.mat_truoc.noi_thuong_tru;
+                if (!data.hometown && data.mat_truoc && data.mat_truoc.que_quan) document.querySelector('input[name="hometown"]').value = data.mat_truoc.que_quan;
+                document.getElementById('scan-cccd-success').textContent = 'Quét CCCD thành công! Dữ liệu đã được điền vào form.';
+                document.getElementById('scan-cccd-success').style.display = 'block';
+                document.getElementById('identity-fields').style.display = 'block';
+            })
+            .catch(err => {
+                loadingDiv.style.display = 'none';
+                scanBtn.disabled = false;
+                errorDiv.textContent = 'Không thể quét CCCD. Vui lòng thử lại.';
+            });
         });
     </script>
     <style>

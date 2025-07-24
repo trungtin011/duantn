@@ -212,7 +212,7 @@
                                 </div>
                                 <button type="button"
                                     class="ml-3 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600"
-                                    onclick="addAttribute()">Thêm</button>
+                                    id="add-attribute-btn">Thêm</button>
                             </div>
 
                             <!-- Khu vực hiển thị biến thể -->
@@ -221,7 +221,7 @@
                                 <div id="variant-container"></div>
                                 <button type="button"
                                     class="mt-4 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600"
-                                    onclick="generateVariants()">Tạo biến thể từ thuộc tính</button>
+                                    id="generate-variants-btn">Tạo biến thể từ thuộc tính</button>
                             </div>
                         </div>
 
@@ -399,3 +399,23 @@
         </form>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    if (typeof window.generateVariants === 'function') {
+        const btn = document.getElementById('generate-variants-btn');
+        if (btn) {
+            btn.addEventListener('click', window.generateVariants);
+        }
+    }
+    if (typeof window.addAttribute === 'function') {
+        const btn = document.getElementById('add-attribute-btn');
+        if (btn) {
+            btn.addEventListener('click', window.addAttribute);
+        }
+    }
+});
+</script>
+@endpush

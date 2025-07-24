@@ -7,9 +7,9 @@
 @endsection
 
 @section('content')
-    <div class="admin-page-header">
-        <h1 class="admin-page-title">Products</h1>
-        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Product List</div>
+    <div class="admin-page-header mb-5">
+        <h1 class="admin-page-title text-2xl">Sản phẩm</h1>
+        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Danh sách sản phẩm</div>
     </div>
 
     @include('layouts.notification')
@@ -19,7 +19,7 @@
             <form class="w-full md:w-[223px] relative" method="GET" action="{{ route('seller.products.index') }}">
                 <input name="search"
                     class="w-full h-[42px] border border-[#F2F2F6] rounded-md py-2 pl-10 pr-4 text-xs placeholder:text-gray-400 focus:outline-none"
-                    placeholder="Search by product name" type="text" value="{{ request('search') }}" />
+                    placeholder="Tìm kiếm sản phẩm" type="text" value="{{ request('search') }}" />
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
                     <i class="fas fa-search text-[#55585b]"></i>
                 </span>
@@ -28,25 +28,25 @@
             <div class="flex gap-4 items-center h-full">
                 <form method="GET" action="{{ route('seller.products.index') }}">
                     <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
-                        <span>Status:</span>
-                        <select name="status" id="statusFilter"
+                        <span>Trạng thái:</span>
+                        <select name="status" id="statusFilter" onchange="this.form.submit()"
                             class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
-                            <option value="">All</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive
+                            <option value="">Tất cả</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Hoạt động</option>
+                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Không hoạt động
                             </option>
-                            <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Low Stock
+                            <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Số lượng thấp
                             </option>
-                            <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Out of
-                                Stock</option>
-                            <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Scheduled
+                            <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Hết
+                                hàng</option>
+                            <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Lên lịch
                             </option>
                         </select>
                     </div>
                 </form>
                 <a href="{{ route('seller.products.create') }}"
-                    class="h-[44px] text-[15px] bg-blue-600 text-white px-4 py-2 flex items-center justify-center rounded-md hover:bg-blue-700 focus:outline-none">
-                    Add Product
+                    class="h-[44px] text-[15px] bg-blue-500 text-white px-4 py-2 flex items-center justify-center rounded-md hover:bg-blue-700 focus:outline-none">
+                    Thêm sản phẩm
                 </a>
             </div>
         </div>
@@ -79,26 +79,58 @@
                                 {{ $product->name }}
                             </span>
                         </td>
-                        <td class="py-4 text-[13px]">{{ $product->sku }}</td>
                         <td class="py-4 text-[13px]">
-                            {{ $product->stock_total }}
-                            @if ($product->stock_total <= 5 && $product->stock_total > 0)
+                            {{ $product->sku }}
+                        </td>
+                        <td class="py-4 text-[13px]">
+                            @php
+                                $displayStock = $product->stock_total ?? 0;
+                                if ($product->is_variant && (!$displayStock || $displayStock == 0)) {
+                                    $variantStock = $product->variants->sum('stock') ?? 0;
+                                    $displayStock = $variantStock > 0 ? $variantStock : 0;
+                                }
+                            @endphp
+                            {{ $displayStock }}
+                            @if ($displayStock <= 5 && $displayStock > 0)
                                 <span
                                     class="inline-block bg-orange-100 text-orange-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                    Low Stock
+                                    Sản phẩm sắp hết hàng
                                 </span>
-                            @elseif ($product->stock_total == 0)
+                            @elseif ($displayStock == 0)
                                 <span
                                     class="inline-block bg-red-100 text-red-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                    Out Of Stock
+                                    Sản phẩm hết hàng
                                 </span>
                             @endif
                         </td>
-                        <td class="py-4 text-[13px]">{{ number_format($product->sale_price, 2) }}</td>
+                        <td class="py-4 text-[13px]">
+                            @php
+                                $displayPrice = $product->sale_price ?? 0;
+                                if ($product->is_variant && (!$displayPrice || $displayPrice == 0)) {
+                                    $variantPrice = $product->variants->min('sale_price') ?? 0;
+                                    $displayPrice = $variantPrice > 0 ? $variantPrice : 0;
+                                }
+                            @endphp
+                            {{ number_format($displayPrice) }}
+                        </td>
                         <td class="py-4">
                             <span
-                                class="inline-block {{ $product->status == 'active' ? 'bg-green-100 text-green-600' : ($product->status == 'inactive' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600') }} text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                {{ ucfirst($product->status) }}
+                                class="inline-block 
+                                {{ $product->status == 'active'
+                                    ? 'bg-green-100 text-green-600'
+                                    : ($product->status == 'inactive'
+                                        ? 'bg-red-100 text-red-600'
+                                        : ($product->status == 'scheduled'
+                                            ? 'bg-blue-100 text-blue-600'
+                                            : 'bg-gray-200 text-gray-500')) }} 
+                                text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                {{ $product->status == 'active'
+                                    ? 'Hoạt động'
+                                    : ($product->status == 'inactive'
+                                        ? 'Không hoạt động'
+                                        : ($product->status == 'scheduled'
+                                            ? 'Lên lịch'
+                                            : 'Không xác định')) }}
                             </span>
                         </td>
                         <td class="py-4 pr-6 text-right flex items-center gap-2 justify-end">
