@@ -1,6 +1,7 @@
 @extends('user.account.layout')
 
 @section('account-content')
+    @include('layouts.notification')
     <div class="container mx-auto bg-white">
         <!-- Tabs for Order Status -->
         <ul class="flex items-center justify-between border border-gray-200 px-4 py-4 mb-8 overflow-x-auto"
@@ -190,36 +191,111 @@
 
     <!-- Modal đánh giá -->
     <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white w-full max-w-lg p-6 rounded shadow relative">
-            <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-600 hover:text-black text-xl">×</button>
-            <h2 id="modalProductName" class="text-lg font-bold mb-4">Đánh giá sản phẩm</h2>
+        <div class="bg-white w-full max-w-2xl p-8 rounded-lg shadow-xl relative animate-fade-in-down">
+            <button id="closeModalBtn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl transition-colors duration-200">×</button>
+            <h2 id="modalProductName" class="text-xl text-gray-800 mb-6">Đánh giá sản phẩm</h2>
 
-            <form id="reviewForm" method="POST" enctype="multipart/form-data">
+            <!-- Instruction Section -->
+            <div class="relative border border-red-300 bg-red-50 rounded-lg overflow-visible">
+                <!-- Removed mb-6, added relative, overflow-visible -->
+                <div class="flex items-center justify-between p-4 cursor-pointer" id="instructionToggle">
+                    <div class="flex items-center">
+                        <i class="bi bi-coin text-red-500 text-xl mr-2"></i>
+                        <span class="flex items-center gap-1">Xem Hướng dẫn đánh giá chuẩn để nhận đến <span
+                                class="font-semibold text-red-700">200 xu!</span></span>
+                    </div>
+                    <i class="bi bi-chevron-down text-red-700 transition-transform duration-300"
+                        id="instructionArrow"></i>
+                </div>
+                <div class="absolute w-full mt-2 left-0 z-10 px-4 pb-4 hidden bg-white border border-red-300 rounded-lg shadow-lg"
+                    id="instructionContent"> <!-- Added absolute, w-full, left-0, z-10, bg-white, border-t-0, shadow-lg -->
+                    <h4 class="font-bold text-gray-800 mb-2 mt-2">Điều kiện nhận Xu</h4>
+                    <p class="text-sm text-gray-700 mb-4">Viết nhận xét với ít nhất 50 ký tự, kèm hình ảnh và/hoặc video để
+                        nhận Xu bạn nhé!</p>
+
+                    <h4 class="font-bold text-gray-800 mb-2">Xu thưởng cho đánh giá hợp lệ</h4>
+                    <ul class="list-disc list-inside text-sm text-gray-700 mb-4">
+                        <li>Xu thưởng từ ZynoxMall: nhập ít nhất 50 ký tự kèm 1 hình ảnh hoặc 1 video. <span
+                                class="font-bold text-red-500">100 xu</span></li>
+                        <li>Xu thưởng từ ZynoxMall: nhập ít nhất 50 ký tự kèm 1 hình ảnh và 1 video. <span
+                                class="font-bold text-red-500">200 xu</span></li>
+                    </ul>
+
+                    <ul class="text-xs text-gray-600 space-y-1">
+                        <li>* Trong 1 đơn hàng có nhiều hơn 1 sản phẩm, Bạn sẽ nhận được Xu trên từng sản phẩm nếu đánh giá
+                            thỏa điều kiện</li>
+                        <li>* Sản phẩm đánh giá có nội dung không liên quan hoặc không phù hợp, ZynoxMall sẽ thu hồi Xu</li>
+                        <li>* Bạn sẽ không nhận được Xu nếu chỉnh sửa nội dung đánh giá</li>
+                        <li>* Bạn sẽ nhận được Xu sau khi đánh giá được gửi thành công</li>
+                        <li>* Điều kiện để nhận Xu khi số tiền được thanh toán của mặt hàng cao hơn ₫2.000 VNĐ.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="flex items-center mt-3 mb-6 border p-4 rounded-lg bg-gray-50">
+                <img id="modalProductImage" src="" alt="Product Image"
+                    class="w-24 h-24 object-contain rounded-md mr-4 border p-1">
+                <div>
+                    <h3 class="text-md font-semibold text-gray-800" id="modalProductDisplayName"></h3>
+                    <p class="text-sm text-gray-600" id="modalProductVariantNameLabel"></p>
+                    <p class="text-sm text-gray-600" id="modalProductVariantName"></p>
+                </div>
+            </div>
+
+            <form id="reviewForm" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 <input type="hidden" name="orderID" id="modalOrderId">
                 <input type="hidden" name="shopID" id="modalShopId">
                 <input type="hidden" name="productID" id="modalProductId">
 
-                <label class="block mb-2 font-semibold">Đánh giá sao:</label>
-                <div class="flex mb-4" id="modalStarRating">
-                    @for ($i = 1; $i <= 5; $i++)
-                        <i class="bi bi-star-fill text-3xl text-gray-400 cursor-pointer mx-1 transition-colors duration-150"
-                            data-value="{{ $i }}"></i>
-                    @endfor
-                    <input type="hidden" name="rating" id="modalRating" value="0">
+                <!-- Product Quality Rating -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Chất lượng sản phẩm:</label>
+                    <div class="flex justify-start items-center mb-4" id="modalStarRating">
+                        @for ($i = 1; $i <= 5; $i++)
+                            <i class="bi bi-star-fill text-4xl text-gray-300 cursor-pointer mx-1 transition-colors duration-200 hover:text-yellow-400"
+                                data-value="{{ $i }}"></i>
+                        @endfor
+                        <span id="starRatingText" class="ml-2 text-lg font-semibold text-gray-600"></span>
+                        <input type="hidden" name="rating" id="modalRating" value="0">
+                    </div>
                 </div>
 
-                <label class="block mb-2 font-semibold">Bình luận:</label>
-                <textarea name="comment" class="w-full border p-2 mb-4" rows="4"></textarea>
+                <!-- Comment Section -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Bình luận:</label>
+                    <textarea name="comment" id="reviewComment"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-y"
+                        rows="5" placeholder="Hãy chia sẻ những điều bạn thích về sản phẩm này với những người mua khác nhé."></textarea>
+                    <p class="text-xs text-gray-500 mt-1"><span id="commentCharCount">0</span>/50 ký tự tối thiểu</p>
+                </div>
 
-                <label class="block mb-2 font-semibold">Hình ảnh:</label>
-                <input type="file" name="images[]" accept="image/*" multiple class="mb-4">
+                <!-- File Upload Buttons -->
+                <div class="flex space-x-4 mb-4">
+                    <label for="imagesUpload"
+                        class="flex items-center px-4 py-2 border border-red-500 text-red-500 rounded-md cursor-pointer hover:bg-red-50 transition-colors duration-200">
+                        <i class="bi bi-image mr-2"></i> Thêm Hình ảnh (<span id="imageCount">0</span>)
+                    </label>
+                    <input type="file" name="images[]" id="imagesUpload" accept="image/*" multiple class="hidden">
 
-                <label class="block mb-2 font-semibold">Video:</label>
-                <input type="file" name="video" accept="video/*" class="mb-4">
+                    <label for="videoUpload"
+                        class="flex items-center px-4 py-2 border border-red-500 text-red-500 rounded-md cursor-pointer hover:bg-red-50 transition-colors duration-200">
+                        <i class="bi bi-camera-video mr-2"></i> Thêm Video (<span id="videoCount">0</span>)
+                    </label>
+                    <input type="file" name="video" id="videoUpload" accept="video/*" class="hidden">
+                </div>
 
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Gửi đánh
-                    giá</button>
+
+                <div class="flex justify-end space-x-3 mt-8">
+                    <button type="button" id="cancelReviewBtn"
+                        class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-semibold text-base">TRỞ
+                        LẠI</button>
+                    <button type="submit"
+                        class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors duration-200 font-semibold text-base">HOÀN
+                        THÀNH</button>
+                </div>
             </form>
         </div>
     </div>
@@ -269,6 +345,26 @@
                 const productNameEl = document.getElementById('modalProductName');
                 const ratingInput = document.getElementById('modalRating');
                 const stars = document.querySelectorAll('#modalStarRating i');
+                const starRatingText = document.getElementById('starRatingText');
+                const imagesUploadInput = document.getElementById('imagesUpload');
+                const videoUploadInput = document.getElementById('videoUpload');
+                const cancelReviewBtn = document.getElementById('cancelReviewBtn');
+                const reviewComment = document.getElementById('reviewComment');
+                const commentCharCount = document.getElementById('commentCharCount');
+                const imageCountSpan = document.getElementById('imageCount');
+                const videoCountSpan = document.getElementById('videoCount');
+
+                // Instruction toggle
+                const instructionToggle = document.getElementById('instructionToggle');
+                const instructionContent = document.getElementById('instructionContent');
+                const instructionArrow = document.getElementById('instructionArrow');
+
+                if (instructionToggle) {
+                    instructionToggle.addEventListener('click', function() {
+                        instructionContent.classList.toggle('hidden');
+                        instructionArrow.classList.toggle('rotate-180');
+                    });
+                }
 
                 document.getElementById('orderStatusTabsContent').addEventListener('click', function(e) {
                     if (e.target.classList.contains('open-review-modal')) {
@@ -276,26 +372,49 @@
                         orderIdInput.value = e.target.dataset.orderId;
                         shopIdInput.value = e.target.dataset.shopId;
                         productIdInput.value = e.target.dataset.productId;
-                        productNameEl.innerText = `Đánh giá: ${e.target.dataset.productName}`;
+                        productNameEl.innerText = `Đánh Giá Sản Phẩm`;
+
+                        // Set product info
+                        document.getElementById('modalProductImage').src = e.target.dataset.productImage;
+                        document.getElementById('modalProductDisplayName').innerText = e.target.dataset
+                            .productName;
+                        const modalProductVariantName = e.target.dataset.productVariantName;
+                        if (modalProductVariantName) {
+                            document.getElementById('modalProductVariantNameLabel').innerText =
+                                'Phân loại hàng:';
+                            document.getElementById('modalProductVariantName').innerText =
+                                modalProductVariantName;
+                        } else {
+                            document.getElementById('modalProductVariantNameLabel').innerText = '';
+                            document.getElementById('modalProductVariantName').innerText = '';
+                        }
 
                         ratingInput.value = 0;
                         stars.forEach(s => {
                             s.classList.remove('text-yellow-500');
-                            s.classList.add('text-gray-400');
+                            s.classList.add('text-gray-300'); // Use text-gray-300 for unselected stars
                         });
+                        starRatingText.innerText = 'Chọn sao';
 
-                        const actionUrl = "{{ route('reviews.store', ':id') }}".replace(':id', e.target.dataset
-                            .orderId);
-                        reviewForm.setAttribute('action', actionUrl);
+                        // Reset form fields
+                        imagesUploadInput.value = '';
+                        videoUploadInput.value = '';
+                        reviewForm.reset();
+                        commentCharCount.innerText = '0'; // Reset character count
+                        imageCountSpan.innerText = '0'; // Reset image count
+                        videoCountSpan.innerText = '0'; // Reset video count
 
                         reviewModal.classList.remove('hidden');
                         reviewModal.classList.add('flex');
+                        console.log('Mở modal đánh giá cho đơn hàng ID:', e.target.dataset.orderId,
+                            'Sản phẩm ID:', e.target.dataset.productId, 'Shop ID:', e.target.dataset.shopId);
                     }
                 });
 
                 document.getElementById('closeModalBtn').addEventListener('click', function() {
                     reviewModal.classList.add('hidden');
                     reviewModal.classList.remove('flex');
+                    console.log('Đóng modal đánh giá.');
                 });
 
                 // Logic cho hủy đơn
@@ -322,16 +441,66 @@
                     });
                 });
 
-                // Logic chọn sao đánh giá
+                // Logic chọn sao đánh giá sản phẩm
                 stars.forEach(star => {
                     star.addEventListener('click', function() {
-                        const value = this.dataset.value;
+                        const value = parseInt(this.dataset.value); // Chuyển đổi sang số nguyên
                         ratingInput.value = value;
                         stars.forEach(s => {
-                            s.classList.toggle('text-yellow-500', s.dataset.value <= value);
-                            s.classList.toggle('text-gray-400', s.dataset.value > value);
+                            if (parseInt(s.dataset.value) <= value) {
+                                s.classList.remove('text-gray-300');
+                                s.classList.add('text-yellow-500');
+                            } else {
+                                s.classList.remove('text-yellow-500');
+                                s.classList.add('text-gray-300');
+                            }
                         });
+                        starRatingText.innerText = `${value} sao`;
+                        console.log('Người dùng đã chọn ' + value + ' sao cho chất lượng sản phẩm.');
                     });
+                });
+
+                // Logic đếm ký tự bình luận
+                if (reviewComment) {
+                    reviewComment.addEventListener('input', function() {
+                        const count = this.value.length;
+                        commentCharCount.innerText = count;
+                        if (count < 50) {
+                            commentCharCount.classList.remove('text-green-600');
+                            commentCharCount.classList.add('text-red-500');
+                        } else {
+                            commentCharCount.classList.remove('text-red-500');
+                            commentCharCount.classList.add('text-green-600');
+                        }
+                    });
+                }
+
+
+                // Logic cho file upload hình ảnh
+                imagesUploadInput.addEventListener('change', function() {
+                    imageCountSpan.innerText = this.files.length;
+                    if (this.files.length > 0) {
+                        console.log('Đã chọn ' + this.files.length + ' file hình ảnh.', this.files);
+                    } else {
+                        console.log('Không có file hình ảnh nào được chọn.');
+                    }
+                });
+
+                // Logic cho file upload video
+                videoUploadInput.addEventListener('change', function() {
+                    videoCountSpan.innerText = this.files.length > 0 ? '1' : '0';
+                    if (this.files.length > 0) {
+                        console.log('Đã chọn file video:', this.files[0]);
+                    } else {
+                        console.log('Không có file video nào được chọn.');
+                    }
+                });
+
+                // Logic cho nút TRỞ LẠI
+                cancelReviewBtn.addEventListener('click', function() {
+                    reviewModal.classList.add('hidden');
+                    reviewModal.classList.remove('flex');
+                    console.log('Đóng modal đánh giá và trở lại.');
                 });
             });
         </script>

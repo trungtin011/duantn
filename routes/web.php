@@ -31,7 +31,6 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
-
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -40,8 +39,7 @@ use App\Http\Controllers\Seller\ComboController;
 use App\Http\Controllers\Seller\ReviewController as SellerReviewController;
 use App\Http\Controllers\Seller\SellerSettingsController;
 use App\Http\Controllers\Seller\ChatSettingsController;
-use App\Http\Controllers\Seller\CategoryController;
-
+use App\Http\Controllers\Seller\ShopCategoryController;
 //user
 use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\User\HomeController;
@@ -67,7 +65,6 @@ use App\Http\Controllers\ShopController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\User\ComboController as UserComboController;
-use App\Http\Controllers\ShopCategoryController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -308,11 +305,11 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     });
 
     Route::prefix('categories')->group(function () {
-        Route::get('/', [CategoryController::class, 'index'])->name('seller.categories.index');
-        Route::post('/', [CategoryController::class, 'store'])->name('seller.categories.store');
-        Route::get('/{id}/edit', [CategoryController::class, 'edit'])->name('seller.categories.edit');
-        Route::put('/{id}', [CategoryController::class, 'update'])->name('seller.categories.update');
-        Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('seller.categories.destroy');
+        Route::get('/', [ShopCategoryController::class, 'index'])->name('seller.categories.index');
+        Route::post('/', [ShopCategoryController::class, 'store'])->name('seller.categories.store');
+        Route::get('/{category}/edit', [ShopCategoryController::class, 'edit'])->name('seller.categories.edit');
+        Route::put('/{category}', [ShopCategoryController::class, 'update'])->name('seller.categories.update');
+        Route::delete('/{category}', [ShopCategoryController::class, 'destroy'])->name('seller.categories.destroy');
     });
 
     Route::get('/orders', function () {
@@ -429,7 +426,6 @@ Route::prefix('customer')->group(function () {
             Route::get('/{orderID}', [OrderController::class, 'show'])->name('user.order.detail');
             Route::patch('/{order}/cancel', [OrderController::class, 'cancel'])->name('user.order.cancel');
             Route::get('/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.order.reorder');
-            Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
         });
     });
 });
@@ -523,7 +519,7 @@ Route::post('/customer/cart/add-multi', [CartController::class, 'addMultiToCart'
 Route::post('/customer/apply-app-discount', [UserCouponController::class, 'applyAppDiscount'])->name('customer.apply-app-discount');
 
 Route::middleware(['auth'])->group(function () {
-    Route::post('/order-review/store', [OrderReviewController::class, 'store'])->name('reviews.store');
+    Route::post('/order-review/store', [UserOrderController::class, 'storeReview'])->name('reviews.store');
 });
 
 Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
