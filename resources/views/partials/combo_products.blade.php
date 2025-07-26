@@ -1,13 +1,12 @@
-<div class="product-featured pt-5">
-    <div class="flex items-center justify-between title">
-        <h2 class="">Combo Sản Phẩm</h2>
-        <a href="{{ route('combo.index') }}" class="text-[#ef3248] hover:underline text-sm font-medium whitespace-nowrap">
-            Xem chi tiết combo
-        </a>
-    </div>
-    @if ($comboProducts->isEmpty())
-        <p class="text-center text-gray-600">Hiện chưa có combo sản phẩm nào.</p>
-    @else
+@if (!$comboProducts->isEmpty())
+    <div class="product-featured pt-5">
+        <div class="flex items-center justify-between title">
+            <h2 class="">Combo Sản Phẩm</h2>
+            <a href="{{ route('combo.index') }}"
+                class="text-[#ef3248] hover:underline text-sm font-medium whitespace-nowrap">
+                Xem tất cả
+            </a>
+        </div>
         <div class="showcase-wrapper has-scrollbar">
             @foreach ($comboProducts as $combo)
                 <div class="showcase-container">
@@ -24,7 +23,7 @@
                             </h3>
                             <p class="text-sm text-gray-600 mb-3 flex items-center gap-1">
                                 <i class="fa-solid fa-store"></i>
-                                Shop: <a href="{{ route('shop.profile', $combo->shop->id) }}"
+                                Shop: <a href="{{ route('shop.profile', $product->shop->id) }}"
                                     class="text-blue-600 hover:underline">{{ $combo->shop->shop_name }}</a>
                             </p>
                             <div class="combo-products-list flex flex-wrap gap-2 mb-4">
@@ -61,5 +60,5 @@
                 </div>
             @endforeach
         </div>
-    @endif
-</div>
+    </div>
+@endif

@@ -1,11 +1,5 @@
 @extends('layouts.seller_home')
 
-@section('head')
-    @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/admin/product.css') }}">
-    @endpush
-@endsection
-
 @section('content')
     <div class="admin-page-header mb-5">
         <h1 class="admin-page-title text-2xl">Sản phẩm</h1>
@@ -44,6 +38,10 @@
                         </select>
                     </div>
                 </form>
+                <button id="delete-selected"
+                    class="hidden bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600">
+                    Xóa đã chọn
+                </button>
                 <a href="{{ route('seller.products.create') }}"
                     class="h-[44px] text-[15px] bg-blue-500 text-white px-4 py-2 flex items-center justify-center rounded-md hover:bg-blue-700 focus:outline-none">
                     Thêm sản phẩm
@@ -55,7 +53,7 @@
             <thead class="text-gray-300 font-semibold border-b border-gray-100">
                 <tr>
                     <th class="w-6 py-3 pr-6">
-                        <input id="select-all" class="w-[18px] h-[18px]" aria-label="Select all products" type="checkbox" />
+                        <input id="select-all" class="w-[18px] h-[18px]" type="checkbox" />
                     </th>
                     <th class="py-3">Sản phẩm</th>
                     <th class="py-3">Mã sản phẩm</th>
@@ -67,10 +65,9 @@
             </thead>
             <tbody class="divide-y divide-gray-100 text-gray-900 font-normal">
                 @foreach ($products as $product)
-                    <tr>
+                    <tr data-product-id="{{ $product->id }}">
                         <td class="py-4 pr-6">
-                            <input class="select-item w-[18px] h-[18px]" aria-label="Select {{ $product->name }}"
-                                type="checkbox" />
+                            <input class="select-item w-[18px] h-[18px]" type="checkbox" />
                         </td>
                         <td class="py-4 flex items-center gap-4">
                             <img alt="{{ $product->name }} product image" class="w-10 h-10 rounded-md object-cover"
@@ -164,4 +161,72 @@
             {{ $products->links('pagination::bootstrap-5') }}
         </div>
     </section>
+@endsection
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('select-all');
+            const itemCheckboxes = document.querySelectorAll('.select-item');
+            const deleteSelectedButton = document.getElementById('delete-selected');
+
+            // ✅ Hiện/ẩn nút Xóa
+            function toggleDeleteButton() {
+                const anyChecked = Array.from(itemCheckboxes).some(cb => cb.checked);
+                deleteSelectedButton.classList.toggle('hidden', !anyChecked);
+            }
+
+            selectAllCheckbox.addEventListener('change', function() {
+                itemCheckboxes.forEach(cb => cb.checked = this.checked);
+                toggleDeleteButton();
+            });
+
+            itemCheckboxes.forEach(cb => {
+                cb.addEventListener('change', function() {
+                    selectAllCheckbox.checked = Array.from(itemCheckboxes).every(c => c.checked);
+                    toggleDeleteButton();
+                });
+            });
+
+            // ✅ Xóa hàng loạt bằng AJAX + SweetAlert
+            deleteSelectedButton.addEventListener('click', function() {
+                const selectedCheckboxes = document.querySelectorAll('.select-item:checked');
+                if (selectedCheckboxes.length === 0) return;
+
+                const ids = Array.from(selectedCheckboxes).map(cb => cb.closest('tr').dataset.productId);
+
+                Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: "Xóa " + ids.length + " sản phẩm đã chọn!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Xóa ngay',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch("{{ route('seller.products.destroyMultiple') }}", {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    ids: ids
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire('Thành công!', data.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            })
+                            .catch(err => {
+                                Swal.fire('Lỗi!', 'Không thể xóa sản phẩm.', 'error');
+                            });
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

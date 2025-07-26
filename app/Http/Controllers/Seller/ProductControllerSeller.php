@@ -1218,4 +1218,20 @@ class ProductControllerSeller extends Controller
         }
         return array_unique($parentIds);
     }
+
+    public function destroyMultiple(Request $request)
+    {
+        $ids = $request->ids;
+
+        if (!$ids || count($ids) == 0) {
+            return response()->json(['message' => 'Không có sản phẩm nào được chọn'], 400);
+        }
+
+        try {
+            \App\Models\Product::whereIn('id', $ids)->delete();
+            return response()->json(['message' => 'Đã xóa thành công ' . count($ids) . ' sản phẩm']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Lỗi: ' . $e->getMessage()], 500);
+        }
+    }
 }

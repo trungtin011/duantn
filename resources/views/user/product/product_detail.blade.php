@@ -88,15 +88,35 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-4" id="price-display">
-                            <span class="text-red-600 text-3xl font-bold">
-                                {{ number_format($product->sale_price, 0, ',', '.') }} VNĐ
-                            </span>
-                            <span class="text-gray-500 line-through text-lg">
-                                {{ number_format($product->price, 0, ',', '.') }} VNĐ
-                            </span>
-                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">
-                                -{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%
-                            </span>
+                            @if ($product->variants->isNotEmpty())
+                                <!-- Sản phẩm có biến thể, lấy giá từ biến thể đầu tiên làm mặc định -->
+                                <span class="text-red-600 text-3xl font-bold">
+                                    {{ number_format($product->variants->first()->sale_price ?: $product->sale_price, 0, ',', '.') }}
+                                    VNĐ
+                                </span>
+                                @if ($product->variants->first()->price > 0)
+                                    <span class="text-gray-500 line-through text-lg">
+                                        {{ number_format($product->variants->first()->price ?: $product->price, 0, ',', '.') }}
+                                        VNĐ
+                                    </span>
+                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">
+                                        -{{ round((($product->variants->first()->price - $product->variants->first()->sale_price) / $product->variants->first()->price) * 100) ?: 0 }}%
+                                    </span>
+                                @endif
+                            @else
+                                <!-- Sản phẩm đơn, lấy giá từ bảng products -->
+                                <span class="text-red-600 text-3xl font-bold">
+                                    {{ number_format($product->sale_price, 0, ',', '.') }} VNĐ
+                                </span>
+                                @if ($product->price > 0)
+                                    <span class="text-gray-500 line-through text-lg">
+                                        {{ number_format($product->price, 0, ',', '.') }} VNĐ
+                                    </span>
+                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">
+                                        -{{ round((($product->price - $product->sale_price) / $product->price) * 100) ?: 0 }}%
+                                    </span>
+                                @endif
+                            @endif
                         </div>
                         <p class="text-gray-700 text-base leading-relaxed">{!! $product->meta_description !!}</p>
 
@@ -119,7 +139,6 @@
                                         <div class="flex gap-2">
                                             @foreach ($values as $value)
                                                 @php
-                                                    // Tìm biến thể tương ứng với giá trị thuộc tính này
                                                     $variant = $product->variants->firstWhere(function ($v) use (
                                                         $value,
                                                         $attributeName,
@@ -130,16 +149,18 @@
                                                             ->isNotEmpty();
                                                     });
                                                     $variantId = $variant ? $variant->id : null;
+                                                    $stock = $variantId
+                                                        ? $variantData[$variantId]['stock']
+                                                        : $defaultStock;
                                                 @endphp
                                                 <button
                                                     class="border border-gray-300 rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-gray-100 transition-colors"
                                                     data-value="{{ $value }}"
-                                                    data-price="{{ $variantId ? $variantData[$variantId]['price'] ?? $product->sale_price : $product->sale_price }}"
-                                                    data-stock="{{ $variantId ? $variantData[$variantId]['stock'] ?? $product->stock_total : $product->stock_total }}"
-                                                    data-variant-id="{{ $variantId }}"
+                                                    data-price="{{ $variantId ? $variantData[$variantId]['price'] : $product->sale_price }}"
+                                                    data-stock="{{ $stock }}" data-variant-id="{{ $variantId }}"
                                                     data-attribute-name="{{ $attributeName }}">
                                                     @if (isset($attributeImages[$attributeName][$value]))
-                                                        <img src="{{ ($attributeImages[$attributeName][$value]) }}"
+                                                        <img src="{{ $attributeImages[$attributeName][$value] }}"
                                                             width="24" height="24" class="rounded" loading="lazy">
                                                     @endif
                                                     <span>{{ $value }}</span>
@@ -159,7 +180,8 @@
                             <form action="{{ route('cart.add') }}" method="POST" class="flex items-center">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="variant_id" id="selected_variant_id" value="{{ $product->variants->isEmpty() ? 'default' : '' }}">
+                                <input type="hidden" name="variant_id" id="selected_variant_id"
+                                    value="{{ $selectedVariant ? $selectedVariant->id : ($product->variants->isEmpty() ? 'default' : '') }}">
                                 <button type="button" id="decreaseQty"
                                     class="border border-gray-300 px-4 py-2 rounded-l-lg hover:bg-gray-100 text-lg">-</button>
                                 <input type="text" name="quantity" id="quantity" value="1"
@@ -168,8 +190,7 @@
                                     class="border border-gray-300 px-4 py-2 rounded-r-lg hover:bg-gray-100 text-lg">+</button>
                             </form>
                             <span class="text-sm text-gray-600" id="stock_info">
-                                {{ $product->stock_total }}
-                                sản phẩm có sẵn
+                                {{ $defaultStock }} sản phẩm có sẵn
                             </span>
                         </div>
 
@@ -180,7 +201,8 @@
                                 data-product-id="{{ $product->id }}">
                                 <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
                             </button>
-                            <button id="instant_buy_btn" class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
+                            <button id="instant_buy_btn"
+                                class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
                         </div>
                     </div>
                 </div>
@@ -292,43 +314,6 @@
                     @endif
                 </div>
 
-                <!-- Sản phẩm liên quan -->
-                @if ($recentProducts->isNotEmpty())
-                    <div class="mt-8">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Sản phẩm liên quan</h3>
-                        <div class="swiper related-products-slider">
-                            <div class="swiper-wrapper">
-                                @foreach ($recentProducts as $relatedProduct)
-                                    <div class="swiper-slide">
-                                        <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
-                                            <a href="{{ route('product.show', $relatedProduct->slug) }}">
-                                                <img src="{{ $relatedProduct->images->first() ? Storage::url($relatedProduct->images->first()->image_path) : asset('images/default_product_image.png') }}"
-                                                    alt="{{ $relatedProduct->name }}"
-                                                    class="w-full h-48 object-cover rounded mb-2" loading="lazy">
-                                                <h4 class="text-sm font-medium text-gray-800 truncate">
-                                                    {{ $relatedProduct->name }}
-                                                </h4>
-                                                <div class="flex items-center justify-between mt-2">
-                                                    <span class="text-red-600 font-semibold">
-                                                        {{ number_format($relatedProduct->getCurrentPriceAttribute(), 0, ',', '.') }}
-                                                        ₫
-                                                    </span>
-                                                    @if ($relatedProduct->getDiscountPercentageAttribute() > 0)
-                                                        <span class="text-xs text-gray-500 line-through">
-                                                            {{ number_format($relatedProduct->price, 0, ',', '.') }} ₫
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="swiper-button-next"></div>
-                            <div class="swiper-button-prev"></div>
-                        </div>
-                    </div>
-                @endif
             </div>
 
             <!-- Cột bên phải (Thông tin shop) -->
@@ -498,6 +483,12 @@
                 const saveAllCouponsBtn = document.querySelector('.save-all-coupons-btn');
                 const reviewForm = document.getElementById('reviewForm');
 
+                // Initialize selectedVariantId and selectedVariantIdInput if product has variants
+                @if ($product->variants->isNotEmpty() && $selectedVariant)
+                    selectedVariantId = '{{ $selectedVariant->id }}';
+                    selectedVariantIdInput.value = '{{ $selectedVariant->id }}';
+                @endif
+
                 // Format số
                 function number_format(number, decimals, dec_point, thousands_sep) {
                     number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
@@ -530,12 +521,31 @@
                     selectedVariantIdInput.value = '';
                     mainImage.src =
                         '{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}';
-                    priceDisplay.innerHTML = `
-                        <span class="text-red-600 text-3xl font-bold">${number_format({{ $product->sale_price }}, 0, ',', '.')} VNĐ</span>
-                        <span class="text-gray-500 line-through text-lg">${number_format({{ $product->price }}, 0, ',', '.')} VNĐ</span>
-                        <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">-${{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%</span>
+
+                    @if ($product->variants->isNotEmpty())
+                        const defaultPrice = {{ $product->variants->first()->sale_price ?: 0 }};
+                        const defaultOriginalPrice = {{ $product->variants->first()->price ?: 0 }};
+                        const defaultDiscount = defaultOriginalPrice > 0 ? Math.round(((defaultOriginalPrice -
+                            defaultPrice) / defaultOriginalPrice) * 100) : 0;
+                        priceDisplay.innerHTML = `
+                        <span class="text-red-600 text-3xl font-bold">${number_format(defaultPrice, 0, ',', '.')} VNĐ</span>
+                        ${defaultOriginalPrice > 0 ? `<span class="text-gray-500 line-through text-lg">${number_format(defaultOriginalPrice, 0, ',', '.')} VNĐ</span>` : ''}
+                        ${defaultDiscount > 0 ? `<span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm>${defaultDiscount}%</span>` : ''}
                     `;
-                    stockInfo.textContent = '{{ $product->stock_total }} sản phẩm có sẵn';
+                        const defaultStock = {{ $defaultStock }}; // Sử dụng defaultStock từ controller
+                    @else
+                        const defaultPrice = {{ $product->sale_price }};
+                        const defaultOriginalPrice = {{ $product->price }};
+                        const defaultDiscount = defaultOriginalPrice > 0 ? Math.round(((defaultOriginalPrice -
+                            defaultPrice) / defaultOriginalPrice) * 100) : 0;
+                        priceDisplay.innerHTML = `
+                            <span class="text-red-600 text-3xl font-bold">${number_format(defaultPrice, 0, ',', '.')} VNĐ</span>
+                            ${defaultOriginalPrice > 0 ? `<span class="text-gray-500 line-through text-lg">${number_format(defaultOriginalPrice, 0, ',', '.')} VNĐ</span>` : ''}
+                            ${defaultDiscount > 0 ? `<span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm>${defaultDiscount}%</span>` : ''}
+                        `;
+                        const defaultStock = {{ $product->stock_total }};
+                    @endif
+                    stockInfo.textContent = `${defaultStock} sản phẩm có sẵn`;
                 }
 
                 // Xử lý chọn biến thể
@@ -573,9 +583,9 @@
                         const variants = @json($product->variants->toArray(), JSON_HEX_TAG | JSON_HEX_AMP);
 
                         const variant = variants.find(v => {
-                            const attrs = v.attribute_values.map(a => ({
-                                name: a.attribute.name,
-                                value: a.value
+                            const attrs = (v.attribute_values || []).map(a => ({
+                                name: a.attribute ? a.attribute.name : '',
+                                value: a.value || ''
                             }));
                             return Object.entries(selectedAttributes).every(([name, value]) => {
                                 return attrs.some(a => a.name === name && a.value ===
@@ -587,19 +597,24 @@
                             selectedVariantId = variant.id;
                             selectedVariantIdInput.value = variant.id;
 
-                            const imagePath = variant.images.length > 0 ? variant.images[0].image_path :
+                            const imagePath = (variant.images && variant.images.length > 0) ? variant
+                                .images[0].image_path :
                                 '{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}';
                             mainImage.src = '{{ asset('storage/') }}/' + imagePath;
 
-                            const price = variant.sale_price || variant.price;
-                            const originalPrice = variant.price;
+                            const price = variant.sale_price || variant.price || 0;
+                            const originalPrice = variant.price || 0;
+                            const discount = originalPrice > 0 ? Math.round(((originalPrice - price) /
+                                originalPrice) * 100) : 0;
                             priceDisplay.innerHTML = `
                             <span class="text-red-600 text-3xl font-bold">${number_format(price, 0, ',', '.')} VNĐ</span>
-                            <span class="text-gray-500 line-through text-lg">${number_format(originalPrice, 0, ',', '.')} VNĐ</span>
-                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>
+                            ${originalPrice > 0 ? `<span class="text-gray-500 line-through text-lg">${number_format(originalPrice, 0, ',', '.')} VNĐ</span>` : ''}
+                            ${discount > 0 ? `<span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm>${discount}%</span>` : ''}
                         `;
 
-                            const stock = variant.stock || {{ $product->stock_total }};
+                            // Sử dụng stock từ data-stock của nút
+                            const stock = parseInt(this.getAttribute('data-stock')) ||
+                                {{ $defaultStock }};
                             stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                         } else {
                             resetToDefault();
@@ -610,7 +625,8 @@
                 // Xử lý thêm vào giỏ hàng
                 addToCartButtons.forEach(button => {
                     button.addEventListener('click', () => {
-                        if (!selectedVariantId && {{ $product->variants->count() > 0 ? 'true' : 'false' }}) {
+                        if (!selectedVariantId &&
+                            {{ $product->variants->count() > 0 ? 'true' : 'false' }}) {
                             Swal.fire({
                                 position: 'top-end',
                                 toast: true,
@@ -623,8 +639,9 @@
                         }
 
                         const quantity = parseInt(quantityInput.value);
-                        const stock = parseInt(stockInfo.textContent.split(' ')[0]) ||
-                            {{ $product->stock_total }};
+                        const stock = selectedVariantId ? parseInt(stockInfo.textContent.split(' ')[
+                                0]) : // Use the stock from selected variant if available
+                            {{ $defaultStock }}; // Fallback to product total stock if no variant selected
 
                         if (quantity > stock) {
                             Swal.fire({
@@ -691,8 +708,7 @@
 
                 increaseBtn.addEventListener('click', () => {
                     let qty = parseInt(quantityInput.value);
-                    const stock = selectedVariantId ? parseInt(stockInfo.textContent.split(' ')[0]) :
-                        {{ $product->stock_total }};
+                    const stock = parseInt(stockInfo.textContent.split(' ')[0]) || {{ $defaultStock }};
                     if (qty < stock) quantityInput.value = qty + 1;
                 });
 
@@ -988,91 +1004,7 @@
                     });
                 });
             });
-
-            document.addEventListener('DOMContentLoaded', () => {
-                // Khởi tạo Swiper cho sản phẩm liên quan
-                new Swiper('.related-products-slider', {
-                    slidesPerView: 2,
-                    spaceBetween: 10,
-                    breakpoints: {
-                        640: {
-                            slidesPerView: 3
-                        },
-                        1024: {
-                            slidesPerView: 4
-                        }
-                    },
-                    navigation: {
-                        nextEl: '.swiper-button-next',
-                        prevEl: '.swiper-button-prev',
-                    }
-                });
-
-                // Xử lý bộ lọc đánh giá
-                const updateReviewList = (url) => {
-                    fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'text/html',
-                            }
-                        })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Lỗi khi tải đánh giá');
-                            return response.text();
-                        })
-                        .then(html => {
-                            document.getElementById('reviewList').innerHTML = html;
-                            attachPaginationEvents();
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                position: 'top-end',
-                                toast: true,
-                                icon: 'error',
-                                title: 'Lỗi',
-                                text: 'Không thể tải danh sách đánh giá!',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        });
-                };
-
-                const attachFilterEvents = () => {
-                    const filterButtons = document.querySelectorAll('.filter-btn');
-                    filterButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            const filter = button.getAttribute('data-filter');
-                            const url =
-                                `{{ route('product.show', $product->slug) }}?filter=${filter}`;
-                            updateReviewList(url);
-                            filterButtons.forEach(btn => {
-                                btn.classList.remove('text-[#e94e1b]', 'border-[#e94e1b]');
-                                btn.classList.add('text-[#333]', 'border-[#ddd]');
-                            });
-                            button.classList.remove('text-[#333]', 'border-[#ddd]');
-                            button.classList.add('text-[#e94e1b]', 'border-[#e94e1b]');
-                        });
-                    });
-                };
-
-                const attachPaginationEvents = () => {
-                    const paginationLinks = document.querySelectorAll('.pagination a');
-                    paginationLinks.forEach(link => {
-                        link.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            const url = e.target.href;
-                            updateReviewList(url);
-                        });
-                    });
-                };
-
-                // Khởi tạo sự kiện
-                attachFilterEvents();
-                attachPaginationEvents();
-            });
         </script>
-        <script>
-        </script>
+        <script></script>
     @endpush
 @endsection

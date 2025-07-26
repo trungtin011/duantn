@@ -143,8 +143,8 @@ class ProductController extends Controller
             'orderReviews.user',
             'orderReviews.images',
             'orderReviews.videos',
-            'categories', // Quan hệ với bảng categories thông qua product_categories
-            'brands'      // Quan hệ với bảng brand thông qua product_brands
+            'categories',
+            'brands'
         ])->where('slug', $slug)->firstOrFail();
 
         // Tính trung bình rating và số lượng đánh giá
@@ -166,7 +166,6 @@ class ProductController extends Controller
         $filter = $request->input('filter');
         $query = $product->orderReviews()->with(['user', 'images', 'videos']);
 
-        // Áp dụng bộ lọc trước khi phân trang
         if ($filter === 'images') {
             $query->where(function ($q) {
                 $q->whereHas('images')->orWhereHas('videos');
@@ -178,7 +177,6 @@ class ProductController extends Controller
             $query->where('rating', $rating);
         }
 
-        // Lấy danh sách đánh giá với phân trang
         $filteredReviews = $query->orderBy('created_at', 'desc')->paginate(10);
 
         // Gán hình ảnh, giá, và số lượng của biến thể
@@ -197,7 +195,7 @@ class ProductController extends Controller
             $variantData[$variant->id] = [
                 'price' => $variant->getCurrentPriceAttribute(),
                 'original_price' => $variant->price,
-                'stock' => $variant->stock,
+                'stock' => $variant->stock, // Số lượng từ biến thể
                 'image' => $image
                     ? Storage::url($image)
                     : asset('images/default_product_image.png'),
@@ -205,11 +203,12 @@ class ProductController extends Controller
             ];
         }
 
+        // Nếu không có biến thể, sử dụng thông tin từ sản phẩm đơn
         if ($product->variants->isEmpty()) {
             $variantData['default'] = [
                 'price' => $product->getCurrentPriceAttribute(),
                 'original_price' => $product->price,
-                'stock' => $product->stock_total,
+                'stock' => $product->stock_total, // Số lượng từ stock_total
                 'image' => $product->images->first()
                     ? Storage::url($product->images->first()->image_path)
                     : asset('images/default_product_image.png'),
@@ -229,21 +228,24 @@ class ProductController extends Controller
                 ->where('product_id', $product->id)
                 ->exists();
         }
+
+        // Lựa chọn biến thể mặc định
         if ($request->has('variant_id')) {
             $selectedVariant = $product->variants->find($request->variant_id);
         } elseif ($product->variants->isNotEmpty()) {
-            $selectedVariant = $product->variants->first();
+            $selectedVariant = $product->variants->first(); // Chọn biến thể đầu tiên làm mặc định
         }
+
+        // Số lượng mặc định dựa trên biến thể hoặc sản phẩm đơn
+        $defaultStock = $selectedVariant ? $selectedVariant->stock : ($product->variants->isEmpty() ? $product->stock_total : 0);
 
         $viewed = session()->get('viewed_products', []);
         $viewed = array_unique(array_merge([$product->id], $viewed));
         session()->put('viewed_products', array_slice($viewed, 0, 10));
 
-        // Lấy sản phẩm liên quan theo danh mục
         $recentProducts = Cache::remember("related_products_{$product->id}", 3600, function () use ($product) {
             Log::info('Fetching related products for product ID: ' . $product->id);
 
-            // Lấy danh sách category_id từ bảng product_categories
             $categoryIds = $product->categories->pluck('id');
 
             $products = Product::where('status', 'active')
@@ -257,7 +259,6 @@ class ProductController extends Controller
 
             Log::info('Found ' . $products->count() . ' related products by categories');
 
-            // Nếu không đủ sản phẩm liên quan, lấy thêm sản phẩm ngẫu nhiên
             if ($products->count() < 4) {
                 $additionalProducts = Product::where('id', '!=', $product->id)
                     ->where('status', 'active')
@@ -274,15 +275,8 @@ class ProductController extends Controller
 
         $logoPath = $product->shop ? Storage::url($product->shop->logo) : asset('images/default_shop_logo.png');
 
-        // Kiểm tra trạng thái yêu thích
-        $isWishlisted = false;
-        if (Auth::check()) {
-            $isWishlisted = Wishlist::where('userID', Auth::id())
-                ->where('productID', $product->id)
-                ->exists();
-        }
+        $isWishlisted = Auth::check() ? Wishlist::where('userID', Auth::id())->where('productID', $product->id)->exists() : false;
 
-        // Kiểm tra trạng thái đã lưu của các voucher
         $savedCoupons = [];
         if (Auth::check() && $product->shop) {
             $savedCoupons = CouponUser::where('user_id', Auth::id())
@@ -291,24 +285,12 @@ class ProductController extends Controller
                 ->toArray();
         }
 
-        // Kiểm tra xem người dùng đã mua sản phẩm và đơn hàng đã giao thành công
-        $hasPurchased = false;
-        if (Auth::check()) {
-            $hasPurchased = Order::where('userID', Auth::id())
-                ->where('order_status', 'delivered')
-                ->whereHas('items', function ($query) use ($product) {
-                    $query->where('productID', $product->id);
-                })
-                ->exists();
-        }
-
-        // Kiểm tra xem người dùng đã đánh giá sản phẩm chưa
-        $hasReviewed = false;
-        if (Auth::check()) {
-            $hasReviewed = OrderReview::where('user_id', Auth::id())
-                ->where('product_id', $product->id)
-                ->exists();
-        }
+        $hasPurchased = Auth::check() ? Order::where('userID', Auth::id())
+            ->where('order_status', 'delivered')
+            ->whereHas('items', function ($query) use ($product) {
+                $query->where('productID', $product->id);
+            })
+            ->exists() : false;
 
         if ($request->ajax()) {
             return view('partials.review_list', ['reviews' => $filteredReviews]);
@@ -334,6 +316,7 @@ class ProductController extends Controller
             'ratingCounts' => $ratingCounts,
             'commentCount' => $commentCount,
             'mediaCount' => $mediaCount,
+            'defaultStock' => $defaultStock, // Thêm số lượng mặc định
         ]);
     }
 
@@ -429,46 +412,6 @@ class ProductController extends Controller
             return $product->variants->first();
         }
         return null;
-    }
-
-    protected function updateViewedProductsSession($productId)
-    {
-        $viewed = session()->get('viewed_products', []);
-        $viewed = array_unique(array_merge([$productId], $viewed));
-        session()->put('viewed_products', array_slice($viewed, 0, 10));
-
-        // Lấy sản phẩm liên quan theo danh mục
-        $recentProducts = Cache::remember("related_products_{$product->id}", 3600, function () use ($product) {
-            Log::info('Fetching related products for product ID: ' . $product->id);
-
-            // Lấy danh sách category_id từ bảng product_categories
-            $categoryIds = $product->categories->pluck('id');
-
-            $products = Product::where('status', 'active')
-                ->where('id', '!=', $product->id)
-                ->whereHas('categories', function ($query) use ($categoryIds) {
-                    $query->whereIn('category_id', $categoryIds);
-                })
-                ->with('images')
-                ->take(8)
-                ->get();
-
-            Log::info('Found ' . $products->count() . ' related products by categories');
-
-            // Nếu không đủ sản phẩm liên quan, lấy thêm sản phẩm ngẫu nhiên
-            if ($products->count() < 4) {
-                $additionalProducts = Product::where('id', '!=', $product->id)
-                    ->where('status', 'active')
-                    ->with('images')
-                    ->take(8 - $products->count())
-                    ->inRandomOrder()
-                    ->get();
-                Log::info('Added ' . $additionalProducts->count() . ' random products');
-                $products = $products->merge($additionalProducts);
-            }
-
-            return $products;
-        });
     }
 
     protected function checkIsWishlisted($product)
