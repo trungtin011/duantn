@@ -24,6 +24,16 @@
                             <div class="text-danger text-sm">{{ $message }}</div>
                         @enderror
                     </div>
+                    <div class="form-group mt-3">
+                        <label>Chọn sản phẩm:</label><br>
+                        @foreach ($products as $product)
+                            <div class="form-check">
+                                <input type="checkbox" name="product_ids[]" value="{{ $product->id }}"
+                                    {{ in_array($product->id, $selectedProducts) ? 'checked' : '' }}>
+                                {{ $product->name }}
+                            </div>
+                        @endforeach
+                    </div>
                     <button type="submit"
                         class="bg-[#28BCF9] hover:bg-[#3DA5F7] text-white w-full py-2 px-4 rounded-md flex items-center justify-center transition-all duration-300">Cập
                         nhật danh mục</button>

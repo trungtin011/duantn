@@ -217,6 +217,12 @@
                                 <a href="{{ route('seller.products.create') }}" class="link_admin">Thêm Sản Phẩm</a>
                             </li>
                             <li class="text-sm text-[#64748b]">
+                                <a href="{{ route('seller.coupon.index') }}" class="link_admin">Mã Giảm Giá</a>
+                            </li>
+                            <li class="text-sm text-[#64748b]">
+                                <a href="{{ route('seller.combo.index') }}" class="link_admin">Combo</a>
+                            </li>
+                            <li class="text-sm text-[#64748b]">
                                 <a class="link_admin" href="{{ route('seller.categories.index') }}">Danh
                                     Mục</a>
                             </li>
@@ -240,9 +246,6 @@
                         </div>
                         <ul x-show="open" x-transition
                             class="dropdown_products_content flex flex-col gap-2 px-[44px] py-[12px]">
-                            <li class="text-sm text-[#64748b]">
-                                <a href="{{ route('seller.combo.index') }}" class="link_admin">Tạo combo</a>
-                            </li>
                             <li class="text-sm text-[#64748b]">
                                 <a href="#" class="link_admin">Kênh Marketing</a>
                             </li>
