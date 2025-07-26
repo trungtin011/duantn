@@ -36,10 +36,10 @@ use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
 use App\Http\Controllers\Seller\ComboController;
-use App\Http\Controllers\Seller\ReviewController as SellerReviewController;
 use App\Http\Controllers\Seller\SellerSettingsController;
 use App\Http\Controllers\Seller\ChatSettingsController;
 use App\Http\Controllers\Seller\ShopCategoryController;
+use App\Http\Controllers\Seller\CouponControllerSeller;
 //user
 use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\User\HomeController;
@@ -56,9 +56,6 @@ use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
 use App\Http\Controllers\User\CouponController as UserCouponController;
 use App\Http\Controllers\User\FrontendController;
-use App\Http\Controllers\User\UserReviewController;
-use App\Http\Controllers\ReviewLikeController;
-use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ShopController;
@@ -319,12 +316,24 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.orders');
     })->name('seller.orders');
 
-    Route::get('/combos', [ComboController::class, 'index'])->name('seller.combo.index');
-    Route::get('/combos/create', [ComboController::class, 'create'])->name('seller.combo.create');
-    Route::post('/combos', [ComboController::class, 'store'])->name('seller.combo.store');
-    Route::get('/combos/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
-    Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
-    Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
+    Route::prefix('coupon')->group(function () {
+        Route::get('/', [CouponControllerSeller::class, 'index'])->name('seller.coupon.index');
+        Route::get('/create', [CouponControllerSeller::class, 'create'])->name('seller.coupon.create');
+        Route::post('/', [CouponControllerSeller::class, 'store'])->name('seller.coupon.store');
+        Route::delete('/delete-multiple', [CouponControllerSeller::class, 'destroyMultiple'])->name('seller.coupon.destroyMultiple');
+        Route::get('/{id}/edit', [CouponControllerSeller::class, 'edit'])->name('seller.coupon.edit');
+        Route::put('/{id}', [CouponControllerSeller::class, 'update'])->name('seller.coupon.update');
+        Route::delete('/{id}', [CouponControllerSeller::class, 'destroy'])->name('seller.coupon.destroy');
+    });
+
+    Route::prefix('combo')->group(function () {
+        Route::get('/', [ComboController::class, 'index'])->name('seller.combo.index');
+        Route::get('/create', [ComboController::class, 'create'])->name('seller.combo.create');
+        Route::post('/', [ComboController::class, 'store'])->name('seller.combo.store');
+        Route::get('/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
+        Route::patch('/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
+        Route::delete('/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
+    });
 });
 
 Route::prefix('customer')->group(function () {
@@ -332,6 +341,7 @@ Route::prefix('customer')->group(function () {
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
     // Route xem nhanh sản phẩm
     Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
+    // Route tìm kiếm sản phẩm
     Route::get('/search', [ProductController::class, 'search'])->name('search');
     // Route Hồ sơ shop
     Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.profile');
@@ -355,8 +365,8 @@ Route::prefix('customer')->group(function () {
     Route::post('/coupon/{couponId}/save', [ProductController::class, 'saveCoupon'])->name('coupon.save');
     // Route Lưu tất cả coupon
     Route::post('/shop/{shopId}/save-all-coupons', [ProductController::class, 'saveAllCoupons'])->name('shop.saveAllCoupons');
-    // Route like sản phẩm
-    Route::post('/review/{review}/like', [ReviewLikeController::class, 'toggle'])->middleware('auth');
+    // Like/Unlike review (OrderReview)
+    Route::post('/review/{reviewId}/like', [ProductController::class, 'likeReview'])->name('review.like')->middleware('auth');
     // Route mua ngay
     Route::post('/instant-buy', [ProductController::class, 'instantBuy'])->name('instant-buy');
     // Trang liên hệ

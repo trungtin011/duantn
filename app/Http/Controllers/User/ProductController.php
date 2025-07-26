@@ -143,6 +143,7 @@ class ProductController extends Controller
             'orderReviews.user',
             'orderReviews.images',
             'orderReviews.videos',
+            'orderReviews.likes',
             'categories',
             'brands'
         ])->where('slug', $slug)->firstOrFail();
@@ -161,10 +162,11 @@ class ProductController extends Controller
         ];
         $commentCount = $product->orderReviews()->whereNotNull('comment')->count();
         $mediaCount = $product->orderReviews()->whereHas('images')->orWhereHas('videos')->count();
+        $mostLikedCount = $product->orderReviews()->withCount('likes')->having('likes_count', '>', 0)->count();
 
         // Xử lý bộ lọc
         $filter = $request->input('filter');
-        $query = $product->orderReviews()->with(['user', 'images', 'videos']);
+        $query = $product->orderReviews()->with(['user', 'images', 'videos', 'likes']);
 
         if ($filter === 'images') {
             $query->where(function ($q) {
@@ -177,7 +179,36 @@ class ProductController extends Controller
             $query->where('rating', $rating);
         }
 
-        $filteredReviews = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Sắp xếp theo filter
+        if ($filter === 'most-liked') {
+            $query->withCount('likes')->orderByDesc('likes_count');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $filteredReviews = $query->paginate(10);
+
+        // Gán thêm thông tin like cho từng review
+        $authId = Auth::id();
+        foreach ($filteredReviews as $review) {
+            // Đảm bảo quan hệ likes được load
+            if (!$review->relationLoaded('likes')) {
+                $review->load('likes');
+            }
+            
+            $review->likes_count = $review->likes ? $review->likes->count() : 0;
+            $review->liked_by_auth = $authId && $review->likes ? $review->likes->where('user_id', $authId)->isNotEmpty() : false;
+            
+            Log::info('Main Review like info:', [
+                'review_id' => $review->id,
+                'likes_count' => $review->likes_count,
+                'liked_by_auth' => $review->liked_by_auth,
+                'auth_id' => $authId,
+                'likes_loaded' => $review->relationLoaded('likes'),
+                'likes_count_actual' => $review->likes ? $review->likes->count() : 'null',
+                'likes_collection' => $review->likes ? $review->likes->toArray() : 'null'
+            ]);
+        }
 
         // Gán hình ảnh, giá, và số lượng của biến thể
         $attributeImages = [];
@@ -293,7 +324,49 @@ class ProductController extends Controller
             ->exists() : false;
 
         if ($request->ajax()) {
+            // Gán thêm thông tin like cho từng review
+            $authId = Auth::id();
+            foreach ($filteredReviews as $review) {
+                // Đảm bảo quan hệ likes được load
+                if (!$review->relationLoaded('likes')) {
+                    $review->load('likes');
+                }
+                
+                $review->likes_count = $review->likes ? $review->likes->count() : 0;
+                $review->liked_by_auth = $authId && $review->likes ? $review->likes->where('user_id', $authId)->isNotEmpty() : false;
+                
+                Log::info('AJAX Review like info:', [
+                    'review_id' => $review->id,
+                    'likes_count' => $review->likes_count,
+                    'liked_by_auth' => $review->liked_by_auth,
+                    'auth_id' => $authId,
+                    'likes_loaded' => $review->relationLoaded('likes'),
+                    'likes_count_actual' => $review->likes ? $review->likes->count() : 'null',
+                    'likes_collection' => $review->likes ? $review->likes->toArray() : 'null'
+                ]);
+            }
             return view('partials.review_list', ['reviews' => $filteredReviews]);
+        }
+
+        // Gán thêm thông tin like cho từng review
+        $authId = Auth::id();
+        foreach ($filteredReviews as $review) {
+            // Đảm bảo quan hệ likes được load
+            if (!$review->relationLoaded('likes')) {
+                $review->load('likes');
+            }
+            
+            $review->likes_count = $review->likes ? $review->likes->count() : 0;
+            $review->liked_by_auth = $authId && $review->likes ? $review->likes->where('user_id', $authId)->isNotEmpty() : false;
+            
+            Log::info('Main Review like info:', [
+                'review_id' => $review->id,
+                'likes_count' => $review->likes_count,
+                'liked_by_auth' => $review->liked_by_auth,
+                'auth_id' => $authId,
+                'likes_loaded' => $review->relationLoaded('likes'),
+                'likes_count_actual' => $review->likes ? $review->likes->count() : 'null'
+            ]);
         }
 
         return view('user.product.product_detail', [
@@ -316,6 +389,7 @@ class ProductController extends Controller
             'ratingCounts' => $ratingCounts,
             'commentCount' => $commentCount,
             'mediaCount' => $mediaCount,
+            'mostLikedCount' => $mostLikedCount,
             'defaultStock' => $defaultStock, // Thêm số lượng mặc định
         ]);
     }
@@ -343,7 +417,7 @@ class ProductController extends Controller
 
     protected function getFilteredReviews($product, $filter)
     {
-        $query = $product->orderReviews()->with(['user', 'images', 'videos']);
+        $query = $product->orderReviews()->with(['user', 'images', 'videos', 'likes']);
 
         if ($filter === 'images') {
             $query->where(function ($q) {
@@ -356,7 +430,35 @@ class ProductController extends Controller
             $query->where('rating', $rating);
         }
 
-        return $query->orderBy('created_at', 'desc')->paginate(10);
+        // Sắp xếp theo filter
+        if ($filter === 'most-liked') {
+            $query->withCount('likes')->orderByDesc('likes_count');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $reviews = $query->paginate(10);
+        
+        // Đảm bảo quan hệ likes được load cho từng review
+        $authId = Auth::id();
+        foreach ($reviews as $review) {
+            if (!$review->relationLoaded('likes')) {
+                $review->load('likes');
+            }
+            $review->likes_count = $review->likes ? $review->likes->count() : 0;
+            $review->liked_by_auth = $authId && $review->likes ? $review->likes->where('user_id', $authId)->isNotEmpty() : false;
+            
+            Log::info('Filtered Review like info:', [
+                'review_id' => $review->id,
+                'likes_count' => $review->likes_count,
+                'liked_by_auth' => $review->liked_by_auth,
+                'auth_id' => $authId,
+                'likes_loaded' => $review->relationLoaded('likes'),
+                'likes_count_actual' => $review->likes ? $review->likes->count() : 'null'
+            ]);
+        }
+        
+        return $reviews;
     }
 
     protected function getVariantImagesAndData($product)
@@ -875,5 +977,61 @@ class ProductController extends Controller
             'message' => 'Chuyển hướng đến trang thanh toán',
             'redirect_url' => route('checkout.index')
         ], 200);
+    }
+
+    public function likeReview(Request $request, $reviewId)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thích đánh giá!'], 401);
+            }
+
+            $review = \App\Models\OrderReview::findOrFail($reviewId);
+            $like = \App\Models\ReviewLike::where('user_id', $user->id)->where('order_review_id', $reviewId)->first();
+
+            if ($like) {
+                $like->delete();
+                $liked = false;
+                $message = 'Đã bỏ thích đánh giá!';
+            } else {
+                \App\Models\ReviewLike::create([
+                    'user_id' => $user->id,
+                    'order_review_id' => $reviewId,
+                ]);
+                $liked = true;
+                $message = 'Đã thích đánh giá!';
+            }
+
+            // Reload review để lấy số lượng like mới nhất
+            $review->refresh();
+            $likeCount = $review->likes()->count();
+
+            Log::info('Like review response:', [
+                'review_id' => $reviewId,
+                'user_id' => $user->id,
+                'liked' => $liked,
+                'like_count' => $likeCount,
+                'message' => $message
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'liked' => $liked,
+                'like_count' => $likeCount,
+                'message' => $message
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in likeReview:', [
+                'error' => $e->getMessage(),
+                'review_id' => $reviewId,
+                'user_id' => Auth::id()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi thích đánh giá!'
+            ], 500);
+        }
     }
 }

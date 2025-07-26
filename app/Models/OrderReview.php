@@ -39,4 +39,9 @@ class OrderReview extends Model
     {
         return $this->hasMany(OrderReviewVideo::class, 'review_id');
     }
+
+    public function likes()
+    {
+        return $this->hasMany(ReviewLike::class, 'order_review_id');
+    }
 }
