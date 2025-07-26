@@ -108,13 +108,37 @@ class HomeController extends Controller
             ->get();
 
         // Flash sale
-        $flashSaleProducts = Product::with(['defaultImage', 'reviews', 'categories'])
+        $flashSaleProducts = Product::with(['defaultImage', 'reviews', 'categories', 'variants'])
             ->whereNotNull('flash_sale_price')
             ->where('flash_sale_end_at', '>', Carbon::now())
             ->where('status', 'active')
             ->orderBy('flash_sale_end_at', 'asc')
             ->take(10)
             ->get();
+
+        // Process flash sale products to get the lowest variant price if applicable
+        $flashSaleProducts->each(function ($product) {
+            if ($product->variants->isNotEmpty()) {
+                $minSalePriceVariant = $product->variants
+                    ->whereNotNull('sale_price') // Check for sale_price on variant
+                    ->where('stock', '>', 0)
+                    ->sortBy('sale_price') // Sort by sale_price
+                    ->first();
+
+                if ($minSalePriceVariant) {
+                    $product->display_flash_sale_price = $minSalePriceVariant->sale_price;
+                    $product->display_original_price_for_flash_sale = $minSalePriceVariant->price;
+                } else {
+                    // Fallback to product's flash sale price if no variant has a sale price or is out of stock
+                    $product->display_flash_sale_price = $product->flash_sale_price;
+                    $product->display_original_price_for_flash_sale = $product->price;
+                }
+            } else {
+                // For simple products (no variants)
+                $product->display_flash_sale_price = $product->flash_sale_price;
+                $product->display_original_price_for_flash_sale = $product->price;
+            }
+        });
 
         // Sản phẩm mới (tạo trong vòng 7 ngày gần nhất)
         $newProducts = Product::with(['defaultImage', 'categories', 'reviews', 'variants'])

@@ -1,28 +1,67 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('title', 'Thông tin người bán')
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
+    <title>@yield('title', 'Default Title')</title>
 
-@section('content')
-    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Font + Tailwind + Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
 
-    <div class="max-w-[1200px] mx-auto px-4 pt-6">
-        <!-- Form tìm kiếm sản phẩm theo shop -->
-        <form action="{{ route('shop.search', $shop->id) }}" method="GET" class="mb-6">
-            <input type="text" name="query" placeholder="Tìm kiếm sản phẩm trong shop..."
-                value="{{ request('query') }}"
-                class="w-full md:w-1/3 px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300">
-            <button type="submit"
-                class="ml-2 px-4 py-2 bg-[#e03e2f] text-white rounded-md hover:bg-red-600 transition">Tìm kiếm</button>
-        </form>
+<body>
+
+    <div class="container mx-auto px-4">
+        <div class="container mx-auto px-[10px] sm:px-0 pb-3 flex justify-between items-center">
+            <!-- Logo -->
+            @if (empty($settings->logo))
+                <a class="w-full lg:w-[14%] flex items-center gap-2 py-2" href="/">
+                    <div class="bg-black flex items-center gap-2 py-1 px-2 rounded lg:w-[175px]">
+                        <img src="{{ asset('images/logo.svg') }}" alt="logo" class="w-[30%] h-[30%]">
+                        <div class="text-white grid">
+                            <h5 class="m-0 text-xl">ZynoxMall</h5>
+                            <span class="text-xs text-right">zynoxmall.xyz</span>
+                        </div>
+                    </div>
+                </a>
+            @else
+                <a href="{{ route('home') }}" class="flex items-center">
+                    <img src="{{ asset('storage/' . $settings->logo) }}" alt="logo" class="w-20">
+                </a>
+            @endif
+            <!-- Form tìm kiếm sản phẩm theo shop -->
+            <form action="{{ route('shop.search', $shop->id) }}" method="GET"
+                class="w-full md:w-1/2 flex items-center">
+                <input type="text" name="query" placeholder="Tìm kiếm sản phẩm trong shop..."
+                    value="{{ request('query') }}"
+                    class="w-full md:w-full px-4 py-2 border shadow-sm focus:outline-none">
+                <button type="submit" class="px-4 py-2 bg-[#e03e2f] text-white hover:bg-red-600 transition">
+                    <i class="fa fa-search"></i>
+                </button>
+            </form>
+        </div>
 
         <!-- Banner và Logo -->
-        <div class="relative w-full h-52 md:h-64 rounded-lg overflow-hidden mb-6 shadow-md">
-            <img src="{{ asset($shop->shop_banner ?? 'images/default-banner.jpg') }}" alt="Banner shop"
-                class="w-full h-full object-cover">
+        <div class="relative w-full h-52 md:h-[400px] rounded-lg overflow-hidden mb-6 shadow-md">
+            <img src="{{ asset('storage/' . $shop->shop_banner) }}" alt="Banner"
+                class="absolute w-full h-full object-cover" alt="Banner shop">
             <div class="absolute inset-0 bg-black bg-opacity-40 flex items-end justify-between px-6 py-4">
                 <div class="flex items-center">
-                    <img src="{{ asset($shop->shop_logo ?? 'images/default-logo.png') }}" alt="Logo"
+                    <img src="{{ asset('storage/' . $shop->shop_logo) }}" alt="Logo"
                         class="w-20 h-20 rounded-full border-4 border-white object-cover shadow-md">
                     <div class="ml-4 text-white">
                         <h1 class="text-2xl font-bold">{{ $shop->shop_name }}</h1>
@@ -61,8 +100,6 @@
             </div>
         </div>
 
-        <!-- Thông tin chi tiết -->
-        <!-- Thông tin chi tiết -->
         <div
             class="bg-white rounded-lg shadow-md p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-700 mb-10">
             <div class="flex items-center gap-2"><i class="fas fa-box-open text-[#e03e2f]"></i> <span>Sản phẩm:
@@ -109,11 +146,11 @@
             @foreach ($products ?? $shop->products as $product)
                 <a href="{{ route('product.show', $product->slug) }}"
                     class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
-                    <img src="{{ asset($product->images->first()->image_path ?? 'images/default.jpg') }}"
+                    <img src="{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
                         class="rounded-md w-full h-36 object-cover mb-2" alt="{{ $product->name }}">
                     <div class="font-semibold text-sm truncate">{{ $product->name }}</div>
                     <div class="text-[#e03e2f] font-bold text-sm">
-                        {{ number_format($product->sale_price ?? $product->price, 0, ',', '.') }}đ</div>
+                        {{ number_format($product->display_price, 0, ',', '.') }}đ</div>
                     <div class="text-[11px] text-[#777] mt-1">
                         <i class="fas fa-star text-yellow-400"></i>
                         {{ number_format($product->reviews->avg('rating'), 1) ?? '0.0' }} • Đã bán
@@ -124,4 +161,6 @@
         </div>
     </div>
 
-@endsection
+</body>
+
+</html>

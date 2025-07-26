@@ -13,13 +13,8 @@ class ShopController extends Controller
     public function show($id)
     {
         $shop = Shop::with(['products', 'user', 'address', 'products.orderReviews'])->findOrFail($id);
-        $addresses = ShopAddress::all();
 
-        foreach ($addresses as $address) {
-            Shop::where('id', $address->shopID)->update([
-                'shop_address_id' => $address->id,
-            ]);
-        }
+
         return view('shop.profile', compact('shop'));
     }
 
@@ -37,7 +32,7 @@ class ShopController extends Controller
     public function unfollow(Shop $shop)
     {
         $user = Auth::user();
-        $user->followedShops()->detach($shop->id);
+        $shop->followers()->detach($user->id);
 
         return back()->with('success', 'Bạn đã hủy theo dõi shop.');
     }

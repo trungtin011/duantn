@@ -201,6 +201,16 @@ body::-webkit-scrollbar-thumb:hover {
     margin-bottom: 30px;
 }
 
+.title-flash-sale {
+    color: var(--eerie-black);
+    font-size: var(--fs-5);
+    font-weight: var(--weight-600);
+    letter-spacing: 0.4px;
+    text-transform: capitalize;
+    border-bottom: 1px solid var(--cultured);
+    margin-bottom: 30px;
+}
+
 
 
 
@@ -1179,6 +1189,46 @@ body::-webkit-scrollbar-thumb:hover {
 /*-----------------------------------*\
     #PRODUCT FEATURED
   \*-----------------------------------*/
+
+.flash-sale-scroll-container {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline mandatory;
+    padding-bottom: 15px;
+}
+
+.flash-sale-scroll-container::-webkit-scrollbar {
+    height: 6px;
+    background: transparent;
+}
+
+.flash-sale-scroll-container::-webkit-scrollbar-thumb {
+    background: #e6e6e6;
+    border-radius: 3px;
+    visibility: hidden;
+}
+
+/* Hiển thị khi hover */
+.flash-sale-scroll-container:hover::-webkit-scrollbar-thumb {
+    visibility: visible;
+}
+
+.flash-sale-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #cccccc;
+}
+
+/* Track cuộn thật: phải có width lớn hơn container */
+.flash-sale-box {
+    display: inline-block;
+    width: max-content;
+    /* Quan trọng: tạo scroll */
+}
+
+.showcase-container {
+    width: 200px;
+    flex-shrink: 0;
+}
 
 .product-featured {
     margin-bottom: 30px;

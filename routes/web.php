@@ -302,6 +302,9 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 
         Route::get('/simple', [ProductController::class, 'simple'])->name('product.simple');
         Route::get('/variable', [ProductController::class, 'variable'])->name('product.variable');
+
+        Route::delete('/products/delete-multiple', [ProductControllerSeller::class, 'destroyMultiple'])
+            ->name('seller.products.destroyMultiple');
     });
 
     Route::prefix('categories')->group(function () {
@@ -331,13 +334,17 @@ Route::prefix('customer')->group(function () {
     Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
     Route::get('/search', [ProductController::class, 'search'])->name('search');
     // Route Hồ sơ shop
-    Route::get('/profileShop/{id}', [ShopController::class, 'show'])->name('shop.profile');
-    // Tìm kiếm sp của shop
-    Route::get('/shop/{shop}/search', [ShopController::class, 'searchProducts'])->name('shop.search');
+    Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.profile');
     // Route follow shop
-    Route::post('/shop/follow/{shop}', [ShopController::class, 'follow'])->name('shop.follow');
+    Route::post('/shop/{shop}/follow', [ShopController::class, 'follow'])->middleware('auth')->name('shop.follow');
     // Route unfollow shop
-    Route::post('/shop/unfollow/{shop}', [ShopController::class, 'unfollow'])->name('shop.unfollow');
+    Route::post('/shop/{shop}/unfollow', [ShopController::class, 'unfollow'])->name('shop.unfollow');
+    // Route search products
+    Route::get('/shop/{shop}/search', [ShopController::class, 'searchProducts'])->name('shop.search');
+    // Route show shop
+    Route::get('/shop/{shop}', [ShopController::class, 'show'])->name('shop.show');
+    // Route products by category
+    Route::get('/shop/{shop}/category/{category}', [ShopController::class, 'productsByCategory'])->name('shop.category');
     // Route bình luận sản phẩm
     Route::post('/product/{productId}/review', [ProductController::class, 'storeReview'])->name('product.review');
     // Route yêu thích sản phẩm
@@ -404,6 +411,8 @@ Route::prefix('customer')->group(function () {
             Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
             Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
             Route::post('/selected', [CartController::class, 'updateSelectedProducts'])->name('cart.selected');
+            Route::get('/quantity', [CartController::class, 'getCartQuantity'])->name('cart.quantity');
+            Route::get('/items', [CartController::class, 'getCartItems'])->name('cart.items');
         });
 
         //checkout
