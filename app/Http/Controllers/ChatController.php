@@ -122,12 +122,22 @@ class ChatController extends Controller
             ->distinct()->pluck('user_id');
         $customers = User::whereIn('id', $customerIds)->get();
 
+        // Lấy số tin nhắn chưa đọc cho mỗi khách hàng
+        $unreadCounts = [];
+        foreach ($customers as $customer) {
+            $unreadCounts[$customer->id] = ShopQaMessage::where('shop_id', $shop->id)
+                ->where('user_id', $customer->id)
+                ->where('sender_type', 'user') // Tin nhắn từ khách hàng gửi đến shop
+                ->whereNull('read_at')
+                ->count();
+        }
+
         $customerSelected = null;
         if ($request->has('customer_id')) {
             $customerSelected = User::find($request->customer_id);
         }
 
-        return view('seller.chat.chatseller', compact('customers', 'customerSelected', 'shop'));
+        return view('seller.chat.chatseller', compact('customers', 'customerSelected', 'shop', 'unreadCounts'));
     }
 
     public function sellerMessages($customer_id)
@@ -139,6 +149,13 @@ class ChatController extends Controller
         if (!$shop) abort(404, 'Shop not found');
 
         $customer = User::findOrFail($customer_id);
+
+        // Đánh dấu tất cả tin nhắn từ khách hàng là đã đọc khi seller mở cuộc trò chuyện
+        ShopQaMessage::where('shop_id', $shop->id)
+            ->where('user_id', $customer_id)
+            ->where('sender_type', 'user') // Chỉ đánh dấu tin nhắn từ khách hàng
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         $messages = ShopQaMessage::where('shop_id', $shop->id)
             ->where('user_id', $customer_id)
