@@ -8,6 +8,23 @@
     <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
     <title>@yield('title', 'Default Title')</title>
     
+    @php
+        $laravelUserData = null;
+        if (Auth::check()) {
+            $laravelUserData = [
+                'id' => Auth::user()->id,
+                'name' => Auth::user()->fullname ?? Auth::user()->username
+            ];
+        }
+    @endphp
+
+    <script>
+        window.Laravel = {
+            csrfToken: "{{ csrf_token() }}",
+            user: @json($laravelUserData)
+        };
+    </script>
+
     <!-- Font + Tailwind + Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
