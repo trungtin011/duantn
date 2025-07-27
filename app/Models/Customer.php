@@ -70,4 +70,19 @@ class Customer extends Model
     {
         $this->decrement('total_points', $points);
     }
+
+public function hasRankAtLeast($requiredRank)
+{
+    $ranks = [
+        'bronze' => 1,
+        'silver' => 2,
+        'gold' => 3,
+        'diamond' => 4,
+    ];
+
+    $userRankValue = $ranks[$this->ranking] ?? 1;
+    $requiredRankValue = $ranks[$requiredRank] ?? 1;
+
+    return $userRankValue >= $requiredRankValue;
+}
 } 

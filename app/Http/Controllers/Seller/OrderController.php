@@ -16,6 +16,9 @@ use App\Http\Controllers\Seller\Orders\ShippingController;
 use App\Models\ShopOrder;
 use App\Events\OrderStatusUpdate;
 use App\Helpers\MailHelper;
+use App\Models\ItemsOrder;
+use App\Models\Customer;
+use App\Models\PointTransaction;
 
 /**
  * OrderController - Quản lý đơn hàng cho Seller
@@ -73,16 +76,18 @@ class OrderController extends Controller
 
         // Truy vấn danh sách đơn hàng
         $orders = ShopOrder::where('shopID', $shopID)
+            ->whereHas('order', function ($query) {
+                $query->whereIn('payment_status', ['cod_paid', 'paid']);
+            })
             ->with([
-                'order.address', // Nạp quan hệ order và address
-                'items.product.images', // Nạp items và hình ảnh sản phẩm
-                'items.variant', // Nạp biến thể sản phẩm
-                'shop' // Nạp thông tin shop
+                'order.address',
+                'items.product.images',
+                'items.variant',
+                'shop'
             ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // Ghi log để debug
         Log::info('Danh sách đơn hàng cho shop ID ' . $shopID . ': ', $orders->toArray());
 
         return view('seller.order.index', compact('orders'));
@@ -90,7 +95,6 @@ class OrderController extends Controller
 
     public function show($code)
     {
-        // Lấy shopID từ session hoặc từ shop của người dùng
         $current_shop_id = session('current_shop_id');
         if (!$current_shop_id) {
             $shop = Shop::where('ownerID', Auth::id())->first();
@@ -104,7 +108,6 @@ class OrderController extends Controller
             Log::info('Đã thiết lập current_shop_id: ' . $current_shop_id);
         }
 
-        // Kiểm tra shop tồn tại
         $shop = Shop::find($current_shop_id);
         if (!$shop) {
             Log::warning('ShopID không hợp lệ: ' . $current_shop_id);
@@ -112,7 +115,6 @@ class OrderController extends Controller
                 ->with('error', 'Cửa hàng không tồn tại.');
         }
 
-        // Tìm shop_order với order_code và shopID
         $shop_order = ShopOrder::where('shopID', $current_shop_id)
             ->whereHas('order', function ($query) use ($code) {
                 $query->where('order_code', $code);
@@ -133,8 +135,9 @@ class OrderController extends Controller
 
         $order = $shop_order->order;
         $shop_address = ShopAddress::where('shopID', $shop->id)->get();
+        $items = ItemsOrder::where('shop_orderID', $shop_order->id)->get();
         $status = ShopOrderHistory::where('shop_order_id', $shop_order->id)->get();
-        return view('seller.order.show', compact('order', 'shop', 'shop_order', 'shop_address', 'status'));
+        return view('seller.order.show', compact('order', 'shop', 'shop_order', 'shop_address', 'status' , 'items'));
     }
 
     public function shippingOrder(Request $request, $id)
@@ -309,7 +312,6 @@ class OrderController extends Controller
         $order_status = new ShopOrderHistory();
         $order_status->shop_order_id = $order->id;
 
-
         if ($request->method_request === 'status_update') {
             if ($order->status !== $status) {
                 $statusMapping = [
@@ -371,6 +373,7 @@ class OrderController extends Controller
             return redirect()->back()->with('order', $status_order);
         }
     }
+
 
 }
 ?>

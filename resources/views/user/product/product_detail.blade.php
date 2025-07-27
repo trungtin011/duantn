@@ -95,7 +95,21 @@
                                 {{ number_format($product->price, 0, ',', '.') }} VNĐ
                             </span>
                             <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">
-                                -{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%
+                                @php
+                                    // Nếu có biến thể, lấy giá của biến thể đầu tiên, nếu không thì lấy giá gốc
+                                    $displayPrice = $product->variants->isNotEmpty() 
+                                        ? ($variantData[$product->variants->first()->id]['price'] ?? $product->sale_price) 
+                                        : $product->sale_price;
+                                    $displayOriginPrice = $product->variants->isNotEmpty() 
+                                        ? ($variantData[$product->variants->first()->id]['origin_price'] ?? $product->price) 
+                                        : $product->price;
+                                    if ($displayOriginPrice && $displayOriginPrice > 0) {
+                                        $discount = round((($displayOriginPrice - $displayPrice) / $displayOriginPrice) * 100);
+                                    } else {
+                                        $discount = 0;
+                                    }
+                                @endphp
+                                -{{ $discount }}%
                             </span>
                         </div>
                         <p class="text-gray-700 text-base leading-relaxed">{!! $product->meta_description !!}</p>
@@ -533,7 +547,15 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-3xl font-bold">${number_format({{ $product->sale_price }}, 0, ',', '.')} VNĐ</span>
                         <span class="text-gray-500 line-through text-lg">${number_format({{ $product->price }}, 0, ',', '.')} VNĐ</span>
-                        <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">-${{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%</span>
+                        @php
+                            $discount = null;
+                            if ($product->price && $product->price > 0) {
+                                $discount = round((($product->price - $product->sale_price) / $product->price) * 100);
+                            }
+                        @endphp
+                        @if(!is_null($discount))
+                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm">-{{ $discount }}%</span>
+                        @endif
                     `;
                     stockInfo.textContent = '{{ $product->stock_total }} sản phẩm có sẵn';
                 }

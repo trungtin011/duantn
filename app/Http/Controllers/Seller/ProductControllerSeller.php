@@ -97,11 +97,12 @@ class ProductControllerSeller extends Controller
         return view('seller.products.create', compact('brands', 'categories', 'allAttributes'));
     }
 
-    /**
+    /** 
      * Lưu sản phẩm mới
      */
     public function store(Request $request)
     {
+        Log::info('Request all', $request->all());
         $request->validate(
             $this->validationRules(),
             $this->validationMessages()
@@ -145,6 +146,9 @@ class ProductControllerSeller extends Controller
                 return back()->withErrors(['sale_price' => 'Giá bán không được nhỏ hơn giá nhập.'])->withInput();
             }
 
+            // Kiểm tra loại sản phẩm
+            $isVariant = $request->product_type === 'variant';
+
             // Xử lý meta_keywords
             $metaKeywords = $request->meta_keywords ?: Str::slug($request->name);
 
@@ -153,16 +157,16 @@ class ProductControllerSeller extends Controller
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description ?: '',
-                'sku' => $request->sku,
-                'price' => $request->price,
-                'purchase_price' => $request->purchase_price,
-                'sale_price' => $request->sale_price,
-                'stock_total' => $request->stock_total,
+                'sku' => $isVariant ? null : $request->sku,
+                'price' => $isVariant ? null : $request->price,
+                'purchase_price' => $isVariant ? null : $request->purchase_price,
+                'sale_price' => $isVariant ? null : $request->sale_price,
+                'stock_total' => $isVariant ? null : $request->stock_total,
                 'meta_title' => $request->meta_title,
                 'meta_description' => $request->meta_description,
                 'meta_keywords' => $metaKeywords,
                 'is_featured' => $request->has('is_featured') ? 1 : 0,
-                'is_variant' => $request->filled('variants') ? 1 : 0,
+                'is_variant' => $isVariant ? 1 : 0,
                 'status' => $request->save_draft ? 'draft' : 'active',
                 'sold_quantity' => 0,
                 'shopID' => $shop->id,
@@ -193,7 +197,7 @@ class ProductControllerSeller extends Controller
             }
 
             // Xử lý thuộc tính
-            if ($request->has('attributes')) {
+            if ($isVariant && $request->has('attributes')) {
                 Log::info('Dữ liệu attributes được gửi', [
                     'attributes_raw' => $request->input('attributes'),
                     'is_array' => is_array($request->input('attributes')),
@@ -364,7 +368,7 @@ class ProductControllerSeller extends Controller
             }
 
             // Xử lý biến thể
-            if ($request->filled('variants')) {
+            if ($isVariant && $request->filled('variants')) {
                 Log::info('Processing variants', ['variants_count' => count($request->variants)]);
                 foreach ($request->variants as $index => $variantData) {
                     // Kiểm tra dữ liệu biến thể hợp lệ
@@ -471,11 +475,8 @@ class ProductControllerSeller extends Controller
                         }
                     }
                 }
-            } else {
-                Log::info('No variants provided, creating default dimension', [
-                    'product_id' => $product->id
-                ]);
-                // Lưu kích thước mặc định nếu không có biến thể
+            } else if (!$isVariant) {
+                // Sản phẩm đơn: lưu kích thước mặc định nếu không có biến thể
                 ProductDimension::create([
                     'productID' => $product->id,
                     'variantID' => null,
@@ -1104,18 +1105,13 @@ class ProductControllerSeller extends Controller
             ? 'required|string|max:100|distinct'
             : 'required|string|max:100|unique:product_variants,sku';
 
-        return [
+        $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'brand_ids' => 'required|array|min:1', // Yêu cầu ít nhất 1 thương hiệu
-            'brand_ids.*' => 'exists:brand,id', // Kiểm tra từng ID thương hiệu
-            'category_ids' => 'required|array|min:1', // Yêu cầu ít nhất 1 danh mục
-            'category_ids.*' => 'exists:categories,id', // Kiểm tra từng ID danh mục
-            'sku' => $skuRule,
-            'price' => 'required|numeric|min:0',
-            'purchase_price' => 'required|numeric|min:0',
-            'sale_price' => 'required|numeric|min:0',
-            'stock_total' => 'required|integer|min:0',
+            'brand_ids' => 'required|array|min:1',
+            'brand_ids.*' => 'exists:brand,id',
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'exists:categories,id',
             'length' => 'nullable|numeric|min:0',
             'width' => 'nullable|numeric|min:0',
             'height' => 'nullable|numeric|min:0',
@@ -1123,24 +1119,38 @@ class ProductControllerSeller extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:320',
             'meta_keywords' => 'nullable|string|max:255',
-            'attributes' => 'nullable|array',
-            'attributes.*.name' => 'nullable|string|max:100',
-            'attributes.*.values' => 'nullable|string',
-            'variants' => 'nullable|array',
-            'variants.*.name' => 'required|string|max:255',
-            'variants.*.price' => 'required|numeric|min:0',
-            'variants.*.purchase_price' => 'required|numeric|min:0',
-            'variants.*.sale_price' => 'required|numeric|min:0',
-            'variants.*.sku' => $variantSkuRule,
-            'variants.*.stock_total' => 'required|integer|min:0',
-            'variants.*.length' => 'nullable|numeric|min:0',
-            'variants.*.width' => 'nullable|numeric|min:0',
-            'variants.*.height' => 'nullable|numeric|min:0',
-            'variants.*.weight' => 'nullable|numeric|min:0',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
-            'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+            'product_type' => 'required|in:simple,variant',
             'main_image' => ($isUpdate ? 'nullable' : 'required') . '|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
         ];
+        if (request('product_type') === 'variant') {
+            $rules = array_merge($rules, [
+                'attributes' => 'required|array|min:1',
+                'attributes.*.name' => 'nullable|string|max:100',
+                'attributes.*.values' => 'nullable|string',
+                'variants' => 'required|array|min:1',
+                'variants.*.name' => 'required|string|max:255',
+                'variants.*.price' => 'required|numeric|min:0',
+                'variants.*.purchase_price' => 'required|numeric|min:0',
+                'variants.*.sale_price' => 'required|numeric|min:0',
+                'variants.*.sku' => $variantSkuRule,
+                'variants.*.stock_total' => 'required|integer|min:0',
+                'variants.*.length' => 'nullable|numeric|min:0',
+                'variants.*.width' => 'nullable|numeric|min:0',
+                'variants.*.height' => 'nullable|numeric|min:0',
+                'variants.*.weight' => 'nullable|numeric|min:0',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+                'variant_images.*.*' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+            ]);
+        } else {
+            $rules = array_merge($rules, [
+                'sku' => $skuRule,
+                'price' => 'required|numeric|min:0',
+                'purchase_price' => 'required|numeric|min:0',
+                'sale_price' => 'required|numeric|min:0',
+                'stock_total' => 'required|integer|min:0',
+            ]);
+        }
+        return $rules;
     }
 
     protected function validationMessages()

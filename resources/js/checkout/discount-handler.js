@@ -25,6 +25,7 @@ function initializeDiscountHandler(subtotal, applyDiscountUrl, csrfToken) {
                 if(data.discount_amount) {
                     document.getElementById('discount_amount').textContent = Number(data.discount_amount).toLocaleString('vi-VN');
                     showSuccess('Áp dụng mã giảm giá thành công!');
+                    document.querySelector('.discount-row-platform').style.display = 'flex';
                     window.updateTotal();
                 } else {
                     showError(data.message || 'Mã giảm giá không hợp lệ.');

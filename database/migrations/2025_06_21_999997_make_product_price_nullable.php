@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::table('products', function (Blueprint $table) {
-        $table->decimal('flash_sale_price', 12, 0)->nullable();
-        $table->dateTime('flash_sale_end_at')->nullable();
+        Schema::table('products', function (Blueprint $table) {
+            $table->decimal('price', 12, 0)->nullable()->change();
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            //
+            $table->decimal('price', 12, 0)->nullable(false)->change();
         });
     }
-};
+}; 

@@ -11,6 +11,17 @@
         .variant-content.hidden {
             max-height: 0;
         }
+
+        /* Ẩn/hiện các phần tương ứng với loại sản phẩm */
+        #variants-section,
+        .bg-white:has(#attribute-container) {
+            display: {{ $product->is_variant ? 'block' : 'none' }};
+        }
+
+        /* Ẩn phần dữ liệu sản phẩm đơn khi là sản phẩm biến thể */
+        #simple-product-section {
+            display: {{ $product->is_variant ? 'none' : 'block' }};
+        }
     </style>
 @endpush
 @section('title', 'Chỉnh sửa sản phẩm')
@@ -50,9 +61,9 @@
             @method('PUT')
             <div class="grid grid-cols-12 gap-6">
                 <div class="col-span-12 lg:col-span-12">
-                    <div class="flex gap-6">
+                    <div class="grid grid-cols-12 gap-6">
                         <!-- Left Column -->
-                        <div class="">
+                        <div class="col-span-12 lg:col-span-8">
                             <!-- General Section -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <h4 class="text-xl font-semibold mb-4">Thông tin chung</h4>
@@ -77,10 +88,25 @@
                                 </div>
                             </div>
 
-                            <!-- Product Data Section -->
+                            <!-- Product Type Selection -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                                <h4 class="text-xl font-semibold mb-4">Loại sản phẩm</h4>
+                                <div class="flex gap-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="product_type" value="simple" class="form-radio" {{ !$product->is_variant ? 'checked' : '' }}>
+                                        <span class="ml-2">Sản phẩm đơn</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="product_type" value="variant" class="form-radio" {{ $product->is_variant ? 'checked' : '' }}>
+                                        <span class="ml-2">Sản phẩm biến thể</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Product Data Section -->
+                            <div id="simple-product-section" class="bg-white p-6 rounded-lg shadow-sm mb-6" {{ $product->is_variant ? 'style=display:none' : '' }}>
                                 <h4 class="text-xl font-semibold mb-4">Dữ liệu sản phẩm</h4>
-                                <!-- Pricing and Inventory -->
+                                <!-- Simple Product Data -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                                     <div>
                                         <label class="block text-gray-700 font-medium mb-1">Giá gốc <span
@@ -388,7 +414,7 @@
                         </div>
 
                         <!-- Right Column -->
-                        <div class="col-span-12 lg:col-span-4">
+                        <div class="col-span-12 lg:col-span-4 space-y-6">
                             <!-- Category & Brand Section -->
                             <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                                 <p class="text-gray-700 font-medium mb-4">Chi tiết sản phẩm</p>
@@ -938,6 +964,84 @@
                     allAttributes
                 });
 
+                // Xử lý chuyển đổi loại sản phẩm
+                function handleProductTypeChange() {
+                    const simpleType = document.querySelector('input[name="product_type"][value="simple"]');
+                    const variantType = document.querySelector('input[name="product_type"][value="variant"]');
+                    const simpleProductSection = document.getElementById('simple-product-section');
+                    const variantsSection = document.getElementById('variants-section');
+                    const attributeSection = document.querySelector('.bg-white:has(#attribute-container)');
+
+                    if (!simpleType || !variantType || !simpleProductSection || !variantsSection || !attributeSection) {
+                        debugLog('Required elements not found for product type switching');
+                        return;
+                    }
+
+                    function toggleInputState(section, enable) {
+                        const inputs = section.querySelectorAll('input, select, textarea');
+                        inputs.forEach(input => {
+                            if (input.name !== '_token' && input.name !== '_method') { // Avoid disabling CSRF token and method spoofing
+                                input.disabled = !enable;
+                            }
+                        });
+                    }
+
+                    function clearSimpleProductData() {
+                        const inputs = simpleProductSection.querySelectorAll('input[type="number"], input[type="text"]');
+                        inputs.forEach(input => input.value = '');
+                    }
+
+                    function clearVariantData() {
+                        const variantContainer = document.getElementById('variant-container');
+                        if (variantContainer) {
+                            variantContainer.innerHTML = '';
+                        }
+                        const attributeContainer = document.getElementById('attribute-container');
+                        if (attributeContainer) {
+                            attributeContainer.innerHTML = '';
+                        }
+                    }
+
+                    simpleType.addEventListener('change', function() {
+                        if (this.checked) {
+                            simpleProductSection.style.display = 'block';
+                            variantsSection.style.display = 'none';
+                            attributeSection.style.display = 'none';
+
+                            toggleInputState(simpleProductSection, true);
+                            toggleInputState(variantsSection, false);
+                            toggleInputState(attributeSection, false);
+
+                            clearVariantData();
+                        }
+                    });
+
+                    variantType.addEventListener('change', function() {
+                        if (this.checked) {
+                            simpleProductSection.style.display = 'none';
+                            variantsSection.style.display = 'block';
+                            attributeSection.style.display = 'block';
+
+                            toggleInputState(simpleProductSection, false);
+                            toggleInputState(variantsSection, true);
+                            toggleInputState(attributeSection, true);
+
+                            clearSimpleProductData();
+                        }
+                    });
+
+                    // Initial state on page load
+                    if (simpleType.checked) {
+                        toggleInputState(variantsSection, false);
+                        toggleInputState(attributeSection, false);
+                    } else if (variantType.checked) {
+                        toggleInputState(simpleProductSection, false);
+                    }
+                }
+
+                // Khởi tạo xử lý chuyển đổi loại sản phẩm
+                handleProductTypeChange();
+
                 // Khởi tạo preview ảnh chính
                 handleMainImagePreview('mainImage', 'uploadIcon1');
 
@@ -1317,7 +1421,7 @@
                         input.click();
                     },
                     setup: editor => editor.on('change', () => editor.save())
-                });
+                    });
 
                 // Gắn xử lý sự kiện submit form
                 const productForm = document.getElementById('product-form');
