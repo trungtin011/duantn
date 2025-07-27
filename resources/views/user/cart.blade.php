@@ -256,7 +256,6 @@
                     return;
                 }
 
-                // Xóa sản phẩm hoặc combo
                 document.querySelectorAll('.remove-cart-item').forEach(button => {
                     button.addEventListener('click', () => {
                         const cartItemId = button.getAttribute('data-id');
@@ -311,7 +310,6 @@
                     });
                 });
 
-                // Cập nhật số lượng sản phẩm không thuộc combo
                 document.querySelectorAll('.cart-quantity-input').forEach(input => {
                     input.addEventListener('change', function() {
                         const cartId = this.dataset.id;
@@ -393,7 +391,6 @@
                     });
                 });
 
-                // Cập nhật số lượng combo
                 document.querySelectorAll('.combo-quantity-input').forEach(input => {
                     input.addEventListener('change', function() {
                         const cartId = this.dataset.cartId;

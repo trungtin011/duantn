@@ -9,12 +9,16 @@ use App\Models\OrderAddress;
 use App\Models\ShopOrder;
 use App\Models\OrderReview;
 use App\Models\ShopOrderHistory;
+use App\Models\PlatformRevenueModel;
+use App\Models\Customer;
+use App\Models\PointTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Service\DeliveryProvider\GHNController;
+
 
 class OrderController extends Controller
 {
@@ -293,5 +297,82 @@ class OrderController extends Controller
         } else {
             return redirect()->back()->with('error', 'Đơn hàng không thể hoàn trả');
         }
+    }
+
+    public function completeOrderFromUser($code)
+    {
+        $order = ShopOrder::where('code', $code)->first();
+
+        if (!$order) {
+            return redirect()->back()->with('error', 'Đơn hàng không tồn tại');
+        }
+
+        $parentOrder = Order::find($order->orderID);
+
+        // Cập nhật trạng thái đơn hàng
+        $order->order_status = 'completed';
+        $order->save();
+
+        // Tính toán hoa hồng và doanh thu
+        $totalAmount = $order->items->sum('total_price');
+        $commissionRate = 0.05;
+        $commissionAmount = $totalAmount * $commissionRate;
+        $netRevenue = $totalAmount - $commissionAmount;
+
+        // Lưu lịch sử đơn hàng
+        ShopOrderHistory::create([
+            'shop_order_id' => $order->id,
+            'status' => 'completed',
+            'description' => 'Hệ thống đã trừ hoa hồng 5%: ' . number_format($commissionAmount) . 'đ cho đơn hàng',
+        ]);
+
+        // Lưu doanh thu nền tảng
+        PlatformRevenueModel::create([
+            'shop_order_id'     => $order->id,
+            'order_id'          => $parentOrder?->id,
+            'shop_id'           => $order->shopID,
+            'shop_name'         => optional($order->shop)->name,
+            'payment_method'    => $parentOrder?->payment_method,
+            'commission_rate'   => $commissionRate,
+            'commission_amount' => $commissionAmount,
+            'total_amount'      => $totalAmount,
+            'net_revenue'       => $netRevenue,
+            'status'            => 'paid',
+            'confirmed_at'      => now(),
+        ]);
+
+        // Cập nhật điểm thưởng cho khách hàng
+        $customer = Customer::where('userID', Auth::id())->first();
+        if ($customer) {
+            // Trừ điểm đã sử dụng
+            $customer->total_points = max(0, $customer->total_points - (int) $order->used_points);
+
+            // Xác định hệ số rank
+            $rankPercent = match ($customer->rank) {
+                'silver'   => 2,
+                'gold'     => 3,
+                'platinum' => 4,
+                'diamond'  => 5,
+                default    => 1,
+            };
+
+            // Tính điểm thưởng: mỗi 1.000.000đ được 10.000 điểm * hệ số rank
+            $bonusPoints = round(floor($order->total_price / 1000000) * 10000 * $rankPercent);
+
+            // Cộng điểm thưởng
+            $customer->total_points += $bonusPoints;
+            $customer->save();
+
+            // Lưu lịch sử giao dịch điểm
+            PointTransaction::create([
+                'userID'      => Auth::id(),
+                'orderID'     => $order->id,
+                'points'      => $bonusPoints,
+                'type'        => 'order',
+                'description' => 'Đơn hàng #' . $order->order_code,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Đơn hàng đã được hoàn thành');
     }
 }

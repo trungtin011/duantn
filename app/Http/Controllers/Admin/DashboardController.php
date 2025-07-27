@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\PlatformRevenueModel;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\ProductCategories;
@@ -12,16 +13,17 @@ class DashboardController extends Controller
     public function index()
     {
         $deliveredOrders = DB::table('orders')
-            ->where('order_status', 'delivered')
             ->count();
 
-        $deliveredGrowth = $this->calculateGrowth('orders', 'order_status', 'delivered');
+        $deliveredGrowth = $this->calculateGrowth('orders', 'payment_status', 'paid');
 
-        // Doanh thu trung bình hàng ngày
+        // Tính doanh thu trung bình mỗi ngày trong tháng này (theo số ngày của tháng hiện tại)
+        $currentMonthDays = now()->daysInMonth;
         $avgDailyRevenue = DB::table('orders')
-            ->where('payment_status', 'paid')
-            ->where('created_at', '>=', now()->subMonth())
-            ->selectRaw('ROUND(SUM(total_price) / DAY(LAST_DAY(NOW())), 2) as avg_daily_revenue')
+            ->whereIn('payment_status', ['paid', 'cod_paid'])
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->selectRaw('ROUND(SUM(total_price) / ?, 2) as avg_daily_revenue', [$currentMonthDays])
             ->value('avg_daily_revenue') ?? 0;
 
         $revenueGrowth = $this->calculateRevenueGrowth();
@@ -34,12 +36,10 @@ class DashboardController extends Controller
 
         $customerGrowth = $this->calculateGrowth('users', 'role', 'customer');
 
-        // Lệnh chờ xử lý
-        $pendingOrders = DB::table('orders')
-            ->whereIn('order_status', ['pending', 'processing'])
-            ->count();
-
-        $pendingGrowth = $this->calculateGrowth('orders', 'order_status', ['pending', 'processing']);
+        // hoa hồng từ các đơn hàng 
+        $platfrom_revenue = PlatformRevenueModel::totalPlatformRevenue();
+        
+        $platfromGrowth = $this->calculateGrowth('platform_revenues', 'commission_amount', 'paid');
 
         // Sales Chart
         $salesData = DB::select("
@@ -149,8 +149,8 @@ class DashboardController extends Controller
             'revenueGrowth',
             'newCustomers',
             'customerGrowth',
-            'pendingOrders',
-            'pendingGrowth',
+            'platfrom_revenue',
+            'platfromGrowth',
             'labels',
             'sales',
             'visitors',
