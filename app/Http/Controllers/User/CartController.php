@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
-    /**
-     * Display the user's cart.
-     */
+    
     public function index()
     {
         
@@ -36,7 +34,6 @@ class CartController extends Controller
             ->get();
         return view('user.cart', compact('cartItems', 'user'));
     }
-
 
     public function addToCart(Request $request)
     {
@@ -108,10 +105,7 @@ class CartController extends Controller
 
         return response()->json(['message' => 'Đã thêm vào giỏ hàng!'], 200);
     }
-
-    /**
-     * Calculate discounted price for combo products
-     */
+    
     private function calculateComboDiscountedPrice($combo, $basePrice, $comboProduct)
     {
         $discountedPrice = $basePrice;
@@ -297,7 +291,6 @@ class CartController extends Controller
         return response()->json(['message' => 'Một số sản phẩm không thể thêm vào giỏ hàng!', 'results' => $results], 422);
     }
 
-   
     public function remove($id)
     {
         $userID = Auth::check() ? Auth::id() : null;
@@ -337,9 +330,6 @@ class CartController extends Controller
         }
     }
 
-    /**
-     * Update quantity of a cart item and synchronize combo items.
-     */
     public function update(Request $request, $id)
     {
         $request->validate([

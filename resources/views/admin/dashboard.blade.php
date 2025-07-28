@@ -151,10 +151,10 @@
         <div class="col-md-3">
             <div class="admin-card d-flex justify-content-between align-items-start">
                 <div>
-                    <h2 class="card-number font-semibold">{{ $pendingOrders }}</h2>
-                    <p class="mb-0 text-muted text-xs mb-3">Lệnh chờ xử lý</p>
+                    <h2 class="card-number font-semibold">{{ $platfrom_revenue }}</h2>
+                    <p class="mb-0 text-muted text-xs mb-3">Hoa hồng từ các đơn hàng</p>
                     <span class="text-xs bg-[#FFF4E5] text-[#FF9800] px-2 py-1 rounded flex items-center gap-1 w-fit">
-                        {{ $pendingGrowth }}%
+                        {{ $platfromGrowth }}%
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 512.001 512.001"
                             width="12" height="12">
                             <path fill="currentColor"

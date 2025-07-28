@@ -50,9 +50,9 @@ class Customer extends Model
     public function updateRanking()
     {
         $newRanking = match(true) {
-            $this->total_spent >= 10000000 => 'diamond',
-            $this->total_spent >= 5000000 => 'gold',
-            $this->total_spent >= 2000000 => 'silver',
+            $this->total_spent >= 50000000 => 'diamond',
+            $this->total_spent >= 10000000 => 'gold',
+            $this->total_spent >= 5000000 => 'silver',
             default => 'bronze'
         };
 
@@ -70,4 +70,19 @@ class Customer extends Model
     {
         $this->decrement('total_points', $points);
     }
+
+public function hasRankAtLeast($requiredRank)
+{
+    $ranks = [
+        'bronze' => 1,
+        'silver' => 2,
+        'gold' => 3,
+        'diamond' => 4,
+    ];
+
+    $userRankValue = $ranks[$this->ranking] ?? 1;
+    $requiredRankValue = $ranks[$requiredRank] ?? 1;
+
+    return $userRankValue >= $requiredRankValue;
+}
 } 

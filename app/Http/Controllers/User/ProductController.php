@@ -132,7 +132,6 @@ class ProductController extends Controller
             return redirect()->guest(route('login'))->with('error', 'Bạn cần đăng nhập để xem chi tiết sản phẩm');
         }
 
-        // Tải sản phẩm với các quan hệ cần thiết, bao gồm categories và brands
         $product = Product::with([
             'images',
             'reviews.user',
@@ -147,8 +146,7 @@ class ProductController extends Controller
             'categories',
             'brands'
         ])->where('slug', $slug)->firstOrFail();
-
-        // Tính trung bình rating và số lượng đánh giá
+        
         $averageRating = Cache::remember("product_{$product->id}_average_rating", 3600, function () use ($product) {
             return $product->orderReviews()->avg('rating') ?? 0;
         });
@@ -172,9 +170,11 @@ class ProductController extends Controller
             $query->where(function ($q) {
                 $q->whereHas('images')->orWhereHas('videos');
             });
-        } elseif ($filter === 'comments') {
+        } 
+        elseif ($filter === 'comments') {
             $query->whereNotNull('comment');
-        } elseif (Str::startsWith($filter, 'star-')) {
+        } 
+        elseif (Str::startsWith($filter, 'star-')) {
             $rating = (int) Str::after($filter, 'star-');
             $query->where('rating', $rating);
         }
@@ -210,7 +210,6 @@ class ProductController extends Controller
             ]);
         }
 
-        // Gán hình ảnh, giá, và số lượng của biến thể
         $attributeImages = [];
         $variantData = [];
         foreach ($product->variants as $variant) {

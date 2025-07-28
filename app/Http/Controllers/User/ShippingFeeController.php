@@ -90,7 +90,6 @@ class ShippingFeeController extends Controller
         ])
         ->post($url, $requestData);
 
-        Log::info($response->json());
         $expectedDeliveryTime = Carbon::parse($response->json()['data']['expected_delivery_time'])
         ->setTimezone('Asia/Ho_Chi_Minh')
         ->format('d/m/Y H:i');
