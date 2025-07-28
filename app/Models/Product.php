@@ -12,6 +12,8 @@ class Product extends Model
 {
     protected $table = 'products';
 
+    protected $appends = ['display_price', 'display_original_price'];
+
     protected $fillable = [
         'shopID',
         'name',
@@ -243,5 +245,27 @@ class Product extends Model
     public function orderReviews()
     {
         return $this->hasMany(OrderReview::class, 'product_id');
+    }
+
+    public function getDisplayPriceAttribute()
+    {
+        if ($this->is_variant && $this->variants->isNotEmpty()) {
+            return $this->variants->min('sale_price') ?? $this->variants->min('price');
+        }
+        return $this->sale_price ?? $this->price;
+    }
+
+    public function getDisplayOriginalPriceAttribute()
+    {
+        if ($this->is_variant && $this->variants->isNotEmpty()) {
+            // Find the variant with the minimum sale_price and return its original price,
+            // or if no sale_price, return the original price of the variant with the minimum price.
+            $minVariant = $this->variants->sortBy(function ($variant) {
+                return $variant->sale_price ?? $variant->price;
+            })->first();
+
+            return $minVariant->price ?? $minVariant->sale_price;
+        }
+        return $this->price;
     }
 }

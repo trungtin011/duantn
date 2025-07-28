@@ -1,11 +1,5 @@
-```blade
 @extends('layouts.seller_home')
 
-@section('head')
-    @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/admin/combo.css') }}">
-    @endpush
-@endsection
 
 @section('content')
     <div class="admin-page-header mb-5">
@@ -299,4 +293,3 @@
         document.addEventListener('DOMContentLoaded', calculateTotal);
     </script>
 @endsection
-```

@@ -27,19 +27,28 @@ function initializeCheckoutFormHandler() {
         }
         return true;
     }
-
+    function collectDiscountAmount(){
+        const discountAmount = parseInt(document.getElementById('discount_amount').textContent.replace(/[^\d]/g, '')) || 0;
+        const shopDiscountAmount = parseInt(document.getElementById('discount_shop_fee').textContent.replace(/[^\d]/g, '')) || 0;
+        const discount_shipping_fee = parseInt(document.getElementById('discount_shipping_fee').textContent.replace(/[^\d]/g, '')) || 0;
+        const points_amount = parseInt(document.getElementById('points_amount').textContent.replace(/[^\d]/g, '')) || 0;
+        const totalDiscountAmount = discountAmount + shopDiscountAmount + discount_shipping_fee + points_amount;
+        return totalDiscountAmount;
+    }
+    
     function collectFormData() {
         return {
             selected_address_id: document.querySelector('input[name="receiver_address_id"]:checked')?.value,
             payment_method: document.querySelector('input[name="payment"]:checked')?.value,
             shop_notes: collectShopNotes(),
             subtotal: document.getElementById('subtotal').textContent.replace(/[^\d]/g, '') || 0,
-            discount_amount: document.getElementById('discount_amount').textContent.replace(/[^\d]/g, '') || 0,
+            discount_amount: collectDiscountAmount(),
             shipping_fee: document.getElementById('total_shipping_fee').textContent.replace(/[^\d]/g, '') || 0,
             total_amount: document.getElementById('total_amount').textContent.replace(/[^\d]/g, '') || 0,
             discount_code: document.querySelector('input[name="discount_code"]')?.value || null,
             _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            used_points: document.getElementById('used_points').value || 0
+            used_points: document.getElementById('used_points').value || 0,
+            coupons_code: collectCouponsCode(),
         };
     }
 
@@ -55,6 +64,19 @@ function initializeCheckoutFormHandler() {
         return notes;
     }
 
+    function collectCouponsCode() {
+        let couponCode = [];
+        let codes = JSON.parse(localStorage.getItem('coupons_code') || '[]');
+        codes.forEach(code => {
+            couponCode.push({
+                code: code.couponData.code,
+                shopId: code.shopId
+            });
+        });
+        return couponCode;
+
+    }
+
     async function collectAndSubmitData() {
         isSubmitting = true;
 
@@ -68,7 +90,7 @@ function initializeCheckoutFormHandler() {
         console.log('Dữ liệu gửi đi:', formData);
 
         try {
-            const response = await fetch('/customer/checkout', {
+            const response = await fetch('/customer/checkout/submit', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': formData._token,

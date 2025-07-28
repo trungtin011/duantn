@@ -798,3 +798,8 @@ document.getElementById('select-all').addEventListener('change', function () {
 document.getElementById('statusFilter').addEventListener('change', function () {
     this.form.submit(); // Gửi form ngay khi thay đổi trạng thái
 });
+
+document.getElementById('receiverTypeFilter').addEventListener('change', function () {
+    this.form.submit(); // Gửi form ngay khi thay đổi trạng thái
+});
+

@@ -14,7 +14,7 @@ return new class extends Migration
        Schema::table('products', function (Blueprint $table) {
         $table->decimal('flash_sale_price', 12, 0)->nullable();
         $table->dateTime('flash_sale_end_at')->nullable();
-    });
+        });
     }
 
     /**

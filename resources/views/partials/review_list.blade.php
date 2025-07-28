@@ -1,18 +1,36 @@
 @foreach ($reviews as $review)
     <div class="border-b py-4">
-        <div class="flex items-center mb-2">
+        <div class="flex">
             <img src="{{ $review->user->avatar ? Storage::url($review->user->avatar) : asset('storage/user_avatars/default_avatar.png') }}"
                 alt="Avatar" class="w-10 h-10 rounded-full object-cover mr-3" loading="lazy">
-            <h4 class="mr-2 text-gray-800 text-sm">
-                {{ $review->user->fullname ?? 'Người dùng ẩn danh' }}
-            </h4>
-        </div>
-        <div class="ml-[50px]">
-            <div class="text-yellow-400 flex">
-                @for ($i = 1; $i <= 5; $i++)
-                    <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star text-sm"></i>
-                @endfor
+            <div class="flex flex-col gap-1">
+                <h4 class="mr-2 text-gray-800 text-sm">
+                    {{ $review->user->fullname ?? 'Người dùng ẩn danh' }}
+                    <span class="text-xs text-gray-500 ml-2">
+                        {{ $review->created_at->diffForHumans() }}
+                    </span>
+                </h4>
+                <div class="text-yellow-400 flex">
+                    @for ($i = 1; $i <= 5; $i++)
+                        <i class="{{ $i <= $review->rating ? 'fas' : 'far' }} fa-star text-sm"></i>
+                    @endfor
+                </div>
             </div>
+        </div>
+        <div class="ml-[52px] mt-1">
+            <!-- Hiển thị kiểu sản phẩm mua -->
+            @if ($review->product && $review->product->variants->count() > 0)
+                <div class="text-xs text-gray-500 mb-3 bg-gray-100 p-2 rounded-md w-fit">
+                    <span class="font-bold">Loại:</span>
+                    {{ $review->product->variants->first()->variant_name }}
+                </div>
+            @else
+                <div class="text-xs text-gray-500 mb-3 bg-gray-100 rounded-md p-2 w-fit">
+                    <span class="font-bold">Loại:</span>
+                    {{ $review->product->name }}
+                </div>
+            @endif
+
             <p class="text-sm text-gray-700 mb-2">{{ $review->comment }}</p>
             <div class="flex items-center gap-2">
                 @if ($review->images && $review->images->count())
@@ -34,7 +52,21 @@
                     </div>
                 @endif
             </div>
-            <div class="text-xs text-gray-500">{{ $review->created_at->diffForHumans() }}</div>
+            <div class="text-xs text-gray-500 flex items-center gap-3 mt-2">
+                @auth
+                    <button
+                        class="like-review-btn flex items-center gap-1 text-red-500 hover:text-red-700 focus:outline-none transition-colors duration-200"
+                        data-review-id="{{ $review->id }}" data-liked="{{ $review->liked_by_auth ? 'true' : 'false' }}">
+                        <i class="fa{{ $review->liked_by_auth ? 's' : 'r' }} fa-heart"></i>
+                        <span class="like-count">{{ $review->likes_count ?? 0 }}</span>
+                    </button>
+                @else
+                    <span class="flex items-center gap-1 text-gray-400 cursor-pointer" title="Đăng nhập để thích đánh giá">
+                        <i class="far fa-heart"></i>
+                        <span>{{ $review->likes_count ?? 0 }}</span>
+                    </span>
+                @endauth
+            </div>
         </div>
     </div>
 @endforeach

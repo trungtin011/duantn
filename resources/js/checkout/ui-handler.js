@@ -59,6 +59,8 @@ function initializeUIHandler() {
             this.style.boxShadow = 'none';
         });
     });
+
+    
 }
 
 export { initializeUIHandler }; 

@@ -86,7 +86,7 @@ class Shop extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class, 'shop_orderID', 'id');
+        return $this->hasMany(ItemsOrder::class, 'shop_orderID', 'id');
     }
 
     public function seller()
@@ -103,5 +103,14 @@ class Shop extends Model
     {
         return $this->belongsToMany(User::class, 'shop_followers', 'shopID', 'followerID')
             ->withTimestamps();
+    }
+
+    public function shopCategories()
+    {
+        return $this->hasMany(\App\Models\ShopCategory::class);
+    }
+    public function categories()
+    {
+        return $this->hasMany(\App\Models\ShopCategory::class);
     }
 }
