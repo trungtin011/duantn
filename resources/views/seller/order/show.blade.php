@@ -173,7 +173,7 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach ($order->items as $item)
+                    @foreach ($items as $item)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
@@ -202,7 +202,7 @@
                     <tr>
                         <td colspan="3" class="px-6 py-3 text-right text-sm font-medium text-gray-500">Tổng cộng</td>
                         <td class="px-6 py-3 text-sm font-bold text-red-600 text-center">
-                            {{ number_format($order->total_price, 0, ',', '.') }}đ
+                            {{ number_format($items->sum('total_price'), 0, ',', '.') }}đ
                         </td>
                     </tr>
                 </tfoot>

@@ -9,6 +9,9 @@ use App\Models\OrderAddress;
 use App\Models\ShopOrder;
 use App\Models\OrderReview;
 use App\Models\ShopOrderHistory;
+use App\Models\PlatformRevenueModel;
+use App\Models\Customer;
+use App\Models\PointTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Service\DeliveryProvider\GHNController;
 use App\Models\OrderReviewImage;
 use App\Models\OrderReviewVideo;
-use App\Models\PointTransaction;
+
 
 class OrderController extends Controller
 {

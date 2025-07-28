@@ -16,8 +16,6 @@ class Order extends Model
         'order_code',
         'total_price',
         'shipping_fee',
-        'coupon_id',
-        'coupon_id',
         'used_points',
         'coupon_discount',
         'payment_method',
@@ -103,5 +101,13 @@ class Order extends Model
     public function orderStatusHistory()
     {
         return $this->hasMany(OrderStatusHistory::class, 'order_id');
+    }
+
+    public static function isOrderSpam($userId, $limit = 3, $minutes = 5)
+    {
+        $recentOrdersCount = self::where('userID', $userId)
+            ->where('created_at', '>=', now()->subMinutes($minutes))
+            ->count();
+        return $recentOrdersCount >= $limit;
     }
 }

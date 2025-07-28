@@ -337,9 +337,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 });
 
 Route::prefix('customer')->group(function () {
-    // Route chi tiết sản phẩm
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
-    // Route xem nhanh sản phẩm
     Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
     // Route tìm kiếm sản phẩm
     Route::get('/search', [ProductController::class, 'search'])->name('search');
@@ -357,19 +355,14 @@ Route::prefix('customer')->group(function () {
     Route::get('/shop/{shop}/category/{category}', [ShopController::class, 'productsByCategory'])->name('shop.category');
     // Route bình luận sản phẩm
     Route::post('/product/{productId}/review', [ProductController::class, 'storeReview'])->name('product.review');
-    // Route yêu thích sản phẩm
     Route::post('/product/{productId}/toggle-wishlist', [ProductController::class, 'toggleWishlist'])->name('product.toggleWishlist');
-    // Route báo cáo sản phẩm
     Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
-    // Route Lưu coupon
     Route::post('/coupon/{couponId}/save', [ProductController::class, 'saveCoupon'])->name('coupon.save');
-    // Route Lưu tất cả coupon
     Route::post('/shop/{shopId}/save-all-coupons', [ProductController::class, 'saveAllCoupons'])->name('shop.saveAllCoupons');
     // Like/Unlike review (OrderReview)
     Route::post('/review/{reviewId}/like', [ProductController::class, 'likeReview'])->name('review.like')->middleware('auth');
     // Route mua ngay
     Route::post('/instant-buy', [ProductController::class, 'instantBuy'])->name('instant-buy');
-    // Trang liên hệ
     Route::get('/contact', function () {
         return view('user.contact');
     })->name('contact');
@@ -392,7 +385,7 @@ Route::prefix('customer')->group(function () {
             Route::get('/password', [UserController::class, 'changePasswordForm'])->name('account.password');
             Route::post('/password', [UserController::class, 'updatePassword'])->name('account.password.update');
         });
-
+        Route::post('/apply-shop-discount', [CheckoutController::class, 'applyShopDiscount'])->name('customer.apply-shop-discount');
         // Trang địa chỉ người dùng
         Route::prefix('user/account/addresses')->group(function () {
             Route::get('/', [UserAddressController::class, 'index'])->name('account.addresses');
@@ -427,7 +420,7 @@ Route::prefix('customer')->group(function () {
 
         //checkout
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-        Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+        Route::post('/checkout/submit', [CheckoutController::class, 'store'])->name('checkout.store');
         Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
         Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
         Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');

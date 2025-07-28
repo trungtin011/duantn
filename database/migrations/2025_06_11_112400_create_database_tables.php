@@ -259,11 +259,11 @@ return new class extends Migration
             $table->string('name', 100);
             $table->string('slug', 100);
             $table->longText('description');
-            $table->decimal('price', 12, 0)->nullable(); // Thêm nullable
-            $table->decimal('purchase_price', 12, 0)->nullable(); // Thêm nullable
-            $table->decimal('sale_price', 12, 0)->nullable(); // Thêm nullable
+            $table->decimal('price', 12, 0);
+            $table->decimal('purchase_price', 12, 0);   
+            $table->decimal('sale_price', 12, 0); 
             $table->integer('sold_quantity');
-            $table->integer('stock_total')->nullable(); // Thêm nullable
+            $table->integer('stock_total');
             $table->string('sku', 100)->nullable()->unique();
             $table->string('brand', 100);
             $table->string('category', 100);
