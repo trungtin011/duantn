@@ -463,25 +463,51 @@
                 <i class="fa fa-bars"></i>
             </button>
 
-            <!-- Search & Icons -->
-            <div class="hidden md:flex items-center gap-10 w-5/6">
-                <form action="{{ route('search') }}" method="GET"
-                    class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
-                    <input type="text" name="query" placeholder="Bạn muốn tìm kiếm gì ?"
-                        class="text-sm focus:outline-none w-full" value="{{ request('query') }}" />
-                    <button type="submit">
-                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
-                    </button>
+        <!-- Search & Icons -->
+        <div class="hidden md:flex items-center gap-10 w-5/6">
+            <form action="{{ route('search') }}" method="GET"
+                id="searchForm"
+                class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between relative">
+                
+                <input
+                    type="text"
+                    name="query"
+                    id="searchInput"
+                    placeholder="Bạn muốn tìm kiếm gì ?"
+                    class="text-sm focus:outline-none w-full"
+                    value="{{ request('query') }}"
+                    autocomplete="off"
+                />
+                <button type="submit">
+                    <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                </button>
+
+                <!-- Gợi ý tìm kiếm -->
+                <div id="searchSuggestions"
+                    class="absolute top-full left-0 bg-white border w-full mt-1 shadow-lg rounded-md hidden z-50">
+                </div>
                 </form>
+
                 <div class="relative">
-                    <div
-                        class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
+                    <div class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
                         <span class="text-center text-xs text-white">3</span>
                     </div>
                     <a href="{{ route('cart') }}">
                         <i class="fa fa-shopping-cart text-gray-700 hover:text-red-500 text-2xl"></i>
                     </a>
                 </div>
+
+                <!-- Đăng xuất -->
+                @auth
+                    <a href="{{ route('logout') }}" id="logoutLink"
+                    onclick="event.preventDefault(); document.getElementById('logoutForm').submit();"
+                    class="text-sm text-gray-700 hover:text-red-500">
+                        Đăng xuất
+                    </a>
+                    <form id="logoutForm" action="{{ route('logout') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
+                @endauth
             </div>
         </div>
 
@@ -743,6 +769,93 @@
         window.Laravel = {
             user: @json(Auth::user())
         };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn  = {{ auth()->check() ? 'true' : 'false' }};  
+            const userId      = {{ auth()->check() ? auth()->id() : 'null' }}; 
+            const STORAGE_KEY = userId ? `search_history_${userId}` : null;     
+            const MAX_ITEMS   = 10;
+
+            const input           = document.getElementById('searchInput');
+            const form            = document.getElementById('searchForm');
+            const suggestionsBox  = document.getElementById('searchSuggestions');
+            const logoutLink      = document.getElementById('logoutLink');
+
+            if (logoutLink) {
+                logoutLink.addEventListener('click', () => {
+                    localStorage.removeItem('auth_token');  
+                });
+            }
+
+            function getHistory() {
+                if (!STORAGE_KEY) return [];                        
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            }
+
+            function saveHistory(keyword) {
+                if (!STORAGE_KEY) return;                        
+                keyword = keyword.trim();
+                if (!keyword) return;
+
+                let history = getHistory();
+                history = history.filter(item => item !== keyword);
+                history.unshift(keyword);
+                history = history.slice(0, MAX_ITEMS);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            }
+
+            function renderSuggestions(filter = '') {
+                if (!STORAGE_KEY) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+                const history = getHistory().filter(item =>
+                    item.toLowerCase().includes(filter.toLowerCase())
+                );
+
+                if (history.length === 0) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+
+                suggestionsBox.innerHTML = `
+                    <div class="px-4 py-2 text-sm font-semibold text-gray-600 border-b">
+                        Lịch sử tìm kiếm
+                    </div>
+                    ${history.map(item => `
+                        <button type="button"
+                                class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                                data-key="${item}">
+                            ${item}
+                        </button>
+                    `).join('')}
+                `;
+                suggestionsBox.classList.remove('hidden');
+            }
+
+            input.addEventListener('input', () => renderSuggestions(input.value));
+            input.addEventListener('focus', ()  => renderSuggestions(input.value));
+
+            suggestionsBox.addEventListener('click', e => {
+                const btn = e.target.closest('[data-key]');
+                if (!btn) return;
+                input.value = btn.dataset.key;
+                suggestionsBox.classList.add('hidden');
+                form.submit();
+            });
+
+            form.addEventListener('submit', () => {
+                const keyword = input.value.trim();
+                if (keyword) saveHistory(keyword);
+            });
+
+            document.addEventListener('click', e => {
+                if (!form.contains(e.target)) {
+                    suggestionsBox.classList.add('hidden');
+                }
+            });
+        });
     </script>
 
 </body>

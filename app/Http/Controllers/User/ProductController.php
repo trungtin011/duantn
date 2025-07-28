@@ -242,6 +242,7 @@ class ProductController extends Controller
         // Lấy sản phẩm liên quan theo danh mục
         $recentProducts = Cache::remember("related_products_{$product->id}", 3600, function () use ($product) {
             Log::info('Fetching related products for product ID: ' . $product->id);
+<<<<<<< HEAD
 
             // Lấy danh sách category_id từ bảng product_categories
             $categoryIds = $product->categories->pluck('id');
@@ -258,6 +259,27 @@ class ProductController extends Controller
             Log::info('Found ' . $products->count() . ' related products by categories');
 
             // Nếu không đủ sản phẩm liên quan, lấy thêm sản phẩm ngẫu nhiên
+=======
+            
+            $category = $product->categories->first(); // lấy danh mục đầu tiên
+
+            if ($category) {
+                $products = Product::whereHas('categories', function ($query) use ($category) {
+                        $query->where('categories.id', $category->id);
+                    })
+                    ->where('id', '!=', $product->id)
+                    ->where('status', 'active')
+                    ->with('images')
+                    ->take(8)
+                    ->get();
+
+                Log::info('Found ' . $products->count() . ' related products by category');
+            } else {
+                $products = collect();
+                Log::info('No category found for product ID: ' . $product->id);
+            }
+
+>>>>>>> 42903255055a104fa76f3e8bd601953ed230b587
             if ($products->count() < 4) {
                 $additionalProducts = Product::where('id', '!=', $product->id)
                     ->where('status', 'active')
@@ -265,12 +287,14 @@ class ProductController extends Controller
                     ->take(8 - $products->count())
                     ->inRandomOrder()
                     ->get();
-                Log::info('Added ' . $additionalProducts->count() . ' random products');
+
                 $products = $products->merge($additionalProducts);
+                Log::info('Added ' . $additionalProducts->count() . ' random products');
             }
 
             return $products;
         });
+
 
         $logoPath = $product->shop ? Storage::url($product->shop->logo) : asset('images/default_shop_logo.png');
 
