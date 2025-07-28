@@ -36,4 +36,8 @@ class ItemsOrder extends Model
     public function combo(){
         return $this->belongsTo(Combo::class, 'combo_id', 'id');
     }
+
+    public function comboProducts(){
+        return $this->belongsTo(ComboProduct::class, 'combo_id', 'id');
+    }
 }

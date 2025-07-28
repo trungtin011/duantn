@@ -3,9 +3,23 @@
     <div class="flex items-center justify-between py-4 px-4 sm:px-6 border-b border-gray-200">
         <h6 class="text-sm text-gray-500">Ngày đặt: {{ $order->created_at->format('d/m/Y') }}</h6>
 
+        @php
+            // Map trạng thái sang tiếng Việt
+            $statusMap = [
+                'pending'    => 'Chờ xác nhận',
+                'processing' => 'Đang xử lý',
+                'shipped'    => 'Đang giao hàng',
+                'delivered'  => 'Đã hoàn thành',
+                'cancelled'  => 'Đã hủy',
+                'refunded'   => 'Trả hàng/Hoàn tiền',
+            ];
+            $orderStatus = $order->order_status ?? '';
+            $statusClass = $order->status_classes ?? 'bg-gray-100 text-gray-500';
+            $statusLabel = $statusMap[$orderStatus] ?? ucfirst($orderStatus);
+        @endphp
         <span
-            class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $order->status_classes }}">
-            {{ $order->status_label }}
+            class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $statusClass }}">
+            {{ $statusLabel }}
         </span>
     </div>
 
@@ -48,7 +62,7 @@
                         <div
                             class="text-xs sm:text-sm {{ $order->order_status === 'cancelled' ? 'text-gray-400' : 'text-gray-500' }}">
                             <p>Số lượng: {{ $item->quantity }}</p>
-                            <p>{{ $item->variant->variant_name ?? 'N/A' }}</p>
+                            <p>{{ $item->variant->variant_name ?? '' }}</p>
                         </div>
                     </div>
                 </div>
@@ -57,7 +71,28 @@
                         class="font-bold text-sm sm:text-base flex items-center gap-2 {{ $order->order_status === 'cancelled' ? 'text-gray-400' : 'text-black' }}">
                         <span
                             class="font-thin line-through {{ $order->order_status === 'cancelled' ? 'text-gray-300' : 'text-gray-400' }}">
-                            {{ number_format($item->product->price ?? 0, 0, ',', '.') }}đ
+                            @if(isset($item->combo_id) && $item->combo_id)
+                                @php
+                                    // Lấy thông tin sản phẩm từ combo_products
+                                    $comboProduct = $item->combo->products->where('productID', $item->productID)->first();
+                                    if ($comboProduct && $comboProduct->variantID) {
+                                        // Nếu có variantID, lấy giá từ variant
+                                        $variant = \App\Models\ProductVariant::find($comboProduct->variantID);
+                                        $originalPrice = $variant ? $variant->price : 0;
+                                    } else {
+                                        // Nếu không có variantID, lấy giá từ product
+                                        $product = \App\Models\Product::find($item->productID);
+                                        $originalPrice = $product ? $product->price : 0;
+                                    }
+                                @endphp
+                                {{ number_format($originalPrice, 0, ',', '.') }}đ
+                            @else
+                                @if($item->variantID)
+                                    {{ number_format($item->variant->price ?? 0, 0, ',', '.') }}đ
+                                @else
+                                    {{ number_format($item->product->price ?? 0, 0, ',', '.') }}đ
+                                @endif
+                            @endif
                         </span>
                         <span
                             class="font-thin {{ $order->order_status === 'cancelled' ? 'text-gray-400' : 'text-red-500' }}">
