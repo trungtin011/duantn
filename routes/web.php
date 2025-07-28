@@ -400,9 +400,12 @@ Route::prefix('customer')->group(function () {
 
         Route::prefix('user/order')->group(function () {
             Route::get('/', [OrderController::class, 'index'])->name('order_history');
+            Route::get('/ajax/{status}', [OrderController::class, 'getOrdersByStatus'])->name('user.order.ajax');
             Route::get('/{orderID}', [OrderController::class, 'show'])->name('user.order.detail');
             Route::patch('/{order}/cancel', [OrderController::class, 'cancel'])->name('user.order.cancel');
             Route::get('/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.order.reorder');
+            Route::post('/{orderID}/refund', [OrderController::class, 'refund'])->name('user.order.refund');
+            Route::post('/{orderID}/confirm-received', [OrderController::class, 'confirmReceived'])->name('user.order.confirm-received');
             Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
         });
     });
