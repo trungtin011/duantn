@@ -25,6 +25,7 @@ class Coupon extends Model
         'start_date',
         'end_date',
         'rank_limit',
+        'created_by_role',
         'is_active',
         'is_public',
         'created_by',

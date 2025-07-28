@@ -38,43 +38,43 @@ class OrderController extends Controller
 
         // Lấy đơn hàng theo trạng thái
         $allOrders = Order::where('userID', $user->id)
-            ->with(['items.product.images', 'items.variant', 'items.shopOrder']) // Eager load shopOrder
+            ->with(['items.product.images', 'items.variant', 'items.shopOrder', 'items.combo.products.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $pendingOrders = Order::where('userID', $user->id)
             ->where('order_status', 'pending')
-            ->with(['items.product.images', 'items.variant', 'items.shopOrder']) // Eager load shopOrder
+            ->with(['items.product.images', 'items.variant', 'items.shopOrder', 'items.combo.products.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $processingOrders = Order::where('userID', $user->id)
             ->where('order_status', 'processing')
-            ->with(['items.product.images', 'items.variant', 'items.shopOrder']) // Eager load shopOrder
+            ->with(['items.product.images', 'items.variant', 'items.shopOrder', 'items.combo.products.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $shippedOrders = Order::where('userID', $user->id)
             ->where('order_status', 'shipped')
-            ->with(['items.product.images', 'items.variant', 'items.shopOrder']) // Eager load shopOrder
+            ->with(['items.product.images', 'items.variant', 'items.shopOrder', 'items.combo.products.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $deliveredOrders = Order::where('userID', $user->id)
             ->where('order_status', 'delivered')
-            ->with(['items.product.images', 'items.variant', 'items.shopOrder']) // Eager load shopOrder
+            ->with(['items.product.images', 'items.variant', 'items.shopOrder', 'items.combo.products.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $cancelledOrders = Order::where('userID', $user->id)
             ->where('order_status', 'cancelled')
-            ->with(['items.product.images', 'items.variant', 'items.shopOrder']) // Eager load shopOrder
+            ->with(['items.product.images', 'items.variant', 'items.shopOrder', 'items.combo.products.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $refundedOrders = Order::where('userID', $user->id)
             ->where('order_status', 'refunded')
-            ->with(['items.product.images', 'items.variant', 'items.shopOrder']) // Eager load shopOrder
+            ->with(['items.product.images', 'items.variant', 'items.shopOrder', 'items.combo.products.variant'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -303,6 +303,10 @@ class OrderController extends Controller
 
     public function storeReview(Request $request)
     {
+        Log::info('Bắt đầu xử lý đánh giá sản phẩm', [
+            'user_id' => Auth::id(),
+            'request_data' => $request->all()
+        ]);
         try {
             $request->validate([
                 'orderID' => 'required|exists:orders,id',
@@ -311,7 +315,13 @@ class OrderController extends Controller
                 'rating' => 'required|integer|min:1|max:5',
                 'comment' => 'nullable|string',
                 'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-                'video' => 'nullable|file|max:51200', // Chỉ để kiểm tra, không nên dùng trong production
+                'video' => 'nullable|file|max:51200',
+            ]);
+            Log::info('Dữ liệu đánh giá hợp lệ', [
+                'user_id' => Auth::id(),
+                'orderID' => $request->orderID,
+                'shopID' => $request->shopID,
+                'productID' => $request->productID
             ]);
 
             $userId = Auth::id();
@@ -321,40 +331,82 @@ class OrderController extends Controller
                 ->where('order_status', 'delivered')
                 ->firstOrFail();
 
+            $shopOrderId = null;
+            $shopOrder = \App\Models\ShopOrder::where('orderID', $request->orderID)
+                ->where('shopID', $request->shopID)
+                ->first();
+
+            if ($shopOrder) {
+                $itemOrder = \App\Models\ItemsOrder::where('orderID', $request->orderID)
+                    ->where('shop_orderID', $shopOrder->id)
+                    ->where('productID', $request->productID)
+                    ->first();
+                if ($itemOrder) {
+                    $shopOrderId = $shopOrder->id;
+                }
+            }
+
+            if (!$shopOrderId) {
+                Log::warning('Không tìm thấy shop_order_id phù hợp cho đánh giá', [
+                    'orderID' => $request->orderID,
+                    'shopID' => $request->shopID,
+                    'productID' => $request->productID,
+                    'user_id' => $userId
+                ]);
+                return redirect()->back()->with('error', 'Không thể xác định đơn hàng shop để đánh giá.');
+            }
+
             $existingReview = OrderReview::where('user_id', $userId)
-                ->where('order_id', $request->orderID)
+                ->where('shop_order_id', $shopOrderId)
                 ->where('product_id', $request->productID)
                 ->first();
 
             if ($existingReview) {
-                Log::warning('Người dùng ' . $userId . ' đã cố gắng đánh giá lại sản phẩm ' . $request->productID . ' trong đơn hàng ' . $request->orderID);
+                Log::warning('Người dùng đã cố gắng đánh giá lại sản phẩm', [
+                    'user_id' => $userId,
+                    'productID' => $request->productID,
+                    'shop_order_id' => $shopOrderId
+                ]);
                 return redirect()->back()->with('error', 'Bạn đã đánh giá sản phẩm này trong đơn hàng này rồi.');
             }
 
             $review = OrderReview::create([
                 'user_id' => $userId,
-                'order_id' => $request->orderID,
                 'product_id' => $request->productID,
                 'shop_id' => $request->shopID,
+                'shop_order_id' => $shopOrderId,
                 'rating' => $request->rating,
                 'comment' => $request->comment,
+            ]);
+            Log::info('Tạo đánh giá mới thành công', [
+                'review_id' => $review->id,
+                'user_id' => $userId,
+                'product_id' => $request->productID,
+                'shop_order_id' => $shopOrderId
             ]);
 
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('review_images', 'public');
                     $review->images()->create(['image_path' => $path]);
-                    Log::info('Tải lên ảnh đánh giá mới: ' . $path . ' cho đánh giá ID: ' . $review->id);
+                    Log::info('Tải lên ảnh đánh giá mới', [
+                        'image_path' => $path,
+                        'review_id' => $review->id,
+                        'user_id' => $userId
+                    ]);
                 }
             }
 
             if ($request->hasFile('video')) {
                 $videoPath = $request->file('video')->store('review_videos', 'public');
                 $review->videos()->create(['video_path' => $videoPath]);
-                Log::info('Tải lên video đánh giá mới: ' . $videoPath . ' cho đánh giá ID: ' . $review->id);
+                Log::info('Tải lên video đánh giá mới', [
+                    'video_path' => $videoPath,
+                    'review_id' => $review->id,
+                    'user_id' => $userId
+                ]);
             }
 
-            // Logic thưởng xu
             $pointsAwarded = 0;
             $commentLength = Str::length($request->comment);
             $hasImages = $request->hasFile('images') && count($request->file('images')) > 0;
@@ -376,19 +428,38 @@ class OrderController extends Controller
                     'description' => 'Thưởng điểm khi đánh giá sản phẩm đủ điều kiện',
                     'orderID' => $request->orderID,
                 ]);
-                Log::info('Thưởng ' . $pointsAwarded . ' xu cho người dùng ID: ' . $userId . ' khi đánh giá sản phẩm ID: ' . $request->productID);
+                Log::info('Thưởng xu cho người dùng khi đánh giá sản phẩm', [
+                    'user_id' => $userId,
+                    'product_id' => $request->productID,
+                    'points' => $pointsAwarded
+                ]);
             } else {
-                Log::info('Đánh giá của người dùng ID: ' . $userId . ' cho sản phẩm ID: ' . $request->productID . ' không đủ điều kiện nhận xu.');
+                Log::info('Đánh giá không đủ điều kiện nhận xu', [
+                    'user_id' => $userId,
+                    'product_id' => $request->productID
+                ]);
             }
 
-            Log::info('Đánh giá sản phẩm thành công cho sản phẩm ID: ' . $request->productID . ' bởi người dùng ID: ' . $userId);
+            Log::info('Đánh giá sản phẩm thành công', [
+                'user_id' => $userId,
+                'product_id' => $request->productID,
+                'review_id' => $review->id
+            ]);
             return redirect()->back()->with('success', 'Đánh giá của bạn đã được gửi thành công!');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Lỗi xác thực khi đánh giá sản phẩm: ' . $e->getMessage(), ['errors' => $e->errors()]);
+            Log::error('Lỗi xác thực khi đánh giá sản phẩm', [
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+                'user_id' => Auth::id()
+            ]);
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            Log::error('Lỗi khi xử lý đánh giá sản phẩm: ' . $e->getMessage(), ['user_id' => Auth::id(), 'request' => $request->all()]);
+            Log::error('Lỗi khi xử lý đánh giá sản phẩm', [
+                'message' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'request' => $request->all()
+            ]);
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.');
         }
     }

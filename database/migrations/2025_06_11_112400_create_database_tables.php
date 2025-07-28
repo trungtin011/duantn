@@ -550,6 +550,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->enum('rank_limit', ['gold', 'silver', 'bronze', 'diamond', 'all'])->default('all');
+            $table->enum('created_by_role', ['admin', 'shop'])->default('admin');
             $table->boolean('is_active')->default(1);
             $table->boolean('is_public')->default(1);
             $table->unsignedBigInteger('created_by')->nullable();
