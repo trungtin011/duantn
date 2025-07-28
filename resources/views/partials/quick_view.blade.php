@@ -50,17 +50,17 @@
                 </div>
             </div>
             <div class="flex items-center gap-2" id="price-display"
-                data-price="{{ $product->sale_price ?? $product->price }}"
-                data-original-price="{{ $product->price }}">
+                data-price="{{ $product->display_price }}"
+                data-original-price="{{ $product->display_original_price }}">
                 <span class="text-red-600 text-2xl font-bold">
-                    {{ number_format($product->sale_price ?? $product->price, 0, ',', '.') }} VNĐ
+                    {{ number_format($product->display_price, 0, ',', '.') }} VNĐ
                 </span>
-                @if ($product->sale_price)
+                @if ($product->display_price < $product->display_original_price)
                     <span class="text-gray-500 line-through text-md">
-                        {{ number_format($product->price, 0, ',', '.') }} VNĐ
+                        {{ number_format($product->display_original_price, 0, ',', '.') }} VNĐ
                     </span>
                     <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">
-                        -{{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%
+                        -{{ round((($product->display_original_price - $product->display_price) / $product->display_original_price) * 100) }}%
                     </span>
                 @endif
             </div>
@@ -133,7 +133,7 @@
                 <button
                     class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 flex items-center gap-2 add-to-cart"
                     data-product-id="{{ $product->id }}">
-                    <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                    <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ hàng
                 </button>
             </div>
         </div>

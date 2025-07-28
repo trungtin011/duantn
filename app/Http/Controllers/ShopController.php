@@ -13,13 +13,8 @@ class ShopController extends Controller
     public function show($id)
     {
         $shop = Shop::with(['products', 'user', 'address', 'products.orderReviews'])->findOrFail($id);
-        $addresses = ShopAddress::all();
 
-        foreach ($addresses as $address) {
-            Shop::where('id', $address->shopID)->update([
-                'shop_address_id' => $address->id,
-            ]);
-        }
+
         return view('shop.profile', compact('shop'));
     }
 
@@ -37,8 +32,32 @@ class ShopController extends Controller
     public function unfollow(Shop $shop)
     {
         $user = Auth::user();
-        $user->followedShops()->detach($shop->id);
+        $shop->followers()->detach($user->id);
 
         return back()->with('success', 'Bạn đã hủy theo dõi shop.');
+    }
+
+    public function searchProducts(Request $request, Shop $shop)
+    {
+        $query = $request->input('query');
+
+        $products = $shop->products()
+            ->where('name', 'like', '%' . $query . '%')
+            ->with('images', 'reviews')
+            ->get();
+
+        return view('shop.profile', compact('shop', 'products', 'query'));
+    }
+    
+    public function productsByCategory($shopId, $categoryId)
+    {
+        $shop = Shop::with('categories', 'products.images', 'owner', 'followers', 'address')->findOrFail($shopId);
+
+        $category = $shop->categories()->findOrFail($categoryId);
+
+        // Lấy sản phẩm thuộc danh mục này trong shop
+        $products = $category->products()->where('shopID', $shop->id)->with('images', 'reviews')->get();
+
+        return view('shop.profile', compact('shop', 'products'));
     }
 }

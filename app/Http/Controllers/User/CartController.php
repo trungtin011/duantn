@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
-    /**
-     * Display the user's cart.
-     */
+    
     public function index()
     {
         
@@ -36,7 +34,6 @@ class CartController extends Controller
             ->get();
         return view('user.cart', compact('cartItems', 'user'));
     }
-
 
     public function addToCart(Request $request)
     {
@@ -108,10 +105,7 @@ class CartController extends Controller
 
         return response()->json(['message' => 'Đã thêm vào giỏ hàng!'], 200);
     }
-
-    /**
-     * Calculate discounted price for combo products
-     */
+    
     private function calculateComboDiscountedPrice($combo, $basePrice, $comboProduct)
     {
         $discountedPrice = $basePrice;
@@ -297,7 +291,6 @@ class CartController extends Controller
         return response()->json(['message' => 'Một số sản phẩm không thể thêm vào giỏ hàng!', 'results' => $results], 422);
     }
 
-   
     public function remove($id)
     {
         $userID = Auth::check() ? Auth::id() : null;
@@ -337,9 +330,6 @@ class CartController extends Controller
         }
     }
 
-    /**
-     * Update quantity of a cart item and synchronize combo items.
-     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -596,4 +586,49 @@ class CartController extends Controller
         session(['selected_products' => $selectedIds]);
         return response()->json(['message' => 'Đã cập nhật sản phẩm đã chọn!']);
     }
+
+    /**
+     * Get the total quantity of items in the cart.
+     */
+    public function getCartQuantity()
+    {
+        $userID = Auth::check() ? Auth::id() : null;
+        $sessionID = Session::getId();
+
+        Log::info('Fetching cart quantity', ['userID' => $userID, 'sessionID' => $sessionID]);
+
+        $totalQuantity = Cart::where(function ($query) use ($userID, $sessionID) {
+            if ($userID) {
+                $query->where('userID', $userID);
+            } else {
+                $query->where('session_id', $sessionID);
+            }
+        })->sum('quantity');
+
+        Log::info('Cart quantity fetched', ['totalQuantity' => $totalQuantity]);
+
+        return response()->json(['quantity' => $totalQuantity]);
+    }
+
+    /**
+     * Get the details of items in the cart.
+     */
+    public function getCartItems()
+    {
+        $userID = Auth::check() ? Auth::id() : null;
+        $sessionID = Session::getId();
+
+        $cartItems = Cart::with(['product.images', 'product.shop', 'variant', 'combo.products.product', 'combo.products.variant'])
+            ->where(function ($query) use ($userID, $sessionID) {
+                if ($userID) {
+                    $query->where('userID', $userID);
+                } else {
+                    $query->where('session_id', $sessionID);
+                }
+            })
+            ->get();
+
+        return response()->json(['cartItems' => $cartItems]);
+    }
+
 }

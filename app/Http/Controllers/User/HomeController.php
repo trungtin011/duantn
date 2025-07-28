@@ -21,6 +21,7 @@ use App\Models\ProductVariant;
 use App\Models\PointTransaction;
 use App\Models\OrderReview;
 use App\Models\Post;
+use App\Models\Combo;
 
 class HomeController extends Controller
 {
@@ -77,28 +78,28 @@ class HomeController extends Controller
             ->get();
 
         // Lấy 8 sản phẩm bán chạy nhất
-        $bestSellers = Product::with(['defaultImage', 'categories'])
+        $bestSellers = Product::with(['defaultImage', 'categories', 'variants'])
             ->orderByDesc('sold_quantity')
             ->where('status', 'active')
             ->take(8)
             ->get();
 
         // Sản phẩm nổi bật
-        $featuredProducts = Product::with(['defaultImage', 'categories'])
+        $featuredProducts = Product::with(['defaultImage', 'categories', 'variants'])
             ->where('is_featured', 1)
             ->where('status', 'active')
             ->orderByDesc('updated_at')
             ->get();
 
         // Sản phẩm trending (bán nhiều nhất)
-        $trendingProducts = Product::with(['defaultImage', 'categories'])
+        $trendingProducts = Product::with(['defaultImage', 'categories', 'variants'])
             ->orderByDesc('sold_quantity')
             ->where('status', 'active')
             ->take(10)
             ->get();
 
         // Sản phẩm đánh giá cao nhất
-        $topRatedProducts = Product::with(['defaultImage', 'reviews', 'categories'])
+        $topRatedProducts = Product::with(['defaultImage', 'reviews', 'categories', 'variants'])
             ->withAvg('reviews', 'rating')
             ->whereHas('reviews')
             ->orderByDesc('reviews_avg_rating')
@@ -107,7 +108,7 @@ class HomeController extends Controller
             ->get();
 
         // Flash sale
-        $flashSaleProducts = Product::with(['defaultImage', 'reviews', 'categories'])
+        $flashSaleProducts = Product::with(['defaultImage', 'reviews', 'categories', 'variants'])
             ->whereNotNull('flash_sale_price')
             ->where('flash_sale_end_at', '>', Carbon::now())
             ->where('status', 'active')
@@ -115,8 +116,32 @@ class HomeController extends Controller
             ->take(10)
             ->get();
 
+        // Process flash sale products to get the lowest variant price if applicable
+        $flashSaleProducts->each(function ($product) {
+            if ($product->variants->isNotEmpty()) {
+                $minSalePriceVariant = $product->variants
+                    ->whereNotNull('sale_price') // Check for sale_price on variant
+                    ->where('stock', '>', 0)
+                    ->sortBy('sale_price') // Sort by sale_price
+                    ->first();
+
+                if ($minSalePriceVariant) {
+                    $product->display_flash_sale_price = $minSalePriceVariant->sale_price;
+                    $product->display_original_price_for_flash_sale = $minSalePriceVariant->price;
+                } else {
+                    // Fallback to product's flash sale price if no variant has a sale price or is out of stock
+                    $product->display_flash_sale_price = $product->flash_sale_price;
+                    $product->display_original_price_for_flash_sale = $product->price;
+                }
+            } else {
+                // For simple products (no variants)
+                $product->display_flash_sale_price = $product->flash_sale_price;
+                $product->display_original_price_for_flash_sale = $product->price;
+            }
+        });
+
         // Sản phẩm mới (tạo trong vòng 7 ngày gần nhất)
-        $newProducts = Product::with(['defaultImage', 'categories', 'reviews'])
+        $newProducts = Product::with(['defaultImage', 'categories', 'reviews', 'variants'])
             ->where('created_at', '>=', Carbon::now()->subDays(7))
             ->where('status', 'active')
             ->orderByDesc('created_at')
@@ -132,6 +157,13 @@ class HomeController extends Controller
 
         // Lấy 4 bài viết mới nhất
         $blogs = Post::orderByDesc('created_at')->take(4)->get();
+
+        // Lấy 8 combo sản phẩm mới nhất, có trạng thái 'active', và eager load shop và các sản phẩm trong combo
+        $comboProducts = Combo::with(['shop', 'products.product.defaultImage'])
+            ->where('status', 'active')
+            ->orderByDesc('created_at')
+            ->take(8)
+            ->get();
 
         return view('user.home', compact(
             'parentCategory',
@@ -151,7 +183,8 @@ class HomeController extends Controller
             'newProducts',
             'testimonials',
             'blogs',
-            'user'
+            'user',
+            'comboProducts'
         ));
     }
 }

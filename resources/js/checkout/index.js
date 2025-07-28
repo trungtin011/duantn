@@ -15,10 +15,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     initializeCheckoutFormHandler();
-    initializeDiscountHandler(a.subtotal, a.applyDiscountUrl, a.csrfToken);
-    initializePointsHandler(a.user_points);
+    initializeAddressDisplay(a.addresses);
+    initializeShippingCalculator(a.addresses, a.shops, a.csrfToken);
+    initializeDiscountHandler(window.calculateSubtotal(), a.applyDiscountUrl, a.csrfToken);
     initializeTotalCalculator();
     initializeUIHandler();
-    initializeShippingCalculator(a.addresses, a.shops, a.csrfToken);
-    initializeAddressDisplay(a.addresses);
+    initializePointsHandler(a.user_points, window.calculateSubtotal());
 }); 

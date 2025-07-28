@@ -3,24 +3,27 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\PlatformRevenueModel;
 use Illuminate\Support\Facades\DB;
+use App\Models\Product;
+use App\Models\ProductCategories;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Đơn hàng đã nhận
         $deliveredOrders = DB::table('orders')
-            ->where('order_status', 'delivered')
             ->count();
 
-        $deliveredGrowth = $this->calculateGrowth('orders', 'order_status', 'delivered');
+        $deliveredGrowth = $this->calculateGrowth('orders', 'payment_status', 'paid');
 
-        // Doanh thu trung bình hàng ngày
+        // Tính doanh thu trung bình mỗi ngày trong tháng này (theo số ngày của tháng hiện tại)
+        $currentMonthDays = now()->daysInMonth;
         $avgDailyRevenue = DB::table('orders')
-            ->where('payment_status', 'paid')
-            ->where('created_at', '>=', now()->subMonth())
-            ->selectRaw('ROUND(SUM(total_price) / DAY(LAST_DAY(NOW())), 2) as avg_daily_revenue')
+            ->whereIn('payment_status', ['paid', 'cod_paid'])
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->selectRaw('ROUND(SUM(total_price) / ?, 2) as avg_daily_revenue', [$currentMonthDays])
             ->value('avg_daily_revenue') ?? 0;
 
         $revenueGrowth = $this->calculateRevenueGrowth();
@@ -33,12 +36,10 @@ class DashboardController extends Controller
 
         $customerGrowth = $this->calculateGrowth('users', 'role', 'customer');
 
-        // Lệnh chờ xử lý
-        $pendingOrders = DB::table('orders')
-            ->whereIn('order_status', ['pending', 'processing'])
-            ->count();
-
-        $pendingGrowth = $this->calculateGrowth('orders', 'order_status', ['pending', 'processing']);
+        // hoa hồng từ các đơn hàng 
+        $platfrom_revenue = PlatformRevenueModel::totalPlatformRevenue();
+        
+        $platfromGrowth = $this->calculateGrowth('platform_revenues', 'commission_amount', 'paid');
 
         // Sales Chart
         $salesData = DB::select("
@@ -73,13 +74,36 @@ class DashboardController extends Controller
         }, $salesData);
 
         // Category Chart
-        $categoryData = DB::select("SELECT c.name AS category_name, SUM(p.sold_quantity) AS total_sold FROM products p JOIN categories c ON p.category = c.name GROUP BY c.name ORDER BY total_sold DESC");
+        $categoryData = DB::select("
+            SELECT c.name AS category_name, SUM(p.sold_quantity) AS total_sold 
+            FROM products p 
+            JOIN product_categories pc ON p.id = pc.product_id
+            JOIN categories c ON pc.category_id = c.id
+            GROUP BY c.id, c.name 
+            ORDER BY total_sold DESC
+        ");
         $categoryLabels = array_map(function ($item) {
             return $item->category_name;
         }, $categoryData);
         $categoryValues = array_map(function ($item) {
             return $item->total_sold ?? 0;
         }, $categoryData);
+
+        // Brand Chart
+        $brandData = DB::select("
+            SELECT b.name AS brand_name, SUM(p.sold_quantity) AS total_sold 
+            FROM products p 
+            JOIN product_brands pb ON p.id = pb.product_id
+            JOIN brand b ON pb.brand_id = b.id
+            GROUP BY b.id, b.name 
+            ORDER BY total_sold DESC
+        ");
+        $brandLabels = array_map(function ($item) {
+            return $item->brand_name;
+        }, $brandData);
+        $brandValues = array_map(function ($item) {
+            return $item->total_sold ?? 0;
+        }, $brandData);
 
         // Recent Orders
         $recentOrders = DB::table('orders as o')
@@ -92,8 +116,8 @@ class DashboardController extends Controller
                 'o.created_at',
                 'o.total_price as amount',
                 'o.order_status as status',
-                'p.name as product_name', // Thêm tên sản phẩm
-                'p.sale_price as price'   // Giữ giá sản phẩm
+                'p.name as product_name',
+                'p.sale_price as price'
             )
             ->orderByDesc('o.created_at')
             ->limit(5)
@@ -104,7 +128,16 @@ class DashboardController extends Controller
             });
 
         // Product List
-        $products = DB::select("SELECT p.name, p.sku AS product_id, p.category, p.sale_price AS price, p.status FROM products p ORDER BY p.created_at DESC LIMIT 10");
+        $products = DB::select("
+            SELECT p.name, p.sku AS product_id, p.sale_price AS price, p.status, 
+                   MIN(c.name) AS category_name
+            FROM products p 
+            LEFT JOIN product_categories pc ON p.id = pc.product_id
+            LEFT JOIN categories c ON pc.category_id = c.id
+            GROUP BY p.id, p.name, p.sku, p.sale_price, p.status
+            ORDER BY p.created_at DESC 
+            LIMIT 10
+        ");
 
         // Categories for filter
         $categories = DB::table('categories')->select('id', 'name')->get();
@@ -116,14 +149,16 @@ class DashboardController extends Controller
             'revenueGrowth',
             'newCustomers',
             'customerGrowth',
-            'pendingOrders',
-            'pendingGrowth',
+            'platfrom_revenue',
+            'platfromGrowth',
             'labels',
             'sales',
             'visitors',
             'products',
             'categoryLabels',
             'categoryValues',
+            'brandLabels',
+            'brandValues',
             'recentOrders',
             'categories'
         ));

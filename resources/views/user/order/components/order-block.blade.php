@@ -72,7 +72,7 @@
                     <button
                         class="open-review-modal bg-[#DB4444] text-white px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-[#CF4343]"
                         data-product-id="{{ $item->productID }}" data-product-name="{{ $item->product_name }}"
-                        data-order-id="{{ $order->id }}" data-shop-id="{{ $order->shopID }}">
+                        data-order-id="{{ $order->id }}" data-shop-id="{{ $item->shopOrder->shopID }}">
                         Đánh giá sản phẩm
                     </button>
                 </div>
