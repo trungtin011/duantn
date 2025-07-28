@@ -29,63 +29,66 @@ class OrderController extends Controller
             return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để xem đơn hàng');
         }
 
-        // Lấy danh sách sản phẩm đã đánh giá
         $reviewedProductIds = OrderReview::where('user_id', $user->id)
             ->pluck('product_id')
             ->toArray();
 
-        // Lấy đơn hàng theo trạng thái
-        $allOrders = Order::where('userID', $user->id)
-            ->with(['items.product.images', 'items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $pendingOrders = Order::where('userID', $user->id)
-            ->where('order_status', 'pending')
-            ->with(['items.product.images', 'items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $processingOrders = Order::where('userID', $user->id)
-            ->where('order_status', 'processing')
-            ->with(['items.product.images', 'items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $shippedOrders = Order::where('userID', $user->id)
-            ->where('order_status', 'shipped')
-            ->with(['items.product.images', 'items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $deliveredOrders = Order::where('userID', $user->id)
-            ->where('order_status', 'delivered')
-            ->with(['items.product.images', 'items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $cancelledOrders = Order::where('userID', $user->id)
-            ->where('order_status', 'cancelled')
-            ->with(['items.product.images', 'items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        $refundedOrders = Order::where('userID', $user->id)
-            ->where('order_status', 'refunded')
-            ->with(['items.product.images', 'items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $statuses = [
+            'pending'    => 'Chờ xử lý',
+            'confirmed'  => 'Đã nhận',
+            'shipped'    => 'Đang giao đến',
+            'delivered'  => 'Đã giao hàng',
+            'completed'  => 'Hoàn thành',
+            'cancelled'  => 'Đơn hủy',
+            'refunded'   => 'Trả hàng/Hoàn tiền',
+        ];
 
         return view('user.order.history', compact(
-            'allOrders',
-            'pendingOrders',
-            'processingOrders',
-            'shippedOrders',
-            'deliveredOrders',
-            'cancelledOrders',
-            'refundedOrders',
-            'reviewedProductIds'
+            'reviewedProductIds',
+            'statuses'
         ));
+    }
+
+    public function getOrdersByStatus(Request $request, $status)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $perPage = 5;
+        $statuses = [
+            'pending'    => 'Chờ xử lý',
+            'confirmed'  => 'Đã nhận',
+            'shipped'    => 'Đang giao đến',
+            'delivered'  => 'Đã giao hàng',
+            'completed'  => 'Hoàn thành',
+            'cancelled'  => 'Đơn hủy',
+            'refunded'   => 'Trả hàng/Hoàn tiền',
+        ];
+
+        $reviewedProductIds = OrderReview::where('user_id', $user->id)
+            ->pluck('product_id')
+            ->toArray();
+        $orders = ShopOrder::whereHas('order', function ($query) use ($user) {
+                $query->where('userID', $user->id);
+            })
+            ->where('status', $status)
+            ->with(['items.product.images', 'items.variant'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        $html = view('user.order.components.order-list', compact(
+            'orders',
+            'reviewedProductIds',
+            'statuses'
+        ))->render();
+
+        return response()->json([
+            'html' => $html,
+            'pagination' => $orders->links()->toHtml(),
+            'total' => $orders->total()
+        ]);
     }
 
     public function show($orderID)
@@ -309,7 +312,6 @@ class OrderController extends Controller
 
         $parentOrder = Order::find($order->orderID);
 
-        // Cập nhật trạng thái đơn hàng
         $order->order_status = 'completed';
         $order->save();
 
@@ -375,4 +377,140 @@ class OrderController extends Controller
 
         return redirect()->back()->with('success', 'Đơn hàng đã được hoàn thành');
     }
-}
+
+    public function refund(Request $request, $orderID)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->back()->with('error', 'Vui lòng đăng nhập');
+        }
+
+        $request->validate([
+            'refund_reason' => 'required|string|max:500',
+        ]);
+
+        try {
+            $shopOrder = ShopOrder::whereHas('order', function ($query) use ($user) {
+                $query->where('userID', $user->id);
+            })->where('id', $orderID)->first();
+
+            if (!$shopOrder) {
+                return redirect()->back()->with('error', 'Đơn hàng không tồn tại');
+            }
+
+            if ($shopOrder->status !== 'delivered') {
+                return redirect()->back()->with('error', 'Chỉ có thể yêu cầu trả hàng khi đơn hàng đã được giao');
+            }
+
+            // Cập nhật trạng thái đơn hàng
+            $shopOrder->status = 'refunded';
+            $shopOrder->save();
+
+            // Lưu lịch sử đơn hàng
+            ShopOrderHistory::create([
+                'shop_order_id' => $shopOrder->id,
+                'status' => 'refunded',
+                'description' => 'Yêu cầu trả hàng: ' . $request->refund_reason,
+            ]);
+
+            return redirect()->back()->with('success', 'Yêu cầu trả hàng đã được gửi thành công');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Lỗi khi gửi yêu cầu trả hàng: ' . $e->getMessage());
+        }
+    }
+
+    public function confirmReceived(Request $request, $orderID)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            Log::warning('User not authenticated when trying to confirm received order.', [
+                'orderID' => $orderID,
+                'ip' => $request->ip(),
+            ]);
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+        }
+        Log::info($orderID);
+        try {
+            $shopOrder = ShopOrder::whereHas('order', function ($query) use ($user) {
+                $query->where('userID', $user->id);
+            })->where('id', $orderID)->first();
+
+            if (!$shopOrder) {
+                Log::notice('ShopOrder not found when confirming received.', [
+                    'userID' => $user->id,
+                    'orderID' => $orderID,
+                ]);
+                return response()->json(['success' => false, 'message' => 'Đơn hàng không tồn tại']);
+            }
+
+            if ($shopOrder->status !== 'delivered') {
+                Log::info('Attempt to confirm received for order not in delivered status.', [
+                    'userID' => $user->id,
+                    'orderID' => $orderID,
+                    'current_status' => $shopOrder->status,
+                ]);
+                return response()->json(['success' => false, 'message' => 'Chỉ có thể xác nhận nhận hàng khi đơn hàng đã được giao']);
+            }
+
+            $shopOrder->status = 'completed';
+            $shopOrder->save();
+
+            ShopOrderHistory::create([
+                'shop_order_id' => $shopOrder->id,
+                'status' => 'completed',
+                'description' => 'Khách hàng đã xác nhận nhận hàng',
+            ]);
+
+            $order = $shopOrder->order;
+            if ($order && $order->userID) {
+                $customer = Customer::where('userID', $order->userID)->first();
+                if ($customer) {
+                    $totalAmount = $shopOrder->items->sum('total_price');
+                    $pointRate = 0.01; 
+                    $earnedPoints = floor($totalAmount * $pointRate);
+
+                    $rankPercent = match ($customer->rank) {
+                        'diamond' => 3,
+                        'platinum' => 2.5,
+                        'gold' => 2,
+                        'silver' => 1.5,
+                        default => 1,
+                    };
+                    $earnedPoints = floor($earnedPoints * $rankPercent);
+
+                    $customer->total_points += $earnedPoints;
+                    $customer->save();
+
+                    PointTransaction::create([
+                        'userID' => $order->userID,
+                        'orderID' => $order->id,
+                        'points' => $earnedPoints,
+                        'type' => 'order',
+                        'description' => 'Nhận điểm khi xác nhận đã nhận hàng cho đơn #' . $shopOrder->id,
+                    ]);
+
+                    Log::info('Points awarded after order confirmation.', [
+                        'userID' => $order->userID,
+                        'orderID' => $order->id,
+                        'earnedPoints' => $earnedPoints,
+                        'rank' => $customer->rank,
+                    ]);
+                }
+            }
+
+            Log::info('Order confirmed as received.', [
+                'userID' => $user->id,
+                'orderID' => $orderID,
+            ]);
+            return response()->json(['success' => true, 'message' => 'Đã xác nhận nhận hàng thành công']);
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi xác nhận nhận hàng: ' . $e->getMessage(), [
+                'userID' => $user ? $user->id : null,
+                'orderID' => $orderID,
+                'exception' => $e,
+            ]);
+            return response()->json(['success' => false, 'message' => 'Lỗi khi xác nhận nhận hàng: ' . $e->getMessage()]);
+        }
+    }
+    
+}   
