@@ -562,6 +562,6 @@ Route::get('/account/password/verify-code', [UserController::class, 'showVerifyC
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
-Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
+
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
 Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');

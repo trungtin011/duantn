@@ -50,5 +50,8 @@ class Review extends Model
     {
         return $this->hasMany(ReviewVideo::class);
     }
-
+public function reviews()
+    {
+        return $this->hasMany(Review::class, 'combo_id'); 
+    }
 }

@@ -244,4 +244,5 @@ class Product extends Model
     {
         return $this->hasMany(OrderReview::class, 'product_id');
     }
+
 }

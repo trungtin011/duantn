@@ -22,9 +22,66 @@
                                 </svg>
                                 Sửa hồ sơ
                             </a>
+                            
                         </div>
                     </div>
                 </div>
+               <!-- Rank and Experience Section -->
+<div class="bg-gray-50 rounded-lg p-4 mb-8">
+    <div class="flex items-center space-x-3 mb-4">
+        <span class="text-xl">
+            @switch($user->rank)
+                @case('iron') <i class="fas fa-circle text-gray-400"></i> @break
+                @case('bronze') <i class="fas fa-circle text-yellow-500"></i> @break
+                @case('silver') <i class="fas fa-circle text-gray-300"></i> @break
+                @case('gold') <i class="fas fa-circle text-yellow-600"></i> @break
+                @case('diamond') <i class="fas fa-gem text-blue-500"></i> @break
+                @case('supreme') <i class="fas fa-crown text-purple-600"></i> @break
+                @default <i class="fas fa-question"></i> @endswitch
+        </span>
+        <span class="text-xl font-bold text-gray-800">
+            @switch($user->rank)
+                @case('iron') Sắt @break
+                @case('bronze') Đồng @break
+                @case('silver') Bạc @break
+                @case('gold') Vàng @break
+                @case('diamond') Kim Cương @break
+                @case('supreme') Chí Tôn @break
+                @default Không xác định @endswitch
+        </span>
+    </div>
+    <div>
+        <div class="text-sm font-medium text-gray-600 mb-2">Kinh nghiệm</div>
+        @php
+            $ranks = [
+                'iron' => ['min' => 0, 'max' => 1000000],
+                'bronze' => ['min' => 1000000, 'max' => 5000000],
+                'silver' => ['min' => 5000000, 'max' => 10000000],
+                'gold' => ['min' => 10000000, 'max' => 20000000],
+                'diamond' => ['min' => 20000000, 'max' => 50000000],
+                'supreme' => ['min' => 50000000, 'max' => PHP_INT_MAX],
+            ];
+            $currentRank = $user->rank ?? 'iron';
+            $currentRange = $ranks[$currentRank];
+            $currentMin = $currentRange['min'];
+            $currentMax = $currentRange['max'];
+            $nextRankIndex = array_search($currentRank, array_keys($ranks)) + 1;
+            $nextThreshold = $nextRankIndex < count($ranks) ? $ranks[array_keys($ranks)[$nextRankIndex]]['min'] : $currentMax;
+
+            // Tính tiến độ dựa trên tổng số tiền so với ngưỡng tiếp theo
+            $progress = min(100, max(0, ($user->total_spent / $nextThreshold) * 100));
+            $remaining = $nextThreshold > $user->total_spent ? $nextThreshold - $user->total_spent : 0;
+        @endphp
+        <div class="relative w-full bg-gray-200 rounded-full h-8 overflow-hidden">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 h-8 rounded-full transition-all duration-300" 
+                style="width: {{ $progress }}%"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-3 text-xs text-black font-medium">
+                <span>{{ number_format($user->total_spent, 0, ',', '.') }}</span>
+                <span>{{ number_format($nextThreshold, 0, ',', '.') }}</span>
+            </div>
+        </div>
+    </div>
+</div>
                 <ul class="space-y-3 min-h-screen">
                     <li>
                         <div id="dropdownToggle">

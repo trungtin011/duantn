@@ -23,6 +23,7 @@ class Shop extends Model
         'shop_logo',
         'shop_banner',
         'shop_status',
+        
     ];
 
     protected $casts = [
@@ -104,4 +105,9 @@ class Shop extends Model
         return $this->belongsToMany(User::class, 'shop_followers', 'shopID', 'followerID')
             ->withTimestamps();
     }
+    public function combos()
+{
+    return $this->hasMany(Combo::class, 'shopID');
+}
+
 }
