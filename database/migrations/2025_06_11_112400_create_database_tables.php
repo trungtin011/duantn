@@ -460,7 +460,6 @@ return new class extends Migration
             $table->foreign('shopID')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('orderID')->references('id')->on('orders')->onDelete('cascade');
         });
-
         Schema::create('history_order_shop', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('shop_order_id');

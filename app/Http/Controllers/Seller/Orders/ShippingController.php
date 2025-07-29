@@ -44,6 +44,11 @@ class ShippingController extends Controller
         if(!$orders){
            return redirect()->back()->with('error', 'Không tìm thấy đơn hàng');
         }
+
+        if($orders->total_price > 50000000){
+            return redirect()->back()->with('error', 'Tạm thời đơn hàng ko được quá 50 triệu');
+        }
+        
         $shop_address = ShopAddress::where('id', $id_shop_address)->first();
         $shop_province_name = $shop_address->shop_province;
         $shop_district_name = $shop_address->shop_district;
@@ -104,6 +109,7 @@ class ShippingController extends Controller
             $data = [
                 'tracking_code' => $responseData['data']['order_code'],
                 'expected_delivery_date' => $expectedDate,
+                'shipping_fee' => $responseData['data']['fee']['main_service'],
             ];
             $shop_order->update($data);
 

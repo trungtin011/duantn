@@ -12,7 +12,7 @@ class UserCouponUsed extends Model
     protected $table = 'user_coupon_used';
     protected $fillable = [
         'user_id',
-        'coupon_code',
+        'coupon_id',
         'order_id',
         'used_count',
     ];

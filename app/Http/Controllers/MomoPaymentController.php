@@ -91,10 +91,9 @@ class MomoPaymentController extends Controller
                 'status' => $response->status(),
                 'body' => $response->json()
             ]);
+            $responseData = $response->json();
 
             if ($response->successful()) {
-                $responseData = $response->json();
-
                 if (isset($responseData['payUrl']) && !empty($responseData['payUrl'])) {
                     Log::info('MoMo Payment Success - Redirecting to:', [
                         'pay_url' => $responseData['payUrl']
@@ -108,10 +107,9 @@ class MomoPaymentController extends Controller
             }
 
             $responseData = $response->json();
-            Log::error('MoMo Payment Error:', [
-                'error_message' => $responseData['message'] ?? 'Unknown error',
-                'response_data' => $responseData
-            ]);
+
+            return redirect()->route('checkout')->with('error', $responseData['message'] ?? 'Không thể kết nối với MoMo.');
+
 
             return redirect()->route('checkout')->with('error', $responseData['message'] ?? 'Không thể kết nối với MoMo.');
         } catch (\Exception $e) {

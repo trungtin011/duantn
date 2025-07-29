@@ -205,18 +205,17 @@
     display: block;
 }
 
-.flash-sale-box {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    border-radius: 16px;
-    padding: 12px;
+.countdown-box {
+    background: linear-gradient(135deg, #ff6b6b, #f42f46);
+    border-radius: 16px 16px 0 0;
     color: white;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    padding: 10px 20px;
     position: relative;
     overflow: hidden;
-    animation: pulse-glow 2s infinite alternate;
+    animation: pulse-glow 1s infinite alternate;
 }
 
-.flash-sale-box::before {
+.countdown-box::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -227,7 +226,8 @@
     animation: shine 3s infinite;
 }
 
-@keyframes pulse-glow {
+
+/* @keyframes pulse-glow {
     0% {
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 107, 107, 0.3);
     }
@@ -235,7 +235,7 @@
     100% {
         box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 107, 107, 0.5);
     }
-}
+} */
 
 @keyframes shine {
     0% {
@@ -251,7 +251,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     flex-wrap: wrap;
 }
 
@@ -279,14 +279,14 @@
     font-family: 'Courier New', monospace;
     font-size: 16px;
     font-weight: bold;
-    background: rgba(0, 0, 0, 0.3);
+    /* background: #fe6a68; */
     padding: 8px 12px;
-    border-radius: 8px;
+    border-radius: 8px 8px 0px 0px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .countdown-timer span {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.377);
     padding: 4px 8px;
     border-radius: 4px;
     min-width: 32px;
@@ -316,9 +316,9 @@
 }
 
 .new-price {
-    font-size: 32px;
+    font-size: 14px;
     font-weight: 900;
-    color: #fff;
+    color: #f42f46;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -351,12 +351,12 @@
 }
 
 .discount {
-    background: #feca57;
-    color: #2c2c54;
-    padding: 6px 12px;
+    background: #FFE97A;
+    color: #af081c;
+    padding: 4px 8px;
     border-radius: 20px;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: normal;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     animation: bounce 2s infinite;
 }
@@ -378,14 +378,6 @@
     60% {
         transform: translateY(-3px);
     }
-}
-
-.product-demo {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .product-title {

@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
     <title>@yield('title', 'Default Title')</title>
-    
+
     <!-- Font + Tailwind + Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
@@ -20,9 +20,12 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     @vite('resources/css/user/home.css')
     @vite('resources/css/user/orderDetail.css')
     @vite('resources/css/user/notifications.css')
+    @vite('resources/css/user/cart-sidebar.css')
     @stack('styles')
     @vite('resources/js/echo.js')
 </head>
@@ -140,8 +143,8 @@
                                                 </h4>
                                                 <span class="text-xs text-gray-400">({{ $notifications->count() }})</span>
                                             </div>
-                                            
-                                            @foreach($notifications->sortByDesc('created_at')->take(3) as $notification)
+
+                                            @foreach ($notifications->sortByDesc('created_at')->take(3) as $notification)
                                                 <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ $notification->status === 'unread' ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
                                                     data-notification-id="{{ $notification->id }}"
                                                     data-notification-type="{{ $notification->type }}">
@@ -269,7 +272,8 @@
                         @guest
                             <div class="p-6 text-center">
                                 <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
-                                <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng nhập</a>
+                                <a href="{{ route('login') }}"
+                                    class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng nhập</a>
                             </div>
                         @endguest
                     </div>
@@ -317,10 +321,10 @@
                                 @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
                                     <a href="{{ route('admin.dashboard') }}"
                                         class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                            class="size-6">
-                                            <path stroke="#FFFFFF" stroke-width="2"
-                                                d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5ZM14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5ZM4 16a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3ZM14 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-6Z" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
                                         </svg>
                                         Quản trị viên
                                     </a>
@@ -361,6 +365,7 @@
                                         </svg>
                                         Đơn hàng
                                     </a>
+                                    <!-- Customer Links -->
                                 @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
                                     <a href="{{ route('account.profile') }}"
                                         class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
@@ -371,7 +376,7 @@
                                         </svg>
                                         Quản lý tài khoản
                                     </a>
-                                    <a href="{{ route('order_history') }}"
+                                    <a href="{{ route('user.order.parent-order') }}"
                                         class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -476,11 +481,11 @@
                 <div class="relative">
                     <div
                         class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
-                        <span class="text-center text-xs text-white">3</span>
+                        <span id="cart-count" class="text-center text-xs text-white">0</span>
                     </div>
-                    <a href="{{ route('cart') }}">
-                        <i class="fa fa-shopping-cart text-gray-700 hover:text-red-500 text-2xl"></i>
-                    </a>
+                    <button id="desktop-cart-trigger" class="cart-icon-trigger text-gray-700 hover:text-red-500 text-2xl p-0 border-none bg-transparent cursor-pointer">
+                        <i class="fa fa-shopping-cart"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -743,7 +748,213 @@
         window.Laravel = {
             user: @json(Auth::user())
         };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const cartIconTrigger = document.getElementById('desktop-cart-trigger');
+            const cartSidebar = document.getElementById('cart-sidebar');
+            const closeCartSidebarBtn = document.getElementById('close-cart-sidebar');
+            const cartSidebarOverlay = document.getElementById('cart-sidebar-overlay');
+
+            console.log('cartIconTrigger:', cartIconTrigger);
+            console.log('cartSidebar:', cartSidebar);
+            console.log('closeCartSidebarBtn:', closeCartSidebarBtn);
+            console.log('cartSidebarOverlay:', cartSidebarOverlay);
+
+            const cartItemsContainer = document.getElementById('cart-items-container');
+            const loadingCartItems = document.getElementById('loading-cart-items');
+            const emptyCartMessage = document.getElementById('empty-cart-message');
+            const cartTotalPriceElement = document.getElementById('cart-total-price');
+
+            let cartItemsCache = []; // Cache to store cart items
+
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+            }
+
+            function updateCartCount() {
+                fetch('{{ route('cart.quantity') }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Cart quantity data received:', data);
+                        const cartCountElement = document.getElementById('cart-count');
+                        if (cartCountElement) {
+                            cartCountElement.textContent = data.quantity;
+                            if (data.quantity > 0) {
+                                cartCountElement.classList.remove('hidden');
+                            } else {
+                                cartCountElement.classList.add('hidden');
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error fetching cart quantity:', error));
+            }
+
+            function fetchCartItems() {
+                if (cartItemsCache.length > 0) {
+                    displayCartItems(cartItemsCache);
+                    console.log('Using cached cart items.');
+                    return; // Use cached data if available
+                }
+
+                if (loadingCartItems) {
+                    loadingCartItems.classList.remove('hidden');
+                    emptyCartMessage.classList.add('hidden');
+                }
+                cartItemsContainer.innerHTML = ''; // Clear previous items
+
+                console.log('Fetching cart items from: {{ route('cart.items') }}');
+                fetch('{{ route('cart.items') }}') // Endpoint for cart items
+                    .then(response => {
+                        console.log('Raw response for cart items:', response);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Cart items data received (parsed JSON):', data);
+                        cartItemsCache = data.cartItems; // Cache the fetched data
+                        displayCartItems(data.cartItems);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching cart items:', error);
+                        if (emptyCartMessage) {
+                            emptyCartMessage.textContent = 'Không thể tải giỏ hàng.';
+                            emptyCartMessage.classList.remove('hidden');
+                        }
+                    })
+                    .finally(() => {
+                        if (loadingCartItems) {
+                            loadingCartItems.classList.add('hidden');
+                        }
+                    });
+            }
+
+            function displayCartItems(items) {
+                console.log('Attempting to display cart items. Items received:', items);
+                if (!cartItemsContainer) {
+                    console.error('cartItemsContainer is null.');
+                    return;
+                }
+
+                cartItemsContainer.innerHTML = ''; // Clear existing items
+                let totalPrice = 0;
+
+                if (items && items.length > 0) {
+                    emptyCartMessage.classList.add('hidden');
+                    items.forEach(item => {
+                        const itemPrice = item.variant ? (item.variant.sale_price ?? item.variant.price) : (item.product.sale_price ?? item.product.price);
+                        const itemTotal = itemPrice * item.quantity;
+                        totalPrice += itemTotal;
+
+                        const imageUrl = item.product.images && item.product.images.length > 0
+                            ? '/storage/' + item.product.images[0].image_path
+                            : '/images/default_product.png'; // Default image if no images
+
+                        // const itemName = item.variant ? item.variant.variant_name : item.product.name; // Removed this line
+
+                        const cartItemHtml = `
+                            <div class="flex items-center gap-3 p-2 cursor-pointer mb-2">
+                                <div class="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden">
+                                    <img src="${imageUrl}" alt="${item.product.name}" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate">${item.product.name}</p>
+                                    ${item.variant ? `<p class="text-xs text-gray-600 mt-0.5">${item.variant.variant_name}</p>` : ''}
+                                    <p class="text-xs text-gray-500 mt-1">${formatCurrency(itemPrice)} x ${item.quantity}</p>
+                                    <p class="text-sm font-semibold text-[#EF3248]">${formatCurrency(itemTotal)}</p>
+                                </div>
+                            </div>
+                            <div class="border-b border-gray-200 my-2"></div>
+                        `;
+                        cartItemsContainer.insertAdjacentHTML('beforeend', cartItemHtml);
+                    });
+                } else {
+                    console.log('No items in cart, showing empty message.');
+                    emptyCartMessage.classList.remove('hidden');
+                }
+                cartTotalPriceElement.textContent = formatCurrency(totalPrice);
+            }
+
+            // Event listeners for sidebar
+            if (cartIconTrigger && cartSidebar && closeCartSidebarBtn && cartSidebarOverlay) {
+                cartIconTrigger.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent default link behavior
+                    fetchCartItems(); // Fetch items when sidebar is opened
+                    cartSidebar.classList.remove('hidden'); // Ensure it's visible before transforming
+                    // Remove 'open' first to reset transition, then add it immediately
+                    cartSidebar.classList.remove('open'); 
+                    void cartSidebar.offsetWidth; // Trigger reflow to apply 'open' after removal
+                    cartSidebar.classList.add('open');
+                    cartSidebarOverlay.classList.remove('hidden');
+                });
+
+                closeCartSidebarBtn.addEventListener('click', () => {
+                    cartSidebar.classList.remove('open');
+                    cartSidebarOverlay.classList.add('hidden');
+                    // Add a small delay before hiding completely to allow transition to finish
+                    setTimeout(() => {
+                        cartSidebar.classList.add('hidden');
+                    }, 700); // Match transition duration (duration-700 = 700ms)
+                });
+
+                cartSidebarOverlay.addEventListener('click', () => {
+                    cartSidebar.classList.remove('open');
+                    cartSidebarOverlay.classList.add('hidden');
+                    // Add a small delay before hiding completely to allow transition to finish
+                    setTimeout(() => {
+                        cartSidebar.classList.add('hidden');
+                    }, 700); // Match transition duration (duration-700 = 700ms)
+                });
+            }
+
+            // Initial call to update cart count
+            updateCartCount();
+
+            // Optional: Listen for custom events to update cart when items are added/removed
+            document.addEventListener('cartUpdated', () => {
+                updateCartCount();
+                cartItemsCache = []; // Clear cache to force refetch
+                if (cartSidebar.classList.contains('open')) {
+                    fetchCartItems(); // Refresh items if sidebar is open
+                }
+            });
+        });
     </script>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="cart-sidebar fixed top-0 right-0 w-[500px] h-full bg-white shadow-lg transform translate-x-full transition-transform duration-700 ease-in-out z-[1000]">
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 class="text-lg font-semibold">Giỏ hàng của bạn</h3>
+            <button id="close-cart-sidebar" class="text-gray-500 hover:text-gray-700">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-4 flex-grow overflow-y-auto"> {{-- This div will now handle scrolling --}}
+            <div id="cart-items-container">
+                <!-- Cart items will be loaded here by JavaScript -->
+                <div class="text-center text-gray-500 py-4" id="loading-cart-items">Đang tải sản phẩm...</div>
+                <div class="text-center text-gray-500 py-4 hidden" id="empty-cart-message">Giỏ hàng trống.</div>
+            </div>
+        </div>
+        <div class="p-4 border-t"> {{-- This div will be the fixed footer --}}
+            <div class="flex justify-between items-center mt-4 pt-3">
+                <span class="text-md font-semibold">Tổng phụ:</span>
+                <span class="text-md font-bold" id="cart-total-price">0 ₫</span>
+            </div>
+            <a href="{{ route('cart') }}"
+                class="block w-full text-center border border-transparent bg-transparent text-black py-2 mt-4 hover:border-[#EF3248] hover:text-[#EF3248] transition duration-300">
+                Xem giỏ hàng
+            </a>
+            <a href="{{ route('checkout') }}"
+                class="block w-full text-center bg-black text-white py-2 mt-2 hover:border-[#EF3248] hover:bg-[#EF3248] transition duration-300">
+                Thanh toán ngay
+            </a>
+        </div>
+    </div>
+
+    <!-- Overlay for sidebar -->
+    <div id="cart-sidebar-overlay" class="fixed inset-0 bg-black opacity-50 hidden z-[999]"></div>
 
 </body>
 
