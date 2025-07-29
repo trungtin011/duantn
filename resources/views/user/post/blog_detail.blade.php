@@ -1,5 +1,7 @@
 @extends('layouts.app')
-
+@push('styles')
+    @vite('resources/css/user/post.css')
+@endpush
 @section('title', 'Bài viết')
 @section('content')
     <div class="container_blog_detail">
@@ -12,36 +14,36 @@
             <div class="post-header">
                 <h1>{{ $post->title }}</h1>
                 <div class="post-meta">
-                    <span>👤 By Prajwal Rai</span>
-                    <span>📅 Aug 16, 2020</span>
-                    <span>💬 Comment (0)</span>
+                    <span>👤 By {{ $post->author_info->username ?? 'Anonymous' }}</span>
+                    <span>📅 {{ $post->created_at->format('d M, Y. D') }}</span>
+                    <span>💬 Comment ({{ $post->comments->count() }})</span>
                 </div>
             </div>
 
             <div class="reactions">
                 <div class="reaction">
                     <div class="reaction-emoji">😊</div>
-                    <div class="reaction-count">130</div>
+                    <div class="reaction-count">{{ $post->likes->count() }}</div>
                 </div>
                 <div class="reaction">
                     <div class="reaction-emoji">😍</div>
-                    <div class="reaction-count">78</div>
+                    <div class="reaction-count">{{ $post->likes->count() }}</div>
                 </div>
                 <div class="reaction">
                     <div class="reaction-emoji">😄</div>
-                    <div class="reaction-count">34</div>
+                    <div class="reaction-count">{{ $post->likes->count() }}</div>
                 </div>
                 <div class="reaction">
                     <div class="reaction-emoji">😮</div>
-                    <div class="reaction-count">30</div>
+                    <div class="reaction-count">{{ $post->likes->count() }}</div>
                 </div>
                 <div class="reaction">
                     <div class="reaction-emoji">😂</div>
-                    <div class="reaction-count">24</div>
+                    <div class="reaction-count">{{ $post->likes->count() }}</div>
                 </div>
                 <div class="reaction">
                     <div class="reaction-emoji">😠</div>
-                    <div class="reaction-count">31</div>
+                    <div class="reaction-count">{{ $post->likes->count() }}</div>
                 </div>
             </div>
 

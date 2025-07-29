@@ -17,39 +17,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Service\DeliveryProvider\GHNController;
-
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
-    {
-        $user = Auth::user();
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để xem đơn hàng');
-        }
 
-        $reviewedProductIds = OrderReview::where('user_id', $user->id)
-            ->pluck('product_id')
-            ->toArray();
-
-        $statuses = [
-            'pending'    => 'Chờ xử lý',
-            'confirmed'  => 'Đã nhận',
-            'shipped'    => 'Đang giao đến',
-            'delivered'  => 'Đã giao hàng',
-            'completed'  => 'Hoàn thành',
-            'cancelled'  => 'Đơn hủy',
-            'refunded'   => 'Trả hàng/Hoàn tiền',
-        ];
-
-        return view('user.order.history', compact(
-            'reviewedProductIds',
-            'statuses'
-        ));
-    }
-
-    public function getOrdersByStatus(Request $request, $status)
+    public function getParentOrdersByStatus($status)
     {
         $user = Auth::user();
         if (!$user) {
@@ -57,28 +29,45 @@ class OrderController extends Controller
         }
 
         $perPage = 5;
+
         $statuses = [
-            'pending'    => 'Chờ xử lý',
-            'confirmed'  => 'Đã nhận',
-            'shipped'    => 'Đang giao đến',
-            'delivered'  => 'Đã giao hàng',
+            'pending'    => 'Chưa thanh toán',
+            'paid'       => 'Đơn hàng',
+            'processing' => 'Đang tiến hành',
             'completed'  => 'Hoàn thành',
             'cancelled'  => 'Đơn hủy',
-            'refunded'   => 'Trả hàng/Hoàn tiền',
+            'returned'   => 'Trả hàng/Hoàn tiền',
         ];
 
         $reviewedProductIds = OrderReview::where('user_id', $user->id)
             ->pluck('product_id')
             ->toArray();
-        $orders = ShopOrder::whereHas('order', function ($query) use ($user) {
-                $query->where('userID', $user->id);
-            })
-            ->where('status', $status)
-            ->with(['items.product.images', 'items.variant'])
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
 
-        $html = view('user.order.components.order-list', compact(
+        if($status == 'pending'){
+            $orders = Order::where('userID', $user->id)
+                ->where('order_status', $status)
+                ->where('payment_status','pending')
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
+        }
+        elseif($status == 'paid'){
+            $orders = Order::where('userID', $user->id)
+                ->where('order_status', 'pending')
+                ->whereIn('payment_status', ['paid', 'cod_paid'])
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
+        }
+        else{
+            $orders = Order::where('userID', $user->id)
+                ->where('order_status', $status)
+                ->where('payment_status', '!=' ,'failed')
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
+        }
+        $html = view('user.order.components.parent-order-list', compact(
             'orders',
             'reviewedProductIds',
             'statuses'
@@ -91,30 +80,85 @@ class OrderController extends Controller
         ]);
     }
 
-    public function show($orderID)
+    public function parentOrder()
+    {
+        return view('user.order.parent-order');
+    }
+
+    public function show($shopOrderID)
     {
         $userId = Auth::id();
-        $order = Order::with([
+
+        $shopOrder = \App\Models\ShopOrder::with([
             'items.product.images' => function ($query) {
                 $query->select('id', 'productID', 'image_path', 'is_default', 'display_order', 'variantID');
             },
             'items.variant' => function ($query) {
                 $query->select('id', 'productID', 'variant_name', 'price', 'sale_price');
             },
-            'items.shopOrder.shop',
+            'shop',
+            'order.address',
+            'order.user' => function ($query) {
+                $query->select('id', 'fullname', 'email', 'phone');
+            },
+        ])
+            ->whereHas('order', function ($query) use ($userId) {
+                $query->where('userID', $userId);
+            })
+            ->findOrFail($shopOrderID);
+
+        // Lấy thông tin order cha
+        $order = $shopOrder->order;
+
+        // Lấy các item của shop order này
+        $orderItems = $shopOrder->items;
+
+        // Lấy địa chỉ giao hàng từ order cha
+        $orderAddress = $order->address ?? null;
+
+        return view('user.order.detail', [
+            'order' => $shopOrder,
+            'orderItems' => $orderItems,
+            'orderAddress' => $orderAddress,
+            'parentOrder' => $order,
+        ]);
+    }
+
+    public function showParent($orderCode)
+    {
+        $userId = Auth::id();
+
+        $parentOrder = Order::with([
+            'shopOrders.items.product.images' => function ($query) {
+                $query->select('id', 'productID', 'image_path', 'is_default', 'display_order', 'variantID');
+            },
+            'shopOrders.items.variant' => function ($query) {
+                $query->select('id', 'productID', 'variant_name', 'price', 'sale_price');
+            },
+            'shopOrders.shop',
             'address',
             'user' => function ($query) {
                 $query->select('id', 'fullname', 'email', 'phone');
             },
-            'coupon'
         ])
-            ->whereNotNull('userID')->where('userID', $userId)
-            ->findOrFail($orderID);
+            ->where('userID', $userId)
+            ->where('order_code', $orderCode)
+            ->firstOrFail();
 
-        $orderItems = $order->items;
-        $orderAddress = $order->address;
+        $orderAddress = $parentOrder->address ?? null;
 
-        return view('user.order.detail', compact('order', 'orderItems', 'orderAddress'));
+        $statuses = [
+            'pending'    => 'Đang chờ xử lý',
+            'processing' => 'Đang tiến hành',
+            'completed'  => 'Hoàn thành',
+            'cancelled'  => 'Đơn hủy',
+        ];
+
+        return view('user.order.parent-detail', [
+            'parentOrder' => $parentOrder,
+            'orderAddress' => $orderAddress,
+            'statuses' => $statuses,
+        ]);
     }
 
     public function checkStatus($orderStatus)
@@ -123,8 +167,10 @@ class OrderController extends Controller
             return 'pending';
         } elseif ($orderStatus->order_status === 'processing') {
             return 'processing';
-        } elseif ($orderStatus->order_status === 'shipped') {
-            return 'shipped';
+        } elseif ($orderStatus->order_status === 'completed') {
+            return 'completed';
+        } elseif ($orderStatus->order_status === 'cancelled') {
+            return 'cancelled';
         }
     }
 
@@ -275,35 +321,9 @@ class OrderController extends Controller
         }
     }
 
-    public function refundOrder($tracking_code)
+    public function storeReview(Request $request)
     {
-        $order = ShopOrder::where('tracking_code', $tracking_code)->first();
-
-        if (!$order) {
-            return redirect()->back()->with('error', 'Đơn hàng không tồn tại');
-        }
-
-        $GHN_Controller = new GHNController();
-        $refund = $GHN_Controller->refundOrder($tracking_code);
-
-        if ($refund) {
-            $order->status = 'refunded';
-            $order->save();
-
-            $history = new ShopOrderHistory();
-            $history->shop_order_id = $order->id;
-            $history->status = 'refunded';
-            $history->description = 'Người mua đã hoàn trả đơn hàng';
-            $history->save();
-
-            return redirect()->back()->with('success', 'Đơn hàng đã được hoàn trả thành công');
-        } else {
-            return redirect()->back()->with('error', 'Đơn hàng không thể hoàn trả');
-        }
-    }
-
-    public function completeOrderFromUser($code)
-    {
+        $code = $request->input('orderID');
         $order = ShopOrder::where('code', $code)->first();
 
         if (!$order) {
@@ -390,67 +410,98 @@ class OrderController extends Controller
         ]);
 
         try {
-            $shopOrder = ShopOrder::whereHas('order', function ($query) use ($user) {
-                $query->where('userID', $user->id);
-            })->where('id', $orderID)->first();
+            $shopOrder = ShopOrder::where('id', $orderID)->first();
 
             if (!$shopOrder) {
-                return redirect()->back()->with('error', 'Đơn hàng không tồn tại');
+                return response()->json(['success' => false, 'message' => 'Đơn hàng không tồn tại']);
             }
-
+            Log::info($shopOrder->status);
             if ($shopOrder->status !== 'delivered') {
-                return redirect()->back()->with('error', 'Chỉ có thể yêu cầu trả hàng khi đơn hàng đã được giao');
+                return response()->json(['success' => false, 'message' => 'Chỉ có thể yêu cầu trả hàng khi đơn hàng đã được giao']);
             }
 
-            // Cập nhật trạng thái đơn hàng
-            $shopOrder->status = 'refunded';
+            $hasError = false;
+
+            foreach ($shopOrder->items as $item) {
+                try {
+                    if ($item->combo_id && $item->combo) {
+                        $item->combo->increment('quantity', $item->combo_quantity);
+                    } elseif ($item->variantID && $item->variant) {
+                        $item->variant->increment('stock', $item->quantity);
+                    } elseif ($item->productID) {
+                        $item->product->increment('stock_total', $item->quantity);
+                    }
+                } catch (\Exception $e) {
+                    $hasError = true;
+                    break;
+                }
+            }
+
+            if ($hasError) {
+                return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi trả lại số lượng sản phẩm']);
+            }
+
+            $totalAmount = 0;
+            foreach ($shopOrder->items as $item) {
+                $price = $item->price_after_discount ?? $item->price;
+                $totalAmount += $price * $item->quantity;
+            }
+
+            $pointsToAdd = floor($totalAmount / 1000);
+            $customer = Customer::where('userID', Auth::id())->first();
+            if ($pointsToAdd > 0) {
+                $customer->total_points += $pointsToAdd;
+                $customer->save();
+
+                PointTransaction::create([
+                    'userID' => $user->id,
+                    'orderID' => $shopOrder->id,
+                    'points' => $pointsToAdd,
+                    'type' => 'refund',
+                    'description' => 'Cộng điểm hoàn trả đơn hàng #' . $shopOrder->id,
+                ]);
+            }
+
+            $shopOrder->status = 'returned';
             $shopOrder->save();
 
-            // Lưu lịch sử đơn hàng
             ShopOrderHistory::create([
                 'shop_order_id' => $shopOrder->id,
-                'status' => 'refunded',
-                'description' => 'Yêu cầu trả hàng: ' . $request->refund_reason,
+                'status' => 'returned',
+                'description' => 'Yêu cầu trả hàng từ khách : ' . $request->refund_reason,
             ]);
 
-            return redirect()->back()->with('success', 'Yêu cầu trả hàng đã được gửi thành công');
+            return response()->json(['success' => true, 'message' => 'Yêu cầu trả hàng đã được gửi thành công']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Lỗi khi gửi yêu cầu trả hàng: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Lỗi khi gửi yêu cầu trả hàng: ' . $e->getMessage()]);
         }
     }
 
-    public function confirmReceived(Request $request, $orderID)
+    public function confirmReceived($orderID)
     {
         $user = Auth::user();
         if (!$user) {
-            Log::warning('User not authenticated when trying to confirm received order.', [
-                'orderID' => $orderID,
-                'ip' => $request->ip(),
-            ]);
             return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
         }
-        Log::info($orderID);
         try {
-            $shopOrder = ShopOrder::whereHas('order', function ($query) use ($user) {
-                $query->where('userID', $user->id);
-            })->where('id', $orderID)->first();
+            $shopOrder = ShopOrder::where('id', $orderID)->first();
 
             if (!$shopOrder) {
-                Log::notice('ShopOrder not found when confirming received.', [
-                    'userID' => $user->id,
-                    'orderID' => $orderID,
-                ]);
                 return response()->json(['success' => false, 'message' => 'Đơn hàng không tồn tại']);
             }
 
             if ($shopOrder->status !== 'delivered') {
-                Log::info('Attempt to confirm received for order not in delivered status.', [
-                    'userID' => $user->id,
-                    'orderID' => $orderID,
-                    'current_status' => $shopOrder->status,
-                ]);
                 return response()->json(['success' => false, 'message' => 'Chỉ có thể xác nhận nhận hàng khi đơn hàng đã được giao']);
             }
+
+            $customer = Customer::where('userID', Auth::id())->first();
+            if (!$customer) {
+                return response()->json(['success' => false, 'message' => 'Khách hàng không tồn tại']);
+            }
+
+            $customer->total_orders += 1;
+            $customer->total_spent += $shopOrder->order->total_price;
+            $customer->save();
 
             $shopOrder->status = 'completed';
             $shopOrder->save();
@@ -460,6 +511,12 @@ class OrderController extends Controller
                 'status' => 'completed',
                 'description' => 'Khách hàng đã xác nhận nhận hàng',
             ]);
+
+            foreach ($shopOrder->items as $item) {
+                if ($item->product) {
+                    $item->product->increment('sold_quantity', $item->quantity);
+                }
+            }
 
             $order = $shopOrder->order;
             if ($order && $order->userID) {
@@ -488,27 +545,12 @@ class OrderController extends Controller
                         'type' => 'order',
                         'description' => 'Nhận điểm khi xác nhận đã nhận hàng cho đơn #' . $shopOrder->id,
                     ]);
-
-                    Log::info('Points awarded after order confirmation.', [
-                        'userID' => $order->userID,
-                        'orderID' => $order->id,
-                        'earnedPoints' => $earnedPoints,
-                        'rank' => $customer->rank,
-                    ]);
                 }
             }
 
-            Log::info('Order confirmed as received.', [
-                'userID' => $user->id,
-                'orderID' => $orderID,
-            ]);
+            Order::orderStatusUpdate($order->id);
             return response()->json(['success' => true, 'message' => 'Đã xác nhận nhận hàng thành công']);
         } catch (\Exception $e) {
-            Log::error('Lỗi khi xác nhận nhận hàng: ' . $e->getMessage(), [
-                'userID' => $user ? $user->id : null,
-                'orderID' => $orderID,
-                'exception' => $e,
-            ]);
             return response()->json(['success' => false, 'message' => 'Lỗi khi xác nhận nhận hàng: ' . $e->getMessage()]);
         }
     }

@@ -104,4 +104,13 @@ class Shop extends Model
         return $this->belongsToMany(User::class, 'shop_followers', 'shopID', 'followerID')
             ->withTimestamps();
     }
+
+    public function shopCategories()
+    {
+        return $this->hasMany(\App\Models\ShopCategory::class);
+    }
+    public function categories()
+    {
+        return $this->hasMany(\App\Models\ShopCategory::class);
+    }
 }

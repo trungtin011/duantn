@@ -157,7 +157,7 @@ class ProductControllerSeller extends Controller
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description ?: '',
-                'sku' => $isVariant ? null : $request->sku,
+                'sku' => $request->sku,
                 'price' => $isVariant ? null : $request->price,
                 'purchase_price' => $isVariant ? null : $request->purchase_price,
                 'sale_price' => $isVariant ? null : $request->sale_price,
@@ -1108,6 +1108,7 @@ class ProductControllerSeller extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'sku' => $skuRule,
             'brand_ids' => 'required|array|min:1',
             'brand_ids.*' => 'exists:brand,id',
             'category_ids' => 'required|array|min:1',
@@ -1143,7 +1144,6 @@ class ProductControllerSeller extends Controller
             ]);
         } else {
             $rules = array_merge($rules, [
-                'sku' => $skuRule,
                 'price' => 'required|numeric|min:0',
                 'purchase_price' => 'required|numeric|min:0',
                 'sale_price' => 'required|numeric|min:0',
@@ -1217,5 +1217,21 @@ class ProductControllerSeller extends Controller
             }
         }
         return array_unique($parentIds);
+    }
+
+    public function destroyMultiple(Request $request)
+    {
+        $ids = $request->ids;
+
+        if (!$ids || count($ids) == 0) {
+            return response()->json(['message' => 'Không có sản phẩm nào được chọn'], 400);
+        }
+
+        try {
+            \App\Models\Product::whereIn('id', $ids)->delete();
+            return response()->json(['message' => 'Đã xóa thành công ' . count($ids) . ' sản phẩm']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Lỗi: ' . $e->getMessage()], 500);
+        }
     }
 }

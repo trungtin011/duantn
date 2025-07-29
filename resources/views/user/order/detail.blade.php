@@ -3,92 +3,103 @@
 @section('account-content')
     <div class="container mx-auto py-5">
         @include('layouts.notification')
-        <!-- Thông báo thành công/lỗi -->
-        {{-- @if (session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('success') }}
-                <button onclick="this.parentElement.style.display='none'" class="float-right text-green-700">×</button>
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {{ session('error') }}
-                <button onclick="this.parentElement.style.display='none'" class="float-right text-green-700">×</button>
-            </div>
-        @endif --}}
 
         <!-- Breadcrumb -->
-        <div class="flex flex-wrap items-center gap-2 mb-10 px-[10px] sm:px-0 md:mb-10 text-sm md:text-base">
-            <a href="{{ route('order_history') }}" class="text-gray-500 hover:underline">Đơn hàng</a>
-            <span>/</span>
-            <span>Chi tiết đơn hàng</span>
+        <div class="flex flex-wrap items-center gap-2 mb-8 px-[10px] sm:px-0 text-sm md:text-base">
+            <a href="{{ route('order_history') }}" class="text-gray-500 hover:text-blue-600 transition-colors duration-200">Đơn hàng</a>
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-700">Chi tiết đơn hàng</span>
+            <span class="text-gray-400">/</span>
+            <span class="text-blue-600 font-medium">{{ $order->id ?? 'N/A' }}</span>
         </div>
 
-        <!-- Nút quan lại -->
-        <div class="mb-4 bg-gray-200 shadow-sm rounded-lg p-4">
-            <a href="{{ route('order_history') }}" class="text-sm hover:text-red-500">
-                <i class="fa fa-arrow-left"></i> Quan lý đơn hàng
+        <!-- Nút quay lại -->
+        <div class="mb-6">
+            <a href="{{ route('order_history') }}" 
+               class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Quay lại quản lý đơn hàng
             </a>
         </div>
 
         <!-- Header: Chi tiết đơn hàng -->
-        <div class="mb-4">
-            <div class="bg-white shadow-sm rounded-lg p-4 h-full flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-800 mb-1">Chi tiết đơn hàng</h2>
-                    <p class="text-gray-600 text-sm">Đơn hàng {{ $order->order_code ?? 'N/A' }} | Order Created:
-                        {{ $order->created_at->format('d/m/Y H:i') }}</p>
-                    <p class="text-gray-600 text-sm">
-                        <strong>Trạng thái:</strong>
-                        <span
-                            class="{{ $order->order_status === 'delivered' ? 'text-green-600' : ($order->order_status === 'cancelled' || $order->order_status === 'refunded' ? 'text-red-600' : 'text-blue-600') }}">
-                            {{ __('order_status.' . $order->order_status) }}
-                        </span>
-                    </p>
-                    @if ($order->cancel_reason)
-                        <p class="text-gray-600 text-sm"><strong>Lý do hủy:</strong> {{ e($order->cancel_reason) }}</p>
-                    @endif
-                </div>
-                <!-- Nút hành động: Hủy đơn hàng hoặc Mua lại -->
-                <div class="flex space-x-2">
-                    @if (in_array($order->order_status, ['pending', 'processing']))
-                        <button class="open-cancel-modal bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm"
-                            data-order-id="{{ $order->id }}">
-                            Hủy đơn hàng
-                        </button>
-                    @endif
-                    @if (in_array($order->order_status, ['cancelled', 'refunded']))
-                        <form action="{{ route('user.order.reorder', $order->id) }}" method="GET">
-                            @csrf
-                            <button type="submit"
-                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
-                                Mua lại
+        <div class="mb-6">
+            <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div class="mb-4 md:mb-0">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Chi tiết đơn hàng</h2>
+                        <div class="space-y-1 text-sm text-gray-600">
+                            <p>Mã đơn hàng: <span class="font-semibold text-blue-600">{{ $order->code ?? 'N/A' }}</span></p>
+                            <p>Ngày đặt: <span class="font-medium">{{ $order->created_at->format('d/m/Y H:i') }}</span></p>
+                            <p>
+                                Trạng thái: 
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                    @if($order->status === 'delivered') bg-green-100 text-green-800
+                                    @elseif($order->status === 'cancelled' || $order->status === 'refunded') bg-red-100 text-red-800
+                                    @else bg-blue-100 text-blue-800 @endif">
+                                    {{ __('status.' . $order->status) }}
+                                </span>
+                            </p>
+                            @if ($order->cancel_reason)
+                                <p class="text-red-600"><strong>Lý do hủy:</strong> {{ e($order->cancel_reason) }}</p>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <!-- Nút hành động -->
+                    <div class="flex flex-wrap gap-2">
+                        @if (in_array($order->order_status, ['pending', 'processing']))
+                            <button class="open-cancel-modal bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm"
+                                data-order-id="{{ $order->id }}">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Hủy đơn hàng
                             </button>
-                        </form>
-                    @endif
+                        @endif
+                        @if (in_array($order->order_status, ['cancelled', 'refunded']))
+                            <a href="{{ route('user.order.reorder', $order->id) }}"
+                               class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Mua lại
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modal hủy đơn hàng (gộp từ order-block.blade.php) -->
+        <!-- Modal hủy đơn hàng -->
         @if (in_array($order->order_status, ['pending', 'processing']))
             <div id="cancelModal-{{ $order->id }}"
-                class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-                <div class="bg-white rounded-lg p-6 w-full max-w-md">
-                    <h3 class="text-lg font-semibold mb-4">Hủy đơn hàng</h3>
-                    <form action="{{ route('user.order.cancel', $order->id) }}" method="POST">
+                class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+                    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                        <h3 class="text-xl font-bold text-gray-800">Hủy đơn hàng</h3>
+                        <button class="close-modal text-gray-400 hover:text-gray-600 text-2xl transition-colors duration-200">×</button>
+                    </div>
+                    <form action="{{ route('user.order.cancel', $order->id) }}" method="POST" class="p-6">
                         @csrf
                         @method('PATCH')
                         <div class="mb-4">
-                            <label for="cancel_reason" class="block text-sm font-medium text-gray-700">Lý do hủy</label>
+                            <label for="cancel_reason" class="block text-sm font-semibold text-gray-700 mb-2">Lý do hủy</label>
                             <textarea name="cancel_reason" id="cancel_reason" rows="4"
-                                class="mt-1 p-2 block w-full form-control border-gray-300 border rounded-lg text-sm focus:outline-none" required></textarea>
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-300 focus:border-red-500 transition-all duration-200 resize-none" 
+                                placeholder="Nhập lý do hủy đơn hàng..." required></textarea>
                         </div>
                         <div class="flex justify-end gap-3">
                             <button type="button"
-                                class="close-modal px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Hủy</button>
-                            <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Xác
-                                nhận</button>
+                                class="close-modal px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium">
+                                Hủy
+                            </button>
+                            <button type="submit" 
+                                class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium">
+                                Xác nhận hủy
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -96,219 +107,220 @@
         @endif
 
         <!-- Thông tin khách hàng, thanh toán, giao hàng -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Khách hàng -->
-            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
-                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+                <h5 class="font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                    Khách hàng
+                    Thông tin khách hàng
                 </h5>
-                <p class="text-gray-600 text-sm">
-                    <strong>Tên:</strong> {{ $order->user->fullname ?? 'Không có thông tin' }}<br>
-                    <strong>Email:</strong> {{ $order->user->email ?? 'Không có thông tin' }}<br>
-                    <strong>Số điện thoại:</strong> {{ $order->user->phone ?? 'Không có thông tin' }}
-                </p>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><span class="font-medium">Tên:</span> {{ $order->order->user->fullname ?? 'Không có thông tin' }}</p>
+                    <p><span class="font-medium">Email:</span> {{ $order->order->user->email ?? 'Không có thông tin' }}</p>
+                    <p><span class="font-medium">Số điện thoại:</span> {{ $order->order->user->phone ?? 'Không có thông tin' }}</p>
+                </div>
             </div>
+            
             <!-- Thông tin thanh toán -->
-            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
-                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+            <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+                <h5 class="font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                     </svg>
                     Thông tin thanh toán
                 </h5>
-                <p class="text-gray-600 text-sm">
-                    <strong>Phương thức thanh toán:</strong> {{ $order->payment_method ?? 'VNPay' }}<br>
-                    <strong>Tên chủ tài khoản:</strong> {{ $order->user->fullname ?? 'Không có thông tin' }}<br>
-                    <strong>Số tài khoản:</strong> Không có thông tin
-                </p>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><span class="font-medium">Phương thức:</span> {{ $order->order->payment_method ?? 'Chưa xác định' }}</p>
+                    <p><span class="font-medium">Trạng thái:</span> 
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            @if($order->order->payment_status === 'paid') bg-green-100 text-green-800
+                            @elseif($order->order->payment_status === 'pending') bg-yellow-100 text-yellow-800
+                            @else bg-gray-100 text-gray-800 @endif">
+                            {{ $order->order->payment_status ?? 'Chưa xác định' }}
+                        </span>
+                    </p>
+                </div>
             </div>
+            
             <!-- Thông tin giao hàng -->
-            <div class="bg-white shadow-sm rounded-lg p-4 h-full">
-                <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-5 mr-2 text-blue-500">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677h.75m0-11.177v-.548c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v.548m12 0h.75" />
+            <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+                <h5 class="font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
                     Thông tin giao hàng
                 </h5>
-                <p class="text-gray-600 text-sm">
-                    <strong>Phương thức vận chuyển:</strong>
-                    {{ isset($order->shopOrder) && $order->shopOrder->first() ? $order->shopOrder->first()->shipping_provider : 'Chờ xác nhận' }}<br>
-                    <strong>Địa chỉ:</strong> {{ $orderAddress->address ?? 'Không có thông tin' }},
-                    {{ $orderAddress->ward ?? '' }}, {{ $orderAddress->district ?? '' }},
-                    {{ $orderAddress->province ?? '' }}<br>
-                    <strong>Tên người nhận:</strong> {{ $orderAddress->receiver_name ?? 'Không có thông tin' }}<br>
-                    <strong>Số điện thoại:</strong> {{ $orderAddress->receiver_phone ?? 'Không có thông tin' }}
-                    @if ($orderAddress->note)
-                        <br><strong>Ghi chú:</strong> {{ e($orderAddress->note) }}
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><span class="font-medium">Đơn vị vận chuyển:</span> 
+                        {{ isset($order->shopOrder) && $order->shopOrder->first() ? $order->shopOrder->first()->shipping_provider : 'Chờ xác nhận' }}
+                    </p>
+                    <p><span class="font-medium">Người nhận:</span> {{ $orderAddress->receiver_name ?? 'Không có thông tin' }}</p>
+                    <p><span class="font-medium">Số điện thoại:</span> {{ $orderAddress->receiver_phone ?? 'Không có thông tin' }}</p>
+                    <p><span class="font-medium">Địa chỉ:</span> {{ $orderAddress->address ?? 'Không có thông tin' }}, 
+                        {{ $orderAddress->ward ?? '' }}, {{ $orderAddress->district ?? '' }}, {{ $orderAddress->province ?? '' }}
+                    </p>
+                    @if ($orderAddress->note ?? false)
+                        <p><span class="font-medium">Ghi chú:</span> {{ e($orderAddress->note) }}</p>
                     @endif
-                </p>
+                </div>
             </div>
         </div>
 
         <!-- Danh sách sản phẩm và Tổng quan đơn hàng -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Danh sách sản phẩm -->
-            <div class="md:col-span-2">
-                <div class="bg-white shadow-sm rounded-lg p-4">
-                    <h5 class="font-semibold text-gray-800 mb-4">Danh sách sản phẩm</h5>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <tbody>
-                                @if (isset($orderItems) && $orderItems->isNotEmpty())
-                                    @php
-                                        $itemsGroupedByShop = $orderItems->groupBy('shop_orderID');
-                                    @endphp
+            <div class="lg:col-span-2">
+                <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+                    <h5 class="font-semibold text-gray-800 mb-6 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        Danh sách sản phẩm
+                    </h5>
+                    
+                    @if (isset($orderItems) && $orderItems->isNotEmpty())
+                        @php
+                            $itemsGroupedByShop = $orderItems->groupBy('shop_orderID');
+                        @endphp
 
-                                    @foreach ($itemsGroupedByShop as $shopOrderID => $items)
-                                        @php
-                                            $shop = $items->first()->shopOrder->shop;
-                                            $shopName = $shop->shop_name ?? 'Không có tên shop';
-                                        @endphp
+                        @foreach ($itemsGroupedByShop as $shopOrderID => $items)
+                            @php
+                                $shop = $items->first()->shopOrder->shop;
+                                $shopName = $shop->shop_name ?? 'Không có tên shop';
+                            @endphp
 
-                                        <h4 class="text-base font-semibold my-3">
-                                            <img src="{{ asset('storage/' . $shop->shop_logo) }}"
-                                                alt="Logo {{ $shop->shop_name }}"
-                                                class="w-8 h-8 object-cover rounded-full inline-block mr-2">
-                                            {{ $shop->shop_name }}
-                                        </h4>
+                            <div class="mb-6 last:mb-0">
+                                <div class="flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
+                                    @if($shop->shop_logo)
+                                        <img src="{{ asset('storage/' . $shop->shop_logo) }}"
+                                            alt="Logo {{ $shop->shop_name }}"
+                                            class="w-8 h-8 object-cover rounded-full mr-3">
+                                    @else
+                                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                    <span class="font-semibold text-gray-800">{{ $shop->shop_name }}</span>
+                                </div>
 
-                                        <table class="w-full text-left mb-6 border border-gray-200 rounded">
-                                            <thead class="bg-gray-100">
-                                                <tr>
-                                                    <th class="p-3 text-sm font-semibold text-gray-700">Sản phẩm</th>
-                                                    <th class="p-3 text-sm font-semibold text-gray-700">Đơn giá</th>
-                                                    <th class="p-3 text-sm font-semibold text-gray-700">Số lượng</th>
-                                                    <th class="p-3 text-sm font-semibold text-gray-700">Thành tiền</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($items as $item)
-                                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                                        <td class="p-3">
-                                                            <div class="flex items-center">
-                                                                @php
-                                                                    $variantId = $item->variantID ?? null;
-                                                                    $productImages =
-                                                                        $item->product->images ?? collect();
+                                <div class="overflow-hidden rounded-lg border border-gray-200">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Sản phẩm</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Đơn giá</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Số lượng</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            @foreach ($items as $item)
+                                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                                    <td class="px-4 py-4">
+                                                        <div class="flex items-center">
+                                                            @php
+                                                                $variantId = $item->variantID ?? null;
+                                                                $productImages = $item->product->images ?? collect();
+                                                                $variantImage = $productImages->firstWhere('variantID', $variantId);
+                                                                $defaultImage = $productImages->firstWhere('is_default', 1) ?? $productImages->first();
+                                                                $imagePath = $variantImage->image_path ?? ($defaultImage->image_path ?? 'https://via.placeholder.com/40');
+                                                                $finalImage = Str::startsWith($imagePath, ['http', '//']) ? $imagePath : asset('storage/' . $imagePath);
+                                                            @endphp
 
-                                                                    $variantImage = $productImages->firstWhere(
-                                                                        'variantID',
-                                                                        $variantId,
-                                                                    );
-                                                                    $defaultImage =
-                                                                        $productImages->firstWhere('is_default', 1) ??
-                                                                        $productImages->first();
+                                                            <img src="{{ $finalImage }}"
+                                                                alt="{{ e($item->product_name) }}"
+                                                                class="w-12 h-12 rounded-lg object-cover mr-3 border border-gray-200">
 
-                                                                    $imagePath =
-                                                                        $variantImage->image_path ??
-                                                                        ($defaultImage->image_path ??
-                                                                            'https://via.placeholder.com/40');
-
-                                                                    $finalImage = Str::startsWith($imagePath, [
-                                                                        'http',
-                                                                        '//',
-                                                                    ])
-                                                                        ? $imagePath
-                                                                        : asset('storage/' . $imagePath);
-                                                                @endphp
-
-                                                                <img src="{{ $finalImage }}"
-                                                                    alt="{{ e($item->product_name) }}"
-                                                                    class="w-10 h-10 rounded mr-3 object-cover">
-
-                                                                <div>
-                                                                    <span
-                                                                        class="font-medium">{{ e($item->product_name) }}</span>
-                                                                    @if ($item->variant)
-                                                                        <p class="text-xs text-gray-500">Biến thể:
-                                                                            {{ e($item->variant->variant_name) }}</p>
-                                                                    @endif
-                                                                </div>
+                                                            <div>
+                                                                <div class="font-medium text-gray-900">{{ e($item->product_name) }}</div>
+                                                                @if ($item->variant)
+                                                                    <div class="text-sm text-gray-500">Biến thể: {{ e($item->variant->variant_name) }}</div>
+                                                                @endif
                                                             </div>
-                                                        </td>
-                                                        <td class="p-3 text-gray-600">
-                                                            {{ number_format($item->unit_price, 0, ',', '.') }} VND</td>
-                                                        <td class="p-3 text-gray-600">{{ $item->quantity }}</td>
-                                                        <td class="p-3 text-gray-600">
-                                                            {{ number_format($item->total_price, 0, ',', '.') }} VND</td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    @endforeach
-                                @else
-                                    <tr>
-                                        <td colspan="4" class="p-3 text-gray-600 text-center">Không có sản phẩm nào
-                                            trong
-                                            đơn hàng này.</td>
-                                    </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-4 text-sm text-gray-900">
+                                                        {{ number_format($item->unit_price, 0, ',', '.') }} VND
+                                                    </td>
+                                                    <td class="px-4 py-4 text-sm text-gray-900">
+                                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                                            {{ $item->quantity }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-4 text-sm font-semibold text-gray-900">
+                                                        {{ number_format($item->total_price, 0, ',', '.') }} VND
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="text-center py-8">
+                            <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                            <p class="text-gray-500 text-sm">Không có sản phẩm nào trong đơn hàng này.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
 
             <!-- Tổng quan đơn hàng -->
-            <div class="md:col-span-1">
-                <div class="bg-white shadow-sm rounded-lg p-4">
-                    <h5 class="font-semibold text-gray-800 mb-4">Tổng quan đơn hàng</h5>
-                    <table class="w-full text-sm">
-                        <tbody>
-                            <tr>
-                                <td class="py-2 text-gray-600">Tổng tiền hàng</td>
-                                <td class="py-2 text-right font-medium text-gray-800">
-                                    {{ number_format($order->total_price - ($order->coupon_discount ?? 0), 0, ',', '.') }}
-                                    VND
-                                </td>
-                            </tr>
-                            <!-- Hiển thị phí vận chuyển theo từng shop (nếu có nhiều shop) -->
-                            @foreach ($order->shopOrders as $shopOrder)
-                                <tr>
-                                    <td class="py-2 text-gray-600">Phí ship (Shop
-                                        {{ $shopOrder->shop->shop_name ?? 'N/A' }})</td>
-                                    <td class="py-2 text-right font-medium text-gray-800">
-                                        {{ number_format($shopOrder->shipping_fee ?? 0, 0, ',', '.') }} VND
-                                    </td>
-                                </tr>
-                            @endforeach
-                            <tr>
-                                <td class="py-2 text-gray-600">Tổng phí ship</td>
-                                <td class="py-2 text-right font-medium text-gray-800">
-                                    {{ number_format($order->shipping_fee ?? 0, 0, ',', '.') }} VND
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="py-2 text-gray-600">Giảm giá</td>
-                                <td class="py-2 text-right font-medium text-green-600">
-                                    {{ number_format($order->coupon_discount ?? 0, 0, ',', '.') }} VND
-                                </td>
-                            </tr>
-                            <tr class="border-t border-gray-200 pt-2">
-                                <td class="py-2 font-bold text-gray-800">Tổng cộng</td>
-                                <td class="py-2 text-right font-bold text-blue-600">
-                                    {{ number_format($order->total_price, 0, ',', '.') }} VND
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="lg:col-span-1">
+                <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+                    <h5 class="font-semibold text-gray-800 mb-6 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Tổng quan đơn hàng
+                    </h5>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-600">Tổng tiền hàng</span>
+                            <span class="font-medium text-gray-900">
+                                {{ number_format($order->items->sum('total_price'), 0, ',', '.') }} VND
+                            </span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-600">Phí vận chuyển</span>
+                            <span class="font-medium text-gray-900">
+                                {{ number_format($order->shipping_shop_fee ?? 0, 0, ',', '.') }} VND
+                            </span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-600">Giảm giá</span>
+                            <span class="font-medium text-green-600">
+                                -{{ number_format($order->discount_shop_amount ?? 0, 0, ',', '.') }} VND
+                            </span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center py-3 border-t-2 border-gray-200">
+                            <span class="text-lg font-bold text-gray-900">Tổng cộng</span>
+                            <span class="text-lg font-bold text-blue-600">
+                                {{ number_format(($order->items->sum('total_price') + ($order->shipping_shop_fee ?? 0)) - ($order->discount_shop_amount ?? 0), 0, ',', '.') }} VND
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Modal cancel functionality
             document.querySelectorAll('.open-cancel-modal').forEach(button => {
                 button.addEventListener('click', function() {
                     const orderId = this.getAttribute('data-order-id');

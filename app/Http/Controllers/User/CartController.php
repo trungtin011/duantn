@@ -586,4 +586,46 @@ class CartController extends Controller
         session(['selected_products' => $selectedIds]);
         return response()->json(['message' => 'Đã cập nhật sản phẩm đã chọn!']);
     }
+
+    public function getCartQuantity()
+    {
+        $userID = Auth::check() ? Auth::id() : null;
+        $sessionID = Session::getId();
+
+        Log::info('Fetching cart quantity', ['userID' => $userID, 'sessionID' => $sessionID]);
+
+        $totalQuantity = Cart::where(function ($query) use ($userID, $sessionID) {
+            if ($userID) {
+                $query->where('userID', $userID);
+            } else {
+                $query->where('session_id', $sessionID);
+            }
+        })->sum('quantity');
+
+        Log::info('Cart quantity fetched', ['totalQuantity' => $totalQuantity]);
+
+        return response()->json(['quantity' => $totalQuantity]);
+    }
+
+    /**
+     * Get the details of items in the cart.
+     */
+    public function getCartItems()
+    {
+        $userID = Auth::check() ? Auth::id() : null;
+        $sessionID = Session::getId();
+
+        $cartItems = Cart::with(['product.images', 'product.shop', 'variant', 'combo.products.product', 'combo.products.variant'])
+            ->where(function ($query) use ($userID, $sessionID) {
+                if ($userID) {
+                    $query->where('userID', $userID);
+                } else {
+                    $query->where('session_id', $sessionID);
+                }
+            })
+            ->get();
+
+        return response()->json(['cartItems' => $cartItems]);
+    }
+
 }
