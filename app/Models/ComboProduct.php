@@ -30,4 +30,5 @@ class ComboProduct extends Model
     {
         return $this->belongsTo(ProductVariant::class, 'variantID');
     }
+    
 }

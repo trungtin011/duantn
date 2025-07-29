@@ -1,3 +1,4 @@
+
 @extends('user.account.layout')
 
 @section('account-content')
@@ -6,20 +7,20 @@
             <h2 class="text-lg">Hồ sơ của tôi</h2>
             <span class="text-sm text-gray-600">Quản lý thông tin hồ sơ để bảo mật tài khoản</span>
         </div>
-
+   
         @if (session('success'))
             <div
                 class="text-green-600 bg-green-100 border border-green-400 p-3 rounded mb-4 relative flex items-center justify-between">
                 <span>{{ session('success') }}</span>
                 <button type="button" class="text-green-600 hover:text-green-800 ml-4"
-                    onclick="this.parentElement.style.display='none'">&times;</button>
+                    onclick="this.parentElement.style.display='none'">×</button>
             </div>
         @elseif (session('error'))
             <div
                 class="text-red-600 bg-red-100 border border-red-400 p-3 rounded mb-4 relative flex items-center justify-between">
                 <span>{{ session('error') }}</span>
                 <button type="button" class="text-red-600 hover:text-red-800 ml-4"
-                    onclick="this.parentElement.style.display='none'">&times;</button>
+                    onclick="this.parentElement.style.display='none'">×</button>
             </div>
         @endif
 
@@ -154,9 +155,13 @@
                         @error('avatar')
                             <p class="text-red-600 text-sm">{{ $message }}</p>
                         @enderror
+                        
                     </div>
+                    
                 </div>
+                
             </div>
+            
             <br class="my-6 border-t border-gray-200">
             <!-- Submit Button -->
             <div class="w-[540px] transform translate-x-1/2">

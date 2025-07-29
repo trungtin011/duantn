@@ -49,7 +49,6 @@
     </div>
 
     <!-- Thông tin chi tiết -->
-    <!-- Thông tin chi tiết -->
     <div class="bg-white rounded-lg shadow-md p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-700 mb-10">
         <div class="flex items-center gap-2"><i class="fas fa-box-open text-[#e03e2f]"></i> <span>Sản phẩm: <strong>{{ $shop->products->count() }}</strong></span></div>
         <div class="flex items-center gap-2"><i class="fas fa-user-friends text-[#e03e2f]"></i>
@@ -67,21 +66,40 @@
         </div>
     </div>
 
-
     <!-- Danh sách sản phẩm -->
     <h2 class="text-lg font-semibold text-gray-800 mb-4">Sản phẩm từ shop</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        @foreach ($shop->products as $product)
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+        @forelse ($shop->products as $product)
         <a href="{{ route('product.show', $product->slug) }}" class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
             <img src="{{ asset($product->images->first()->image_path ?? 'images/default.jpg') }}" class="rounded-md w-full h-36 object-cover mb-2" alt="{{ $product->name }}">
             <div class="font-semibold text-sm truncate">{{ $product->name }}</div>
             <div class="text-[#e03e2f] font-bold text-sm">{{ number_format($product->sale_price ?? $product->price, 0, ',', '.') }}đ</div>
             <div class="text-[11px] text-[#777] mt-1">
                 <i class="fas fa-star text-yellow-400"></i>
-                {{ number_format($product->reviews->avg('rating'), 1) ?? '0.0' }} • Đã bán {{ $product->sold_quantity ?? 0 }}
+                {{ number_format($product->reviews()->exists() ? $product->reviews->avg('rating') : 0, 1) }} • Đã bán {{ $product->sold_quantity ?? 0 }}
             </div>
         </a>
-        @endforeach
+        @empty
+            <p class="text-gray-500">Không có sản phẩm nào.</p>
+        @endforelse
+    </div>
+
+    <!-- Danh sách combo -->
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">Combo từ shop</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        @forelse ($shop->combos as $combo)
+      <a href="{{ route('combo.show', $combo->id) }}" class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
+    <img src="{{ asset($combo->products->first()->product->images->first()->image_path ?? 'images/default.jpg') }}" class="rounded-md w-full h-36 object-cover mb-2" alt="{{ $combo->combo_name }}">
+    <div class="font-semibold text-sm truncate">{{ $combo->combo_name }}</div>
+    <div class="text-[#e03e2f] font-bold text-sm">{{ number_format($combo->total_price, 0, ',', '.') }}đ</div>
+    <div class="text-[11px] text-[#777] mt-1">
+        <i class="fas fa-star text-yellow-400"></i>
+        {{ number_format($combo->reviews()->exists() ? $combo->reviews->avg('rating') : 0, 1) }} • Đã bán {{ $combo->sold_quantity ?? 0 }}
+    </div>
+</a>
+        @empty
+            <p class="text-gray-500">Không có combo nào.</p>
+        @endforelse
     </div>
 </div>
 
