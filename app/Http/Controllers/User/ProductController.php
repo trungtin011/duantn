@@ -275,7 +275,6 @@ class ProductController extends Controller
 
         $recentProducts = Cache::remember("related_products_{$product->id}", 3600, function () use ($product) {
             Log::info('Fetching related products for product ID: ' . $product->id);
-<<<<<<< HEAD
 
             $categoryIds = $product->categories->pluck('id');
 
@@ -297,14 +296,12 @@ class ProductController extends Controller
                     ->take(8 - $products->count())
                     ->inRandomOrder()
                     ->get();
-
-                $products = $products->merge($additionalProducts);
                 Log::info('Added ' . $additionalProducts->count() . ' random products');
+                $products = $products->merge($additionalProducts);
             }
 
             return $products;
         });
-
 
         $logoPath = $product->shop ? Storage::url($product->shop->logo) : asset('images/default_shop_logo.png');
 
