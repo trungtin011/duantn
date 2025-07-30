@@ -23,6 +23,10 @@ class Shop extends Model
         'shop_logo',
         'shop_banner',
         'shop_status',
+        'total_sales',
+        'total_rating',
+        'total_products',
+        'total_followers',
     ];
 
     protected $casts = [

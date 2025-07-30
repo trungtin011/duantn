@@ -21,7 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    @include('partials.repay_popup')
     @vite('resources/css/user/home.css')
     @vite('resources/css/user/orderDetail.css')
     @vite('resources/css/user/notifications.css')
@@ -754,12 +754,6 @@
             const cartSidebar = document.getElementById('cart-sidebar');
             const closeCartSidebarBtn = document.getElementById('close-cart-sidebar');
             const cartSidebarOverlay = document.getElementById('cart-sidebar-overlay');
-
-            console.log('cartIconTrigger:', cartIconTrigger);
-            console.log('cartSidebar:', cartSidebar);
-            console.log('closeCartSidebarBtn:', closeCartSidebarBtn);
-            console.log('cartSidebarOverlay:', cartSidebarOverlay);
-
             const cartItemsContainer = document.getElementById('cart-items-container');
             const loadingCartItems = document.getElementById('loading-cart-items');
             const emptyCartMessage = document.getElementById('empty-cart-message');
@@ -775,7 +769,6 @@
                 fetch('{{ route('cart.quantity') }}')
                     .then(response => response.json())
                     .then(data => {
-                        console.log('Cart quantity data received:', data);
                         const cartCountElement = document.getElementById('cart-count');
                         if (cartCountElement) {
                             cartCountElement.textContent = data.quantity;
@@ -792,7 +785,6 @@
             function fetchCartItems() {
                 if (cartItemsCache.length > 0) {
                     displayCartItems(cartItemsCache);
-                    console.log('Using cached cart items.');
                     return; // Use cached data if available
                 }
 
@@ -802,7 +794,6 @@
                 }
                 cartItemsContainer.innerHTML = ''; // Clear previous items
 
-                console.log('Fetching cart items from: {{ route('cart.items') }}');
                 fetch('{{ route('cart.items') }}') // Endpoint for cart items
                     .then(response => {
                         console.log('Raw response for cart items:', response);
@@ -955,7 +946,15 @@
 
     <!-- Overlay for sidebar -->
     <div id="cart-sidebar-overlay" class="fixed inset-0 bg-black opacity-50 hidden z-[999]"></div>
-
+    <script>
+        function showGlobalPopup($order_code) {
+            window.repay_order_code = $order_code;
+            document.getElementById('global-popup-overlay').style.display = 'block';
+        }
+        function closeGlobalPopup() {
+            document.getElementById('global-popup-overlay').style.display = 'none';
+        }
+    </script>
 </body>
 
 </html>

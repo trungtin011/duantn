@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\{
     UserAddress,
@@ -221,7 +222,6 @@ class CheckoutController extends Controller
                 return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm'], 400);
             }
 
-            // Lưu mã giảm giá
             if ($request->discount_code) {
                 $coupons_code = $request->coupons_code ?? [];
                     $coupons_code[] = [
@@ -308,108 +308,114 @@ class CheckoutController extends Controller
 
     private function createOrder($shopItems, $user_address, $request, $coupons_code)
     {
-        $total_price = $request->total_amount;
-        $shop_notes = $request->shop_notes ?? [];
-        $used_points = $request->used_points ?? 0;
+        return DB::transaction(function () use ($shopItems, $user_address, $request, $coupons_code) {
+            $total_price = $request->total_amount;
+            $shop_notes = $request->shop_notes ?? [];
+            $used_points = $request->used_points ?? 0;
 
-        $order = Order::create([
-            'userID' => Auth::id(),
-            'order_code' => 'DH' . '-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
-            'total_price' => $total_price,
-            'order_status' => 'pending',
-            'shipping_fee' => $request->shipping_fee,
-            'used_points' => $used_points,
-            'coupon_discount' => $request->discount_amount ?? 0,
-            'payment_method' => $request->payment_method,
-            'payment_status' => 'pending',
-        ]);
-
-        $couponDiscountMap = [];
-        foreach ($coupons_code as $coupon) {
-            $shopId = $coupon['shopId'];
-            if (!isset($couponDiscountMap[$shopId])) {
-                $couponDiscountMap[$shopId] = 0;
-            }
-            $couponDiscountMap[$shopId] += $coupon['discount_value'];
-        }
-
-        $shippingFeeMap = [];
-        foreach ($request->shipping_shop_fee as $shipping_shop_fee_item) {
-            $shopId = $shipping_shop_fee_item['shopId'];
-            $shippingFeeMap[$shopId] = $shipping_shop_fee_item['fee'];
-        }
-
-        foreach ($shopItems as $shop_id => $items) {
-            $discount_shop_amount = $couponDiscountMap[$shop_id] ?? 0;
-            $shipping_shop_fee = $shippingFeeMap[$shop_id] ?? 0;
-
-            $shop_order = ShopOrder::firstOrCreate([
-                'shopID' => $shop_id,
-                'orderID' => $order->id,
-                'shipping_shop_fee' => $shipping_shop_fee,
-                'discount_shop_amount' => $discount_shop_amount,
-                'status' => 'pending',
-            ], [
-                'code' => 'DHS-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . substr(time(), -3),
-                'note' => $shop_notes[$shop_id] ?? '',
+            $order = Order::create([
+                'userID' => Auth::id(),
+                'order_code' => 'DH' . '-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
+                'total_price' => $total_price,
+                'order_status' => 'pending',
+                'shipping_fee' => $request->shipping_fee,
+                'used_points' => $used_points,
+                'coupon_discount' => $request->discount_amount ?? 0,
+                'payment_method' => $request->payment_method,
+                'payment_status' => 'pending',
             ]);
-        
-            foreach ($items as $item) {
-                $product = $item['product'];
-                $quantity = (int) $item['quantity'];
-                $variant_id = null;
-                $variant_name = null;
-                $unit_price = $product->sale_price ?? $product->price ?? 0;
-                $combo_id = null;
-                $combo_quantity = null;
-                if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
-                    $combo_id = $item['combo_info']['combo_id'];
-                    $unit_price = $item['combo_info']['price_in_combo'];
-                    $combo_quantity = $item['combo_info']['combo_quantity'];
-                } elseif ($product->is_variant ?? false) {
-                    $variant = $product->variants->where('id', $item['variant_id'])->first();
-                    $variant_id = $variant->id ?? null;
-                    $variant_name = $variant->variant_name ?? null;
-                    $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
+
+            $couponDiscountMap = [];
+            $coupons_code = array_filter($coupons_code, function($coupon) {
+                return isset($coupon['shopId']) && $coupon['shopId'] !== null && $coupon['shopId'] !== '';
+            });
+
+            foreach ($coupons_code as $coupon) {
+                $shopId = $coupon['shopId'];
+                if (!isset($couponDiscountMap[$shopId])) {
+                    $couponDiscountMap[$shopId] = 0;
                 }
-        
-                $item_total_price = $unit_price * $quantity;
-
-                $product_image = optional($product->images->where('is_default', true)->first() ?? $product->images->first())->image_path ?? null;
-
-                $itemOrderData = [
-                    'orderID' => $order->id,
-                    'shop_orderID' => $shop_order->id,
-                    'productID' => $product->id,
-                    'variantID' => $variant_id,
-                    'combo_id' => $combo_id,
-                    'product_name' => $product->name,
-                    'quantity' => $quantity,
-                    'brand' => $product->brand ?? null,
-                    'category' => $product->category ?? null,
-                    'variant_name' => $variant_name,
-                    'product_image' => $product_image,
-                    'unit_price' => $unit_price,
-                    'total_price' => $item_total_price,
-                    'combo_quantity' => $combo_quantity,
-                ];
-        
-                ItemsOrder::create($itemOrderData);
+                $couponDiscountMap[$shopId] += $coupon['discount_value'];
             }
-        }
-        $order_address = OrderAddress::create([
-            'order_id' => $order->id,
-            'receiver_name' => $user_address->receiver_name,
-            'receiver_phone' => $user_address->receiver_phone,
-            'receiver_email' => $user_address->receiver_email,
-            'address' => $user_address->address,
-            'province' => $user_address->province,
-            'district' => $user_address->district,
-            'ward' => $user_address->ward,
-            'zip_code' => $user_address->zip_code,
-            'address_type' => $user_address->address_type,
-        ]);
-        return $order;
+
+            $shippingFeeMap = [];
+            foreach ($request->shipping_shop_fee as $shipping_shop_fee_item) {
+                $shopId = $shipping_shop_fee_item['shopId'];
+                $shippingFeeMap[$shopId] = $shipping_shop_fee_item['fee'];
+            }
+
+            foreach ($shopItems as $shop_id => $items) {
+                $discount_shop_amount = $couponDiscountMap[$shop_id] ?? 0;
+                $shipping_shop_fee = $shippingFeeMap[$shop_id] ?? 0;
+
+                $shop_order = ShopOrder::firstOrCreate([
+                    'shopID' => $shop_id,
+                    'orderID' => $order->id,
+                    'shipping_shop_fee' => $shipping_shop_fee,
+                    'discount_shop_amount' => $discount_shop_amount,
+                    'status' => 'pending',
+                ], [
+                    'code' => 'DHS-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . substr(time(), -3),
+                    'note' => $shop_notes[$shop_id] ?? '',
+                ]);
+            
+                foreach ($items as $item) {
+                    $product = $item['product'];
+                    $quantity = (int) $item['quantity'];
+                    $variant_id = null;
+                    $variant_name = null;
+                    $unit_price = $product->sale_price ?? $product->price ?? 0;
+                    $combo_id = null;
+                    $combo_quantity = null;
+                    if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
+                        $combo_id = $item['combo_info']['combo_id'];
+                        $unit_price = $item['combo_info']['price_in_combo'];
+                        $combo_quantity = $item['combo_info']['combo_quantity'];
+                    } elseif ($product->is_variant ?? false) {
+                        $variant = $product->variants->where('id', $item['variant_id'])->first();
+                        $variant_id = $variant->id ?? null;
+                        $variant_name = $variant->variant_name ?? null;
+                        $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
+                    }
+            
+                    $item_total_price = $unit_price * $quantity;
+
+                    $product_image = optional($product->images->where('is_default', true)->first() ?? $product->images->first())->image_path ?? null;
+
+                    $itemOrderData = [
+                        'orderID' => $order->id,
+                        'shop_orderID' => $shop_order->id,
+                        'productID' => $product->id,
+                        'variantID' => $variant_id,
+                        'combo_id' => $combo_id,
+                        'product_name' => $product->name,
+                        'quantity' => $quantity,
+                        'brand' => $product->brand ?? null,
+                        'category' => $product->category ?? null,
+                        'variant_name' => $variant_name,
+                        'product_image' => $product_image,
+                        'unit_price' => $unit_price,
+                        'total_price' => $item_total_price,
+                        'combo_quantity' => $combo_quantity,
+                    ];
+            
+                    ItemsOrder::create($itemOrderData);
+                }
+            }
+            $order_address = OrderAddress::create([
+                'order_id' => $order->id,
+                'receiver_name' => $user_address->receiver_name,
+                'receiver_phone' => $user_address->receiver_phone,
+                'receiver_email' => $user_address->receiver_email,
+                'address' => $user_address->address,
+                'province' => $user_address->province,
+                'district' => $user_address->district,
+                'ward' => $user_address->ward,
+                'zip_code' => $user_address->zip_code,
+                'address_type' => $user_address->address_type,
+            ]);
+            return $order;
+        });
     }
     
     private function storeCouponsUsed($coupons_code)
@@ -512,6 +518,7 @@ class CheckoutController extends Controller
         session()->forget('selected_products');
 
         $products = [];
+
         foreach ($order->items as $item) {
             $product = Product::with(['variants' => function ($query) use ($item) {
                 $query->where('id', $item->variantID);
@@ -526,14 +533,14 @@ class CheckoutController extends Controller
                 ];
             }
         }
-        return view('user.checkout_status.success_payment', compact('order', 'product'));
+        return view('user.checkout_status.success_payment', compact('order', 'products'));
     }
 
     public function failedPayment($order_code)
     {
         $order = Order::where('order_code', $order_code)->first();
         if (!$order) {
-            return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
+            return redirect()->route('home');
         }
 
         $orderItems = ItemsOrder::where('orderID', $order->id)->get();

@@ -103,7 +103,13 @@ class ShippingController extends Controller
         ]);
         $responseData = $response->json();
         if ($response->status() == 200) {
+            Log::info('Cập nhật trạng thái đơn hàng sang ready_to_pick', [
+                'shop_order_id' => $shop_order->id,
+                'mã đơn hàng' => $shop_order->code,
+                'thời gian' => now()->toDateTimeString(),
+            ]);
             $shop_order->update(['status' => 'ready_to_pick']);
+
             $expectedDateTime = $responseData['data']['expected_delivery_time']; 
             $expectedDate = Carbon::parse($expectedDateTime)->format('Y-m-d H:i');
             $data = [
@@ -111,6 +117,12 @@ class ShippingController extends Controller
                 'expected_delivery_date' => $expectedDate,
                 'shipping_fee' => $responseData['data']['fee']['main_service'],
             ];
+            Log::info('Cập nhật thông tin vận chuyển cho đơn hàng', [
+                'shop_order_id' => $shop_order->id,
+                'tracking_code' => $data['tracking_code'],
+                'ngày giao dự kiến' => $data['expected_delivery_date'],
+                'phí vận chuyển' => $data['shipping_fee'],
+            ]);
             $shop_order->update($data);
 
             $shop_order_history = new ShopOrderHistory();
@@ -119,6 +131,12 @@ class ShippingController extends Controller
             $shop_order_history->description = 'Người bán đã giao cho đơn vị vận chuyển';
             $shop_order_history->note = $note;
             $shop_order_history->save();
+            Log::info('Đã lưu lịch sử trạng thái đơn hàng', [
+                'shop_order_id' => $shop_order->id,
+                'trạng thái' => 'ready_to_pick',
+                'mô tả' => $shop_order_history->description,
+                'ghi chú' => $note,
+            ]);
 
             event(new OrderStatusUpdate($shop_order, 'ready_to_pick'));
             return true;

@@ -6,21 +6,21 @@
 
         <!-- Breadcrumb -->
         <div class="flex flex-wrap items-center gap-2 mb-8 px-[10px] sm:px-0 text-sm md:text-base">
-            <a href="{{ route('order_history') }}" class="text-gray-500 hover:text-blue-600 transition-colors duration-200">Đơn hàng</a>
+            <a href="{{ route('user.order.parent-order') }}" class="text-gray-500 hover:text-blue-600 transition-colors duration-200">Đơn hàng lớn</a>
             <span class="text-gray-400">/</span>
-            <span class="text-gray-700">Chi tiết đơn hàng</span>
+            <a href="{{ route('user.order.parent-detail',['orderID' => $parentOrder->order_code]) }}" class="text-gray-700">Đơn hàng cha</a>
             <span class="text-gray-400">/</span>
             <span class="text-blue-600 font-medium">{{ $order->id ?? 'N/A' }}</span>
         </div>
 
         <!-- Nút quay lại -->
         <div class="mb-6">
-            <a href="{{ route('order_history') }}" 
+            <a href="{{ route('user.order.parent-detail',['orderID' => $parentOrder->order_code]) }}" 
                class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Quay lại quản lý đơn hàng
+                Quay lại
             </a>
         </div>
 
@@ -112,14 +112,21 @@
             <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
                 <h5 class="font-semibold text-gray-800 mb-4 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a4 4 0 004 4h10a4 4 0 004-4V7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3H8a4 4 0 00-4 4v0a4 4 0 004 4h8a4 4 0 004-4v0a4 4 0 00-4-4z"></path>
                     </svg>
-                    Thông tin khách hàng
+                    Thông tin shop
                 </h5>
                 <div class="space-y-2 text-sm text-gray-600">
-                    <p><span class="font-medium">Tên:</span> {{ $order->order->user->fullname ?? 'Không có thông tin' }}</p>
-                    <p><span class="font-medium">Email:</span> {{ $order->order->user->email ?? 'Không có thông tin' }}</p>
-                    <p><span class="font-medium">Số điện thoại:</span> {{ $order->order->user->phone ?? 'Không có thông tin' }}</p>
+                    <p><span class="font-medium">Tên shop:</span> 
+                        {{ $order->shop->shop_name ?? 'Không có thông tin' }}
+                                        </p>
+                    <p><span class="font-medium">Email:</span> 
+                        {{ $order->shop->shop_email ?? 'Không có thông tin' }}
+                    </p>
+                    <p><span class="font-medium">Số điện thoại:</span> 
+                        {{ $order->shop->shop_phone ?? 'Không có thông tin' }}
+                    </p>
                 </div>
             </div>
             

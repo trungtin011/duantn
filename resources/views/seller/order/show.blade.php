@@ -8,28 +8,34 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <div class="container mx-auto py-8 px-4">
-
-
-    @if(session('error'))
-        <div class="mb-4">
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate__animated animate__shakeX" role="alert">
-                <strong class="font-bold">Lỗi!</strong>
-                <span class="block sm:inline">{{ session('error') }}</span>
-            </div>
+@if(session('success'))
+    <div class="mb-4">
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative animate__animated animate__fadeInDown" role="alert">
+            <strong class="font-bold">Thành công!</strong>
+            <span class="block sm:inline">{{ session('success') }}</span>
         </div>
-    @endif
-    @if($errors->any())
-        <div class="mb-4">
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate__animated animate__shakeX" role="alert">
-                <strong class="font-bold">Lỗi!</strong>
-                <ul class="list-disc pl-5">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+    </div>
+@endif
+@if(session('error'))
+    <div class="mb-4">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate__animated animate__shakeX" role="alert">
+            <strong class="font-bold">Lỗi!</strong>
+            <span class="block sm:inline">{{ session('error') }}</span>
         </div>
-    @endif
+    </div>
+@endif
+@if($errors->any())
+    <div class="mb-4">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate__animated animate__shakeX" role="alert">
+            <strong class="font-bold">Lỗi!</strong>
+            <ul class="list-disc pl-5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+@endif
 
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">

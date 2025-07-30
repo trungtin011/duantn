@@ -138,7 +138,9 @@ class OrderController extends Controller
             'required_note' => 'nullable|string|in:CHOXEMHANGKHONGTHU,CHOTHUHANG,KHONGCHOXEMHANG',
         ]);
 
-        $shop_order = ShopOrder::where('orderID', $id)->with('shop')->first();
+        $shop_order = ShopOrder::where('orderID', $id)
+        ->where('shopID', session('current_shop_id'))
+        ->with('shop')->first();
         $order = $shop_order->order;
         $id_shop_address = $request->shop_address;
         $shipping_provider = $request->shipping_provider;
@@ -159,7 +161,6 @@ class OrderController extends Controller
             if ($shipping_controller) {
                 $shop_order->shipping_provider = $shipping_provider;
                 $shop_order->save();
-
                 Order::orderStatusUpdate($order->id);
 
                 return redirect()->route('seller.order.show', $order->order_code)
@@ -170,7 +171,6 @@ class OrderController extends Controller
             }
         }
     }
-
 
     public function confirmOrder(Request $request, $id)
     {
@@ -193,7 +193,7 @@ class OrderController extends Controller
         if ($shop_order_history) {
             $orders = Order::where('id', $order->orderID)->first();
 
-            Order::orderStatusUpdate($orders->order->id);
+            Order::orderStatusUpdate($orders->id);
             
             event(new OrderStatusUpdate($order, 'confirmed'));
             
@@ -292,7 +292,6 @@ class OrderController extends Controller
 
         if($status === 'delivered'){
             $order->actual_delivery_date = now();
-            $order->shipping_fee = $status_order['data']['shipping_fee'];
             $order->save();
         }
 
@@ -332,7 +331,37 @@ class OrderController extends Controller
                         'status' => 'cancelled',
                         'description' => 'Đơn vị vận chuyển đã hủy đơn hàng',
                         'update_order' => true
-                    ]
+                    ],
+                    'delivery_failed' => [
+                        'status' => 'shipping_failed',
+                        'description' => 'Giao hàng không thành công',
+                        'update_order' => true
+                    ],
+                    'return' => [
+                        'status' => 'returned',
+                        'description' => 'Đơn vị vận chuyển chuẩn bị trả hàng',
+                        'update_order' => true
+                    ],
+                    'returning' => [
+                        'status' => 'returned',
+                        'description' => 'Đơn vị vận chuyển đang trả hàng',
+                        'update_order' => true
+                    ],
+                    'returned' => [
+                        'status' => 'returned',
+                        'description' => 'Đơn vị vận chuyển đã trả hàng',
+                        'update_order' => true
+                    ],
+                    'damage' => [
+                        'status' => 'damage',
+                        'description' => 'Hàng hỏng trong quá trình vận chuyển',
+                        'update_order' => true
+                    ],
+                    'lost' => [
+                        'status' => 'lost',
+                        'description' => 'Hàng bị mất trong quá trình vận chuyển',
+                        'update_order' => true
+                    ],
                 ];
 
                 if (isset($statusMapping[$status])) {
@@ -348,7 +377,7 @@ class OrderController extends Controller
                     $order_status->save();
 
                     Order::orderStatusUpdate($order->order->id);
-
+                    
                     event(new OrderStatusUpdate($order, $mapping['status']));
                 }
             }
