@@ -73,7 +73,7 @@ function initializeCheckoutFormHandler() {
                 code: code.couponData.code,
                 shopId: code.shopId,
                 discount_value: code.couponData.discount_value,
-                coupon_type: code.couponData.coupon_type,
+                coupon_type: code.couponData.type_coupon,
             });
         });
         return couponCode;
@@ -95,7 +95,6 @@ function initializeCheckoutFormHandler() {
         });
         return shippingFees;
     }
-
 
     async function collectAndSubmitData() {
         isSubmitting = true;

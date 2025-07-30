@@ -30,6 +30,7 @@
             </span>
         </div>
 
+        . 
         <div class="order-body px-6 py-5 {{ $parentOrder->order_status === 'cancelled' ? 'filter grayscale opacity-75' : '' }}">
             @php
                 // Nhóm các sản phẩm theo shop
@@ -203,7 +204,7 @@
             <div class="flex flex-wrap gap-2">
                 @if (in_array($parentOrder->order_status, ['pending', 'processing']))
                     @if ($parentOrder->payment_status === 'pending')
-                        <button class="open-payment-modal bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 text-xs sm:text-sm hover:from-green-600 hover:to-green-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                        <button onclick="showGlobalPopup('{{$parentOrder->order_code}}');" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 text-xs sm:text-sm hover:from-green-600 hover:to-green-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
                             data-order-id="{{ $parentOrder->id }}">
                             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"></path>

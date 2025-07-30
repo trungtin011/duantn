@@ -9,6 +9,8 @@ use App\Http\Controllers\User\CheckoutController;
 
 class VNPayController extends Controller
 {
+
+    
     public function vnpayPayment($order_code){
         $order = Order::where('order_code', $order_code)->first();
         if(!$order){
@@ -228,4 +230,5 @@ class VNPayController extends Controller
             return response()->json(['RspCode' => '99', 'Message' => 'Unknown error']);
         }
     }
+
 }

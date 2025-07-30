@@ -278,14 +278,12 @@ return new class extends Migration
             $table->index(['name', 'category', 'brand', 'status']);
         });
 
-        // Bảng attributes
         Schema::create('attributes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name', 100);
             $table->timestamps();
         });
 
-        // Bảng attribute_values
         Schema::create('attribute_values', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('attribute_id');
@@ -294,7 +292,6 @@ return new class extends Migration
             $table->foreign('attribute_id')->references('id')->on('attributes')->onDelete('cascade');
         });
 
-        // Bảng product_attribute
         Schema::create('product_attribute', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('product_id');
@@ -305,7 +302,6 @@ return new class extends Migration
             $table->unique(['product_id', 'attribute_id'], 'product_attribute_unique');
         });
 
-        // Bảng product_variants
         Schema::create('product_variants', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('productID');
@@ -321,7 +317,6 @@ return new class extends Migration
             $table->foreign('productID')->references('id')->on('products')->onDelete('cascade');
         });
 
-        // Bảng product_variant_attribute_values
         Schema::create('product_variant_attribute_values', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('product_variant_id');
@@ -332,7 +327,6 @@ return new class extends Migration
             $table->unique(['product_variant_id', 'attribute_value_id'], 'variant_attr_value_unique');
         });
 
-        // Bảng product_images
         Schema::create('product_images', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('productID');
@@ -346,7 +340,6 @@ return new class extends Migration
             $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
         });
 
-        // Bảng product_dimensions
         Schema::create('product_dimensions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('productID');
@@ -360,7 +353,6 @@ return new class extends Migration
             $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
         });
 
-        // Bảng cart
         Schema::create('cart', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('userID');
@@ -377,7 +369,6 @@ return new class extends Migration
             $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
         });
 
-        // Bảng orders
         Schema::create('orders', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('userID')->nullable();
@@ -414,7 +405,6 @@ return new class extends Migration
             $table->index(['order_code', 'payment_status', 'order_status', 'created_at']);
         });
 
-        // Bảng order_addresses
         Schema::create('order_addresses', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('order_id');
@@ -432,7 +422,6 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
-        // Bảng shop_order
         Schema::create('shop_order', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('shopID');
@@ -481,7 +470,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Bảng items_order
         Schema::create('items_order', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('orderID');
@@ -561,7 +549,6 @@ return new class extends Migration
             $table->index(['code', 'status', 'start_date', 'end_date']);
         });
 
-        // Bảng coupon_user
         Schema::create('coupon_user', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('coupon_id');
@@ -675,7 +662,6 @@ return new class extends Migration
             $table->primary(['notification_id', 'receiver_id']);
         });
 
-        // Bảng stock_transactions
         Schema::create('stock_transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('shopID');
@@ -690,8 +676,6 @@ return new class extends Migration
             $table->foreign('variantID')->references('id')->on('product_variants')->onDelete('cascade');
         });
 
-
-        // Bảng report
         Schema::create('report', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('reporter_id');
@@ -722,7 +706,6 @@ return new class extends Migration
             $table->index(['report_type', 'status', 'priority', 'created_at']);
         });
 
-        // Bảng point_transactions
         Schema::create('point_transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('userID');
@@ -742,14 +725,12 @@ return new class extends Migration
             $table->integer('expiration');
         });
 
-        // Bảng cache_locks
         Schema::create('cache_locks', function (Blueprint $table) {
             $table->string('key')->primary();
             $table->string('owner', 255);
             $table->integer('expiration');
         });
 
-        // Bảng failed_jobs
         Schema::create('failed_jobs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('uuid', 255)->unique();
@@ -760,7 +741,6 @@ return new class extends Migration
             $table->timestamp('failed_at')->useCurrent();
         });
 
-        // Bảng jobs
         Schema::create('jobs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('queue')->index();
@@ -771,7 +751,6 @@ return new class extends Migration
             $table->unsignedInteger('created_at');
         });
 
-        // Bảng job_batches
         Schema::create('job_batches', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('name', 255);
@@ -785,14 +764,12 @@ return new class extends Migration
             $table->integer('finished_at')->nullable();
         });
 
-        // Bảng password_reset_tokens
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token', 255);
             $table->timestamp('created_at')->nullable();
         });
 
-        // Bảng sessions
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->unsignedBigInteger('user_id')->nullable();

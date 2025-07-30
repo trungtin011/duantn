@@ -58,10 +58,6 @@ class OrderStatusUpdate implements ShouldBroadcast
 
     private function storeNotification($user_id)
     {
-        Log::info(' /////////////// Store Notification /////////////// ', [
-            'log store notification trong order status update'
-        ]);
-
         $data = $this->broadcastWith();
 
         $notification = new Notification();
@@ -77,11 +73,6 @@ class OrderStatusUpdate implements ShouldBroadcast
         $notificationReceiver->receiver_id = $user_id;
         $notificationReceiver->receiver_type = 'user';
         $notificationReceiver->save();
-        
-        Log::info(' /////////////// Store Notification /////////////// ', [
-            'notification' => $notification,
-            'notificationReceiver' => $notificationReceiver
-        ]);
     }
 
     private function mailNotification($user_id)
@@ -90,22 +81,9 @@ class OrderStatusUpdate implements ShouldBroadcast
             $user = User::find($user_id);
             
             if (!$user || !$user->email) {
-                Log::warning('Không thể gửi email: User không tồn tại hoặc không có email', [
-                    'user_id' => $user_id,
-                    'order_code' => $this->order->order_code
-                ]);
                 return;
             }
-
-            // Gửi email thông báo
             Mail::to($user->email)->send(new \App\Mail\OrderStatusUpdateMail($this->order, $this->status));
-            
-            Log::info('Email thông báo cập nhật trạng thái đơn hàng đã được gửi', [
-                'user_id' => $user_id,
-                'user_email' => $user->email,
-                'order_code' => $this->order->order_code,
-                'status' => $this->status
-            ]);
             
         } catch (\Exception $e) {
             Log::error('Lỗi gửi email thông báo cập nhật trạng thái đơn hàng', [

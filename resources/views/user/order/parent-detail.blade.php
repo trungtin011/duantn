@@ -8,23 +8,19 @@
         <div class="flex flex-wrap items-center gap-2 mb-8 px-[10px] sm:px-0 text-sm md:text-base">
             <a href="{{ route('user.order.parent-order') }}" class="text-gray-500 hover:text-blue-600 transition-colors duration-200">Đơn hàng lớn</a>
             <span class="text-gray-400">/</span>
-            <span class="text-gray-700">Chi tiết đơn hàng lớn</span>
-            <span class="text-gray-400">/</span>
             <span class="text-blue-600 font-medium">{{ $parentOrder->order_code ?? 'N/A' }}</span>
         </div>
 
-        <!-- Nút quay lại -->
         <div class="mb-6">
             <a href="{{ route('user.order.parent-order') }}" 
                class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                Quay lại quản lý đơn hàng lớn
+                Quay lại
             </a>
         </div>
 
-        <!-- Header: Chi tiết đơn hàng lớn -->
         <div class="mb-6">
             <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -50,6 +46,16 @@
                     
                     <!-- Nút hành động -->
                     <div class="flex flex-wrap gap-2">
+                        @if($parentOrder->payment_status === 'pending')
+                            <button onclick="showGlobalPopup('{{$parentOrder->order_code}}');" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 text-xs sm:text-sm hover:from-green-600 hover:to-green-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                                data-order-id="{{ $parentOrder->id }}">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"></path>
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle>
+                                </svg>
+                                Thanh Toán
+                            </button>
+                        @endif
                         @if (in_array($parentOrder->order_status, ['pending', 'processing']))
                             <button class="open-cancel-modal bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm"
                                 data-order-id="{{ $parentOrder->id }}">
@@ -202,17 +208,25 @@
                                                 <p class="text-sm text-gray-500">Mã shop order: {{ $shopOrder->code ?? 'N/A' }}</p>
                                             </div>
                                         </div>
-                                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset 
-                                            @if($shopOrder->status === 'pending') bg-yellow-100 text-yellow-800 ring-yellow-600/20
-                                            @elseif($shopOrder->status === 'confirmed') bg-blue-100 text-blue-800 ring-blue-600/20
-                                            @elseif($shopOrder->status === 'shipped') bg-purple-100 text-purple-800 ring-purple-600/20
-                                            @elseif($shopOrder->status === 'delivered') bg-green-100 text-green-800 ring-green-600/20
-                                            @elseif($shopOrder->status === 'completed') bg-emerald-100 text-emerald-800 ring-emerald-600/20
-                                            @elseif($shopOrder->status === 'cancelled') bg-red-100 text-red-800 ring-red-600/20
-                                            @elseif($shopOrder->status === 'returned') bg-orange-100 text-orange-800 ring-orange-600/20
-                                            @else bg-gray-100 text-gray-800 ring-gray-600/20 @endif">
-                                            {{ $statuses[$shopOrder->status] ?? $shopOrder->status }}
-                                        </span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset 
+                                                @if($shopOrder->status === 'pending') bg-yellow-100 text-yellow-800 ring-yellow-600/20
+                                                @elseif($shopOrder->status === 'confirmed') bg-blue-100 text-blue-800 ring-blue-600/20
+                                                @elseif($shopOrder->status === 'shipped') bg-purple-100 text-purple-800 ring-purple-600/20
+                                                @elseif($shopOrder->status === 'delivered') bg-green-100 text-green-800 ring-green-600/20
+                                                @elseif($shopOrder->status === 'completed') bg-emerald-100 text-emerald-800 ring-emerald-600/20
+                                                @elseif($shopOrder->status === 'cancelled') bg-red-100 text-red-800 ring-red-600/20
+                                                @elseif($shopOrder->status === 'returned') bg-orange-100 text-orange-800 ring-orange-600/20
+                                                @else bg-gray-100 text-gray-800 ring-gray-600/20 @endif">
+                                                {{ $statuses[$shopOrder->status] ?? $shopOrder->status }}
+                                            </span>
+                                            <!-- Nút xem chi tiết order_shop -->
+                                            <a href="{{ route('user.order.detail', ['orderID' => $shopOrder->id]) }}"
+                                               class="ml-2 inline-flex items-center px-3 py-1 border border-indigo-500 text-indigo-600 text-xs font-medium rounded-full hover:bg-indigo-50 transition"
+                                               title="Xem chi tiết đơn shop">
+                                                Xem chi tiết
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -361,19 +375,49 @@
                 </div>
 
                 <div class="space-y-4">
-                    <div class="bg-blue-50 p-4 rounded-lg">
-                        <h6 class="font-semibold text-blue-800 mb-2">Thống kê shop orders</h6>
-                        <div class="space-y-2 text-sm">
-                            <p><span class="font-medium">Tổng số shop:</span> {{ $parentOrder->shopOrders->count() }}</p>
-                            <p><span class="font-medium">Tổng số sản phẩm:</span> {{ $parentOrder->shopOrders->sum(function($shopOrder) { return $shopOrder->items->count(); }) }}</p>
-                            <p><span class="font-medium">Trạng thái chung:</span> 
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                                    @if($parentOrder->order_status === 'delivered') bg-green-100 text-green-800
-                                    @elseif($parentOrder->order_status === 'cancelled' || $parentOrder->order_status === 'refunded') bg-red-100 text-red-800
-                                    @else bg-blue-100 text-blue-800 @endif">
-                                    {{ $statuses[$parentOrder->order_status] ?? $parentOrder->order_status }}
-                                </span>
-                            </p>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h6 class="font-semibold text-yellow-800 mb-2 flex items-center">
+                            <svg class="w-4 h-4 mr-1 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"></path>
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle>
+                            </svg>
+                            Lịch sử trạng thái đơn hàng
+                        </h6>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm text-gray-700">
+                                <thead>
+                                    <tr>
+                                        <th class="px-2 py-1 text-left font-semibold">Thời gian</th>
+                                        <th class="px-2 py-1 text-left font-semibold">Trạng thái</th>
+                                        <th class="px-2 py-1 text-left font-semibold">Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($parentOrder->statusHistory as $history)
+                                        <tr>
+                                            <td class="px-2 py-1 whitespace-nowrap">
+                                                {{ \Carbon\Carbon::parse($history->created_at)->format('d/m/Y H:i') }}
+                                            </td>
+                                            <td class="px-2 py-1">
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                                    @if(in_array($history->order_status, ['completed', 'delivered'])) bg-green-100 text-green-800
+                                                    @elseif(in_array($history->order_status, ['cancelled', 'refunded', 'damage', 'lost'])) bg-red-100 text-red-800
+                                                    @elseif(in_array($history->order_status, ['pending', 'processing'])) bg-yellow-100 text-yellow-800
+                                                    @else bg-blue-100 text-blue-800 @endif">
+                                                    {{ $statuses[$history->order_status] ?? ucfirst(str_replace('_', ' ', $history->order_status)) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-2 py-1">
+                                                {{ $history->note ?? '-' }}
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="px-2 py-2 text-center text-gray-400">Chưa có lịch sử trạng thái.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

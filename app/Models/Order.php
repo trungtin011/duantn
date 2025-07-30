@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -168,6 +169,35 @@ class Order extends Model
             $order->order_status = 'pending';
         }
 
+        $description = null;
+        switch ($order->order_status) {
+            case 'cancelled':
+                $description = 'Đơn hàng đã bị hủy';
+                break;
+            case 'completed':
+                $description = 'Đơn hàng đã hoàn thành';
+                break;
+            case 'processing':
+                $description = 'Đơn hàng đang được xử lý';
+                break;
+            case 'pending':
+                $description = 'Đơn hàng đang chờ xử lý';
+                break;
+            case 'returned':
+                $description = 'Đơn hàng đã được trả lại';
+                break;
+            default:
+                $description = null;
+        }
+
+        DB::table('order_status_history')->insert([
+            'order_id' => $order->id,
+            'order_status' => $order->order_status,
+            'description' => $description,
+            'note' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         $order->save();
         return true;
     }
