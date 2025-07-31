@@ -119,20 +119,18 @@ class ReviewController extends Controller
 
         return redirect()->route('seller.reviews.index')->with('error', 'Không tìm thấy đánh giá!');
     }
-    public function reply(Request $request, $reviewId)
+    public function reply(Request $request, $id)
     {
         $request->validate([
             'seller_reply' => 'required|string|max:1000',
         ]);
 
-        $review = OrderReview::with('product.shop')->findOrFail($reviewId);
+        $review = OrderReview::with('product.shop')->findOrFail($id);
 
-        // Kiểm tra seller có quyền trả lời không
         if ($review->product->shop->ownerID !== Auth::id()) {
             abort(403, 'Bạn không có quyền phản hồi đánh giá này.');
         }
 
-        // Chỉ cho phản hồi 1 lần duy nhất
         if ($review->seller_reply) {
             return redirect()->back()->with('error', 'Bạn đã phản hồi đánh giá này rồi.');
         }

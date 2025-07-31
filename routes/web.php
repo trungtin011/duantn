@@ -587,5 +587,5 @@ Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index'
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
 Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
 Route::get('/seller/reviews', [ReviewController::class, 'index'])->name('seller.reviews.index');
-Route::post('/seller/reviews/{review}/reply', [App\Http\Controllers\Seller\ReviewController::class, 'reply'])
-    ->name('seller.reviews.reply')->middleware(['auth', 'is_seller']);
+Route::post('/seller/reviews/{review}/reply', [ReviewController::class, 'reply'])
+    ->name('seller.reviews.reply');
