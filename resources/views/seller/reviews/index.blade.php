@@ -1,124 +1,66 @@
-@extends('layouts.seller')
-
-@section('head')
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/admin/review.css') }}">
-@endpush
-@endsection
+@extends('layouts.seller_home')
 
 @section('content')
-<div class="admin-page-header">
-    <div class="admin-breadcrumb mt-3"><a href="{{ route('admin.dashboard') }}" class="admin-breadcrumb-link">Home</a> / Reviews List</div>
-</div>
-@if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
+    <div class="mt-[32px] mb-[24px]">
+        <h1 class="font-semibold text-[28px]">Đánh giá từ khách hàng</h1>
     </div>
-@endif
 
-@if(session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
-@endif
-<div class="admin-card mb-4 mt-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <div class="input-group search-input-group" style="width: 280px;">
-                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                <input type="text" class="form-control border-start-0" placeholder="Search by product name">
+    <div class="bg-white shadow rounded p-4">
+        @forelse($reviews as $review)
+            <div class="border-b py-4">
+                <div class="font-semibold text-lg">{{ $review->product->name }}</div>
+                <div class="text-gray-600 text-sm">Khách: {{ $review->user->name }} |
+                    {{ $review->created_at->format('d/m/Y') }}</div>
+                <div class="text-yellow-500">
+                    ⭐ {{ $review->rating }} / 5
+                </div>
+                <p class="mt-2">{{ $review->comment }}</p>
+
+                {{-- Hiển thị ảnh nếu có --}}
+                @if ($review->images->count())
+                    <div class="flex gap-2 mt-2">
+                        @foreach ($review->images as $img)
+                            <img src="{{ asset('storage/' . $img->image_path) }}"
+                                class="w-[100px] h-[100px] object-cover rounded border" />
+                        @endforeach
+                    </div>
+                @endif
+
+                {{-- Hiển thị video nếu có --}}
+                @if ($review->videos->count())
+                    <div class="mt-2">
+                        @foreach ($review->videos as $vid)
+                            <video controls class="w-[300px] mt-2 rounded">
+                                <source src="{{ asset('storage/' . $vid->video_path) }}" type="video/mp4">
+                                Trình duyệt không hỗ trợ video.
+                            </video>
+                        @endforeach
+                    </div>
+                @endif
+                {{-- Hiển thị phản hồi nếu có --}}
+                @if ($review->seller_reply)
+                    <div class="mt-2 p-3 bg-gray-100 rounded border-l-4 border-blue-500">
+                        <strong>Phản hồi của bạn:</strong>
+                        <p>{{ $review->seller_reply }}</p>
+                    </div>
+                @else
+                    {{-- Hiển thị form phản hồi --}}
+                    <form action="{{ route('seller.reviews.reply', $review->id) }}" method="POST" class="mt-4">
+                        @csrf
+                        <label class="block mb-1 font-medium">Phản hồi:</label>
+                        <textarea name="seller_reply" rows="3" class="w-full border rounded px-3 py-2" required></textarea>
+                        <button type="submit" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Gửi
+                            phản hồi</button>
+                    </form>
+                @endif
+
             </div>
-        </div>
-        <div class="d-flex align-items-center gap-3">
-            <select class="form-select form-select-admin" style="width: 150px;">
-                <option selected>Rating: 5 Star</option>
-                <option>All</option>
-                <option>5 Star</option>
-                <option>4 Star</option>
-                <option>3 Star</option>
-                <option>2 Star</option>
-                <option>1 Star</option>
-            </select>
-            {{-- The "Add Product" button is not in the Reviews image, removing it --}}
-            {{-- <a href="#" class="btn btn-primary" style="font-weight:500;font-size:1em;padding: 10px 24px; border-radius: 8px;">Add Product</a> --}}
+        @empty
+            <p>Chưa có đánh giá nào cho sản phẩm của bạn.</p>
+        @endforelse
+
+        <div class="mt-4">
+            {{ $reviews->links() }}
         </div>
     </div>
-
-    <div class="table-responsive admin-table-container">
-        <table class="table align-middle mb-0 admin-table">
-            <thead class="admin-table-thead">
-                <tr>
-                    <th style="width: 40px; padding-left: 16px;"><input type="checkbox"></th>
-                    {{-- <th>SHOP</th> --}}
-                    <th>PRODUCT</th>
-                    <th>CUSTOMER</th>
-                    <th>RATING</th>
-                    <th>DATE</th>
-                    <th>ACTION</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($reviews as $review)
-                    <tr>
-                        <td style="padding-left: 16px;"><input type="checkbox"></td>
-                        {{-- <td>{{ $review->product->shop->shop_name ?? 'N/A' }}</td> --}}
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <img src="{{ $review->product->images->first()->image_path ?? asset('images/default.jpg') }}" alt="" class="me-3 product-img-table">
-                                <span>{{ $review->product->name ?? 'Unnamed product' }}</span>
-                            </div>
-                        </td>
-                        <td>{{ $review->user->fullname ?? 'Ẩn danh' }}</td>
-                        <td class="rating-stars">
-                            @for($i = 1; $i <= 5; $i++)
-                                @if($i <= $review->rating)
-                                    <i class="fa-solid fa-star"></i>
-                                @else
-                                    <i class="fa-regular fa-star"></i>
-                                @endif
-                            @endfor
-                        </td>
-                        <td>{{ $review->created_at->format('d/m/Y H:i A') }}</td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <a href="{{ route('productDetail', ['id'=> $review->productID]) }}#review-{{ $review->id }}"
-                                class="btn btn-sm btn-outline-primary btn-action-icon">
-                                    Xem
-                                </a>
-                                <form action="{{ route('seller.reviews.destroy', $review->id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger btn-action-icon">
-                                        {{-- <i class="fa-solid fa-trash"></i> --}}
-                                        Xóa
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-                </tbody>
-        </table>
-    </div>
-
-    {{-- Pagination --}}
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div class="text-muted text-sm">Showing 10 Product of 120</div>
-        <nav aria-label="Pagination navigation">
-            <ul class="pagination pagination-sm mb-0 pagination-admin">
-                <li class="page-item disabled"><a class="page-link" href="#">&lt;</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item active"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">4</a></li>
-                <li class="page-item"><a class="page-link" href="#">&gt;</a></li>
-            </ul>
-        </nav>
-    </div>
-</div>
 @endsection
-
-@section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-@endsection 

@@ -109,4 +109,9 @@ class Seller extends Model
     {
         $this->update(['status' => 'active']);
     }
+    public function products()
+{
+    return $this->hasMany(Product::class, 'seller_id');
+}
+
 }
