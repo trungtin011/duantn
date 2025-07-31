@@ -150,5 +150,15 @@ class User extends Authenticatable
             default => 'Không xác định',
         };
     }
-    
+    public function products()
+    {
+        return $this->hasManyThrough(
+            Product::class,
+            Shop::class,
+            'ownerID',   // trong bảng shops
+            'shopID',   // trong bảng products
+            'id',        // khóa chính của users
+            'id'         // khóa chính của shops
+        );
+    }
 }

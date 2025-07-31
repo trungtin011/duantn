@@ -12,7 +12,7 @@
             <div class="p-[24px] bg-white rounded-[8px]">
                 <form action="{{ route('seller.categories.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    
+
                     <div class="mb-3">
                         <label for="categoryName" class="form-label">Tên danh mục</label>
                         <input type="text" class="form-control" id="categoryName" name="name"
@@ -21,6 +21,14 @@
                             <div class="text-danger text-sm">{{ $message }}</div>
                         @enderror
                     </div>
+                    @foreach ($products as $product)
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="product_ids[]"
+                                value="{{ $product->id }}">
+                            <label class="form-check-label">{{ $product->name }}</label>
+                        </div>
+                    @endforeach
+
                     <button type="submit"
                         class="bg-[#28BCF9] hover:bg-[#3DA5F7] text-white w-full py-2 px-4 rounded-md flex items-center justify-center transition-all duration-300">Thêm
                         danh mục</button>
@@ -78,9 +86,8 @@
                                             <button type="submit"
                                                 class="border hover:bg-[#F1416C] hover:text-white w-[37px] h-[35px] rounded-md flex items-center justify-center transition-all duration-300">
                                                 <i title="Xóa">
-                                                    <svg class="" width="13" height="13"
-                                                        viewBox="0 0 20 22" fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg">
+                                                    <svg class="" width="13" height="13" viewBox="0 0 20 22"
+                                                        fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <path
                                                             d="M19.0697 4.23C17.4597 4.07 15.8497 3.95 14.2297 3.86V3.85L14.0097 2.55C13.8597 1.63 13.6397 0.25 11.2997 0.25H8.67967C6.34967 0.25 6.12967 1.57 5.96967 2.54L5.75967 3.82C4.82967 3.88 3.89967 3.94 2.96967 4.03L0.929669 4.23C0.509669 4.27 0.209669 4.64 0.249669 5.05C0.289669 5.46 0.649669 5.76 1.06967 5.72L3.10967 5.52C8.34967 5 13.6297 5.2 18.9297 5.73C18.9597 5.73 18.9797 5.73 19.0097 5.73C19.3897 5.73 19.7197 5.44 19.7597 5.05C19.7897 4.64 19.4897 4.27 19.0697 4.23Z"
                                                             fill="currentColor"></path>
