@@ -1,11 +1,11 @@
 <div class="quick-view-inner" data-product-id="{{ $product->id }}">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white rounded-lg p-6 shadow">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white rounded-lg px-6 pt-0 pb-6">
         <!-- Hình ảnh sản phẩm -->
         <div class="relative">
             <img id="main-image"
                 src="{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
                 alt="{{ $product->name }}"
-                class="w-full object-cover rounded-lg transform transition-transform duration-300 hover:scale-105"
+                class="w-[300px] h-[300px] m-auto object-cover rounded-lg transform transition-transform duration-300 hover:scale-105"
                 loading="lazy">
             <div class="flex gap-2 mt-4 overflow-x-auto">
                 @foreach ($product->images as $image)
@@ -30,7 +30,7 @@
                 <div class="flex items-center gap-3">
                     <span class="text-yellow-400 flex">
                         @for ($i = 1; $i <= 5; $i++)
-                            @if ($i <= round($product->reviews->avg('rating')))
+                            @if ($i <= round($product->orderReviews->avg('rating') ?? 0))
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                     <path
                                         d="M12 2.25l2.82 5.73h5.88l-4.77 4.12 1.82 5.73-5.73-3.49-5.73 3.49 1.82-5.73-4.77-4.12h5.88z" />
@@ -44,7 +44,7 @@
                         @endfor
                     </span>
                     <span class="text-sm text-gray-600">
-                        ({{ $product->reviews->count() }} đánh giá) | Đã bán:
+                        ({{ $product->orderReviews->count() }} đánh giá) | Đã bán:
                         {{ $product->sold_quantity >= 1000 ? number_format($product->sold_quantity / 1000, 1) . 'k' : $product->sold_quantity }}
                     </span>
                 </div>

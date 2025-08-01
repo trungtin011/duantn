@@ -29,7 +29,9 @@ class User extends Authenticatable
         'role',
         'avatar',
         'is_verified',
-        'birthday'
+        'birthday',
+        'rank',
+         'total_spent'
     ];
 
     protected $hidden = [
@@ -45,6 +47,7 @@ class User extends Authenticatable
         'status' => UserStatus::class,
         'gender' => UserGender::class,
         'role' => UserRole::class,
+        'total_spent' => 'decimal:2',
     ];
 
     // Relationships
@@ -150,5 +153,27 @@ class User extends Authenticatable
             default => 'Không xác định',
         };
     }
-    
+    public function updateRank()
+{
+    $ranks = [
+        ['name' => 'iron', 'threshold' => 0], // Start at 0 for iron
+        ['name' => 'bronze', 'threshold' => 1000000], 
+        ['name' => 'silver', 'threshold' => 5000000], 
+        ['name' => 'gold', 'threshold' => 10000000], 
+        ['name' => 'diamond', 'threshold' => 20000000], 
+        ['name' => 'supreme', 'threshold' => 50000000], 
+    ];
+
+    $currentRank = 'iron';
+    foreach ($ranks as $rank) {
+        if ($this->total_spent >= $rank['threshold']) {
+            $currentRank = $rank['name'];
+        } else {
+            break;
+        }
+    }
+
+    $this->rank = $currentRank;
+    $this->save();
+}
 }

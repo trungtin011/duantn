@@ -201,5 +201,21 @@ class Order extends Model
         $order->save();
         return true;
     }
+    
+    public function markAsCompleted()
+    {
+        if ($this->status !== 'completed') {
+            $this->status = 'completed';
+            $this->save();
 
+            $user = $this->user;
+            if ($user) {
+                // Tính tổng tiền từ items_order
+                $totalSpent = $this->items()->sum('price' * 'quantity');
+                $user->total_spent += $totalSpent;
+                $user->updateRank();
+                $user->save();
+            }
+        }
+    }
 }

@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+
+        
         View::composer('layouts.app', function ($view) {
             $settings = DB::table('settings')->first();
             $view->with('settings', $settings);
@@ -80,4 +82,5 @@ class AppServiceProvider extends ServiceProvider
             }
         });
     }
+    
 }

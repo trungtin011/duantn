@@ -83,12 +83,7 @@
         <nav class="desktop-navigation-menu">
             <div class="container">
                 <ul class="desktop-menu-category-list">
-                    {{-- <li class="menu-category">
-                        <a href="#" class="menu-title">Trang chủ</a>
-                    </li> --}}
-                    <li class="menu-category">
-                        <a href="{{ route('combo.index') }}" class="menu-title">Combo</a>
-                    </li>
+                    <li class="menu-category"></li>
                     <li class="menu-category">
                         <a href="#" class="menu-title">Danh mục</a>
                         <div class="dropdown-panel">
@@ -530,9 +525,9 @@
                                             </a>
                                             <div class="showcase-rating">
                                                 @for ($i = 1; $i <= 5; $i++)
-                                                    @if ($product->reviews->avg('rating') >= $i)
+                                                    @if ($product->orderReviews->avg('rating') >= $i)
                                                         <ion-icon name="star"></ion-icon>
-                                                    @elseif ($product->reviews->avg('rating') >= $i - 0.5)
+                                                    @elseif ($product->orderReviews->avg('rating') >= $i - 0.5)
                                                         <ion-icon name="star-half-outline"></ion-icon>
                                                     @else
                                                         <ion-icon name="star-outline"></ion-icon>
@@ -618,78 +613,6 @@
                             </div>
                         </div>
                     @endif
-
-
-                    {{-- <div class="product-featured">
-                        <h2 class="title">Flash Sale</h2>
-                        <div class="showcase-wrapper has-scrollbar">
-                            @foreach ($flashSaleProducts as $product)
-                                <div class="showcase-container">
-                                    <div class="showcase">
-                                        <div class="showcase-banner">
-                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                class="showcase-img">
-                                        </div>
-                                        <div class="showcase-content">
-                                            <div class="showcase-rating">
-                                                @php
-                                                    $avg = round($product->reviews->avg('rating') ?? 0);
-                                                @endphp
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    <ion-icon
-                                                        name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
-                                                @endfor
-                                            </div>
-                                            <a href="{{ route('product.show', $product->slug) }}">
-                                                <h3 class="showcase-title">{{ $product->name }}</h3>
-                                            </a>
-                                            <p class="showcase-desc">
-                                                {{ Str::limit(strip_tags($product->description), 100) }}
-                                            </p>
-                                            <div class="price-box">
-                                                <p class="price">{{ number_format($product->flash_sale_price) }}₫</p>
-                                                <del>{{ number_format($product->price) }}₫</del>
-                                            </div>
-                                            <button class="add-cart-btn">Thêm vào giỏ hàng</button>
-                                            <div class="showcase-status">
-                                                <div class="wrapper">
-                                                    <p>Đã bán: <b>{{ $product->sold_quantity ?? 0 }}</b></p>
-                                                    <p>Còn lại:
-                                                        <b>{{ $product->stock_total - $product->sold_quantity }}</b>
-                                                    </p>
-                                                </div>
-                                                <div class="showcase-status-bar"></div>
-                                            </div>
-                                            @if ($product->flash_sale_end_at)
-                                                <div class="countdown-box">
-                                                    <p class="countdown-desc">Nhanh tay! Kết thúc sau:</p>
-                                                    <div class="countdown"
-                                                        data-end-time="{{ $product->flash_sale_end_at->timestamp }}">
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Ngày</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Giờ</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Phút</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Giây</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div> --}}
 
                     @include('partials.combo_products')
 
@@ -872,7 +795,7 @@
                                                     </a>
                                                     <div class="showcase-rating">
                                                         @php
-                                                            $avg = round($product->reviews_avg_rating ?? 0);
+                                                            $avg = round($product->orderReviews->avg('rating') ?? 0);
                                                         @endphp
                                                         @for ($i = 1; $i <= 5; $i++)
                                                             <ion-icon
@@ -911,7 +834,7 @@
                                                     </a>
                                                     <div class="showcase-rating">
                                                         @php
-                                                            $avg = round($product->reviews_avg_rating ?? 0);
+                                                            $avg = round($product->orderReviews->avg('rating') ?? 0);
                                                         @endphp
                                                         @for ($i = 1; $i <= 5; $i++)
                                                             <ion-icon
@@ -986,7 +909,7 @@
                                         </a>
                                         <div class="showcase-rating">
                                             @php
-                                                $avg = round($product->reviews->avg('rating') ?? 0);
+                                                $avg = round($product->orderReviews->avg('rating') ?? 0);
                                             @endphp
                                             @for ($i = 1; $i <= 5; $i++)
                                                 <ion-icon name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
@@ -1019,7 +942,11 @@
 
                     @foreach ($testimonials as $review)
                         <div class="testimonial-card">
-                            @include('partials.user-avatar', ['user' => $review->user, 'size' => '2xl', 'className' => 'testimonial-banner'])
+                            @include('partials.user-avatar', [
+                                'user' => $review->user,
+                                'size' => '2xl',
+                                'className' => 'testimonial-banner',
+                            ])
 
                             <p class="testimonial-name">{{ $review->user->name ?? 'Khách hàng ẩn danh' }}</p>
                             <p class="testimonial-title">
@@ -1114,430 +1041,430 @@
                 </div>
             </div>
         </div>
+    </main>
 
-
-        <!-- Modal Quick View -->
-        <div id="quick-view-modal" class="quick-view-modal">
-            <div class="w-[1200px] bg-[#fff] rounded-[10px]">
-                <div class="flex flex-col">
-                    <div class="flex items-center justify-between p-4 border-b border-gray-300 border-dashed mb-4">
-                        <h3>Xem nhanh</h3>
-                        <button class="close-btn">×</button>
-                    </div>
-                    <div class="quick-view-body"></div>
+    <!-- Modal Quick View -->
+    <div id="quick-view-modal" class="quick-view-modal">
+        <div class="w-[1200px] bg-[#fff] rounded-[10px]">
+            <div class="flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-gray-300 border-dashed mb-4">
+                    <h3>Xem nhanh</h3>
+                    <button class="close-btn text-2xl">×</button>
                 </div>
+                <div class="quick-view-body"></div>
             </div>
         </div>
+    </div>
 
-        @push('scripts')
-            @vite(['resources/js/home.js'])
-            <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const modal = document.getElementById('quick-view-modal');
-                    const closeBtn = modal.querySelector('.close-btn');
-                    closeBtn.addEventListener('click', function() {
+    @push('scripts')
+        @vite(['resources/js/home.js'])
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = document.getElementById('quick-view-modal');
+                const closeBtn = modal.querySelector('.close-btn');
+                closeBtn.addEventListener('click', function() {
+                    modal.classList.remove('active');
+                });
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
                         modal.classList.remove('active');
-                    });
-                    modal.addEventListener('click', function(e) {
-                        if (e.target === modal) {
-                            modal.classList.remove('active');
-                        }
-                    });
+                    }
                 });
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Xử lý toggle wishlist
-                    document.querySelectorAll('.toggle-wishlist-btn').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const productId = this.getAttribute('data-product-id');
-                            const isWishlisted = this.getAttribute('data-is-wishlisted') === '1';
-                            const icon = this.querySelector('ion-icon');
+            });
+            document.addEventListener('DOMContentLoaded', function() {
+                // Xử lý toggle wishlist
+                document.querySelectorAll('.toggle-wishlist-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const productId = this.getAttribute('data-product-id');
+                        const isWishlisted = this.getAttribute('data-is-wishlisted') === '1';
+                        const icon = this.querySelector('ion-icon');
 
-                            axios.post(`/customer/product/${productId}/toggle-wishlist`, {}, {
-                                    headers: {
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                    }
-                                })
-                                .then(response => {
-                                    if (response.data.success) {
-                                        this.setAttribute('data-is-wishlisted', response.data
-                                            .isWishlisted ? '1' : '0');
-                                        icon.setAttribute('name', response.data.isWishlisted ? 'heart' :
-                                            'heart-outline');
-                                        Swal.fire({
-                                            position: 'top-end',
-                                            toast: true,
-                                            icon: 'success',
-                                            title: 'Thành công',
-                                            text: response.data.message,
-                                            showConfirmButton: false,
-                                            timer: 1500
-                                        });
-                                    } else {
-                                        Swal.fire({
-                                            position: 'top-end',
-                                            toast: true,
-                                            icon: 'error',
-                                            title: 'Lỗi',
-                                            text: response.data.message,
-                                            showConfirmButton: false,
-                                            timer: 1500
-                                        });
-                                    }
-                                })
-                                .catch(error => {
-                                    Swal.fire({
-                                        position: 'top-end',
-                                        toast: true,
-                                        icon: 'error',
-                                        title: 'Lỗi',
-                                        text: error.response?.status === 401 ?
-                                            'Vui lòng đăng nhập để sử dụng chức năng này!' :
-                                            'Đã có lỗi xảy ra!',
-                                        showConfirmButton: error.response?.status === 401,
-                                        confirmButtonText: 'Đăng nhập',
-                                    }).then(result => {
-                                        if (result.isConfirmed && error.response?.status ===
-                                            401) {
-                                            window.location.href = '/login';
-                                        }
-                                    });
-                                });
-                        });
-                    });
-
-                    // Xử lý quick view
-                    document.querySelectorAll('.quick-view-btn').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const slug = this.getAttribute('data-product-slug');
-                            const modal = document.getElementById('quick-view-modal');
-                            const modalBody = modal.querySelector('.quick-view-body');
-
-                            axios.get(`/customer/products/${slug}/quick-view`)
-                                .then(response => {
-                                    if (response.data.success) {
-                                        modalBody.innerHTML = response.data.html;
-
-                                        // ✅ Gán dữ liệu biến thể
-                                        window.variantData = response.data.variantData;
-                                        console.log('✅ Gán variantData từ Laravel:', window
-                                            .variantData);
-
-                                        modal.classList.add('active');
-
-                                        if (typeof initQuickViewScripts === 'function') {
-                                            initQuickViewScripts();
-                                        }
-                                    } else {
-                                        Swal.fire('Lỗi', response.data.message, 'error');
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Lỗi tải QuickView:', error);
-                                    Swal.fire('Lỗi', 'Không thể tải sản phẩm!', 'error');
-                                });
-                        });
-                    });
-
-                    // Add Combo to Cart functionality (moved outside initQuickViewScripts)
-                    document.querySelectorAll('.add-combo-cart-btn').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const comboId = this.getAttribute('data-combo-id');
-
-                            fetch('/cart/add-combo', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                        'Accept': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        combo_id: comboId
-                                    })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    Swal.fire({
-                                        position: 'top-end',
-                                        toast: true,
-                                        icon: data.success ? 'success' : 'error',
-                                        title: data.message,
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    });
-                                })
-                                .catch(error => {
-                                    console.error('Error adding combo to cart:', error);
-                                    Swal.fire({
-                                        position: 'top-end',
-                                        toast: true,
-                                        icon: 'error',
-                                        title: 'Lỗi',
-                                        text: 'Không thể thêm combo vào giỏ!',
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    });
-                                });
-                        });
-                    });
-
-                });
-
-                function initQuickViewScripts() {
-                    const mainImage = document.getElementById('main-image');
-                    const priceDisplay = document.getElementById('price-display');
-                    const stockInfo = document.getElementById('stock_info');
-                    const quantityInput = document.getElementById('quantity');
-                    const decreaseBtn = document.getElementById('decreaseQty');
-                    const increaseBtn = document.getElementById('increaseQty');
-                    const selectedVariantIdInput = document.getElementById('selected_variant_id');
-                    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-                    const variantButtons = document.querySelectorAll('button[data-value]');
-                    const token = document.querySelector('meta[name="csrf-token"]')?.content;
-                    let selectedVariantId = null;
-
-                    if (!mainImage || !priceDisplay || !stockInfo || !quantityInput || !selectedVariantIdInput) {
-                        console.warn('Thiếu phần tử DOM trong quick view, dừng init.');
-                        return;
-                    }
-
-                    const hasVariants = variantButtons.length > 0;
-                    if (!hasVariants) {
-                        selectedVariantId = 'default'; // sản phẩm không có biến thể
-                        selectedVariantIdInput.value = 'default';
-                        // Explicitly display default product price for simple products on modal open
-                        const defaultPrice = parseFloat(priceDisplay.dataset.price);
-                        const defaultOriginalPrice = parseFloat(priceDisplay.dataset.originalPrice);
-                        const defaultStock = parseInt(stockInfo.dataset.stock);
-                        resetToDefault(
-                            mainImage?.src || '/storage/product_images/default.jpg', // Use main image src as default
-                            defaultPrice,
-                            defaultOriginalPrice,
-                            defaultStock
-                        );
-                    }
-
-                    // Thay ảnh chính khi click ảnh phụ
-                    document.querySelectorAll('.sub-image').forEach(img => {
-                        img.addEventListener('click', function() {
-                            const newSrc = this.dataset.src;
-                            if (mainImage && newSrc) mainImage.src = newSrc;
-                        });
-                    });
-
-                    // Format số
-                    function number_format(number, decimals = 0, dec_point = ',', thousands_sep = '.') {
-                        number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
-                        let n = !isFinite(+number) ? 0 : +number;
-                        let prec = Math.abs(decimals);
-                        let s = (prec ? (Math.round(n * Math.pow(10, prec)) / Math.pow(10, prec)).toFixed(prec) : '' + Math.round(
-                            n)).split('.');
-                        s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, thousands_sep);
-                        if ((s[1] || '').length < prec) {
-                            s[1] = (s[1] || '') + '0'.repeat(prec - s[1].length);
-                        }
-                        return s.join(dec_point);
-                    }
-
-                    // Tăng/giảm số lượng
-                    if (decreaseBtn) {
-                        decreaseBtn.addEventListener('click', () => {
-                            let qty = parseInt(quantityInput.value);
-                            if (qty > 1) quantityInput.value = qty - 1;
-                        });
-                    }
-
-                    if (increaseBtn) {
-                        increaseBtn.addEventListener('click', () => {
-                            let qty = parseInt(quantityInput.value);
-                            const stock = parseInt(stockInfo.textContent.split(' ')[0]) || 0;
-                            if (qty < stock) quantityInput.value = qty + 1;
-                        });
-                    }
-
-
-                    // Reset về trạng thái mặc định
-                    function resetToDefault(defaultImage, price, originalPrice, stock) {
-                        selectedVariantId = null;
-                        selectedVariantIdInput.value = 'default';
-                        if (mainImage && defaultImage) mainImage.src = defaultImage;
-
-                        priceDisplay.innerHTML = `
-                        <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
-                        ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
-                    `;
-                        stockInfo.textContent = `${stock} sản phẩm có sẵn`;
-                    }
-
-                    // Xử lý chọn biến thể
-                    variantButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            const value = button.getAttribute('data-value');
-                            const attributeName = button.getAttribute('data-attribute-name');
-                            const optionsContainer = button.closest(`[id$="-options"]`);
-                            const allButtons = optionsContainer.querySelectorAll('button[data-value]');
-
-                            if (button.classList.contains('bg-gray-200') && button.classList.contains(
-                                    'border-gray-500')) {
-                                button.classList.remove('bg-gray-200', 'border-gray-500');
-                                button.classList.add('border-gray-300');
-                                resetToDefault(button.dataset.defaultImage, button.dataset.price, button.dataset
-                                    .originalPrice, button.dataset.stock);
-                                return;
-                            }
-
-                            allButtons.forEach(btn => {
-                                btn.classList.remove('bg-gray-200', 'border-gray-500');
-                                btn.classList.add('border-gray-300');
-                            });
-
-                            button.classList.remove('border-gray-300');
-                            button.classList.add('bg-gray-200', 'border-gray-500');
-
-                            const selectedAttributes = {};
-                            document.querySelectorAll('[id$="-options"] button[data-value].bg-gray-200').forEach(
-                                btn => {
-                                    const attrName = btn.getAttribute('data-attribute-name');
-                                    const attrValue = btn.getAttribute('data-value');
-                                    selectedAttributes[attrName] = attrValue;
-                                });
-
-                            const variantData = window.variantData || {};
-                            let matched = null;
-
-                            for (let id in variantData) {
-                                let variant = variantData[id];
-                                let matchedAll = true;
-                                for (let attr in selectedAttributes) {
-                                    if (!variant.attributes || variant.attributes[attr] !== selectedAttributes[
-                                            attr]) {
-                                        matchedAll = false;
-                                        break;
-                                    }
+                        axios.post(`/customer/product/${productId}/toggle-wishlist`, {}, {
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                                 }
-                                if (matchedAll) {
-                                    matched = {
-                                        id,
-                                        ...variant
-                                    };
-                                    break;
-                                }
-                            }
-
-                            console.log('Đã chọn attributes:', selectedAttributes);
-                            console.log('Dữ liệu variantData:', variantData);
-                            console.log('Biến thể phù hợp:', matched);
-
-                            if (matched) {
-                                selectedVariantId = matched.id;
-                                selectedVariantIdInput.value = matched.id;
-
-                                // Hiển thị lại giá
-                                if (priceDisplay) {
-                                    priceDisplay.innerHTML = `
-                                    <span class="text-red-600 text-2xl font-bold">${number_format(matched.price)} VNĐ</span>
-                                    <span class="text-gray-500 line-through text-md">${number_format(matched.original_price)} VNĐ</span>
-                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${matched.discount_percentage}%</span>
-                                `;
-                                }
-
-                                if (mainImage) {
-                                    console.log('Hiển thị ảnh biến thể:', matched.image);
-                                    mainImage.src = matched.image || '/storage/product_images/default.jpg';
-                                }
-                                if (stockInfo) stockInfo.textContent = `${matched.stock} sản phẩm có sẵn`;
-                            } else {
-                                // Không tìm thấy biến thể phù hợp → reset
-                                selectedVariantId = null;
-                                selectedVariantIdInput.value = '';
-                                resetToDefault(
-                                    mainImage?.dataset.default || '/storage/product_images/default.jpg',
-                                    parseFloat(priceDisplay?.dataset.price || 0),
-                                    parseFloat(priceDisplay?.dataset.originalPrice || 0),
-                                    parseInt(stockInfo?.dataset.stock || 0)
-                                );
-
-                            }
-
-                        });
-                    });
-
-                    // Xử lý thêm vào giỏ hàng
-                    addToCartButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            if (!selectedVariantId && hasVariants) {
-                                Swal.fire({
-                                    position: 'top-end',
-                                    toast: true,
-                                    icon: 'warning',
-                                    title: 'Vui lòng chọn biến thể!',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                                return;
-                            }
-
-                            const quantity = parseInt(quantityInput.value);
-                            const stock = parseInt(stockInfo.textContent.split(' ')[0]);
-
-                            if (quantity > stock) {
-                                Swal.fire({
-                                    position: 'top-end',
-                                    toast: true,
-                                    icon: 'warning',
-                                    title: 'Vượt quá số lượng tồn kho!',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                                return;
-                            }
-
-                            fetch('/customer/cart/add', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': token,
-                                        'Accept': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        product_id: button.getAttribute('data-product-id'),
-                                        variant_id: selectedVariantId,
-                                        quantity: quantity
-                                    })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
+                            })
+                            .then(response => {
+                                if (response.data.success) {
+                                    this.setAttribute('data-is-wishlisted', response.data
+                                        .isWishlisted ? '1' : '0');
+                                    icon.setAttribute('name', response.data.isWishlisted ? 'heart' :
+                                        'heart-outline');
                                     Swal.fire({
                                         position: 'top-end',
                                         toast: true,
                                         icon: 'success',
-                                        title: data.message || 'Thêm vào giỏ thành công',
-                                        timer: 1500,
-                                        showConfirmButton: false
+                                        title: 'Thành công',
+                                        text: response.data.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
                                     });
-                                })
-                                .catch(error => {
+                                } else {
                                     Swal.fire({
                                         position: 'top-end',
                                         toast: true,
                                         icon: 'error',
                                         title: 'Lỗi',
-                                        text: 'Không thể thêm sản phẩm vào giỏ!',
-                                        timer: 1500,
-                                        showConfirmButton: false
+                                        text: response.data.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
                                     });
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: error.response?.status === 401 ?
+                                        'Vui lòng đăng nhập để sử dụng chức năng này!' :
+                                        'Đã có lỗi xảy ra!',
+                                    showConfirmButton: error.response?.status === 401,
+                                    confirmButtonText: 'Đăng nhập',
+                                }).then(result => {
+                                    if (result.isConfirmed && error.response?.status ===
+                                        401) {
+                                        window.location.href = '/login';
+                                    }
                                 });
-                        });
+                            });
                     });
+                });
 
+                // Xử lý quick view
+                document.querySelectorAll('.quick-view-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const slug = this.getAttribute('data-product-slug');
+                        const modal = document.getElementById('quick-view-modal');
+                        const modalBody = modal.querySelector('.quick-view-body');
+
+                        axios.get(`/customer/products/${slug}/quick-view`)
+                            .then(response => {
+                                if (response.data.success) {
+                                    modalBody.innerHTML = response.data.html;
+
+                                    // ✅ Gán dữ liệu biến thể
+                                    window.variantData = response.data.variantData;
+                                    console.log('✅ Gán variantData từ Laravel:', window
+                                        .variantData);
+
+                                    modal.classList.add('active');
+
+                                    if (typeof initQuickViewScripts === 'function') {
+                                        initQuickViewScripts();
+                                    }
+                                } else {
+                                    Swal.fire('Lỗi', response.data.message, 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Lỗi tải QuickView:', error);
+                                Swal.fire('Lỗi', 'Không thể tải sản phẩm!', 'error');
+                            });
+                    });
+                });
+
+                // Add Combo to Cart functionality (moved outside initQuickViewScripts)
+                document.querySelectorAll('.add-combo-cart-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const comboId = this.getAttribute('data-combo-id');
+
+                        fetch('/cart/add-combo', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    combo_id: comboId
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: data.success ? 'success' : 'error',
+                                    title: data.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error adding combo to cart:', error);
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể thêm combo vào giỏ!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                    });
+                });
+
+            });
+
+            function initQuickViewScripts() {
+                const mainImage = document.getElementById('main-image');
+                const priceDisplay = document.getElementById('price-display');
+                const stockInfo = document.getElementById('stock_info');
+                const quantityInput = document.getElementById('quantity');
+                const decreaseBtn = document.getElementById('decreaseQty');
+                const increaseBtn = document.getElementById('increaseQty');
+                const selectedVariantIdInput = document.getElementById('selected_variant_id');
+                const addToCartButtons = document.querySelectorAll('.add-to-cart');
+                const variantButtons = document.querySelectorAll('button[data-value]');
+                const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                let selectedVariantId = null;
+
+                if (!mainImage || !priceDisplay || !stockInfo || !quantityInput || !selectedVariantIdInput) {
+                    console.warn('Thiếu phần tử DOM trong quick view, dừng init.');
+                    return;
+                }
+
+                const hasVariants = variantButtons.length > 0;
+                if (!hasVariants) {
+                    selectedVariantId = 'default'; // sản phẩm không có biến thể
+                    selectedVariantIdInput.value = 'default';
+                    // Explicitly display default product price for simple products on modal open
+                    const defaultPrice = parseFloat(priceDisplay.dataset.price);
+                    const defaultOriginalPrice = parseFloat(priceDisplay.dataset.originalPrice);
+                    const defaultStock = parseInt(stockInfo.dataset.stock);
+                    resetToDefault(
+                        mainImage?.src || '/storage/product_images/default.jpg', // Use main image src as default
+                        defaultPrice,
+                        defaultOriginalPrice,
+                        defaultStock
+                    );
+                }
+
+                // Thay ảnh chính khi click ảnh phụ
+                document.querySelectorAll('.sub-image').forEach(img => {
+                    img.addEventListener('click', function() {
+                        const newSrc = this.dataset.src;
+                        if (mainImage && newSrc) mainImage.src = newSrc;
+                    });
+                });
+
+                // Format số
+                function number_format(number, decimals = 0, dec_point = ',', thousands_sep = '.') {
+                    number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
+                    let n = !isFinite(+number) ? 0 : +number;
+                    let prec = Math.abs(decimals);
+                    let s = (prec ? (Math.round(n * Math.pow(10, prec)) / Math.pow(10, prec)).toFixed(prec) : '' + Math.round(
+                        n)).split('.');
+                    s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, thousands_sep);
+                    if ((s[1] || '').length < prec) {
+                        s[1] = (s[1] || '') + '0'.repeat(prec - s[1].length);
+                    }
+                    return s.join(dec_point);
+                }
+
+                // Tăng/giảm số lượng
+                if (decreaseBtn) {
+                    decreaseBtn.addEventListener('click', () => {
+                        let qty = parseInt(quantityInput.value);
+                        if (qty > 1) quantityInput.value = qty - 1;
+                    });
+                }
+
+                if (increaseBtn) {
+                    increaseBtn.addEventListener('click', () => {
+                        let qty = parseInt(quantityInput.value);
+                        const stock = parseInt(stockInfo.textContent.split(' ')[0]) || 0;
+                        if (qty < stock) quantityInput.value = qty + 1;
+                    });
                 }
 
 
-                if (typeof initQuickViewScripts === 'function') {
-                    initQuickViewScripts();
+                // Reset về trạng thái mặc định
+                function resetToDefault(defaultImage, price, originalPrice, stock) {
+                    selectedVariantId = null;
+                    selectedVariantIdInput.value = 'default';
+                    if (mainImage && defaultImage) mainImage.src = defaultImage;
+
+                    priceDisplay.innerHTML = `
+                        <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
+                        ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                    `;
+                    stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }
-            </script>
-        @endpush
-    @endsection
+
+                // Xử lý chọn biến thể
+                variantButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const value = button.getAttribute('data-value');
+                        const attributeName = button.getAttribute('data-attribute-name');
+                        const optionsContainer = button.closest(`[id$="-options"]`);
+                        const allButtons = optionsContainer.querySelectorAll('button[data-value]');
+
+                        if (button.classList.contains('bg-gray-200') && button.classList.contains(
+                                'border-gray-500')) {
+                            button.classList.remove('bg-gray-200', 'border-gray-500');
+                            button.classList.add('border-gray-300');
+                            resetToDefault(button.dataset.defaultImage, button.dataset.price, button.dataset
+                                .originalPrice, button.dataset.stock);
+                            return;
+                        }
+
+                        allButtons.forEach(btn => {
+                            btn.classList.remove('bg-gray-200', 'border-gray-500');
+                            btn.classList.add('border-gray-300');
+                        });
+
+                        button.classList.remove('border-gray-300');
+                        button.classList.add('bg-gray-200', 'border-gray-500');
+
+                        const selectedAttributes = {};
+                        document.querySelectorAll('[id$="-options"] button[data-value].bg-gray-200').forEach(
+                            btn => {
+                                const attrName = btn.getAttribute('data-attribute-name');
+                                const attrValue = btn.getAttribute('data-value');
+                                selectedAttributes[attrName] = attrValue;
+                            });
+
+                        const variantData = window.variantData || {};
+                        let matched = null;
+
+                        for (let id in variantData) {
+                            let variant = variantData[id];
+                            let matchedAll = true;
+                            for (let attr in selectedAttributes) {
+                                if (!variant.attributes || variant.attributes[attr] !== selectedAttributes[
+                                        attr]) {
+                                    matchedAll = false;
+                                    break;
+                                }
+                            }
+                            if (matchedAll) {
+                                matched = {
+                                    id,
+                                    ...variant
+                                };
+                                break;
+                            }
+                        }
+
+                        console.log('Đã chọn attributes:', selectedAttributes);
+                        console.log('Dữ liệu variantData:', variantData);
+                        console.log('Biến thể phù hợp:', matched);
+
+                        if (matched) {
+                            selectedVariantId = matched.id;
+                            selectedVariantIdInput.value = matched.id;
+
+                            // Hiển thị lại giá
+                            if (priceDisplay) {
+                                priceDisplay.innerHTML = `
+                                    <span class="text-red-600 text-2xl font-bold">${number_format(matched.price)} VNĐ</span>
+                                    <span class="text-gray-500 line-through text-md">${number_format(matched.original_price)} VNĐ</span>
+                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${matched.discount_percentage}%</span>
+                                `;
+                            }
+
+                            if (mainImage) {
+                                console.log('Hiển thị ảnh biến thể:', matched.image);
+                                mainImage.src = matched.image || '/storage/product_images/default.jpg';
+                            }
+                            if (stockInfo) stockInfo.textContent = `${matched.stock} sản phẩm có sẵn`;
+                        } else {
+                            // Không tìm thấy biến thể phù hợp → reset
+                            selectedVariantId = null;
+                            selectedVariantIdInput.value = '';
+                            resetToDefault(
+                                mainImage?.dataset.default || '/storage/product_images/default.jpg',
+                                parseFloat(priceDisplay?.dataset.price || 0),
+                                parseFloat(priceDisplay?.dataset.originalPrice || 0),
+                                parseInt(stockInfo?.dataset.stock || 0)
+                            );
+
+                        }
+
+                    });
+                });
+
+                // Xử lý thêm vào giỏ hàng
+                addToCartButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        if (!selectedVariantId && hasVariants) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vui lòng chọn biến thể!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        const quantity = parseInt(quantityInput.value);
+                        const stock = parseInt(stockInfo.textContent.split(' ')[0]);
+
+                        if (quantity > stock) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vượt quá số lượng tồn kho!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        fetch('/customer/cart/add', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    product_id: button.getAttribute('data-product-id'),
+                                    variant_id: selectedVariantId,
+                                    quantity: quantity
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'success',
+                                    title: data.message || 'Thêm vào giỏ thành công',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể thêm sản phẩm vào giỏ!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                    });
+                });
+
+            }
+
+
+            if (typeof initQuickViewScripts === 'function') {
+                initQuickViewScripts();
+            }
+        </script>
+    @endpush
+@endsection

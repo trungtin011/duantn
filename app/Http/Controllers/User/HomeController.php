@@ -99,16 +99,16 @@ class HomeController extends Controller
             ->get();
 
         // Sản phẩm đánh giá cao nhất
-        $topRatedProducts = Product::with(['defaultImage', 'reviews', 'categories', 'variants'])
-            ->withAvg('reviews', 'rating')
-            ->whereHas('reviews')
-            ->orderByDesc('reviews_avg_rating')
+        $topRatedProducts = Product::with(['defaultImage', 'orderReviews', 'categories', 'variants'])
+            ->withAvg('orderReviews', 'rating')
+            ->whereHas('orderReviews')
+            ->orderByDesc('order_reviews_avg_rating')
             ->where('status', 'active')
             ->take(10)
             ->get();
 
         // Flash sale
-        $flashSaleProducts = Product::with(['defaultImage', 'reviews', 'categories', 'variants'])
+        $flashSaleProducts = Product::with(['defaultImage', 'orderReviews', 'categories', 'variants'])
             ->whereNotNull('flash_sale_price')
             ->where('flash_sale_end_at', '>', Carbon::now())
             ->where('status', 'active')
@@ -141,7 +141,7 @@ class HomeController extends Controller
         });
 
         // Sản phẩm mới (tạo trong vòng 7 ngày gần nhất)
-        $newProducts = Product::with(['defaultImage', 'categories', 'reviews', 'variants'])
+        $newProducts = Product::with(['defaultImage', 'categories', 'orderReviews', 'variants'])
             ->where('created_at', '>=', Carbon::now()->subDays(7))
             ->where('status', 'active')
             ->orderByDesc('created_at')
