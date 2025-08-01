@@ -132,14 +132,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      // Lấy các phần tử display-number (3 phần tử đầu tiên)
       const displayNumbers = document.getElementById(timerId).querySelectorAll('.display-number');
 
-      // Gán giá trị, chỉ sử dụng 3 phần tử đầu (ngày, giờ, phút) vì cấu trúc mới không có giây
       displayNumbers[0].textContent = days.toString().padStart(2, '0');
       displayNumbers[1].textContent = hours.toString().padStart(2, '0');
       displayNumbers[2].textContent = minutes.toString().padStart(2, '0');
-      // Không gán giây vì chỉ có 3 display-number
     };
 
     updateCountdown(); // Cập nhật ngay lập tức

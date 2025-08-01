@@ -136,10 +136,7 @@
                 <div class="border-l border-gray-200 pl-10 flex items-center">
                     <div class="flex flex-col items-center justify-center gap-5">
                         <div id="avatarPreview">
-                            @if ($user->avatar)
-                                <img src="{{ asset('storage/' . $user->avatar) }}"
-                                    class="mt-2 w-20 h-20 rounded-full object-cover">
-                            @endif
+                            @include('partials.user-avatar', ['user' => $user, 'size' => '2xl'])
                         </div>
                         <div class="flex flex-col items-center gap-2 w-[340px]">
                             <label for="avatar"
@@ -228,9 +225,14 @@
                 reader.onload = function(e) {
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    img.className = 'mt-2 w-20 h-20 rounded-full object-cover';
+                    img.className = 'w-full h-full rounded-full object-cover user-avatar';
+                    
+                    const container = document.createElement('div');
+                    container.className = 'w-20 h-20 rounded-full flex items-center justify-center overflow-hidden avatar-container';
+                    container.appendChild(img);
+                    
                     preview.innerHTML = ''; // Xóa ảnh cũ
-                    preview.appendChild(img);
+                    preview.appendChild(container);
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -238,9 +240,18 @@
                 preview.innerHTML = '';
                 @if ($user->avatar)
                     const img = document.createElement('img');
-                    img.src = '{{ asset('storage/' . $user->avatar) }}';
-                    img.className = 'mt-2 w-20 h-20 rounded-full object-cover';
-                    preview.appendChild(img);
+                    img.src = '{{ getUserAvatar($user->avatar) }}';
+                    img.className = 'w-full h-full rounded-full object-cover user-avatar';
+                    
+                    const container = document.createElement('div');
+                    container.className = 'w-20 h-20 rounded-full flex items-center justify-center overflow-hidden avatar-container';
+                    container.appendChild(img);
+                    preview.appendChild(container);
+                @else
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'w-20 h-20 rounded-full avatar-placeholder text-xl';
+                    placeholder.textContent = '{{ strtoupper(substr($user->fullname ?? $user->username ?? "U", 0, 1)) }}';
+                    preview.appendChild(placeholder);
                 @endif
             }
         }

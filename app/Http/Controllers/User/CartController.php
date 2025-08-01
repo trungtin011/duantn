@@ -587,9 +587,6 @@ class CartController extends Controller
         return response()->json(['message' => 'Đã cập nhật sản phẩm đã chọn!']);
     }
 
-    /**
-     * Get the total quantity of items in the cart.
-     */
     public function getCartQuantity()
     {
         $userID = Auth::check() ? Auth::id() : null;

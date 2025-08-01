@@ -70,10 +70,7 @@
                         <td class="py-4 text-[13px]">{{ $user->username }}</td>
                         <td class="py-4 text-[13px]">
                             <div class="flex items-center">
-                                <img class="w-6 h-6 rounded-full mr-2"
-                                    src="{{ $user->avatar ? asset($user->avatar) : asset('images/avatar.png') }}"
-                                    alt="{{ $user->username }}">
-                                {{ $user->fullname }}
+                                @include('partials.user-avatar', ['user' => $user, 'size' => 'sm', 'showName' => true])
                             </div>
                         </td>
                         <td class="py-4 text-[13px]">{{ $user->phone }}</td>

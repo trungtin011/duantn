@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Coupon;
 use App\Models\CouponUser;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Customer;
 
 class CouponController extends Controller
 {
@@ -23,9 +24,14 @@ class CouponController extends Controller
         }
 
         // Kiểm tra trạng thái hoạt động
-        if (!$coupon->is_active) {
+        if ($coupon->status == 'inactive' ) {
             return response()->json(['error' => 'Mã giảm giá đã bị vô hiệu hóa.']);
+        }else if($coupon->status == 'expired'){
+            return response()->json(['error' => 'Mã giảm giá đã hết hạn.']);
+        }else if($coupon->status == 'deleted'){
+            return response()->json(['error' => 'Mã giảm giá đã bị xóa.']);
         }
+        
 
         // Kiểm tra thời gian hiệu lực
         if ($coupon->start_date > now() || $coupon->end_date < now()) {
@@ -33,19 +39,22 @@ class CouponController extends Controller
         }
 
         // Kiểm tra hạn mức rank
-        if ($user->rank != $coupon->rank_limit && $coupon->rank_limit != 'all') {
-            return response()->json(['error' => 'Mã giảm giá không hợp lệ cho hạng thành viên của bạn.']);
+        if ($coupon->rank_limit && $coupon->rank_limit !== 'all') {
+            $customer = Customer::where('userID', $user->id)->first();
+                if (!$customer || !$customer->hasRankAtLeast($coupon->rank_limit)) {
+                    return response()->json(['error' => 'Bạn không đủ điều kiện sử dụng mã giảm giá này, ít nhất cần đạt cấp độ ' . $coupon->rank_limit], 422);
+                }
         }
 
-        // Kiểm tra số lần sử dụng tối đa toàn hệ thống
+        // Kiểm tra số lần sử dụng tối đa toàn hệ thốn
         if ($coupon->max_uses_total > 0 && $coupon->used_count >= $coupon->max_uses_total) {
             return response()->json(['error' => 'Mã giảm giá đã đạt số lần sử dụng tối đa.']);
         }
 
         // Kiểm tra giá trị đơn hàng tối thiểu
-        if ($coupon->min_order_amount > 0 && $subtotal < $coupon->min_order_amount) {
-            return response()->json(['error' => 'Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã giảm giá.']);
-        }
+        // if ($coupon->min_order_amount > 0 && $subtotal < $coupon->min_order_amount) {
+        //     return response()->json(['error' => 'Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã giảm giá.']);
+        // }
 
         // Kiểm tra số lần sử dụng tối đa cho mỗi user
         $couponUser = CouponUser::where('coupon_id', $coupon->id)

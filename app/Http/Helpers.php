@@ -212,4 +212,21 @@ if (!function_exists('generateUniqueSlug')) {
     }
 }
 
+if (!function_exists('getUserAvatar')) {
+    /**
+     * Get user avatar URL with fallback to default avatar.
+     *
+     * @param string|null $avatar
+     * @param string $defaultPath
+     * @return string
+     */
+    function getUserAvatar($avatar = null, $defaultPath = 'images/avatar.png')
+    {
+        if ($avatar && !empty($avatar)) {
+            return asset('storage/' . $avatar);
+        }
+        return asset($defaultPath);
+    }
+}
+
 ?>

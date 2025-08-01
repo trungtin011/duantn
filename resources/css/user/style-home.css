@@ -161,9 +161,6 @@ body::-webkit-scrollbar-thumb:hover {
     #REUSED STYLE
   \*-----------------------------------*/
 
-.container {
-    padding: 0 15px;
-}
 
 .has-scrollbar {
     padding-bottom: 5px;
@@ -3026,7 +3023,7 @@ footer {
      */
 
     .container {
-        max-width: 1350px;
+        max-width: 1200px;
     }
 
 

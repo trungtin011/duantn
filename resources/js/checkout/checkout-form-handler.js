@@ -48,6 +48,7 @@ function initializeCheckoutFormHandler() {
             discount_code: document.querySelector('input[name="discount_code"]')?.value || null,
             _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             used_points: document.getElementById('used_points').value || 0,
+            shipping_shop_fee: collectShippingFee(),
             coupons_code: collectCouponsCode(),
         };
     }
@@ -70,11 +71,29 @@ function initializeCheckoutFormHandler() {
         codes.forEach(code => {
             couponCode.push({
                 code: code.couponData.code,
-                shopId: code.shopId
+                shopId: code.shopId,
+                discount_value: code.couponData.discount_value,
+                coupon_type: code.couponData.type_coupon,
             });
         });
         return couponCode;
 
+    }
+
+    function collectShippingFee() {
+        const shippingFees = [];
+        document.querySelectorAll('[id^="shipping-fee-shop-"]').forEach(el => {
+            const match = el.id.match(/shipping-fee-shop-(\d+)/);
+            if (match) {
+                const shopId = match[1];
+                const fee = parseInt(el.textContent.replace(/[^\d]/g, '')) || 0;
+                shippingFees.push({
+                    shopId: shopId,
+                    fee: fee
+                });
+            }
+        });
+        return shippingFees;
     }
 
     async function collectAndSubmitData() {
@@ -118,7 +137,7 @@ function initializeCheckoutFormHandler() {
             }
         } catch (error) {
             console.error('Lỗi:', error);
-            showError('Có lỗi xảy ra khi kết nối đến server: ' + error.message);
+            showError(error.message || 'Có lỗi xảy ra khi đặt hàng');
         } finally {
             isSubmitting = false;
             submitBtn.innerHTML = originalText;

@@ -22,6 +22,7 @@ function initializeDiscountHandler(subtotal, applyDiscountUrl, csrfToken) {
                     })
                 });
                 const data = await response.json();
+                console.log(data);
                 if(data.discount_amount) {
                     document.getElementById('discount_amount').textContent = Number(data.discount_amount).toLocaleString('vi-VN');
                     showSuccess('Áp dụng mã giảm giá thành công!');

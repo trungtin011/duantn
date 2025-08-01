@@ -13,12 +13,9 @@ use Illuminate\Support\Facades\Log;
 
 class CouponControllerSeller extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index(Request $request)
     {
-        // Get seller's shop
         $shop = $this->getSellerShop();
         if (!$shop) {
             return redirect()->back()->with('error', 'Bạn chưa có shop để quản lý mã giảm giá.');
@@ -26,22 +23,17 @@ class CouponControllerSeller extends Controller
 
         $query = Coupon::where('shop_id', $shop->id);
         
-        // Search functionality
         if ($request->has('search') && $request->search) {
             $query->where(function($q) use ($request) {
                 $q->where('code', 'like', '%' . $request->search . '%')
                   ->orWhere('name', 'like', '%' . $request->search . '%');
             });
         }
-        
+
         $coupons = $query->orderBy('created_at', 'desc')->paginate(10);
-        
         return view('seller.coupon.index', compact('coupons'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $shop = $this->getSellerShop();

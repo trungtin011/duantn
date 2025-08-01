@@ -8,6 +8,35 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <div class="container mx-auto py-8 px-4">
+@if(session('success'))
+    <div class="mb-4">
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative animate__animated animate__fadeInDown" role="alert">
+            <strong class="font-bold">Thành công!</strong>
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    </div>
+@endif
+@if(session('error'))
+    <div class="mb-4">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate__animated animate__shakeX" role="alert">
+            <strong class="font-bold">Lỗi!</strong>
+            <span class="block sm:inline">{{ session('error') }}</span>
+        </div>
+    </div>
+@endif
+@if($errors->any())
+    <div class="mb-4">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate__animated animate__shakeX" role="alert">
+            <strong class="font-bold">Lỗi!</strong>
+            <ul class="list-disc pl-5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+@endif
+
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
@@ -200,6 +229,12 @@
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
+                        <td colspan="3" class="px-6 py-3 text-right text-sm font-medium text-gray-500">Phí vận chuyển</td>
+                        <td class="px-6 py-3 text-sm font-bold text-red-600 text-center">
+                            {{ number_format($shop_order->shipping_shop_fee , 0, ',', '.') }}đ
+                        </td>
+                    </tr>
+                    <tr>
                         <td colspan="3" class="px-6 py-3 text-right text-sm font-medium text-gray-500">Tổng cộng</td>
                         <td class="px-6 py-3 text-sm font-bold text-red-600 text-center">
                             {{ number_format($items->sum('total_price'), 0, ',', '.') }}đ
@@ -240,17 +275,11 @@
                             <option value="KHONGCHOXEMHANG">Không cho xem hàng</option>
                         </select>
                     </div>
-                    <div>
-                        <label for="payment_type" class="block text-sm font-medium text-gray-700 mb-1">Chịu phí vận chuyển</label>
-                        <select name="payment_type" id="payment_type" class="mt-1 block w-full h-10 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                            <option value="2">Khách hàng</option>
-                            <option value="1">Shop</option>
-                        </select>
-                    </div>
                 </div>
                 
                 <div class="mb-6">
                     <label for="shop_address" class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ shop</label>
+                    <div class="text-red-500 mt-3 mb-2" >Trường hợp thay đổi địa chỉ thì shop sẽ chịu chi phí phát sinh</div>
                     <select name="shop_address" id="shop_address" class="mt-1 block w-full h-10 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                         @foreach ($shop_address as $address)
                             <option value="{{ $address->id }}">{{ $address->shop_address }}, {{ $address->shop_ward }}, {{ $address->shop_district }}, {{ $address->shop_province }}</option>

@@ -21,7 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    @include('partials.repay_popup')
     @vite('resources/css/user/home.css')
     @vite('resources/css/user/orderDetail.css')
     @vite('resources/css/user/notifications.css')
@@ -47,13 +47,13 @@
             @auth
                 @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
                     <div>
-                        <a href="{{ route('seller.index') }}" class="text-[#EF3248] capitalize hover:text-orange-600">
+                        <a href="{{ route('seller.index') }}" class="text-[#EF3248] text-sm capitalize hover:text-orange-600">
                             Kênh người bán
                         </a>
                     </div>
                 @endif
             @endauth
-            <div class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left">
+            <div class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left text-sm">
                 <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
                 <button class="text-white font-bold border-b border-white hover:text-orange-500">Mua ngay</button>
             </div>
@@ -278,12 +278,6 @@
                         @endguest
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <select class="bg-transparent border border-none text-white px-2 py-1 rounded text-sm">
-                        <option class="text-black">Tiếng Việt</option>
-                        <option class="text-black">English</option>
-                    </select>
-                </div>
 
                 <div class="flex items-center gap-2">
                     <div class="relative dropdown-parent">
@@ -300,11 +294,7 @@
                         @endguest
                         @auth
                             <div class="flex items-center gap-1 w-auto">
-                                <div class="w-6 h-6 rounded-full flex items-center justify-center">
-                                    <!-- Avatar placeholder -->
-                                    <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
-                                        alt="avatar" class="w-full h-full rounded-full">
-                                </div>
+                                @include('partials.user-avatar', ['size' => 'sm'])
                                 @auth
                                     <span
                                         class="text-sm font-semibold text-white hover:text-[#EF3248] cursor-pointer">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
@@ -376,7 +366,7 @@
                                         </svg>
                                         Quản lý tài khoản
                                     </a>
-                                    <a href="{{ route('order_history') }}"
+                                    <a href="{{ route('user.order.parent-order') }}"
                                         class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -428,7 +418,7 @@
 
     <!-- Header -->
     <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
-        <div class="container mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
+        <div class="container-header mx-auto px-[10px] sm:px-0 py-3 flex justify-between items-center">
             <!-- Logo -->
             @if (empty($settings->logo))
                 <a class="w-full lg:w-[14%] flex items-center justify-center gap-2 py-2" href="/">
@@ -641,7 +631,7 @@
 
 
     <!-- Main Content -->
-    <main class="bg-white pb-10 min-h-screen">
+    <main class="bg-white min-h-screen">
         @yield('content')
     </main>
 
@@ -754,12 +744,6 @@
             const cartSidebar = document.getElementById('cart-sidebar');
             const closeCartSidebarBtn = document.getElementById('close-cart-sidebar');
             const cartSidebarOverlay = document.getElementById('cart-sidebar-overlay');
-
-            console.log('cartIconTrigger:', cartIconTrigger);
-            console.log('cartSidebar:', cartSidebar);
-            console.log('closeCartSidebarBtn:', closeCartSidebarBtn);
-            console.log('cartSidebarOverlay:', cartSidebarOverlay);
-
             const cartItemsContainer = document.getElementById('cart-items-container');
             const loadingCartItems = document.getElementById('loading-cart-items');
             const emptyCartMessage = document.getElementById('empty-cart-message');
@@ -775,7 +759,6 @@
                 fetch('{{ route('cart.quantity') }}')
                     .then(response => response.json())
                     .then(data => {
-                        console.log('Cart quantity data received:', data);
                         const cartCountElement = document.getElementById('cart-count');
                         if (cartCountElement) {
                             cartCountElement.textContent = data.quantity;
@@ -792,7 +775,6 @@
             function fetchCartItems() {
                 if (cartItemsCache.length > 0) {
                     displayCartItems(cartItemsCache);
-                    console.log('Using cached cart items.');
                     return; // Use cached data if available
                 }
 
@@ -802,7 +784,6 @@
                 }
                 cartItemsContainer.innerHTML = ''; // Clear previous items
 
-                console.log('Fetching cart items from: {{ route('cart.items') }}');
                 fetch('{{ route('cart.items') }}') // Endpoint for cart items
                     .then(response => {
                         console.log('Raw response for cart items:', response);
@@ -955,7 +936,15 @@
 
     <!-- Overlay for sidebar -->
     <div id="cart-sidebar-overlay" class="fixed inset-0 bg-black opacity-50 hidden z-[999]"></div>
-
+    <script>
+        function showGlobalPopup($order_code) {
+            window.repay_order_code = $order_code;
+            document.getElementById('global-popup-overlay').style.display = 'block';
+        }
+        function closeGlobalPopup() {
+            document.getElementById('global-popup-overlay').style.display = 'none';
+        }
+    </script>
 </body>
 
 </html>

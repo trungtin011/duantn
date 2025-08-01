@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -110,4 +111,95 @@ class Order extends Model
             ->count();
         return $recentOrdersCount >= $limit;
     }
+
+    public static function orderStatusUpdate($order_id)
+    {
+        $statusOrder = [
+            'pending'    => 1,
+            'processing' => 2,
+            'completed'  => 3,
+            'cancelled'  => 4,
+            'returned'   => 4,
+        ];
+
+        $order = Order::find($order_id);
+
+        if (!$order) {
+            return false;
+        }
+
+        $shopOrders = ShopOrder::where('orderID', $order_id)->get();
+
+        if ($shopOrders->isEmpty()) {
+            return false;
+        }
+
+        $statusCounts = [
+            1 => 0, // pending
+            2 => 0, // processing
+            3 => 0, // completed
+            4 => 0, // cancel
+        ];
+
+        foreach ($shopOrders as $shopOrder) {
+            $status = $shopOrder->status;
+            if ($status === 'pending') {
+                $statusCounts[1]++;
+            } elseif (in_array($status, ['confirmed', 'ready_to_pick', 'picked', 'shipping', 'delivered', 'refunded'])) {
+                $statusCounts[2]++;
+            } elseif (in_array($status, ['completed','returned'])) {
+                $statusCounts[3]++;
+            } elseif (in_array($status, ['cancelled'])) {
+                $statusCounts[4]++;
+            }
+        }
+
+        $total = $shopOrders->count();
+
+        if ($statusCounts[4] === $total) {
+            $order->order_status = 'cancelled';
+        }
+        elseif (($statusCounts[3] + $statusCounts[4]) === $total && $statusCounts[3] > 0) {
+            $order->order_status = 'completed';
+        }
+        elseif ($statusCounts[1] < $total) {
+            $order->order_status = 'processing';
+        }
+        else {
+            $order->order_status = 'pending';
+        }
+
+        $description = null;
+        switch ($order->order_status) {
+            case 'cancelled':
+                $description = 'Đơn hàng đã bị hủy';
+                break;
+            case 'completed':
+                $description = 'Đơn hàng đã hoàn thành';
+                break;
+            case 'processing':
+                $description = 'Đơn hàng đang được xử lý';
+                break;
+            case 'pending':
+                $description = 'Đơn hàng đang chờ xử lý';
+                break;
+            case 'returned':
+                $description = 'Đơn hàng đã được trả lại';
+                break;
+            default:
+                $description = null;
+        }
+
+        DB::table('order_status_history')->insert([
+            'order_id' => $order->id,
+            'order_status' => $order->order_status,
+            'description' => $description,
+            'note' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $order->save();
+        return true;
+    }
+
 }
