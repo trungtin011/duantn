@@ -31,7 +31,9 @@ class User extends Authenticatable
         'is_verified',
         'birthday',
         'rank',
-         'total_spent'
+        'total_spent',
+        'reset_code',
+        'reset_code_expires_at'
     ];
 
     protected $hidden = [
@@ -48,6 +50,7 @@ class User extends Authenticatable
         'gender' => UserGender::class,
         'role' => UserRole::class,
         'total_spent' => 'decimal:2',
+        'reset_code_expires_at' => 'datetime',
     ];
 
     // Relationships
