@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title')</title>
     <!-- Quill CSS -->
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
@@ -321,27 +322,180 @@
                 </form>
                 <div class="right relative">
                     <!-- Nút thông báo -->
-                    <div class="border border-1 p-1 rounded-[4px] w-[38px] h-[38px] relative cursor-pointer flex items-center justify-center"
-                        id="notification-btn">
-                        <div
-                            class="bg-red-500 flex items-center justify-center rounded-full w-[16px] h-[16px] absolute top-0 right-0">
-                            <span class="text-white text-xs">9</span>
+                    <div class="relative dropdown-notification cursor-pointer">
+                        <div class="flex items-center gap-1 hover:text-[#EF3248] cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                            </svg>
+                            <span class="capitalize text-sm">Thông báo</span>
+                            @auth
+                                @php
+                                    $unreadCount = 0;
+                                    if (isset($groupedNotifications)) {
+                                        foreach ($groupedNotifications as $type => $notifications) {
+                                            $unreadCount += $notifications->where('status', 'unread')->count();
+                                        }
+                                    }
+                                @endphp
+                                @if ($unreadCount > 0)
+                                    <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                                        {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                                    </span>
+                                @endif
+                            @endauth
                         </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                        </svg>
-                    </div>
-                    <!-- Dropdown thông báo -->
-                    <div id="notification-dropdown"
-                        class="absolute top-[110%] right-0 w-[250px] bg-white shadow-lg border rounded-md hidden">
-                        <div class="p-2 text-sm font-semibold border-b">Thông báo</div>
-                        <ul class="text-sm">
-                            <li class="p-2 border-b cursor-pointer hover:bg-gray-100">Bạn có một tin nhắn mới</li>
-                            <li class="p-2 border-b cursor-pointer hover:bg-gray-100">Cập nhật hệ thống</li>
-                            <li class="p-2 cursor-pointer hover:bg-gray-100">Thời gian đăng ký sẽ hết hạn sớm!</li>
-                        </ul>
+                        <div
+                            class="absolute dropdown-notification-content z-10 right-0 bg-white w-[400px] max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden">
+                            <!-- Thêm phần nhô lên -->
+                            <div class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle">
+                            </div>
+
+                            @auth
+                                @if (isset($groupedNotifications) && $groupedNotifications->count() > 0)
+                                    <div class="p-4">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <span class="text-sm font-semibold text-gray-700">Thông báo mới</span>
+                                            <a href="{{ route('admin.notifications.index') }}" class="text-xs text-blue-600 hover:text-blue-800">Xem tất cả</a>
+                                        </div>
+
+                                        @foreach ($groupedNotifications as $type => $notifications)
+                                            <!-- Notification Type Header -->
+                                            <div class="mb-3">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <div
+                                                        class="w-2 h-2 rounded-full 
+                                                        @switch($type)
+                                                            @case('order')
+                                                                bg-blue-500
+                                                                @break
+                                                            @case('promotion')
+                                                                bg-green-500
+                                                                @break
+                                                            @case('system')
+                                                                bg-purple-500
+                                                                @break
+                                                            @case('security')
+                                                                bg-red-500
+                                                                @break
+                                                            @default
+                                                                bg-gray-500
+                                                        @endswitch">
+                                                    </div>
+                                                    <h4 class="text-xs font-medium text-gray-500 uppercase">
+                                                        @switch($type)
+                                                            @case('order')
+                                                                Đơn hàng
+                                                            @break
+
+                                                            @case('promotion')
+                                                                Khuyến mãi
+                                                            @break
+
+                                                            @case('system')
+                                                                Hệ thống
+                                                            @break
+
+                                                            @case('security')
+                                                                Bảo mật
+                                                            @break
+
+                                                            @default
+                                                                {{ ucfirst($type) }}
+                                                        @endswitch
+                                                    </h4>
+                                                    <span class="text-xs text-gray-400">({{ $notifications->count() }})</span>
+                                                </div>
+
+                                                @foreach ($notifications->sortByDesc('created_at')->take(3) as $notification)
+                                                    <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ $notification->status === 'unread' ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
+                                                        data-notification-id="{{ $notification->id }}"
+                                                        data-notification-type="{{ $notification->type }}">
+                                                        <div class="flex-shrink-0">
+                                                            @if ($notification->image_path)
+                                                                <div class="w-10 h-10 rounded-full flex items-center justify-center">
+                                                                    <img src="{{ asset('images/notifications/' . $notification->image_path) }}" alt="Notification Image" class="w-full h-full rounded-full">
+                                                                </div>
+                                                            @else
+                                                                <div class="w-10 h-10 rounded-full flex items-center justify-center">
+                                                                    <img src="{{ asset('images/logo.jpg') }}" alt="Notification Image" class="w-full h-full rounded-full">
+                                                                </div>
+                                                            @endif
+
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="flex items-center justify-between">
+                                                                <p class="text-sm font-medium text-gray-900 truncate">
+                                                                    {{ $notification->title }}
+                                                                </p>
+                                                                @if ($notification->priority === 'high')
+                                                                    <span
+                                                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                        Quan trọng
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                                {{ $notification->content }}
+                                                            </p>
+                                                            <div class="flex items-center justify-between mt-2">
+                                                                <p class="text-xs text-gray-400">
+                                                                    {{ $notification->created_at->diffForHumans() }}
+                                                                </p>
+                                                                @php
+                                                                    $isRead = false;
+                                                                    if ($notification->receiver && $notification->receiver->count() > 0) {
+                                                                        foreach ($notification->receiver as $receiver) {
+                                                                            if ($receiver->receiver_id == auth()->id()) {
+                                                                                $isRead = $receiver->is_read;
+                                                                                break;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                @endphp
+                                                                @if ($isRead === false)
+                                                                    <div class="w-2 h-2 bg-blue-500 rounded-full unread-dot" data-notification-id="{{ $notification->id }}"></div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+
+                                                @if ($notifications->count() > 3)
+                                                    <div class="text-center py-2">
+                                                        <a href="{{ route('admin.notifications.index', ['type' => $type]) }}"
+                                                            class="text-xs text-blue-600 hover:text-blue-800">
+                                                            Xem thêm {{ $notifications->count() - 3 }} thông báo
+                                                            {{ strtolower($type) }}
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="p-8 text-center">
+                                        <div
+                                            class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-gray-400">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-sm text-gray-500">Không có thông báo mới</p>
+                                    </div>
+                                @endif
+                            @endauth
+                            @guest
+                                <div class="p-6 text-center">
+                                    <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
+                                    <a href="{{ route('login') }}"
+                                        class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng nhập</a>
+                                </div>
+                            @endguest
+                        </div>
                     </div>
                     <div class="relative">
                         <div
@@ -421,6 +575,118 @@
     @vite('resources/js/admin/admin.js')
     @vite('resources/js/admin/order.js')
     @vite('resources/js/admin/category.js')
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationBtn = document.querySelector('.dropdown-notification');
+            const dropdownContent = document.querySelector('.dropdown-notification-content');
+            
+            if (notificationBtn && dropdownContent) {
+                notificationBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownContent.classList.toggle('hidden');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!notificationBtn.contains(e.target)) {
+                        dropdownContent.classList.add('hidden');
+                    }
+                });
+                
+                const notificationItems = dropdownContent.querySelectorAll('[data-notification-id]');
+                notificationItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const notificationId = this.getAttribute('data-notification-id');
+                        markNotificationAsRead(notificationId);
+                    });
+                });
+            }
+            
+            function markNotificationAsRead(notificationId) {
+                fetch(`/notifications/${notificationId}/mark-read`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Notification marked as read:', data);
+                        const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                        if (notificationItem) {
+                            // Remove unread styling
+                            notificationItem.classList.remove('bg-blue-50', 'border-blue-500');
+                            notificationItem.classList.add('border-transparent');
+                            
+                            // Remove unread dot using the specific class
+                            const unreadDot = notificationItem.querySelector('.unread-dot');
+                            if (unreadDot) {
+                                unreadDot.remove();
+                            }
+                            
+                            // Alternative: find dot by checking if it's the last div in the flex container
+                            const timeContainer = notificationItem.querySelector('.flex.items-center.justify-between.mt-2');
+                            if (timeContainer) {
+                                const lastChild = timeContainer.lastElementChild;
+                                if (lastChild && lastChild.classList.contains('w-2') && lastChild.classList.contains('h-2') && lastChild.classList.contains('bg-blue-500')) {
+                                    lastChild.remove();
+                                }
+                            }
+                        }
+                        updateUnreadCount();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                });
+            }
+            
+            function updateUnreadCount() {
+                const unreadCountElement = document.querySelector('.bg-red-500.text-white.text-xs');
+                if (unreadCountElement) {
+                    const currentCount = parseInt(unreadCountElement.textContent);
+                    if (currentCount > 1) {
+                        unreadCountElement.textContent = currentCount - 1;
+                    } else {
+                        // Remove the entire notification badge container
+                        const badgeContainer = unreadCountElement.closest('.bg-red-500.text-white.text-xs.rounded-full');
+                        if (badgeContainer) {
+                            badgeContainer.remove();
+                        } else {
+                            // Fallback: remove the parent element
+                            unreadCountElement.parentElement.remove();
+                        }
+                    }
+                }
+                
+                // Also update the total unread count in the header
+                const totalUnreadCount = document.querySelectorAll('[data-notification-id]').length;
+                if (totalUnreadCount === 0) {
+                    // Hide notification badge completely if no unread notifications
+                    const notificationBadge = document.querySelector('.bg-red-500.text-white.text-xs');
+                    if (notificationBadge) {
+                        notificationBadge.style.display = 'none';
+                    }
+                }
+            }
+            
+            // Debug function to check unread dots
+            function debugUnreadDots() {
+                const unreadDots = document.querySelectorAll('.unread-dot');
+                console.log('Found unread dots:', unreadDots.length);
+                unreadDots.forEach((dot, index) => {
+                    console.log(`Dot ${index + 1}:`, dot);
+                    console.log(`Dot classes:`, dot.className);
+                    console.log(`Dot data-notification-id:`, dot.getAttribute('data-notification-id'));
+                });
+            }
+            
+            // Call debug function on load
+            setTimeout(debugUnreadDots, 1000);
+        });
+    </script>
 </body>
 
 </html>

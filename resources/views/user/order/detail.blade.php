@@ -321,6 +321,152 @@
                 </div>
             </div>
         </div>
+
+        <!-- History Section -->
+        <div class="mt-8">
+            <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+                <h5 class="font-semibold text-gray-800 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Lịch sử đơn hàng
+                </h5>
+                
+                <div class="relative">
+                    <!-- Timeline line -->
+                    <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                    
+                    <div class="space-y-6">
+                        <!-- Order Created -->
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <h6 class="text-sm font-semibold text-gray-900">Đơn hàng được tạo</h6>
+                                    <span class="text-xs text-gray-500">{{ $order->created_at->format('d/m/Y H:i') }}</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">Đơn hàng #{{ $order->code ?? 'N/A' }} đã được tạo thành công</p>
+                            </div>
+                        </div>
+
+                        <!-- Payment Status -->
+                        @if($order->order->payment_status)
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0 w-12 h-12 
+                                @if($order->order->payment_status === 'paid') bg-green-100
+                                @elseif($order->order->payment_status === 'pending') bg-yellow-100
+                                @else bg-gray-100 @endif rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 
+                                    @if($order->order->payment_status === 'paid') text-green-600
+                                    @elseif($order->order->payment_status === 'pending') text-yellow-600
+                                    @else text-gray-600 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <h6 class="text-sm font-semibold text-gray-900">Thanh toán</h6>
+                                    @if(isset($order->order->paid_at))
+                                    <span class="text-xs text-gray-500">{{ $order->order->paid_at->format('d/m/Y H:i') }}</span>
+                                    @else
+                                    <span class="text-xs text-gray-500">Chưa thanh toán</span>
+                                    @endif
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Trạng thái thanh toán: 
+                                    <span class="font-medium 
+                                        @if($order->order->payment_status === 'paid') text-green-600
+                                        @elseif($order->order->payment_status === 'pending') text-yellow-600
+                                        @else text-gray-600 @endif">
+                                        {{ $order->order->payment_status === 'paid' ? 'Đã thanh toán' : ($order->order->payment_status === 'pending' ? 'Chờ thanh toán' : 'Chưa xác định') }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Order Status Changes -->
+                        @php
+                        $statusHistory = [
+                            'pending' => [
+                                'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', // đồng hồ
+                                'color' => 'yellow',
+                                'text' => 'Chờ xác nhận'
+                            ],
+                            'confirmed' => [
+                                'icon' => 'M5 13l4 4L19 7', // check
+                                'color' => 'orange',
+                                'text' => 'Chờ xác nhận'
+                            ],
+                            'ready_to_pick' => [
+                                'icon' => 'M3 3h2l.4 2M7 13h10l1.5 6H6.5L7 13zm1.5-8h7l1 4H7.5l1-4z', // xe đẩy hàng
+                                'color' => 'green',
+                                'text' => 'Chờ lấy hàng'
+                            ],
+                            'picked' => [
+                                'icon' => 'M3 4.5A2.5 2.5 0 015.5 2h13A2.5 2.5 0 0121 4.5v11a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 15.5v-11zM5 6h14M5 10h14', // hộp hàng
+                                'color' => 'teal',
+                                'text' => 'Đơn vị vận chuyển đã lấy hàng'
+                            ],
+                            'shipping' => [
+                                'icon' => 'M3 9l1.5 6h13l1.5-6H3zm16 6a2 2 0 100 4 2 2 0 000-4zm-12 0a2 2 0 100 4 2 2 0 000-4z', // xe tải (delivery truck)
+                                'color' => 'purple',
+                                'text' => 'Đang giao hàng'
+                            ],
+                            'delivered' => [
+                                'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', // success check
+                                'color' => 'lime',
+                                'text' => 'Đã giao hàng'
+                            ],
+                            'cancelled' => [
+                                'icon' => 'M6 18L18 6M6 6l12 12', // dấu X
+                                'color' => 'red',
+                                'text' => 'Đã hủy'
+                            ],
+                            'completed' => [
+                                'icon' => 'M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2zm2 7l3 3 6-6', // check trong khung
+                                'color' => 'blue',
+                                'text' => 'Đã hoàn thành'
+                            ],
+                            'refunded' => [
+                                'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', // tờ hóa đơn
+                                'color' => 'pink',
+                                'text' => 'Đã hoàn tiền'
+                            ]
+                        ];
+
+                        @endphp
+
+                        @foreach ($order->history as $history)
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0 w-12 h-12 
+                                @if(isset($statusHistory[$history->status])) bg-{{ $statusHistory[$history->status]['color'] }}-100 @else bg-gray-100 @endif rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 
+                                    @if(isset($statusHistory[$history->status])) text-{{ $statusHistory[$history->status]['color'] }}-600 @else text-gray-600 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $statusHistory[$history->status]['icon'] ?? 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' }}"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <h6 class="text-sm font-semibold text-gray-900">Trạng thái đơn hàng</h6>
+                                    <span class="text-xs text-gray-500">{{ $history->created_at->format('d/m/Y H:i') }}</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    {{ $statusHistory[$history->status]['text']  }}
+                                </p>
+                            </div>
+                        </div>
+                        @endforeach
+                        <!-- Shipping Information -->
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 

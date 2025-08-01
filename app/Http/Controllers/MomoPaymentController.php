@@ -98,18 +98,11 @@ class MomoPaymentController extends Controller
                     Log::info('MoMo Payment Success - Redirecting to:', [
                         'pay_url' => $responseData['payUrl']
                     ]);
-
                     return redirect()->away($responseData['payUrl']);
                 }
-
-                Log::warning('MoMo Payment Failed - No Pay URL');
-                return redirect()->route('checkout')->with('error', 'Không thể lấy link thanh toán từ MoMo.');
             }
 
             $responseData = $response->json();
-
-            return redirect()->route('checkout')->with('error', $responseData['message'] ?? 'Không thể kết nối với MoMo.');
-
 
             return redirect()->route('checkout')->with('error', $responseData['message'] ?? 'Không thể kết nối với MoMo.');
         } catch (\Exception $e) {
@@ -172,7 +165,7 @@ class MomoPaymentController extends Controller
                 $checkoutController->createPaymentTransaction($order, $data);
                 return redirect()->route('checkout.success', ['order_code' => $orderCode]);
             } else {
-                return redirect()->route('checkout.failed', ['order_code' => $orderCode])->with('error', 'Thanh toán thất bại');
+                return redirect()->route('failed_payment', ['order_code' => $orderCode])->with('error', 'Thanh toán thất bại');
             }
         } catch (\Exception $e) {
             Log::error('MoMo Return Exception:', [

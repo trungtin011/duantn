@@ -125,6 +125,7 @@ Route::get('/auth/google', [LoginController::class, 'redirectToGoogle'])->name('
 Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallback']);
 Route::get('/auth/facebook', [LoginController::class, 'redirectToFacebook'])->name('auth.facebook.login');
 Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCallback']);
+Route::post('notifications/{id}/mark-read', [AdminNotificationsControllers::class, 'markAsRead'])->name('admin.notifications.markAsRead');
 
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
@@ -189,6 +190,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
         Route::get('/{id}', [AdminNotificationsControllers::class, 'show'])->name('admin.notifications.show');
         Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
+        Route::patch('/{id}/toggle-status', [AdminNotificationsControllers::class, 'toggleStatus'])->name('admin.notifications.toggleStatus');
     });
 
     // products categories
@@ -423,7 +425,7 @@ Route::prefix('customer')->group(function () {
         Route::post('/checkout/submit', [CheckoutController::class, 'store'])->name('checkout.store');
         Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
         Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
-        Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
+        Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('failed_payment');
 
         Route::get('/checkout/momo/return', [MomoPaymentController::class, 'momoReturn'])->name('payment.momo.return');
         Route::post('/checkout/momo/ipn', [MomoPaymentController::class, 'momoIpn'])->name('payment.momo.ipn');
@@ -588,6 +590,7 @@ Route::get('/account/password/verify-code', [UserController::class, 'showVerifyC
     ->name('account.password.code.verify.form');
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
 Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');

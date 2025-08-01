@@ -48,8 +48,9 @@ class OrderStatusUpdate implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'title' => 'Trạng thái đơn hàng ' . $this->order->code,
-            'content' => 'Trạng thái đã được cập nhật thành ' . $this->status,
+            'title' => 'Đơn hàng ' . $this->order->order->order_code . ' vừa có cập nhật',
+            'content' => 'Trạng thái mới : ' . $this->stranlateToVietnamese($this->status),
+            'image_path' => 'images/notifications/default-order.png',
             'receiver_type' => 'user',
             'type' => 'order',
             'priority' => 'normal',
@@ -66,6 +67,7 @@ class OrderStatusUpdate implements ShouldBroadcast
         $notification->receiver_type = $data['receiver_type'];
         $notification->type = $data['type'];
         $notification->priority = $data['priority'];
+        $notification->order_code = $this->order->order->order_code;
         $notification->save();
 
         $notificationReceiver = new NotificationReceiver();
@@ -92,5 +94,16 @@ class OrderStatusUpdate implements ShouldBroadcast
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    private function stranlateToVietnamese($status)
+    {
+        $status = str_replace('pending', 'Chờ xác nhận', $status);
+        $status = str_replace('confirmed', 'Đã xác nhận', $status);
+        $status = str_replace('processing', 'Đang xử lý', $status);
+        $status = str_replace('shipped', 'Đang giao', $status);
+        $status = str_replace('delivered', 'Đã giao', $status);
+        $status = str_replace('cancelled', 'Đã hủy', $status);
+        return $status;
     }
 }

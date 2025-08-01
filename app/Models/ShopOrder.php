@@ -45,4 +45,8 @@ class ShopOrder extends Model
     {
         return $this->hasMany(ItemsOrder::class, 'shop_orderID', 'id');
     }
+
+    public function history(){
+        return $this->hasMany(ShopOrderHistory::class, 'shop_order_id', 'id');
+    }
 }
