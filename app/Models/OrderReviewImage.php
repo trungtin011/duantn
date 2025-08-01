@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderReviewImage extends Model
 {
-    use HasFactory;
+    protected $table = 'order_review_images';
 
     protected $fillable = ['review_id', 'image_path'];
 

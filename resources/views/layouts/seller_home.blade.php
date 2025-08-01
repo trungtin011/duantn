@@ -296,8 +296,9 @@
                                 <a href="#" class="link_admin">Quản lý Chat</a>
                             </li>
                             <li class="text-sm text-[#64748b]">
-                                <a href="#" class="link_admin">Quản lý Đánh Giá</a>
+                                <a href="{{ route('seller.reviews.index') }}" class="link_admin">Quản lý Đánh Giá</a>
                             </li>
+
                         </ul>
                     </div>
 

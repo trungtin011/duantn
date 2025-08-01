@@ -157,26 +157,38 @@ class User extends Authenticatable
         };
     }
     public function updateRank()
-{
-    $ranks = [
-        ['name' => 'iron', 'threshold' => 0], // Start at 0 for iron
-        ['name' => 'bronze', 'threshold' => 1000000], 
-        ['name' => 'silver', 'threshold' => 5000000], 
-        ['name' => 'gold', 'threshold' => 10000000], 
-        ['name' => 'diamond', 'threshold' => 20000000], 
-        ['name' => 'supreme', 'threshold' => 50000000], 
-    ];
+    {
+        $ranks = [
+            ['name' => 'iron', 'threshold' => 0], // Start at 0 for iron
+            ['name' => 'bronze', 'threshold' => 1000000],
+            ['name' => 'silver', 'threshold' => 5000000],
+            ['name' => 'gold', 'threshold' => 10000000],
+            ['name' => 'diamond', 'threshold' => 20000000],
+            ['name' => 'supreme', 'threshold' => 50000000],
+        ];
 
-    $currentRank = 'iron';
-    foreach ($ranks as $rank) {
-        if ($this->total_spent >= $rank['threshold']) {
-            $currentRank = $rank['name'];
-        } else {
-            break;
+        $currentRank = 'iron';
+        foreach ($ranks as $rank) {
+            if ($this->total_spent >= $rank['threshold']) {
+                $currentRank = $rank['name'];
+            } else {
+                break;
+            }
         }
+
+        $this->rank = $currentRank;
+        $this->save();
     }
 
-    $this->rank = $currentRank;
-    $this->save();
-}
+    public function products()
+    {
+        return $this->hasManyThrough(
+            Product::class,
+            Shop::class,
+            'ownerID',   // trong bảng shops
+            'shopID',   // trong bảng products
+            'id',        // khóa chính của users
+            'id'         // khóa chính của shops
+        );
+    }
 }

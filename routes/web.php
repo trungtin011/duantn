@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
+
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -40,6 +41,8 @@ use App\Http\Controllers\Seller\SellerSettingsController;
 use App\Http\Controllers\Seller\ChatSettingsController;
 use App\Http\Controllers\Seller\ShopCategoryController;
 use App\Http\Controllers\Seller\CouponControllerSeller;
+use App\Http\Controllers\Seller\ReviewController;
+
 //user
 use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\User\HomeController;
@@ -608,3 +611,6 @@ Route::get('/notifications', [NotificationController::class, 'index'])->name('no
 
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
 Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
+Route::get('/seller/reviews', [ReviewController::class, 'index'])->name('seller.reviews.index');
+Route::post('/seller/reviews/{review}/reply', [ReviewController::class, 'reply'])
+    ->name('seller.reviews.reply');

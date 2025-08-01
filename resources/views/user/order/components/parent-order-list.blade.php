@@ -30,7 +30,6 @@
             </span>
         </div>
 
-        . 
         <div class="order-body px-6 py-5 {{ $parentOrder->order_status === 'cancelled' ? 'filter grayscale opacity-75' : '' }}">
             @php
                 // Nhóm các sản phẩm theo shop
