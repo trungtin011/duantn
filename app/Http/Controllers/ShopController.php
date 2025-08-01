@@ -12,8 +12,16 @@ class ShopController extends Controller
 {
     public function show($id)
     {
-        $shop = Shop::with(['products', 'user', 'address', 'products.orderReviews'])->findOrFail($id);
-
+        $shop = Shop::with([
+            'products.images', 
+            'products.orderReviews',
+            'combos.products.product.images',
+            'categories',
+            'user', 
+            'owner',
+            'address', 
+            'followers'
+        ])->findOrFail($id);
 
         return view('shop.profile', compact('shop'));
     }
@@ -43,20 +51,44 @@ class ShopController extends Controller
 
         $products = $shop->products()
             ->where('name', 'like', '%' . $query . '%')
-            ->with('images', 'reviews')
+            ->with(['images', 'orderReviews'])
             ->get();
+
+        // Load all necessary relationships for the shop
+        $shop->load([
+            'products.images', 
+            'products.orderReviews',
+            'combos.products.product.images',
+            'categories',
+            'user', 
+            'owner',
+            'address', 
+            'followers'
+        ]);
 
         return view('shop.profile', compact('shop', 'products', 'query'));
     }
     
     public function productsByCategory($shopId, $categoryId)
     {
-        $shop = Shop::with('categories', 'products.images', 'owner', 'followers', 'address')->findOrFail($shopId);
+        $shop = Shop::with([
+            'products.images', 
+            'products.orderReviews',
+            'combos.products.product.images',
+            'categories',
+            'user', 
+            'owner',
+            'address', 
+            'followers'
+        ])->findOrFail($shopId);
 
         $category = $shop->categories()->findOrFail($categoryId);
 
         // Lấy sản phẩm thuộc danh mục này trong shop
-        $products = $category->products()->where('shopID', $shop->id)->with('images', 'reviews')->get();
+        $products = $category->products()
+            ->where('shopID', $shop->id)
+            ->with(['images', 'orderReviews'])
+            ->get();
 
         return view('shop.profile', compact('shop', 'products'));
     }

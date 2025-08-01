@@ -59,9 +59,9 @@ use App\Http\Controllers\User\FrontendController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\User\ComboController as UserComboController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\User\ComboController as UserComboController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -337,7 +337,9 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 });
 
 Route::prefix('customer')->group(function () {
+    // Route chi tiết sản phẩm
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
+    // Route xem nhanh sản phẩm
     Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
     // Route tìm kiếm sản phẩm
     Route::get('/search', [ProductController::class, 'search'])->name('search');
@@ -347,7 +349,7 @@ Route::prefix('customer')->group(function () {
     Route::post('/shop/{shop}/follow', [ShopController::class, 'follow'])->middleware('auth')->name('shop.follow');
     // Route unfollow shop
     Route::post('/shop/{shop}/unfollow', [ShopController::class, 'unfollow'])->name('shop.unfollow');
-    // Route search products
+    // Route tìm kiếm sản phẩm của shop
     Route::get('/shop/{shop}/search', [ShopController::class, 'searchProducts'])->name('shop.search');
     // Route show shop
     Route::get('/shop/{shop}', [ShopController::class, 'show'])->name('shop.show');
@@ -355,13 +357,21 @@ Route::prefix('customer')->group(function () {
     Route::get('/shop/{shop}/category/{category}', [ShopController::class, 'productsByCategory'])->name('shop.category');
     // Route bình luận sản phẩm
     Route::post('/product/{productId}/review', [ProductController::class, 'storeReview'])->name('product.review');
+    // Route thêm/xoá sản phẩm yêu thích
     Route::post('/product/{productId}/toggle-wishlist', [ProductController::class, 'toggleWishlist'])->name('product.toggleWishlist');
+    // Route báo cáo sản phẩm
     Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
+    // Route lưu mã giảm giá
     Route::post('/coupon/{couponId}/save', [ProductController::class, 'saveCoupon'])->name('coupon.save');
+    // Route lưu tất cả mã giảm giá của shop
     Route::post('/shop/{shopId}/save-all-coupons', [ProductController::class, 'saveAllCoupons'])->name('shop.saveAllCoupons');
-    // Like/Unlike review (OrderReview)
+    // Route like/unlike review (OrderReview)
     Route::post('/review/{reviewId}/like', [ProductController::class, 'likeReview'])->name('review.like')->middleware('auth');
-    // Route mua ngay
+    // Route Danh sách combo
+    Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
+    // Route xem chi tiết combo
+    Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
+    // Route mua ngay sản phẩm
     Route::post('/instant-buy', [ProductController::class, 'instantBuy'])->name('instant-buy');
     Route::get('/contact', function () {
         return view('user.contact');
@@ -589,6 +599,6 @@ Route::get('/account/password/verify-code', [UserController::class, 'showVerifyC
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
-Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
+
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
 Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');

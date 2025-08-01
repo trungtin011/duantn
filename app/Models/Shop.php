@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ShopAddress;
 use App\Models\ShopShippingOption;
+use App\Models\Combo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shop extends Model
@@ -116,5 +117,10 @@ class Shop extends Model
     public function categories()
     {
         return $this->hasMany(\App\Models\ShopCategory::class);
+    }
+
+    public function combos()
+    {
+        return $this->hasMany(Combo::class, 'shopID', 'id');
     }
 }

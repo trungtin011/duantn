@@ -25,7 +25,7 @@
 
 <body>
 
-    <div class="container mx-auto px-4">
+    <div class="container w-[1200px] mx-auto px-4">
         <div class="container mx-auto px-[10px] sm:px-0 pb-3 flex justify-between items-center">
             <!-- Logo -->
             @if (empty($settings->logo))
@@ -122,7 +122,7 @@
             </div>
         </div>
         <!-- Danh mục sản phẩm của shop -->
-        @if ($shop->categories->count())
+        @if ($shop->categories && $shop->categories->count())
             <div class="mb-6">
                 <h3 class="text-base font-semibold text-gray-700 mb-2">Danh mục sản phẩm</h3>
                 <div class="flex flex-wrap gap-2">
@@ -143,21 +143,73 @@
         <!-- Danh sách sản phẩm -->
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Sản phẩm từ shop</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            @foreach ($products ?? $shop->products as $product)
-                <a href="{{ route('product.show', $product->slug) }}"
-                    class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
-                    <img src="{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
-                        class="rounded-md w-full h-36 object-cover mb-2" alt="{{ $product->name }}">
-                    <div class="font-semibold text-sm truncate">{{ $product->name }}</div>
-                    <div class="text-[#e03e2f] font-bold text-sm">
-                        {{ number_format($product->display_price, 0, ',', '.') }}đ</div>
-                    <div class="text-[11px] text-[#777] mt-1">
-                        <i class="fas fa-star text-yellow-400"></i>
-                        {{ number_format($product->reviews->avg('rating'), 1) ?? '0.0' }} • Đã bán
-                        {{ $product->sold_quantity ?? 0 }}
-                    </div>
-                </a>
-            @endforeach
+            @if(isset($products) && $products && $products->count() > 0)
+                @foreach ($products as $product)
+                    <a href="{{ route('product.show', $product->slug) }}"
+                        class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
+                        <img src="{{ $product->images && $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images && $product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
+                            class="rounded-md w-full h-36 object-cover mb-2" alt="{{ $product->name }}">
+                        <div class="font-semibold text-sm truncate">{{ $product->name }}</div>
+                        <div class="text-[#e03e2f] font-bold text-sm">
+                            {{ number_format($product->display_price ?? $product->price, 0, ',', '.') }}đ</div>
+                        <div class="text-[11px] text-[#777] mt-1">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            0.0 • Đã bán {{ $product->sold_quantity ?? 0 }}
+                        </div>
+                    </a>
+                @endforeach
+            @elseif($shop->products && $shop->products->count() > 0)
+                @foreach ($shop->products as $product)
+                    <a href="{{ route('product.show', $product->slug) }}"
+                        class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
+                        <img src="{{ $product->images && $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images && $product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
+                            class="rounded-md w-full h-36 object-cover mb-2" alt="{{ $product->name }}">
+                        <div class="font-semibold text-sm truncate">{{ $product->name }}</div>
+                        <div class="text-[#e03e2f] font-bold text-sm">
+                            {{ number_format($product->display_price ?? $product->price, 0, ',', '.') }}đ</div>
+                        <div class="text-[11px] text-[#777] mt-1">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            0.0 • Đã bán {{ $product->sold_quantity ?? 0 }}
+                        </div>
+                    </a>
+                @endforeach
+            @else
+                <p class="text-gray-500 col-span-full text-center py-8">Không có sản phẩm nào.</p>
+            @endif
+        </div>
+
+        <!-- Danh sách combo -->
+        <h2 class="text-lg font-semibold text-gray-800 mb-4 mt-10">Combo từ shop</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            @if($shop->combos && $shop->combos->count() > 0)
+                @foreach ($shop->combos as $combo)
+                    <a href="{{ route('combo.show', $combo->id) }}"
+                        class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
+                        @php
+                            $comboImage = 'images/default.jpg';
+                            if ($combo->products && $combo->products->count() > 0) {
+                                $firstComboProduct = $combo->products->first();
+                                if ($firstComboProduct && $firstComboProduct->product) {
+                                    if ($firstComboProduct->product->images && $firstComboProduct->product->images->count() > 0) {
+                                        $comboImage = asset('storage/' . $firstComboProduct->product->images->first()->image_path);
+                                    }
+                                }
+                            }
+                        @endphp
+                        <img src="{{ $comboImage }}"
+                            class="rounded-md w-full h-36 object-cover mb-2" alt="{{ $combo->combo_name }}">
+                        <div class="font-semibold text-sm truncate">{{ $combo->combo_name }}</div>
+                        <div class="text-[#e03e2f] font-bold text-sm">
+                            {{ number_format($combo->total_price, 0, ',', '.') }}đ</div>
+                        <div class="text-[11px] text-[#777] mt-1">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            0.0 • Đã bán {{ $combo->sold_quantity ?? 0 }}
+                        </div>
+                    </a>
+                @endforeach
+            @else
+                <p class="text-gray-500 col-span-full text-center py-8">Không có combo nào.</p>
+            @endif
         </div>
     </div>
 

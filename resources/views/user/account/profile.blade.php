@@ -12,14 +12,14 @@
                 class="text-green-600 bg-green-100 border border-green-400 p-3 rounded mb-4 relative flex items-center justify-between">
                 <span>{{ session('success') }}</span>
                 <button type="button" class="text-green-600 hover:text-green-800 ml-4"
-                    onclick="this.parentElement.style.display='none'">&times;</button>
+                    onclick="this.parentElement.style.display='none'">×</button>
             </div>
         @elseif (session('error'))
             <div
                 class="text-red-600 bg-red-100 border border-red-400 p-3 rounded mb-4 relative flex items-center justify-between">
                 <span>{{ session('error') }}</span>
                 <button type="button" class="text-red-600 hover:text-red-800 ml-4"
-                    onclick="this.parentElement.style.display='none'">&times;</button>
+                    onclick="this.parentElement.style.display='none'">×</button>
             </div>
         @endif
 
@@ -38,7 +38,7 @@
                     <div class="flex flex-col gap-[20px] w-[500px]">
                         <div class="">
                             <input type="text" name="username" value="{{ old('username', auth()->user()->username) }}"
-                        class="w-full border rounded px-3 py-2" required>
+                                class="w-full border rounded px-3 py-2" required>
                             @error('username')
                                 <p class="text-red-600 text-sm">{{ $message }}</p>
                             @enderror
@@ -151,9 +151,13 @@
                         @error('avatar')
                             <p class="text-red-600 text-sm">{{ $message }}</p>
                         @enderror
+
                     </div>
+
                 </div>
+
             </div>
+
             <br class="my-6 border-t border-gray-200">
             <!-- Submit Button -->
             <div class="w-[540px] transform translate-x-1/2">
@@ -226,11 +230,12 @@
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'w-full h-full rounded-full object-cover user-avatar';
-                    
+
                     const container = document.createElement('div');
-                    container.className = 'w-20 h-20 rounded-full flex items-center justify-center overflow-hidden avatar-container';
+                    container.className =
+                        'w-20 h-20 rounded-full flex items-center justify-center overflow-hidden avatar-container';
                     container.appendChild(img);
-                    
+
                     preview.innerHTML = ''; // Xóa ảnh cũ
                     preview.appendChild(container);
                 };
@@ -242,15 +247,16 @@
                     const img = document.createElement('img');
                     img.src = '{{ getUserAvatar($user->avatar) }}';
                     img.className = 'w-full h-full rounded-full object-cover user-avatar';
-                    
+
                     const container = document.createElement('div');
-                    container.className = 'w-20 h-20 rounded-full flex items-center justify-center overflow-hidden avatar-container';
+                    container.className =
+                        'w-20 h-20 rounded-full flex items-center justify-center overflow-hidden avatar-container';
                     container.appendChild(img);
                     preview.appendChild(container);
                 @else
                     const placeholder = document.createElement('div');
                     placeholder.className = 'w-20 h-20 rounded-full avatar-placeholder text-xl';
-                    placeholder.textContent = '{{ strtoupper(substr($user->fullname ?? $user->username ?? "U", 0, 1)) }}';
+                    placeholder.textContent = '{{ strtoupper(substr($user->fullname ?? ($user->username ?? 'U'), 0, 1)) }}';
                     preview.appendChild(placeholder);
                 @endif
             }

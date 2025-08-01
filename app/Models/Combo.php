@@ -30,4 +30,11 @@ class Combo extends Model
     {
         return $this->hasMany(ComboProduct::class, 'comboID');
     }
+
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'combo_id');
+    }
+    
 }
