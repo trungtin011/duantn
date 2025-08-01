@@ -639,6 +639,8 @@
                             </form>
                         </div>
 
+                        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+
                         <!-- Hidden Checkout Form -->   
                         <form id="checkout-form" class="hidden">
                             @csrf
@@ -650,6 +652,7 @@
                             <input type="hidden" name="discount_amount" id="discount_amount">
                             <input type="hidden" name="total_amount" id="total_amount">
                             <input type="hidden" name="user_points" id="user_points">
+                            <input type="hidden" name="recaptcha_token" id="recaptcha_token">
                             @foreach ($groupedItems as $shopId => $shopData)
                                 <input type="hidden" name="shop_discount_code[{{ $shopId }}]" id="hidden_shop_discount_code_{{ $shopId }}">
                             @endforeach
@@ -657,7 +660,7 @@
 
                         <!-- Place Order Button -->
                         <button type="button" id="place-order-btn"
-                                class="w-full bg-primary text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-primary-dark transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                class="w-full bg-primary text-dark py-3 px-6 rounded-lg text-lg font-semibold hover:bg-primary-dark transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                             <i class="fas fa-shopping-bag mr-2"></i> Đặt hàng ({{ number_format(0, 0, ',', '.') }}₫)
                         </button>
 

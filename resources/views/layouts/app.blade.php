@@ -458,16 +458,31 @@
                 <i class="fa fa-bars"></i>
             </button>
 
-            <!-- Search & Icons -->
-            <div class="hidden md:flex items-center gap-10 w-5/6">
-                <form action="{{ route('search') }}" method="GET"
-                    class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between">
-                    <input type="text" name="query" placeholder="Bạn muốn tìm kiếm gì ?"
-                        class="text-sm focus:outline-none w-full" value="{{ request('query') }}" />
-                    <button type="submit">
-                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
-                    </button>
+        <!-- Search & Icons -->
+        <div class="hidden md:flex items-center gap-10 w-5/6">
+            <form action="{{ route('search') }}" method="GET"
+                id="searchForm"
+                class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between relative">
+                
+                <input
+                    type="text"
+                    name="query"
+                    id="searchInput"
+                    placeholder="Bạn muốn tìm kiếm gì ?"
+                    class="text-sm focus:outline-none w-full"
+                    value="{{ request('query') }}"
+                    autocomplete="off"
+                />
+                <button type="submit">
+                    <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                </button>
+
+                <!-- Gợi ý tìm kiếm -->
+                <div id="searchSuggestions"
+                    class="absolute top-full left-0 bg-white border w-full mt-1 shadow-lg rounded-md hidden z-50">
+                </div>
                 </form>
+
                 <div class="relative">
                     <div
                         class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
