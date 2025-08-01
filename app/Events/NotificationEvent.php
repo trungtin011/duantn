@@ -43,7 +43,6 @@ class NotificationEvent implements ShouldBroadcast
         }
     
         if ($this->notification->receiver_type === 'user') {
-            Log::info('tạo event mới : customer-notification.event');
             return 'customer-notification.event';
         }
 
@@ -56,11 +55,11 @@ class NotificationEvent implements ShouldBroadcast
     
     public function broadcastWith()
     {
-        Log::info('tạo data mới : ' . $this->notification->title);
         return [
             'id' => $this->notification->id,
             'title' => $this->notification->title,
             'content' => $this->notification->content,
+            'image_path' => $this->notification->image_path,
             'receiver_type' => $this->notification->receiver_type,
             'type' => $this->notification->type,
             'priority' => $this->notification->priority,

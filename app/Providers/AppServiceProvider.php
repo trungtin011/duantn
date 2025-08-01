@@ -28,53 +28,90 @@ class AppServiceProvider extends ServiceProvider
 
         Blade::component('order-block', 'user.order.components.order-block');
         view()->composer('*', function ($view) {
-            if (Auth::check() && Auth::user()->role === UserRole::SELLER) {
-                // Lấy danh sách receiver_id từ NotificationReceiver
-                $receiver = NotificationReceiver::where(function ($query) {
-                    $query->where('receiver_id', Auth::user()->shop->id)
-                          ->orWhere(function ($q) {
-                              $q->where('receiver_type', 'all')
-                                ->orWhere('receiver_type', 'shop');
-                          });
-                })->pluck('notification_id'); // Giả sử NotificationReceiver có cột notification_id liên kết với notifications
-            
-                // Lấy danh sách notifications
-                $notifications = Notification::whereIn('id', function ($query) use ($receiver) {
-                    $query->selectRaw('MIN(id)') // Chỉ lấy id nhỏ nhất để tránh trùng lặp
-                          ->from('notifications')
-                          ->whereIn('id', $receiver) // So sánh với notification_id từ NotificationReceiver
-                          ->where('receiver_type', 'shop')
-                          ->groupBy('title', 'type', 'receiver_type');
-                })
-                ->where('receiver_type', 'shop')
-                ->take(10)
-                ->get()
-                ->groupBy('type');
-            
-                $view->with('groupedNotifications', $notifications);
+            if (Auth::check()) {
+                $user = Auth::user();
                 
-            } else if (Auth::check() && Auth::user()->role === UserRole::CUSTOMER) {
-                $receiver = NotificationReceiver::where(function ($query) {
-                    $query->where('receiver_id', Auth::id())
-                          ->orWhere(function ($q) {
-                              $q->where('receiver_type', 'all')
-                                ->orWhere('receiver_type', 'user');
-                          });
-                })->pluck('notification_id');
-            
-                $notifications = Notification::whereIn('id', function ($query) use ($receiver) {
-                    $query->selectRaw('MIN(id)')
-                          ->from('notifications')
-                          ->whereIn('id', $receiver)
-                          ->where('receiver_type', 'user')
-                          ->groupBy('title', 'type', 'receiver_type');
-                })
-                ->where('receiver_type', 'user')
-                ->take(10)
-                ->get()
-                ->groupBy('type');
-            
-                $view->with('groupedNotifications', $notifications);
+                if ($user->role === UserRole::ADMIN) {
+                    // Logic cho ADMIN - có thể xem tất cả thông báo
+                    $notifications = Notification::where(function ($query) {
+                        $query->where('receiver_type', 'admin')
+                              ->orWhere('receiver_type', 'all');
+                    })
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->take(10)
+                    ->get()
+                    ->groupBy('type');
+                    
+                    $view->with('groupedNotifications', $notifications);
+                    
+                } else if ($user->role === UserRole::SELLER) {
+                    $receiver = NotificationReceiver::where(function ($query) {
+                        $query->where('receiver_id', Auth::user()->shop->id)
+                              ->orWhere(function ($q) {
+                                  $q->where('receiver_type', 'all')
+                                    ->orWhere('receiver_type', 'shop');
+                              })
+                              ->where('is_read', 0);
+                    })->pluck('notification_id'); 
+                
+                    $notifications = Notification::whereIn('id', function ($query) use ($receiver) {
+                        $query->selectRaw('MIN(id)') 
+                              ->from('notifications')
+                              ->whereIn('id', $receiver) 
+                              ->where('receiver_type', 'shop')
+                              ->groupBy('title', 'type', 'receiver_type');
+                    })
+                    ->where('receiver_type', 'shop')
+                    ->orderBy('created_at', 'desc') // mới nhất lên đầu
+
+                    ->take(10)
+                    ->get()
+                    ->groupBy('type');
+                
+                    $view->with('groupedNotifications', $notifications);
+                    
+                } else if ($user->role === UserRole::CUSTOMER) {
+                    $receiver = NotificationReceiver::where(function ($query) {
+                        $query->where('receiver_id', Auth::id())
+                              ->orWhere(function ($q) {
+                                  $q->where('receiver_type', 'all')
+                                    ->orWhere('receiver_type', 'user');
+                              });
+                    })->pluck('notification_id');
+                
+                    $notifications = Notification::whereIn('id', function ($query) use ($receiver) {
+                        $query->selectRaw('MIN(id)')
+                              ->from('notifications')
+                              ->whereIn('id', $receiver)
+                              ->where('receiver_type', 'user')
+                              ->groupBy('title', 'type', 'receiver_type');
+                    })
+                    ->where('receiver_type', 'user')
+                    ->orderBy('created_at', 'desc') // mới nhất lên đầu
+                    ->take(10)
+                    ->get()
+                    ->groupBy('type');
+                
+                    $view->with('groupedNotifications', $notifications);
+                    
+                } else if ($user->role === UserRole::EMPLOYEE) {
+                    // Logic cho EMPLOYEE - tương tự như ADMIN nhưng có thể giới hạn hơn
+                    $notifications = Notification::where(function ($query) {
+                        $query->where('receiver_type', 'employee')
+                              ->orWhere('receiver_type', 'all');
+                    })
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->take(10)
+                    ->get()
+                    ->groupBy('type');
+                    
+                    $view->with('groupedNotifications', $notifications);
+                    
+                } else {
+                    $view->with('groupedNotifications', collect());
+                }
             } else {
                 $view->with('groupedNotifications', collect());
             }

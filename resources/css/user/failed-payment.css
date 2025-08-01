@@ -1,0 +1,320 @@
+/* Failed Payment Page Styles */
+.failed-payment-container {
+    min-height: 100vh;
+    background-color: #f8fafc;
+}
+
+.failed-payment-header {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.failed-payment-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 5rem;
+    height: 5rem;
+    background-color: #fef2f2;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+}
+
+.failed-payment-icon svg {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #dc2626;
+}
+
+.failed-payment-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.failed-payment-subtitle {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.failed-payment-description {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-bottom: 1.5rem;
+}
+
+.failed-payment-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (min-width: 640px) {
+    .failed-payment-actions {
+        flex-direction: row;
+    }
+}
+
+.failed-payment-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.failed-payment-button svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+}
+
+.failed-payment-button.primary {
+    background-color: #2563eb;
+    color: white;
+}
+
+.failed-payment-button.primary:hover {
+    background-color: #1d4ed8;
+}
+
+.failed-payment-button.secondary {
+    background-color: #4b5563;
+    color: white;
+}
+
+.failed-payment-button.secondary:hover {
+    background-color: #374151;
+}
+
+.failed-payment-button.success {
+    background-color: #059669;
+    color: white;
+}
+
+.failed-payment-button.success:hover {
+    background-color: #047857;
+}
+
+.failed-payment-button.warning {
+    background-color: #ea580c;
+    color: white;
+}
+
+.failed-payment-button.warning:hover {
+    background-color: #c2410c;
+}
+
+.order-card {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.order-card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    background-color: #f9fafb;
+}
+
+.order-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.order-card-content {
+    padding: 1.5rem;
+}
+
+.order-info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .order-info-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.order-info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.order-info-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.order-info-value {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.order-info-value.failed {
+    color: #dc2626;
+}
+
+.order-info-value.pending {
+    color: #d97706;
+}
+
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-table thead {
+    background-color: #f3f4f6;
+}
+
+.order-table th {
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.order-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.order-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.product-item {
+    display: flex;
+    align-items: center;
+}
+
+.product-image {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    margin-right: 1rem;
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.product-shop {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.help-section {
+    background-color: #eff6ff;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.help-section-header {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.help-section-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #2563eb;
+    margin-right: 0.75rem;
+    margin-top: 0.125rem;
+}
+
+.help-section-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #1e40af;
+    margin-bottom: 0.5rem;
+}
+
+.help-section-content {
+    font-size: 0.875rem;
+    color: #1e40af;
+}
+
+.help-section-list {
+    list-style-type: disc;
+    list-style-position: inside;
+    margin-top: 0.5rem;
+}
+
+.help-section-list li {
+    margin-bottom: 0.25rem;
+}
+
+.contact-section {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.contact-description {
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.contact-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (min-width: 640px) {
+    .contact-actions {
+        flex-direction: row;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .failed-payment-title {
+        font-size: 1.5rem;
+    }
+    
+    .failed-payment-subtitle {
+        font-size: 1rem;
+    }
+    
+    .order-card-content {
+        padding: 1rem;
+    }
+    
+    .order-table {
+        font-size: 0.875rem;
+    }
+    
+    .order-table th,
+    .order-table td {
+        padding: 0.5rem 0.75rem;
+    }
+} 
