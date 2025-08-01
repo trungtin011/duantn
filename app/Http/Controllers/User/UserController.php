@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use App\Models\PointTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -16,18 +17,21 @@ class UserController extends Controller
 
     public function index()
     {
+        Log::info('UserController@index called', ['user_id' => Auth::id()]);
         $user = Auth::user();
         return view('user.account.profile', compact('user'));
     }
 
     public function edit()
     {
+        Log::info('UserController@edit called', ['user_id' => Auth::id()]);
         $user = Auth::user();
         return view('user.account.profile', compact('user'));
     }
 
     public function update(Request $request)
     {
+        Log::info('UserController@update called', ['user_id' => Auth::id()]);
         $user = Auth::user();
 
         $request->validate([
@@ -70,6 +74,7 @@ class UserController extends Controller
         // Nếu có yêu cầu đổi mật khẩu
         if ($request->filled('new_password')) {
             if (!$request->filled('current_password') || !Hash::check($request->current_password, $user->password)) {
+                Log::warning('UserController@update: Wrong current password', ['user_id' => $user->id]);
                 return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng hoặc không được cung cấp.']);
             }
 
@@ -78,16 +83,20 @@ class UserController extends Controller
 
         $user->save();
 
+        Log::info('UserController@update: User info updated', ['user_id' => $user->id]);
         return redirect()->back()->with('success', 'Cập nhật thông tin thành công!');
     }
 
     public function changePasswordForm()
     {
-        return view('user.account.changePassword');
+        Log::info('UserController@changePasswordForm called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
+        return view('user.account.changePassword', compact('user'));
     }
 
     public function updatePassword(Request $request)
     {
+        Log::info('UserController@updatePassword called', ['user_id' => Auth::id()]);
         $request->validate([
             'current_password' => 'required',
             'new_password' => 'required|min:6|confirmed',
@@ -96,18 +105,21 @@ class UserController extends Controller
         $user = Auth::user();
 
         if (!Hash::check($request->current_password, $user->password)) {
+            Log::warning('UserController@updatePassword: Wrong current password', ['user_id' => $user->id]);
             return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng.']);
         }
 
         $user->password = bcrypt($request->new_password);
         $user->save();
 
+        Log::info('UserController@updatePassword: Password updated', ['user_id' => $user->id]);
         return redirect()->route('account.password')->with('success', 'Đổi mật khẩu thành công!');
     }
 
     // Hàm xử lý hiển thị lịch sử điểm thưởng
     public function points()
     {
+        Log::info('UserController@points called', ['user_id' => Auth::id()]);
         $user = Auth::user();
         $tab = request()->query('tab', 'all'); // Lấy tab từ query string, mặc định là 'all'
 
@@ -133,11 +145,20 @@ class UserController extends Controller
         $totalReceived = PointTransaction::where('userID', $user->id)->where('points', '>', 0)->sum('points');
         $totalUsed = abs(PointTransaction::where('userID', $user->id)->where('points', '<', 0)->sum('points'));
 
+        Log::info('UserController@points: Points history loaded', [
+            'user_id' => $user->id,
+            'tab' => $tab,
+            'totalPoints' => $totalPoints,
+            'totalReceived' => $totalReceived,
+            'totalUsed' => $totalUsed
+        ]);
+
         return view('user.account.points.index', compact('user', 'points', 'totalPoints', 'totalReceived', 'totalUsed'));
     }
 
     public function requestChangePasswordWithCode(Request $request)
     {
+        Log::info('UserController@requestChangePasswordWithCode called', ['user_id' => Auth::id()]);
         $user = Auth::user();
         $code = random_int(100000, 999999);
 
@@ -147,67 +168,203 @@ class UserController extends Controller
 
         $resetLink = route('account.password.verify.form');
 
-        Mail::send([], [], function ($message) use ($user, $code, $resetLink) {
-            $message->to($user->email)
-                ->subject('Mã xác nhận đổi mật khẩu')
-                ->setBody("
-                <p>Chào {$user->fullname},</p>
-                <p>Mã xác nhận đổi mật khẩu của bạn là: <strong>$code</strong></p>
-                <p>Hoặc bạn có thể nhấn vào nút bên dưới để nhập mã và đổi mật khẩu:</p>
-                <p><a href='{$resetLink}' style='padding:10px 15px; background:#ef4444; color:white; text-decoration:none; border-radius:5px;'>Xác nhận đổi mật khẩu</a></p>
-                <p>Trân trọng,</p>
-                <p>Hệ thống</p>
-            ", 'text/html');
-        });
+        try {
+            Mail::send([], [], function ($message) use ($user, $code, $resetLink) {
+                $message->to($user->email)
+                    ->subject('Mã xác nhận đổi mật khẩu')
+                    ->html("
+                    <p>Chào {$user->fullname},</p>
+                    <p>Mã xác nhận đổi mật khẩu của bạn là: <strong>$code</strong></p>
+                    <p>Hoặc bạn có thể nhấn vào nút bên dưới để nhập mã và đổi mật khẩu:</p>
+                    <p><a href='{$resetLink}' style='padding:10px 15px; background:#ef4444; color:white; text-decoration:none; border-radius:5px;'>Xác nhận đổi mật khẩu</a></p>
+                    <p>Trân trọng,</p>
+                    <p>Hệ thống</p>
+                ");
+            });
+            
+            Log::info('Password reset code sent successfully', ['user_id' => $user->id, 'email' => $user->email]);
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to send password reset email', [
+                'user_id' => $user->id, 
+                'email' => $user->email, 
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->withErrors(['email' => 'Không thể gửi email. Vui lòng thử lại sau.']);
+        }
 
-        return back()->with('success', 'Mã xác nhận đã được gửi tới email của bạn.');
+        return redirect()->route('account.password.code.verify.form')
+            ->with('success', 'Mã xác nhận đã được gửi tới email của bạn. Vui lòng kiểm tra email và nhập mã.');
     }
 
     public function showVerifyCodeForm()
     {
-        return view('user.account.verify-password-code');
+        Log::info('UserController@showVerifyCodeForm called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
+        return view('user.account.verify-password-code', compact('user'));
     }
 
     public function verifyPasswordCode(Request $request)
     {
+        Log::info('UserController@verifyPasswordCode called', ['user_id' => Auth::id()]);
         $request->validate(['code' => 'required|numeric']);
 
         $user = Auth::user();
+        
+        Log::info('Bắt đầu xác thực mã đổi mật khẩu', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'received_code' => $request->code,
+            'stored_code' => $user->reset_code,
+            'code_type_received' => gettype($request->code),
+            'code_type_stored' => gettype($user->reset_code),
+            'expires_at' => $user->reset_code_expires_at,
+            'is_expired' => $user->reset_code_expires_at < now()
+        ]);
 
-        if ($user->reset_code !== $request->code || $user->reset_code_expires_at < now()) {
+        // Convert both to string for comparison
+        $receivedCode = (string) $request->code;
+        $storedCode = (string) $user->reset_code;
+        
+        if ($storedCode !== $receivedCode || $user->reset_code_expires_at < now()) {
+            Log::warning('Xác thực mã thất bại', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'received_code' => $receivedCode,
+                'stored_code' => $storedCode,
+                'codes_match' => $storedCode === $receivedCode,
+                'is_expired' => $user->reset_code_expires_at < now(),
+                'reason' => $storedCode !== $receivedCode ? 'Mã không khớp' : 'Mã đã hết hạn'
+            ]);
+            
             return back()->withErrors(['code' => 'Mã xác nhận không đúng hoặc đã hết hạn.']);
         }
+
+        // Lưu thông tin xác thực thành công vào session
+        session(['password_verified' => true]);
+
+        Log::info('Xác thực mã thành công - chuyển đến trang đặt mật khẩu mới', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'session_set' => session('password_verified')
+        ]);
 
         return redirect()->route('account.password.reset.form');
     }
 
     public function showPasswordResetForm()
     {
-        return view('user.account.reset-password');
+        Log::info('UserController@showPasswordResetForm called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
+        return view('user.account.reset-password', compact('user'));
     }
 
     public function confirmNewPassword(Request $request)
     {
+        Log::info('UserController@confirmNewPassword called', ['user_id' => Auth::id()]);
+        
+        // Log tất cả dữ liệu request
+        Log::info('Reset password form data received', [
+            'user_id' => Auth::id(),
+            'all_data' => $request->all(),
+            'has_password' => $request->has('password'),
+            'has_password_confirmation' => $request->has('password_confirmation'),
+            'password_length' => $request->input('password') ? strlen($request->input('password')) : 0,
+            'password_confirmation_length' => $request->input('password_confirmation') ? strlen($request->input('password_confirmation')) : 0,
+            'passwords_match' => $request->input('password') === $request->input('password_confirmation')
+        ]);
+
+        // Kiểm tra xem đã xác thực mã chưa
+        if (!session('password_verified')) {
+            Log::warning('Người dùng cố gắng đặt mật khẩu mới mà chưa xác thực mã', [
+                'user_id' => Auth::id(),
+                'email' => Auth::user()->email,
+                'session_password_verified' => session('password_verified')
+            ]);
+            
+            return redirect()->route('account.password.code.verify.form')
+                ->withErrors(['code' => 'Vui lòng xác thực mã trước khi đặt mật khẩu mới.']);
+        }
+
         $request->validate([
             'password' => 'required|min:6|confirmed',
         ]);
 
         $user = Auth::user();
-        $user->password = bcrypt($request->password);
-        $user->reset_code = null;
-        $user->reset_code_expires_at = null;
-        $user->save();
+        
+        Log::info('Bắt đầu quá trình đổi mật khẩu', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'password_length' => strlen($request->password)
+        ]);
 
-        return redirect()->route('account.password')->with('success', 'Đổi mật khẩu thành công!');
+        try {
+            // Lưu mật khẩu cũ để log
+            $oldPasswordHash = $user->password;
+            
+            // Cập nhật mật khẩu mới
+            $user->password = bcrypt($request->password);
+            $user->reset_code = null;
+            $user->reset_code_expires_at = null;
+            $user->save();
+
+            Log::info('Đổi mật khẩu thành công', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'old_password_hash' => substr($oldPasswordHash, 0, 20) . '...',
+                'new_password_hash' => substr($user->password, 0, 20) . '...',
+                'reset_code_cleared' => $user->reset_code === null,
+                'reset_expires_cleared' => $user->reset_code_expires_at === null
+            ]);
+
+            // Xóa session xác thực
+            session()->forget('password_verified');
+            
+            Log::info('Đã xóa session xác thực', [
+                'user_id' => $user->id,
+                'session_cleared' => !session('password_verified')
+            ]);
+
+            return redirect()->route('account.password')->with('password_success', 'Đổi mật khẩu thành công!');
+            
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi đổi mật khẩu', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['password' => 'Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.']);
+        }
     }
+    
     public function requestPasswordChangeConfirm(Request $request)
     {
+        Log::info('UserController@requestPasswordChangeConfirm called', ['user_id' => Auth::id()]);
+        
+        // Log tất cả dữ liệu request
+        Log::info('Form data received', [
+            'user_id' => Auth::id(),
+            'all_data' => $request->all(),
+            'has_current_password' => $request->has('current_password'),
+            'has_new_password' => $request->has('new_password'),
+            'has_password' => $request->has('password'),
+            'has_password_confirmation' => $request->has('password_confirmation'),
+            'current_password_length' => $request->input('current_password') ? strlen($request->input('current_password')) : 0,
+            'new_password_length' => $request->input('new_password') ? strlen($request->input('new_password')) : 0,
+            'password_length' => $request->input('password') ? strlen($request->input('password')) : 0,
+            'password_confirmation_length' => $request->input('password_confirmation') ? strlen($request->input('password_confirmation')) : 0
+        ]);
+
         $request->validate([
             'current_password' => 'required',
             'new_password' => 'required|min:6|confirmed',
         ]);
 
         if (!Hash::check($request->current_password, Auth::user()->password)) {
+            Log::warning('UserController@requestPasswordChangeConfirm: Wrong current password', ['user_id' => Auth::id()]);
             return back()->withErrors(['current_password' => 'Sai mật khẩu hiện tại.']);
         }
 
@@ -218,19 +375,39 @@ class UserController extends Controller
             'password_code' => $code,
         ]);
 
-        Mail::raw("Mã xác nhận đổi mật khẩu là: $code", function ($m) {
-            $m->to(Auth::user()->email)->subject('Mã xác nhận đổi mật khẩu');
-        });
+        Log::info('Session data set for password change', [
+            'user_id' => Auth::id(),
+            'code' => $code,
+            'session_has_pending_password' => session('pending_password') ? true : false,
+            'session_has_password_code' => session('password_code') ? true : false
+        ]);
+
+        try {
+            Mail::raw("Mã xác nhận đổi mật khẩu là: $code", function ($m) {
+                $m->to(Auth::user()->email)->subject('Mã xác nhận đổi mật khẩu');
+            });
+            
+            Log::info('Password change code sent successfully', ['user_id' => Auth::id(), 'email' => Auth::user()->email]);
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to send password change email', [
+                'user_id' => Auth::id(), 
+                'email' => Auth::user()->email, 
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->withErrors(['email' => 'Không thể gửi email. Vui lòng thử lại sau.']);
+        }
 
         return redirect()->route('account.password.code.verify.form')->with('success', 'Mã xác nhận đã gửi về email.');
     }
 
     public function confirmPasswordChangeCode(Request $request)
     {
+        Log::info('UserController@confirmPasswordChangeCode called', ['user_id' => Auth::id()]);
         $request->validate([
             'code' => 'required|digits:6',
         ]);
-
 
         if ($request->code == session('password_code')) {
             $user = Auth::user();
@@ -239,14 +416,17 @@ class UserController extends Controller
 
             session()->forget(['password_code', 'pending_password']);
 
+            Log::info('UserController@confirmPasswordChangeCode: Password changed successfully', ['user_id' => $user->id]);
             return redirect()->route('account.password')->with('password_success', 'Đổi mật khẩu thành công!');
         }
 
+        Log::warning('UserController@confirmPasswordChangeCode: Wrong code', ['user_id' => Auth::id()]);
         return back()->withErrors(['code' => 'Mã xác nhận không đúng.']);
     }
 
     public function requestPasswordVerify(Request $request)
     {
+        Log::info('UserController@requestPasswordVerify called', ['user_id' => Auth::id()]);
         $user = Auth::user();
 
         $code = random_int(100000, 999999);
@@ -255,19 +435,82 @@ class UserController extends Controller
         $user->save();
 
         // Gửi email mã xác nhận
-        Mail::send([], [], function ($message) use ($user, $code) {
-            $message->to($user->email)
-                ->subject('Mã xác nhận đổi mật khẩu')
-                ->html("
-            <p>Xin chào <strong>{$user->fullname}</strong>,</p>
-            <p>Mã xác nhận đổi mật khẩu của bạn là: <strong style='color: red; font-size: 18px;'>$code</strong></p>
-            <p>Mã có hiệu lực trong 10 phút.</p>
-            <p>Trân trọng,<br>Hệ thống</p>
-        ");
-        });
-
+        try {
+            Mail::send([], [], function ($message) use ($user, $code) {
+                $message->to($user->email)
+                    ->subject('Mã xác nhận đổi mật khẩu')
+                    ->html("
+                <p>Xin chào <strong>{$user->fullname}</strong>,</p>
+                <p>Mã xác nhận đổi mật khẩu của bạn là: <strong style='color: red; font-size: 18px;'>$code</strong></p>
+                <p>Mã có hiệu lực trong 10 phút.</p>
+                <p>Trân trọng,<br>Hệ thống</p>
+            ");
+            });
+            
+            Log::info('Password verification code sent successfully', ['user_id' => $user->id, 'email' => $user->email]);
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to send password verification email', [
+                'user_id' => $user->id, 
+                'email' => $user->email, 
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->withErrors(['email' => 'Không thể gửi email. Vui lòng thử lại sau.']);
+        }
 
         return redirect()->route('account.password.code.verify.form')
             ->with('success', 'Mã xác nhận đã được gửi tới email của bạn.');
+    }
+
+    // Test method để kiểm tra email
+    public function testEmail()
+    {
+        Log::info('UserController@testEmail called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
+        
+        try {
+            Mail::raw("Test email from Laravel application", function ($message) use ($user) {
+                $message->to($user->email)
+                    ->subject('Test Email');
+            });
+            
+            Log::info('Test email sent successfully', ['user_id' => $user->id, 'email' => $user->email]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Test email sent successfully. Check logs for details.',
+                'email' => $user->email
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Test email failed', [
+                'user_id' => $user->id, 
+                'email' => $user->email, 
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send test email: ' . $e->getMessage(),
+                'email' => $user->email
+            ], 500);
+        }
+    }
+
+    // Debug method để kiểm tra reset code
+    public function debugResetCode()
+    {
+        Log::info('UserController@debugResetCode called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
+        
+        return response()->json([
+            'user_id' => $user->id,
+            'reset_code' => $user->reset_code,
+            'reset_code_type' => gettype($user->reset_code),
+            'reset_code_expires_at' => $user->reset_code_expires_at,
+            'is_expired' => $user->reset_code_expires_at < now(),
+            'current_time' => now()
+        ]);
     }
 }

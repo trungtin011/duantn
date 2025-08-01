@@ -592,10 +592,16 @@ Route::middleware('auth')->group(function () {
 });
 Route::post('/account/password/request-confirm', [UserController::class, 'requestPasswordChangeConfirm'])->name('account.password.request.confirm');
 Route::post('/account/password/confirm-code', [UserController::class, 'confirmPasswordChangeCode'])->name('account.password.confirm.code');
-Route::post('/account/password/verify-code', [UserController::class, 'confirmPasswordChangeCode'])
+Route::post('/account/password/verify-code', [UserController::class, 'verifyPasswordCode'])
     ->name('account.password.code.verify');
 Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])
     ->name('account.password.code.verify.form');
+
+// Test email route for debugging
+Route::post('/account/test-email', [UserController::class, 'testEmail'])->name('account.test.email');
+
+// Debug route for checking reset code
+Route::get('/account/debug-reset-code', [UserController::class, 'debugResetCode'])->name('account.debug.reset.code');
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
