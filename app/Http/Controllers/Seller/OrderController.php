@@ -10,15 +10,14 @@ use App\Models\ShopOrderHistory;
 use App\Models\ShopAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use App\Enums\UserRole;
 use App\Http\Controllers\Seller\Orders\ShippingController;
 use App\Models\ShopOrder;
 use App\Events\OrderStatusUpdate;
 use App\Helpers\MailHelper;
 use App\Models\ItemsOrder;
-use App\Models\Customer;
-use App\Models\PointTransaction;
+use Illuminate\Support\Facades\Log;
+
 
 /**
  * OrderController - Quản lý đơn hàng cho Seller
@@ -57,19 +56,16 @@ class OrderController extends Controller
         if (!$shopID) {
             $shop = Shop::where('ownerID', Auth::id())->first();
             if (!$shop) {
-                Log::warning('Người dùng không có shop liên kết: ' . Auth::id());
                 return view('seller.order.index', ['orders' => collect([])])
                     ->with('error', 'Bạn chưa có cửa hàng. Vui lòng đăng ký cửa hàng.');
             }
             $shopID = $shop->id;
             session()->put('current_shop_id', $shopID); // Lưu shopID vào session
-            Log::info('Đã thiết lập current_shop_id: ' . $shopID);
         }
 
         // Kiểm tra shopID có hợp lệ không
         $shop = Shop::find($shopID);
         if (!$shop) {
-            Log::warning('ShopID không hợp lệ: ' . $shopID);
             return view('seller.order.index', ['orders' => collect([])])
                 ->with('error', 'Cửa hàng không tồn tại.');
         }
@@ -88,8 +84,6 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        Log::info('Danh sách đơn hàng cho shop ID ' . $shopID . ': ', $orders->toArray());
-
         return view('seller.order.index', compact('orders'));
     }
 
@@ -99,18 +93,15 @@ class OrderController extends Controller
         if (!$current_shop_id) {
             $shop = Shop::where('ownerID', Auth::id())->first();
             if (!$shop) {
-                Log::warning('Người dùng không có shop liên kết: ' . Auth::id());
                 return redirect()->route('seller.order.index')
                     ->with('error', 'Bạn chưa có cửa hàng. Vui lòng đăng ký cửa hàng.');
             }
             $current_shop_id = $shop->id;
             session()->put('current_shop_id', $current_shop_id);
-            Log::info('Đã thiết lập current_shop_id: ' . $current_shop_id);
         }
 
         $shop = Shop::find($current_shop_id);
         if (!$shop) {
-            Log::warning('ShopID không hợp lệ: ' . $current_shop_id);
             return redirect()->route('seller.order.index')
                 ->with('error', 'Cửa hàng không tồn tại.');
         }
@@ -128,7 +119,6 @@ class OrderController extends Controller
             ->first();
 
         if (!$shop_order) {
-            Log::warning('Không tìm thấy shop_order với order_code: ' . $code . ' và shopID: ' . $current_shop_id);
             return redirect()->route('seller.order.index')
                 ->with('error', 'Không tìm thấy đơn hàng hoặc bạn không có quyền truy cập.');
         }
@@ -142,26 +132,37 @@ class OrderController extends Controller
 
     public function shippingOrder(Request $request, $id)
     {
-
         $request->validate([
             'shipping_provider' => 'nullable|string|in:GHN',
             'note' => 'nullable|string',
             'required_note' => 'nullable|string|in:CHOXEMHANGKHONGTHU,CHOTHUHANG,KHONGCHOXEMHANG',
-            'payment_type' => 'nullable|string|in:1,2',
         ]);
 
-        $permission_check = $this->permissionCheck();
-
-        $shop_order = ShopOrder::where('orderID', $id)->with('shop')->first();
+        $shop_order = ShopOrder::where('orderID', $id)
+        ->where('shopID', session('current_shop_id'))
+        ->with('shop')->first();
         $order = $shop_order->order;
         $id_shop_address = $request->shop_address;
         $shipping_provider = $request->shipping_provider;
+        $payment_type = 2;
+
+        $defaultShopAddress = ShopAddress::where('shopID', $shop_order->shopID)
+            ->where('is_default', 1)
+            ->first();
+
+        if ($id_shop_address != $defaultShopAddress->id) {
+            $payment_type = 1;
+        }
 
         if ($shipping_provider === 'GHN') {
             $shipping_controller = new ShippingController();
-            $shipping_controller->createShippingOrder($shop_order, $order, $id_shop_address, $request->payment_type, $request->note, $request->required_note);
+            $shipping_controller->createShippingOrder($shop_order, $order, $id_shop_address, $payment_type, $request->note, $request->required_note);
 
             if ($shipping_controller) {
+                $shop_order->shipping_provider = $shipping_provider;
+                $shop_order->save();
+                Order::orderStatusUpdate($order->id);
+
                 return redirect()->route('seller.order.show', $order->order_code)
                     ->with('success', 'Tạo đơn hàng vận chuyển thành công');
             } else {
@@ -169,34 +170,6 @@ class OrderController extends Controller
                     ->with('error', 'Tạo đơn hàng vận chuyển thất bại');
             }
         }
-    }
-
-    private function permissionCheck()
-    {
-        $permission_check = false;
-
-        $user = Auth::user();
-        $checkRole = $user->role;
-        if ($checkRole === UserRole::SELLER) {
-            $shop = Shop::where('ownerID', $user->id)->first();
-            $permission_check = $shop ? true : false;
-        } elseif ($checkRole === UserRole::ADMIN) {
-            $permission_check = true;
-        } elseif ($checkRole === UserRole::EMPLOYEE) {
-            $shop_id = session('current_shop_id');
-            $checkEmployee = Shop::where('id', $shop_id)->with('employees')->get();
-            if ($checkEmployee) {
-                foreach ($checkEmployee as $shop) {
-                    if ($shop->employees->contains('userID', $user->id) && $shop->employees->contains('status', 'active')) {
-                        $permission_check = true;
-                    }
-                }
-            } else {
-                $permission_check = false;
-            }
-        }
-
-        return $permission_check;
     }
 
     public function confirmOrder(Request $request, $id)
@@ -219,8 +192,9 @@ class OrderController extends Controller
 
         if ($shop_order_history) {
             $orders = Order::where('id', $order->orderID)->first();
-            $order_status = Order::orderStatusUpdate($orders->id);
 
+            Order::orderStatusUpdate($orders->id);
+            
             event(new OrderStatusUpdate($order, 'confirmed'));
             
             // Gửi email thông báo
@@ -264,6 +238,8 @@ class OrderController extends Controller
                 $shop_order_history->description = 'Người bán đã hủy đơn hàng';
                 $shop_order_history->save();
 
+                Order::orderStatusUpdate($order->order->id);
+                
                 event(new OrderStatusUpdate($order, 'cancelled'));
                 
                 // Gửi email thông báo
@@ -295,6 +271,8 @@ class OrderController extends Controller
             $shop_order_history->description = 'Người bán đã trả đơn hàng';
             $shop_order_history->save();
 
+            Order::orderStatusUpdate($order->order->id);
+
             event(new OrderStatusUpdate($order, 'refunded'));
             return redirect()->back()->with('success', 'Đã trả đơn hàng #'. $order->order_code);
         }
@@ -311,6 +289,11 @@ class OrderController extends Controller
         $status = $status_order['data']['status'];
         $order_status = new ShopOrderHistory();
         $order_status->shop_order_id = $order->id;
+
+        if($status === 'delivered'){
+            $order->actual_delivery_date = now();
+            $order->save();
+        }
 
         if ($request->method_request === 'status_update') {
             if ($order->status !== $status) {
@@ -348,7 +331,37 @@ class OrderController extends Controller
                         'status' => 'cancelled',
                         'description' => 'Đơn vị vận chuyển đã hủy đơn hàng',
                         'update_order' => true
-                    ]
+                    ],
+                    'delivery_failed' => [
+                        'status' => 'shipping_failed',
+                        'description' => 'Giao hàng không thành công',
+                        'update_order' => true
+                    ],
+                    'return' => [
+                        'status' => 'returned',
+                        'description' => 'Đơn vị vận chuyển chuẩn bị trả hàng',
+                        'update_order' => true
+                    ],
+                    'returning' => [
+                        'status' => 'returned',
+                        'description' => 'Đơn vị vận chuyển đang trả hàng',
+                        'update_order' => true
+                    ],
+                    'returned' => [
+                        'status' => 'returned',
+                        'description' => 'Đơn vị vận chuyển đã trả hàng',
+                        'update_order' => true
+                    ],
+                    'damage' => [
+                        'status' => 'damage',
+                        'description' => 'Hàng hỏng trong quá trình vận chuyển',
+                        'update_order' => true
+                    ],
+                    'lost' => [
+                        'status' => 'lost',
+                        'description' => 'Hàng bị mất trong quá trình vận chuyển',
+                        'update_order' => true
+                    ],
                 ];
 
                 if (isset($statusMapping[$status])) {
@@ -363,6 +376,8 @@ class OrderController extends Controller
                     $order_status->description = $mapping['description'];
                     $order_status->save();
 
+                    Order::orderStatusUpdate($order->order->id);
+                    
                     event(new OrderStatusUpdate($order, $mapping['status']));
                 }
             }
@@ -373,7 +388,5 @@ class OrderController extends Controller
             return redirect()->back()->with('order', $status_order);
         }
     }
-
-
 }
 ?>

@@ -3,58 +3,43 @@
 @section('account-content')
     @include('layouts.notification')
     <div class="container mx-auto bg-white">
-        <!-- Main Navigation -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-6 py-4 mb-6 shadow-sm">
-            <ul class="flex items-center space-x-6 overflow-x-auto">
-                <li role="presentation">
-                    <a href="{{ route('user.order.parent-order') }}" 
-                       class="flex items-center px-4 py-2 text-blue-700 font-semibold hover:text-blue-900 hover:bg-blue-100 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Đơn hàng lớn
-                    </a>
-                </li>
-            </ul>
-        </div>
-
         <!-- Order Status Tabs -->
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm mb-8">
             <ul class="flex items-center justify-between px-6 py-4 overflow-x-auto space-x-1" 
                 id="orderStatusTabs" role="tablist">
                 <li role="presentation">
                     <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-blue-50" 
+                            id="paid-tab" data-target="#paid" type="button" role="tab" aria-controls="paid">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            Đơn hàng
+                        </span>
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-blue-50" 
                             id="pending-tab" data-target="#pending" type="button" role="tab" aria-controls="pending">
                         <span class="flex items-center">
-                            <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
-                            Chờ xử lý
+                            <svg class="w-5 h-5 mr-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="7" width="20" height="10" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <path d="M16 12h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M2 9V7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" fill="none"/>
+                            </svg>
+                            Chưa thanh toán
                         </span>
                     </button>
                 </li>
                 <li role="presentation">
                     <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-blue-50" 
-                            id="confirmed-tab" data-target="#confirmed" type="button" role="tab" aria-controls="confirmed">
+                            id="processing-tab" data-target="#processing" type="button" role="tab" aria-controls="processing">
                         <span class="flex items-center">
-                            <span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-                            Đã nhận
-                        </span>
-                    </button>
-                </li>
-                <li role="presentation">
-                    <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-blue-50" 
-                            id="shipped-tab" data-target="#shipped" type="button" role="tab" aria-controls="shipped">
-                        <span class="flex items-center">
-                            <span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
-                            Đang giao đến
-                        </span>
-                    </button>
-                </li>
-                <li role="presentation">
-                    <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-blue-50" 
-                            id="delivered-tab" data-target="#delivered" type="button" role="tab" aria-controls="delivered">
-                        <span class="flex items-center">
-                            <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-                            Đã giao hàng
+                            <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3" />
+                            </svg>
+                            Đang tiến hành
                         </span>
                     </button>
                 </li>
@@ -62,7 +47,9 @@
                     <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-blue-50" 
                             id="completed-tab" data-target="#completed" type="button" role="tab" aria-controls="completed">
                         <span class="flex items-center">
-                            <span class="w-2 h-2 bg-emerald-400 rounded-full mr-2"></span>
+                            <svg class="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
                             Hoàn thành
                         </span>
                     </button>
@@ -71,17 +58,10 @@
                     <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-blue-50" 
                             id="cancelled-tab" data-target="#cancelled" type="button" role="tab" aria-controls="cancelled">
                         <span class="flex items-center">
-                            <span class="w-2 h-2 bg-red-400 rounded-full mr-2"></span>
+                            <svg class="w-5 h-5 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                             Đơn hủy
-                        </span>
-                    </button>
-                </li>
-                <li role="presentation">
-                    <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:bg-blue-50" 
-                            id="returned-tab" data-target="#returned" type="button" role="tab" aria-controls="returned">
-                        <span class="flex items-center">
-                            <span class="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
-                            Trả hàng/Hoàn tiền
                         </span>
                     </button>
                 </li>
@@ -89,52 +69,39 @@
         </div>
 
         <div class="tab-content h-full" id="orderStatusTabsContent">
+            <!-- Tab Pane: Đơn hàng -->
+            <div class="tab-pane bg-white rounded-lg border border-gray-200 shadow-sm p-6" id="paid" role="tabpanel" aria-labelledby="paid-tab">
+                <div class="flex items-center mb-4">
+                    <span class="w-3 h-3 bg-blue-400 rounded-full mr-3"></span>
+                    <h3 class="text-lg font-semibold text-gray-800">Đơn hàng</h3>
+                </div>
+                <div id="paid-orders-container" class="space-y-4">
+                    <!-- Nội dung sẽ được load bằng AJAX -->
+                </div>
+                <div id="paid-pagination" class="mt-6"></div>
+            </div>
+
             <!-- Tab Pane: Đang chờ xử lý -->
-            <div class="tab-pane bg-white rounded-lg border border-gray-200 shadow-sm p-6" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+            <div class="tab-pane hidden bg-white rounded-lg border border-gray-200 shadow-sm p-6" id="pending" role="tabpanel" aria-labelledby="pending-tab">
                 <div class="flex items-center mb-4">
                     <span class="w-3 h-3 bg-yellow-400 rounded-full mr-3"></span>
-                    <h3 class="text-lg font-semibold text-gray-800">Đơn hàng chờ xử lý</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Đơn hàng chưa thanh toán</h3>
                 </div>
                 <div id="pending-orders-container" class="space-y-4">
-                    <!-- Nội dung sẽ được load bằng AJAX -->
                 </div>
                 <div id="pending-pagination" class="mt-6"></div>
             </div>
 
-            <!-- Tab Pane: Đang xử lý -->
-            <div class="tab-pane hidden bg-white rounded-lg border border-gray-200 shadow-sm p-6" id="confirmed" role="tabpanel" aria-labelledby="confirmed-tab">
+            <!-- Tab Pane: Đang tiến hành -->
+            <div class="tab-pane hidden bg-white rounded-lg border border-gray-200 shadow-sm p-6" id="processing" role="tabpanel" aria-labelledby="processing-tab">
                 <div class="flex items-center mb-4">
                     <span class="w-3 h-3 bg-blue-400 rounded-full mr-3"></span>
-                    <h3 class="text-lg font-semibold text-gray-800">Đơn hàng đã nhận</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Đơn hàng đang tiến hành</h3>
                 </div>
-                <div id="confirmed-orders-container" class="space-y-4">
+                <div id="processing-orders-container" class="space-y-4">
                     <!-- Nội dung sẽ được load bằng AJAX -->
                 </div>
-                <div id="confirmed-pagination" class="mt-6"></div>
-            </div>
-
-            <!-- Tab Pane: Đang giao hàng -->
-            <div class="tab-pane hidden bg-white rounded-lg border border-gray-200 shadow-sm p-6" id="shipped" role="tabpanel" aria-labelledby="shipped-tab">
-                <div class="flex items-center mb-4">
-                    <span class="w-3 h-3 bg-purple-400 rounded-full mr-3"></span>
-                    <h3 class="text-lg font-semibold text-gray-800">Đơn hàng đang giao</h3>
-                </div>
-                <div id="shipped-orders-container" class="space-y-4">
-                    <!-- Nội dung sẽ được load bằng AJAX -->
-                </div>
-                <div id="shipped-pagination" class="mt-6"></div>
-            </div>
-
-            <!-- Tab Pane: Hoàn thành -->
-            <div class="tab-pane hidden bg-white rounded-lg border border-gray-200 shadow-sm p-6" id="delivered" role="tabpanel" aria-labelledby="delivered-tab">
-                <div class="flex items-center mb-4">
-                    <span class="w-3 h-3 bg-green-400 rounded-full mr-3"></span>
-                    <h3 class="text-lg font-semibold text-gray-800">Đơn hàng đã giao</h3>
-                </div>
-                <div id="delivered-orders-container" class="space-y-4">
-                    <!-- Nội dung sẽ được load bằng AJAX -->
-                </div>
-                <div id="delivered-pagination" class="mt-6"></div>
+                <div id="processing-pagination" class="mt-6"></div>
             </div>
 
             <!-- Tab Pane: Đã hoàn thành -->
@@ -322,7 +289,6 @@
                         <p class="text-xs text-gray-500 mt-2"><span id="commentCharCount">0</span>/50 ký tự tối thiểu</p>
                     </div>
 
-                    <!-- File Upload Buttons -->
                     <div class="flex space-x-4 mb-6">
                         <label for="imagesUpload" class="flex items-center px-4 py-3 border-2 border-red-500 text-red-500 rounded-lg cursor-pointer hover:bg-red-50 transition-colors duration-200 font-medium">
                             <i class="bi bi-image mr-2"></i> Thêm Hình ảnh (<span id="imageCount">0</span>)
@@ -389,9 +355,7 @@
 
     @push('scripts')
         <script>
-            // Function hiển thị thông báo
             function showNotification(type, message) {
-                // Tạo element thông báo
                 const notification = document.createElement('div');
                 notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
                 
@@ -430,11 +394,18 @@
             }
 
             document.addEventListener('DOMContentLoaded', function() {
-                loadOrders('pending');
+                loadOrders('paid');
 
                 // Logic cho các tab trạng thái đơn hàng
                 const tabButtons = document.querySelectorAll('#orderStatusTabs button');
                 const tabPanes = document.querySelectorAll('.tab-pane');
+
+                // Active tab paid mặc định
+                const paidTab = document.getElementById('paid-tab');
+                if (paidTab) {
+                    paidTab.classList.remove('text-gray-500');
+                    paidTab.classList.add('text-black');
+                }
 
                 tabButtons.forEach(button => {
                     button.addEventListener('click', function() {
@@ -466,7 +437,6 @@
                     });
                 });
 
-                // Function để load đơn hàng theo status
                 function loadOrders(status, page = 1) {
                     const container = document.getElementById(status + '-orders-container');
                     const paginationContainer = document.getElementById(status + '-pagination');
@@ -488,8 +458,6 @@
                     .then(data => {
                         container.innerHTML = data.html;
                         paginationContainer.innerHTML = data.pagination;
-                        
-                        // Gắn lại event listeners cho pagination
                         attachPaginationListeners(status);
                     })
                     .catch(error => {

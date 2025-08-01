@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\{
     UserAddress,
@@ -221,13 +222,21 @@ class CheckoutController extends Controller
                 return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm'], 400);
             }
 
-            $user_address = UserAddress::where('id', $request->selected_address_id)->where('userID', $user->id)->first();
+            if ($request->discount_code) {
+                $coupons_code = $request->coupons_code ?? [];
+                    $coupons_code[] = [
+                        'code' => $request->discount_code,
+                        'shopId' => null
+                    ];
+                $request->merge(['coupons_code' => $coupons_code]);
+            }
 
-            $order = $this->createOrder($shopItems, $user_address, $request);
+            $this->storeCouponsUsed($request->coupons_code);
+            $user_address = UserAddress::where('id', $request->selected_address_id)->where('userID', $user->id)->first();
+            $order = $this->createOrder($shopItems, $user_address, $request, $request->coupons_code);
             if(!$order){
                 return response()->json(['success' => false, 'message' => 'Lỗi khi tạo đơn hàng'], 400);
             }
-            $this->storeCouponsUsed($order, $request->coupons_code);
 
             $redirectUrl = null;
             if($request->payment_method === 'COD'){
@@ -242,12 +251,9 @@ class CheckoutController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Đặt hàng thành công', 'order' => $order, 'redirectUrl' => $redirectUrl], 200);
         } catch (\Exception $e) {
-            Log::error('Order store error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi server',
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
@@ -255,6 +261,26 @@ class CheckoutController extends Controller
     private function validateOrderData($request)
     {
         $errors = [];
+
+        if (isset($request->total_amount)) {
+            if ($request->payment_method === 'MOMO') {
+                if ($request->total_amount > 50000000) {
+                    $errors[] = 'Tổng giá trị đơn hàng thanh toán qua MOMO không được vượt quá 50 triệu đồng';
+                }
+                else if ($request->total_amount < 10000) {
+                    $errors[] = 'Tổng giá trị đơn hàng phải lớn hơn 10.000 đồng';
+                }
+            }
+            else if ($request->payment_method === 'VNPAY') {
+                if ($request->total_amount > 1000000000) {
+                    $errors[] = 'Tổng giá trị đơn hàng thanh toán qua VNPAY không được vượt quá 1 tỷ đồng';
+                }
+                else if ($request->total_amount < 10000) {
+                    $errors[] = 'Tổng giá trị đơn hàng phải lớn hơn 10.000 đồng';
+                }
+            }
+        }
+
         if(!empty($request->coupons_code)){
             foreach($request->coupons_code as $coupon_code){
                 $coupon = Coupon::where('code', $coupon_code['code'])->where('shop_id', $coupon_code['shopId'])->first();
@@ -280,144 +306,142 @@ class CheckoutController extends Controller
         return $errors;
     }
 
-    private function createOrder($shopItems, $user_address, $request)
+    private function createOrder($shopItems, $user_address, $request, $coupons_code)
     {
-        $total_price = $request->total_amount;
-        $shop_notes = $request->shop_notes ?? [];
-        $used_points = $request->used_points ?? 0;
+        return DB::transaction(function () use ($shopItems, $user_address, $request, $coupons_code) {
+            $total_price = $request->total_amount;
+            $shop_notes = $request->shop_notes ?? [];
+            $used_points = $request->used_points ?? 0;
 
-        $order = Order::create([
-            'userID' => Auth::id(),
-            'order_code' => 'DH' . '-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
-            'total_price' => $total_price,
-            'order_status' => 'pending',
-            'shipping_fee' => $request->shipping_fee,
-            'used_points' => $used_points,
-            'coupon_discount' => $request->discount_amount ?? 0,
-            'payment_method' => $request->payment_method,
-            'payment_status' => 'pending',
-        ]);
-
-        foreach ($shopItems as $shop_id => $items) {
-            $shop_order = ShopOrder::firstOrCreate([
-                'shopID' => $shop_id,
-                'orderID' => $order->id,
-            ], [
-                'code' => 'DHS-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . substr(time(), -3),
-                'note' => $shop_notes[$shop_id] ?? '',
+            $order = Order::create([
+                'userID' => Auth::id(),
+                'order_code' => 'DH' . '-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . time(),
+                'total_price' => $total_price,
+                'order_status' => 'pending',
+                'shipping_fee' => $request->shipping_fee,
+                'used_points' => $used_points,
+                'coupon_discount' => $request->discount_amount ?? 0,
+                'payment_method' => $request->payment_method,
+                'payment_status' => 'pending',
             ]);
-        
-            foreach ($items as $item) {
-                $product = $item['product'];
-                $quantity = (int) $item['quantity'];
-                $variant_id = null;
-                $variant_name = null;
-                $unit_price = $product->sale_price ?? $product->price ?? 0;
-                $combo_id = null;
 
-                if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
-                    $combo_id = $item['combo_info']['combo_id'];
-                    $unit_price = $item['combo_info']['price_in_combo'];
-                } elseif ($product->is_variant ?? false) {
-                    $variant = $product->variants->where('id', $item['variant_id'])->first();
-                    $variant_id = $variant->id ?? null;
-                    $variant_name = $variant->variant_name ?? null;
-                    $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
+            $couponDiscountMap = [];
+            $coupons_code = array_filter($coupons_code, function($coupon) {
+                return isset($coupon['shopId']) && $coupon['shopId'] !== null && $coupon['shopId'] !== '';
+            });
+
+            foreach ($coupons_code as $coupon) {
+                $shopId = $coupon['shopId'];
+                if (!isset($couponDiscountMap[$shopId])) {
+                    $couponDiscountMap[$shopId] = 0;
                 }
-        
-                $item_total_price = $unit_price * $quantity;
-
-                $product_image = optional($product->images->where('is_default', true)->first() ?? $product->images->first())->image_path ?? null;
-
-                $itemOrderData = [
-                    'orderID' => $order->id,
-                    'shop_orderID' => $shop_order->id,
-                    'productID' => $product->id,
-                    'variantID' => $variant_id,
-                    'combo_id' => $combo_id,
-                    'product_name' => $product->name,
-                    'quantity' => $quantity,
-                    'brand' => $product->brand ?? null,
-                    'category' => $product->category ?? null,
-                    'variant_name' => $variant_name,
-                    'product_image' => $product_image,
-                    'unit_price' => $unit_price,
-                    'total_price' => $item_total_price,
-                ];
-        
-                ItemsOrder::create($itemOrderData);
+                $couponDiscountMap[$shopId] += $coupon['discount_value'];
             }
-        }
-        $order_address = OrderAddress::create([
-            'order_id' => $order->id,
-            'receiver_name' => $user_address->receiver_name,
-            'receiver_phone' => $user_address->receiver_phone,
-            'receiver_email' => $user_address->receiver_email,
-            'address' => $user_address->address,
-            'province' => $user_address->province,
-            'district' => $user_address->district,
-            'ward' => $user_address->ward,
-            'zip_code' => $user_address->zip_code,
-            'address_type' => $user_address->address_type,
-        ]);
-        return $order;
+
+            $shippingFeeMap = [];
+            foreach ($request->shipping_shop_fee as $shipping_shop_fee_item) {
+                $shopId = $shipping_shop_fee_item['shopId'];
+                $shippingFeeMap[$shopId] = $shipping_shop_fee_item['fee'];
+            }
+
+            foreach ($shopItems as $shop_id => $items) {
+                $discount_shop_amount = $couponDiscountMap[$shop_id] ?? 0;
+                $shipping_shop_fee = $shippingFeeMap[$shop_id] ?? 0;
+
+                $shop_order = ShopOrder::firstOrCreate([
+                    'shopID' => $shop_id,
+                    'orderID' => $order->id,
+                    'shipping_shop_fee' => $shipping_shop_fee,
+                    'discount_shop_amount' => $discount_shop_amount,
+                    'status' => 'pending',
+                ], [
+                    'code' => 'DHS-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . substr(time(), -3),
+                    'note' => $shop_notes[$shop_id] ?? '',
+                ]);
+            
+                foreach ($items as $item) {
+                    $product = $item['product'];
+                    $quantity = (int) $item['quantity'];
+                    $variant_id = null;
+                    $variant_name = null;
+                    $unit_price = $product->sale_price ?? $product->price ?? 0;
+                    $combo_id = null;
+                    $combo_quantity = null;
+                    if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
+                        $combo_id = $item['combo_info']['combo_id'];
+                        $unit_price = $item['combo_info']['price_in_combo'];
+                        $combo_quantity = $item['combo_info']['combo_quantity'];
+                    } elseif ($product->is_variant ?? false) {
+                        $variant = $product->variants->where('id', $item['variant_id'])->first();
+                        $variant_id = $variant->id ?? null;
+                        $variant_name = $variant->variant_name ?? null;
+                        $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
+                    }
+            
+                    $item_total_price = $unit_price * $quantity;
+
+                    $product_image = optional($product->images->where('is_default', true)->first() ?? $product->images->first())->image_path ?? null;
+
+                    $itemOrderData = [
+                        'orderID' => $order->id,
+                        'shop_orderID' => $shop_order->id,
+                        'productID' => $product->id,
+                        'variantID' => $variant_id,
+                        'combo_id' => $combo_id,
+                        'product_name' => $product->name,
+                        'quantity' => $quantity,
+                        'brand' => $product->brand ?? null,
+                        'category' => $product->category ?? null,
+                        'variant_name' => $variant_name,
+                        'product_image' => $product_image,
+                        'unit_price' => $unit_price,
+                        'total_price' => $item_total_price,
+                        'combo_quantity' => $combo_quantity,
+                    ];
+            
+                    ItemsOrder::create($itemOrderData);
+                }
+            }
+            $order_address = OrderAddress::create([
+                'order_id' => $order->id,
+                'receiver_name' => $user_address->receiver_name,
+                'receiver_phone' => $user_address->receiver_phone,
+                'receiver_email' => $user_address->receiver_email,
+                'address' => $user_address->address,
+                'province' => $user_address->province,
+                'district' => $user_address->district,
+                'ward' => $user_address->ward,
+                'zip_code' => $user_address->zip_code,
+                'address_type' => $user_address->address_type,
+            ]);
+            return $order;
+        });
     }
     
-    private function storeCouponsUsed($order, $coupons_code): void
+    private function storeCouponsUsed($coupons_code)
     {
-        Log::info('storeCouponsUsed called', [
-            'order_id' => $order->id ?? null,
-            'coupons_code' => $coupons_code
-        ]);
-
         foreach ($coupons_code as $coupon_code) {
-            Log::info('Processing coupon for increment used_count', [
-                'coupon_code' => $coupon_code['code'] ?? null,
-                'coupon_id' => $coupon_code['id'] ?? null
-            ]);
             $coupon = Coupon::where('code', $coupon_code['code'])->first();
             if ($coupon) {
-                $coupon->used_count++;
-                $coupon->save();
-                Log::info('Coupon used_count incremented', [
-                    'coupon_id' => $coupon->id,
-                    'new_used_count' => $coupon->used_count
-                ]);
-            } else {
-                Log::warning('Coupon not found for code', [
-                    'coupon_code' => $coupon_code['code'] ?? null
-                ]);
-            }
-        }
+                $coupon->increment('used_count');
 
-        foreach ($coupons_code as $coupon_code) {
-            Log::info('Processing UserCouponUsed', [
-                'user_id' => Auth::id(),
-                'coupon_id' => $coupon_code['id'] ?? null
-            ]);
-            $coupon_used = UserCouponUsed::where('user_id', Auth::id())
-                ->where('coupon_id', $coupon_code['id'])
-                ->first();
-            Log::info('Coupon used', [
-                'coupon_used' => $coupon_used
-            ]);
-            if ($coupon_used) {
-                $coupon_used->used_count++;
-                $coupon_used->save();
-              
-            } else {
-                UserCouponUsed::create([
-                    'user_id' => Auth::id(),
-                    'coupon_id' => $coupon_code['id'],
-                    'order_id' => $order->id,
-                    'used_count' => 1,
-                ]);
-                Log::info('UserCouponUsed created', [
-                    'user_id' => Auth::id(),
-                    'coupon_id' => $coupon_code['id'],
-                    'order_id' => $order->id,
-                    'used_count' => 1
-                ]);
+                $coupon_used = UserCouponUsed::where('user_id', Auth::id())
+                    ->where('coupon_id', $coupon->id)
+                    ->first();
+
+                if ($coupon_used && $coupon_used->id) {
+                    $coupon_used->increment('used_count');
+                } elseif ($coupon_used) {
+                    UserCouponUsed::where('user_id', Auth::id())
+                        ->where('coupon_id', $coupon->id)
+                        ->increment('used_count');
+                } else {
+                    UserCouponUsed::create([
+                        'user_id' => Auth::id(),
+                        'coupon_id' => $coupon->id,
+                        'used_count' => 1,
+                    ]);
+                }
             }
         }
     }
@@ -435,15 +459,38 @@ class CheckoutController extends Controller
             $order->save();
         }
 
-        foreach ($order->items as $item) {
-            $product = Product::with(['variants' => function ($query) use ($item) {
-                $query->where('id', $item->variantID);
-            }])->find($item->productID);
+        $selected_product = $this->getItems();
 
-            if ($product && $product->variants->first()) {
-                $variant = $product->variants->first();
-                $newStock = max(0, $variant->stock - $item->quantity);
-                $variant->update(['stock' => $newStock]);
+        foreach ($order->items as $item) {
+            static $updatedCombos = [];
+            if (!empty($item->combo_id)) {
+                if (!in_array($item->combo_id, $updatedCombos)) {
+                    $combo = Combo::find($item->combo_id);
+                    if ($combo) {
+                        $combo_quantity = null;
+                        foreach ($selected_product as $sp) {
+                            if (!empty($sp['is_combo']) && $sp['is_combo'] && isset($sp['combo_info']['combo_id']) && $sp['combo_info']['combo_id'] == $item->combo_id) {
+                                $combo_quantity = $sp['combo_info']['combo_quantity'];
+                                break;
+                            }
+                        }
+                        $newComboQuantity = max(0, $combo->quantity - ($combo_quantity ?? 0));
+                        $combo->update(['quantity' => $newComboQuantity]);
+                    }
+                    $updatedCombos[] = $item->combo_id;
+                }
+            } else {
+                $product = Product::find($item->productID);
+                if ($product && $product->is_variant == 1 && !empty($item->variantID)) {
+                    $variant = $product->variants()->where('id', $item->variantID)->first();
+                    if ($variant) {
+                        $newStock = max(0, $variant->stock - $item->quantity);
+                        $variant->update(['stock' => $newStock]);
+                    }
+                } elseif ($product && $product->is_variant == 0) {
+                    $newStock = max(0, $product->stock_total - $item->quantity);
+                    $product->update(['stock_total' => $newStock]);
+                }
             }
         }
 
@@ -468,9 +515,10 @@ class CheckoutController extends Controller
                       ->orWhereIn('variantID', $orderVariantIds);
             })
             ->delete();
-        session()->forget('checkout_items');
+        session()->forget('selected_products');
 
         $products = [];
+
         foreach ($order->items as $item) {
             $product = Product::with(['variants' => function ($query) use ($item) {
                 $query->where('id', $item->variantID);
@@ -485,14 +533,14 @@ class CheckoutController extends Controller
                 ];
             }
         }
-        return view('user.checkout_status.success_payment', compact('order', 'product'));
+        return view('user.checkout_status.success_payment', compact('order', 'products'));
     }
 
     public function failedPayment($order_code)
     {
         $order = Order::where('order_code', $order_code)->first();
         if (!$order) {
-            return redirect()->route('checkout')->with('error', 'Không tìm thấy đơn hàng');
+            return redirect()->route('home');
         }
 
         $orderItems = ItemsOrder::where('orderID', $order->id)->get();
@@ -576,7 +624,7 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'Mã giảm giá không áp dụng cho shop này'], 422);
         }
 
-        if (!$coupon->is_active || $coupon->status != 'active') {
+        if ($coupon->status == 'inactive' || $coupon->status == 'expired' || $coupon->status == 'deleted') {
             return response()->json(['error' => 'Mã giảm giá không còn hiệu lực'], 422);
         }
 

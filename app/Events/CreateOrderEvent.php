@@ -44,7 +44,6 @@ class CreateOrderEvent implements ShouldBroadcast
 
     public function broadcastWith()
     {
-        Log::info(' /////////////// Broadcast With ///////////////');
         return [
             'title' => 'Bạn có 1 đơn hàng mới ' . $this->order->order_code,
             'content' => 'Đơn hàng ' . $this->order->order_code . ' đã được đặt',
@@ -56,10 +55,6 @@ class CreateOrderEvent implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        Log::info(' /////////////// Broadcast On /////////////// ', [
-            'shop_id' => $this->shop_id
-        ]);
-        
         return [
             new PrivateChannel('order.created.' . $this->shop_id)        
         ];
@@ -68,10 +63,6 @@ class CreateOrderEvent implements ShouldBroadcast
     private function storeNotification($order)
     {
         $data = $this->broadcastWith();
-
-        Log::info(' /////////////// Store Notification /////////////// ', [
-            'data' => $data
-        ]);
 
         $notification = new Notification();
         $notification->title = $data['title'];

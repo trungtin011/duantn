@@ -7,7 +7,7 @@
 
 <!-- Custom style -->
 @push('styles')
-    @vite(['resources/css/user/style-prefix.css', 'resources/css/user/style-home.css'])
+    @vite(['resources/css/user/style-home.css'])
     <style>
         .quick-view-modal {
             display: none;
@@ -34,7 +34,7 @@
 @endpush
 
 @section('content')
-    {{-- <div class="overlay" data-overlay></div>
+    <div class="overlay" data-overlay></div>
     <div class="modal" data-modal>
         <div class="modal-close-overlay" data-modal-overlay></div>
         <div class="modal-content">
@@ -57,7 +57,7 @@
                 </form>
             </div>
         </div>
-    </div> --}}
+    </div>
 
     @foreach ($purchasedProducts as $product)
         <div class="notification-toast" data-toast>
@@ -1019,9 +1019,7 @@
 
                     @foreach ($testimonials as $review)
                         <div class="testimonial-card">
-                            <img src="{{ $review->user->avatar_url ?? asset('images/default_avatar.png') }}"
-                                alt="{{ $review->user->name ?? 'Khách hàng ảnh' }}" class="testimonial-banner"
-                                width="80" height="80">
+                            @include('partials.user-avatar', ['user' => $review->user, 'size' => '2xl', 'className' => 'testimonial-banner'])
 
                             <p class="testimonial-name">{{ $review->user->name ?? 'Khách hàng ẩn danh' }}</p>
                             <p class="testimonial-title">

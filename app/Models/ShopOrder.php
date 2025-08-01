@@ -14,6 +14,8 @@ class ShopOrder extends Model
         'shopID',
         'orderID',
         'code',
+        'shipping_shop_fee',
+        'discount_shop_amount',
         'shipping_provider',
         'shipping_fee',
         'tracking_code',
@@ -29,7 +31,6 @@ class ShopOrder extends Model
         'status' => 'string',
     ];
 
-    // Relationships
     public function shop()
     {
         return $this->belongsTo(Shop::class, 'shopID', 'id');

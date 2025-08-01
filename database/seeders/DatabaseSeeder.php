@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
         DB::table('user_addresses')->insert([
             [
                 'userID' => 3,
-                'receiver_name' => 'Customer One',
+                'receiver_name' => 'Y Khoa Êban',
                 'receiver_phone' => '0901234569',
                 'address' => '13 Lý Thái Tổ',
                 'province' => 'Hà Nội',

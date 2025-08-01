@@ -434,10 +434,16 @@ Route::prefix('customer')->group(function () {
         Route::get('/checkout/vnpay/payment/{order_code}', [VNPayController::class, 'vnpayPayment'])->name('checkout.vnpay.payment');
 
         Route::prefix('user/order')->group(function () {
-            Route::get('/', [OrderController::class, 'index'])->name('order_history');
+            Route::get('/parent-order', [OrderController::class, 'parentOrder'])->name('user.order.parent-order');
+            Route::get('/', [OrderController::class, 'getParentOrdersByStatus'])->name('order_history');
+            Route::get('/ajax/{status}', [OrderController::class, 'getParentOrdersByStatus'])->name('user.order.ajax');
             Route::get('/{orderID}', [OrderController::class, 'show'])->name('user.order.detail');
+            Route::get('/parent/{orderID}', [OrderController::class, 'showParent'])->name('user.order.parent-detail');
             Route::patch('/{order}/cancel', [OrderController::class, 'cancel'])->name('user.order.cancel');
             Route::get('/{orderID}/reorder', [OrderController::class, 'reorder'])->name('user.order.reorder');
+            Route::post('/{orderID}/refund', [OrderController::class, 'refund'])->name('user.order.refund');
+            Route::post('/{orderID}/confirm-received', [OrderController::class, 'confirmReceived'])->name('user.order.confirm-received');
+            Route::post('/reviews', [OrderController::class, 'storeReview'])->name('reviews.store');
         });
     });
 });

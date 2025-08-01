@@ -146,6 +146,15 @@
 @section('content')
     <div class="container mx-auto px-4 py-8 max-w-7xl">
         <!-- Breadcrumb -->
+
+        @if(session('error'))
+            <div class="mb-4">
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate__animated animate__shakeX" role="alert">
+                    <strong class="font-bold">Lỗi!</strong>
+                    <span class="block sm:inline">{{ session('error') }}</span>
+                </div>
+            </div>
+        @endif
         <nav class="flex flex-wrap items-center gap-2 md:my-10 text-sm md:text-base text-gray-600" style="margin:10px">
             <a href="#" class="hover:text-primary transition-colors">Tài khoản</a>
             <span class="text-gray-300">/</span>

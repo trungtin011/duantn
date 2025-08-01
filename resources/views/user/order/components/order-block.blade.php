@@ -1,36 +1,36 @@
 <!-- Hiển thị đơn hàng (thêm nút hủy) -->
-<div class="order-block bg-white shadow-sm rounded-lg mb-4">
-    <div class="flex items-center justify-between py-4 px-4 sm:px-6 border-b border-gray-200">
-        <h6 class="text-sm text-gray-500">Ngày đặt: {{ $order->created_at->format('d/m/Y') }}</h6>
+<div class="order-block bg-white shadow-lg rounded-xl mb-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+    <div class="flex items-center justify-between py-5 px-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div class="flex items-center space-x-3">
+            @php
+                $shopLogo = $order->shop->shop_logo ?? null;
+                $shopBg = $order->shop->shop_banner ?? null;
+            @endphp
+            <div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border border-gray-200"
+                @if($shopBg) style="background: url('{{ asset('storage/' . $shopBg) }}') center center/cover no-repeat;" @endif>
+                @if($shopLogo)
+                    <img src="{{ asset('storage/' . $shopLogo) }}" alt="Logo shop" class="object-contain w-full h-full">
+                @else
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                @endif
+            </div>
+            <span class="text-sm font-medium text-gray-700">
+                Tên shop: {{ $order->shop->shop_name ?? 'Không xác định' }}
+            </span>
+        </div>
 
-        @php
-            // Map trạng thái sang tiếng Việt
-            $statusMap = [
-                'pending'    => 'Chờ xác nhận',
-                'processing' => 'Đang xử lý',
-                'shipped'    => 'Đang giao hàng',
-                'delivered'  => 'Đã hoàn thành',
-                'cancelled'  => 'Đã hủy',
-                'refunded'   => 'Trả hàng/Hoàn tiền',
-            ];
-            $orderStatus = $order->order_status ?? '';
-            $statusClass = $order->status_classes ?? 'bg-gray-100 text-gray-500';
-            $statusLabel = $statusMap[$orderStatus] ?? ucfirst($orderStatus);
-        @endphp
-        <span
-            class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $statusClass }}">
-            {{ $statusLabel }}
+        <span class="inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset {{ $order->status_classes }}">
+            {{ $statuses[$order->status] ?? $order->status  }}
         </span>
     </div>
 
-    <div
-        class="order-body px-4 sm:px-6 py-4 {{ $order->order_status === 'cancelled' ? 'filter grayscale opacity-75' : '' }}">
+    <div class="order-body px-6 py-5 {{ $order->status === 'cancelled' ? 'filter grayscale opacity-75' : '' }}">
         @forelse ($order->items as $item)
-            <div
-                class="product-row flex justify-between items-center py-3 {{ !$loop->last ? 'border-b border-dashed' : '' }}">
-                <div class="flex items-center">
-                    <div
-                        class="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] bg-gray-100 rounded flex items-center justify-center mr-3 overflow-hidden {{ $order->order_status === 'cancelled' ? 'opacity-50' : '' }}">
+            <div class="product-row flex justify-between items-center py-4 @if(!$loop->last) border-b border-gray-100 @endif">
+                <div class="flex items-center flex-1">
+                    <div class="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] bg-gray-50 rounded-lg flex items-center justify-center mr-4 overflow-hidden border border-gray-200 {{ $order->order_status === 'cancelled' ? 'opacity-50' : '' }}">
                         @php
                             $variantId = $item->variantID ?? null;
 
@@ -51,222 +51,114 @@
                         @endphp
 
                         <img src="{{ asset('storage/' . $imageToShow) }}" alt="{{ $item->product_name }}"
-                            class="object-contain w-full h-full">
+                            class="object-contain w-full h-full rounded-md">
 
                     </div>
-                    <div class="flex flex-col gap-2">
-                        <h6
-                            class="font-normal text-sm sm:text-base mb-0 {{ $order->order_status === 'cancelled' ? 'text-gray-400' : '' }}">
-                            {{ $item->product_name }}
+                    <div class="flex flex-col gap-2 flex-1">
+                        <h6 class="font-semibold text-sm sm:text-base mb-0 text-gray-800 {{ $order->status === 'cancelled' ? 'text-gray-400' : '' }}">
+                            {{ $item->product_name ?? $item->variant->variant_name }}
                         </h6>
-                        <div
-                            class="text-xs sm:text-sm {{ $order->order_status === 'cancelled' ? 'text-gray-400' : 'text-gray-500' }}">
-                            <p>Số lượng: {{ $item->quantity }}</p>
-                            <p>{{ $item->variant->variant_name ?? '' }}</p>
+                        <div class="text-xs sm:text-sm {{ $order->status === 'cancelled' ? 'text-gray-400' : 'text-gray-500' }}">
+                            <p class="flex items-center gap-2">
+                                <span class="font-medium">Số lượng:</span>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">{{ $item->quantity }}</span>
+                            </p>
+                            <p class="text-gray-600">{{ $item->variant->variant_name ?? $item->product_name }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center pr-4">
-                    <span
-                        class="font-bold text-sm sm:text-base flex items-center gap-2 {{ $order->order_status === 'cancelled' ? 'text-gray-400' : 'text-black' }}">
-                        <span
-                            class="font-thin line-through {{ $order->order_status === 'cancelled' ? 'text-gray-300' : 'text-gray-400' }}">
-                            @if(isset($item->combo_id) && $item->combo_id)
-                                @php
-                                    // Lấy thông tin sản phẩm từ combo_products
-                                    $comboProduct = $item->combo->products->where('productID', $item->productID)->first();
-                                    if ($comboProduct && $comboProduct->variantID) {
-                                        // Nếu có variantID, lấy giá từ variant
-                                        $variant = \App\Models\ProductVariant::find($comboProduct->variantID);
-                                        $originalPrice = $variant ? $variant->price : 0;
-                                    } else {
-                                        // Nếu không có variantID, lấy giá từ product
-                                        $product = \App\Models\Product::find($item->productID);
-                                        $originalPrice = $product ? $product->price : 0;
-                                    }
-                                @endphp
-                                {{ number_format($originalPrice, 0, ',', '.') }}đ
-                            @else
-                                @if($item->variantID)
-                                    {{ number_format($item->variant->price ?? 0, 0, ',', '.') }}đ
-                                @else
-                                    {{ number_format($item->product->price ?? 0, 0, ',', '.') }}đ
-                                @endif
-                            @endif
+                    <span class="font-bold text-sm sm:text-base flex items-center gap-2 {{ $order->status === 'cancelled' ? 'text-gray-400' : 'text-black' }}">
+                        <span class="font-thin line-through {{ $order->status === 'cancelled' ? 'text-gray-300' : 'text-gray-400' }}">
+                            {{ number_format($item->product->price ?? 0, 0, ',', '.') }}đ
                         </span>
-                        <span
-                            class="font-thin {{ $order->order_status === 'cancelled' ? 'text-gray-400' : 'text-red-500' }}">
+                        <span class="font-semibold {{ $order->status === 'cancelled' ? 'text-gray-400' : 'text-red-600' }}">
                             {{ number_format($item->unit_price, 0, ',', '.') }}đ
                         </span>
                     </span>
                 </div>
             </div>
 
-            @if ($order->order_status === 'delivered' && !in_array($item->productID, $reviewedProductIds))
-                <div class="text-right mt-2">
-                    <button
-                        class="open-review-modal bg-[#DB4444] text-white px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-[#CF4343]"
-                        data-product-id="{{ $item->productID }}" data-product-name="{{ $item->product_name }}"
-                        data-order-id="{{ $order->id }}" data-shop-id="{{ $item->shopOrder->shopID }}">
+            @if ($order->status === 'completed' && !in_array($item->productID, $reviewedProductIds))
+                <div class="text-right mt-3 mb-2">
+                    <button class="open-review-modal bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 text-xs sm:text-sm hover:from-red-600 hover:to-red-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                        data-product-id="{{ $item->productID }}" 
+                        data-product-name="{{ $item->product_name }}"
+                        data-order-id="{{ $order->id }}" 
+                        data-shop-id="{{ $item->shopOrder->shopID }}">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                        </svg>
                         Đánh giá sản phẩm
                     </button>
                 </div>
             @endif
         @empty
-            <p class="text-gray-500 text-center">Không có sản phẩm trong đơn hàng.</p>
+            <div class="text-center py-8">
+                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                </svg>
+                <p class="text-gray-500 text-sm">Không có sản phẩm trong đơn hàng.</p>
+            </div>
         @endforelse
     </div>
 
-    <div class="order-footer bg-gray-50 py-3 px-4 sm:px-6 flex justify-end items-center">
-        <span class="font-bold text-sm sm:text-base mr-4">Thành tiền:
-            <span class="text-red-500">{{ number_format($order->total_price, 0, ',', '.') }}đ</span>
-        </span>
+    <div class="order-footer bg-gradient-to-r from-gray-50 to-gray-100 py-4 px-6 flex flex-wrap justify-between items-center rounded-b-xl">
+        <div class="flex items-center mb-3 sm:mb-0">
+            <span class="font-bold text-sm sm:text-base text-gray-700">
+                Thành tiền:
+                <span class="text-red-600 ml-1">{{ number_format($order->order->total_price ?? $order->total_price , 0, ',', '.') }}đ</span>
+            </span>
+        </div>
 
-        @if (in_array($order->order_status, ['pending', 'processing']))
-            <button
-                class="open-cancel-modal bg-red-500 text-white px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-red-600 mr-4"
-                data-order-id="{{ $order->id }}">
-                Hủy đơn hàng
-            </button>
-        @endif
+        <div class="flex flex-wrap gap-2">
+            @if (in_array($order->status, ['pending', 'processing']))
+                <button class="open-cancel-modal bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 text-xs sm:text-sm hover:from-red-600 hover:to-red-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                    data-order-id="{{ $order->id }}">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Hủy đơn hàng
+                </button>
+            @endif
 
-        <a href="{{ route('user.order.show', $order->id) }}"
-            class="border border-gray-500 text-gray-700 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm hover:bg-black hover:text-white">
-            Xem chi tiết
-        </a>
+            @if ($order->status === 'delivered')
+                <button class="open-refund-modal bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 text-xs sm:text-sm hover:from-orange-600 hover:to-orange-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                    data-order-id="{{ $order->id }}">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                    </svg>
+                    Yêu cầu trả hàng
+                </button>
+                <button class="confirm-received bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 text-xs sm:text-sm hover:from-green-600 hover:to-green-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                    data-order-id="{{ $order->id }}">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Xác nhận đã nhận
+                </button>
+            @endif
+
+            @if ($order->status === 'completed')
+                <a href="{{ route('user.order.reorder', $order->id) }}"
+                    class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 text-xs sm:text-sm hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Đặt lại
+                </a>
+            @endif
+
+            <a href="{{ route('user.order.show', $order->id) }}"
+                class="border-2 border-gray-300 text-gray-700 px-4 py-2 text-xs sm:text-sm hover:bg-gray-800 hover:text-white hover:border-gray-800 rounded-lg transition-all duration-200 font-medium">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                Xem chi tiết
+            </a>
+        </div>
     </div>
 </div>
 
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Logic cho các tab trạng thái đơn hàng
-            const tabButtons = document.querySelectorAll('#orderStatusTabs button');
-            const tabPanes = document.querySelectorAll('.tab-pane');
 
-            tabButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Xóa trạng thái active khỏi tất cả các nút
-                    tabButtons.forEach(btn => {
-                        btn.classList.remove('text-black');
-                        btn.classList.add('text-gray-500');
-                    });
-
-                    // Thêm trạng thái active cho nút được nhấp
-                    this.classList.remove('text-gray-500');
-                    this.classList.add('text-black');
-
-                    // Ẩn tất cả các tab pane
-                    tabPanes.forEach(pane => {
-                        pane.classList.add('hidden');
-                    });
-
-                    // Hiển thị tab pane tương ứng
-                    const targetPaneId = this.getAttribute('data-target');
-                    const targetPane = document.querySelector(targetPaneId);
-                    if (targetPane) {
-                        targetPane.classList.remove('hidden');
-                    }
-                });
-            });
-
-            // Logic cho đánh giá (sử dụng event delegation)
-            const reviewModal = document.getElementById('reviewModal');
-            const reviewForm = document.getElementById('reviewForm');
-            const orderIdInput = document.getElementById('modalOrderId');
-            const shopIdInput = document.getElementById('modalShopId');
-            const productIdInput = document.getElementById('modalProductId');
-            const productNameEl = document.getElementById('modalProductName');
-            const ratingInput = document.getElementById('modalRating');
-            const stars = document.querySelectorAll('#modalStarRating i');
-
-            // Xử lý phân trang AJAX
-            document.querySelectorAll('.pagination a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const url = this.href;
-                    const targetPane = this.closest('.tab-pane');
-
-                    fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'text/html',
-                            }
-                        })
-                        .then(response => response.text())
-                        .then(html => {
-                            targetPane.innerHTML = html;
-                        })
-                        .catch(error => {
-                            console.error('Lỗi khi tải phân trang:', error);
-                        });
-                });
-            });
-
-            // Gắn sự kiện thông qua phần tử cha
-            document.getElementById('orderStatusTabsContent').addEventListener('click', function(e) {
-                if (e.target.classList.contains('open-review-modal')) {
-                    e.preventDefault();
-                    orderIdInput.value = e.target.dataset.orderId;
-                    shopIdInput.value = e.target.dataset.shopId;
-                    productIdInput.value = e.target.dataset.productId;
-                    productNameEl.innerText = `Đánh giá: ${e.target.dataset.productName}`;
-
-                    ratingInput.value = 0;
-                    stars.forEach(s => {
-                        s.classList.remove('text-yellow-500');
-                        s.classList.add('text-gray-400');
-                    });
-
-                    const actionUrl = "{{ route('reviews.store', ':id') }}".replace(':id', e.target.dataset
-                        .orderId);
-                    reviewForm.setAttribute('action', actionUrl);
-
-                    reviewModal.classList.remove('hidden');
-                    reviewModal.classList.add('flex');
-                }
-            });
-
-            document.getElementById('closeModalBtn').addEventListener('click', function() {
-                reviewModal.classList.add('hidden');
-                reviewModal.classList.remove('flex');
-            });
-
-            // Logic cho hủy đơn
-            const cancelModal = document.getElementById('cancelModal');
-            const cancelForm = document.getElementById('cancelForm');
-            const orderIdInputCancel = document.getElementById('modalOrderIdCancel');
-
-            document.getElementById('orderStatusTabsContent').addEventListener('click', function(e) {
-                if (e.target.classList.contains('open-cancel-modal')) {
-                    e.preventDefault();
-                    orderIdInputCancel.value = e.target.dataset.orderId;
-                    const actionUrl = "{{ route('user.order.cancel', ':id') }}".replace(':id', e.target
-                        .dataset.orderId);
-                    cancelForm.setAttribute('action', actionUrl);
-                    cancelModal.classList.remove('hidden');
-                    cancelModal.classList.add('flex');
-                }
-            });
-
-            document.querySelectorAll('#closeCancelModalBtn, #closeCancelModalBtnSubmit').forEach(button => {
-                button.addEventListener('click', function() {
-                    cancelModal.classList.add('hidden');
-                    cancelModal.classList.remove('flex');
-                });
-            });
-
-            // Logic chọn sao đánh giá
-            stars.forEach(star => {
-                star.addEventListener('click', function() {
-                    const value = this.dataset.value;
-                    ratingInput.value = value;
-                    stars.forEach(s => {
-                        s.classList.toggle('text-yellow-500', s.dataset.value <= value);
-                        s.classList.toggle('text-gray-400', s.dataset.value > value);
-                    });
-                });
-            });
-        });
-    </script>
-@endpush

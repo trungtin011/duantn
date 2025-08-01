@@ -6,8 +6,7 @@
             <div class="p-4 rounded">
                 <div class="flex gap-5 border-b border-[#efefef] pb-5 mb-8">
                     <div class="">
-                        <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('images/default-avatar.png') }}"
-                            class="w-[28px] h-[28px] rounded-full object-cover">
+                        @include('partials.user-avatar', ['size' => 'sm'])
                     </div>
                     <div class="flex flex-col">
                         <span class="text-sm font-semibold">{{ auth()->user()->fullname }}</span>
