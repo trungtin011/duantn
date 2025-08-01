@@ -80,11 +80,6 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\AutoChatSetting::class, 'user_id');
     }
 
-    public function reviews()
-    {
-        return $this->hasMany(ProductReview::class);
-    }
-
     public function followedShops()
     {
         return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')

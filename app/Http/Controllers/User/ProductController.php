@@ -134,10 +134,8 @@ class ProductController extends Controller
 
         $product = Product::with([
             'images',
-            'reviews.user',
             'variants.attributeValues.attribute',
             'variants.images',
-            'reviews.likes',
             'shop.coupons',
             'orderReviews.user',
             'orderReviews.images',
