@@ -550,7 +550,7 @@ Route::post('/customer/cart/add-multi', [CartController::class, 'addMultiToCart'
 Route::post('/customer/apply-app-discount', [UserCouponController::class, 'applyAppDiscount'])->name('customer.apply-app-discount');
 
 Route::middleware(['auth'])->group(function () {
-    Route::post('/order-review/store', [UserOrderController::class, 'storeReview'])->name('reviews.store');
+    Route::post('/order-review/store', [UserOrderController::class, 'storeReview'])->name('order.reviews.store');
 });
 
 Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
