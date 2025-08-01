@@ -1,4 +1,4 @@
-
+// checkout-form-handler.js
 function initializeCheckoutFormHandler() {
     let isSubmitting = false;
 
@@ -27,16 +27,16 @@ function initializeCheckoutFormHandler() {
         }
         return true;
     }
-    function collectDiscountAmount(){
+
+    function collectDiscountAmount() {
         const discountAmount = parseInt(document.getElementById('discount_amount').textContent.replace(/[^\d]/g, '')) || 0;
         const shopDiscountAmount = parseInt(document.getElementById('discount_shop_fee').textContent.replace(/[^\d]/g, '')) || 0;
-        const discount_shipping_fee = parseInt(document.getElementById('discount_shipping_fee').textContent.replace(/[^\d]/g, '')) || 0;
-        const points_amount = parseInt(document.getElementById('points_amount').textContent.replace(/[^\d]/g, '')) || 0;
-        const totalDiscountAmount = discountAmount + shopDiscountAmount + discount_shipping_fee + points_amount;
-        return totalDiscountAmount;
+        const discountShippingFee = parseInt(document.getElementById('discount_shipping_fee').textContent.replace(/[^\d]/g, '')) || 0;
+        const pointsAmount = parseInt(document.getElementById('points_amount').textContent.replace(/[^\d]/g, '')) || 0;
+        return discountAmount + shopDiscountAmount + discountShippingFee + pointsAmount;
     }
-    
-    function collectFormData() {
+
+    function collectFormData(token) {
         return {
             selected_address_id: document.querySelector('input[name="receiver_address_id"]:checked')?.value,
             payment_method: document.querySelector('input[name="payment"]:checked')?.value,
@@ -50,6 +50,7 @@ function initializeCheckoutFormHandler() {
             used_points: document.getElementById('used_points').value || 0,
             shipping_shop_fee: collectShippingFee(),
             coupons_code: collectCouponsCode(),
+            recaptcha_token: token // Thêm token reCAPTCHA
         };
     }
 
@@ -77,7 +78,6 @@ function initializeCheckoutFormHandler() {
             });
         });
         return couponCode;
-
     }
 
     function collectShippingFee() {
@@ -104,11 +104,32 @@ function initializeCheckoutFormHandler() {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang xử lý...';
         submitBtn.disabled = true;
 
-        const formData = collectFormData();
-        
-        console.log('Dữ liệu gửi đi:', formData);
-
         try {
+            // Kiểm tra script reCAPTCHA
+            if (typeof grecaptcha === 'undefined') {
+                throw new Error('reCAPTCHA script chưa được tải');
+            }
+
+            // Lấy token reCAPTCHA
+            const token = await new Promise((resolve, reject) => {
+                grecaptcha.ready(function() {
+                const siteKey = '6LfatpErAAAAAEioR0Zd9nmkFwVEX6nzGGaY81CI';
+                grecaptcha.execute(siteKey, { action: 'submit_order' })
+                        .then(resolve)
+                        .catch(reject);
+                });
+            });
+
+            // Thu thập dữ liệu form với token
+            const formData = collectFormData(token);
+            console.log('Dữ liệu gửi đi:', formData);
+
+            // Gán token vào input ẩn (dự phòng cho form HTML)
+            const recaptchaInput = document.getElementById('recaptcha_token');
+            if (recaptchaInput) {
+                recaptchaInput.value = token;
+            }
+
             const response = await fetch('/customer/checkout/submit', {
                 method: 'POST',
                 headers: {
@@ -126,8 +147,8 @@ function initializeCheckoutFormHandler() {
 
             const data = await response.json();
             console.log('Phản hồi từ server:', data);
-            
-            if(data.success) {
+
+            if (data.success) {
                 showSuccess('Đặt hàng thành công!');
                 if (data.redirectUrl) {
                     window.location.href = data.redirectUrl;
@@ -137,7 +158,7 @@ function initializeCheckoutFormHandler() {
             }
         } catch (error) {
             console.error('Lỗi:', error);
-            showError(error.message || 'Có lỗi xảy ra khi đặt hàng');
+            showError('Có lỗi xảy ra: ' + error.message);
         } finally {
             isSubmitting = false;
             submitBtn.innerHTML = originalText;
@@ -166,4 +187,4 @@ function initializeCheckoutFormHandler() {
     }
 }
 
-export { initializeCheckoutFormHandler }; 
+export { initializeCheckoutFormHandler };
