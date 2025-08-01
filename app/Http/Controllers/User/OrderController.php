@@ -81,12 +81,21 @@ class OrderController extends Controller
 
     public function parentOrder()
     {
-        return view('user.order.parent-order');
+        Log::info('OrderController@parentOrder called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
+        return view('user.order.parent-order', compact('user'));
     }
 
     public function show($shopOrderID)
     {
+        Log::info('OrderController@show called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
         $userId = Auth::id();
+
+        // Lấy danh sách sản phẩm đã đánh giá
+        $reviewedProductIds = OrderReview::where('user_id', $user->id)
+            ->pluck('product_id')
+            ->toArray();
 
         $shopOrder = \App\Models\ShopOrder::with([
             'items.product.images' => function ($query) {
@@ -120,12 +129,21 @@ class OrderController extends Controller
             'orderItems' => $orderItems,
             'orderAddress' => $orderAddress,
             'parentOrder' => $order,
+            'user' => $user,
+            'reviewedProductIds' => $reviewedProductIds,
         ]);
     }
 
     public function showParent($orderCode)
     {
+        Log::info('OrderController@showParent called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
         $userId = Auth::id();
+
+        // Lấy danh sách sản phẩm đã đánh giá
+        $reviewedProductIds = OrderReview::where('user_id', $user->id)
+            ->pluck('product_id')
+            ->toArray();
 
         $parentOrder = Order::with([
             'shopOrders.items.product.images' => function ($query) {
@@ -157,6 +175,8 @@ class OrderController extends Controller
             'parentOrder' => $parentOrder,
             'orderAddress' => $orderAddress,
             'statuses' => $statuses,
+            'user' => $user,
+            'reviewedProductIds' => $reviewedProductIds,
         ]);
     }
 
@@ -527,4 +547,123 @@ class OrderController extends Controller
         }
     }
     
+    public function storeReview(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+        }
+
+        $request->validate([
+            'orderID' => 'required|exists:shop_order,id',
+            'shopID' => 'required|exists:shops,id',
+            'productID' => 'required|exists:products,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|min:50',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'video' => 'nullable|file|max:10240',
+        ]);
+
+        try {
+            // Kiểm tra xem sản phẩm đã được đánh giá chưa
+            $existingReview = OrderReview::where('user_id', $user->id)
+                ->where('product_id', $request->productID)
+                ->where('shop_order_id', $request->orderID)
+                ->first();
+
+            if ($existingReview) {
+                return response()->json(['success' => false, 'message' => 'Bạn đã đánh giá sản phẩm này rồi']);
+            }
+
+            // Kiểm tra đơn hàng đã hoàn thành chưa
+            $shopOrder = ShopOrder::where('id', $request->orderID)
+                ->whereHas('order', function($query) use ($user) {
+                    $query->where('userID', $user->id);
+                })
+                ->first();
+
+            if (!$shopOrder || $shopOrder->status !== 'completed') {
+                return response()->json(['success' => false, 'message' => 'Chỉ có thể đánh giá sản phẩm từ đơn hàng đã hoàn thành']);
+            }
+
+            DB::beginTransaction();
+
+            // Tạo đánh giá
+            $review = OrderReview::create([
+                'user_id' => $user->id,
+                'product_id' => $request->productID,
+                'shop_id' => $request->shopID,
+                'shop_order_id' => $request->orderID,
+                'rating' => $request->rating,
+                'comment' => $request->comment,
+            ]);
+
+            // Xử lý upload hình ảnh
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('reviews/images', 'public');
+                    
+                    // Lưu vào bảng order_review_images
+                    \App\Models\OrderReviewImage::create([
+                        'review_id' => $review->id,
+                        'image_path' => $path,
+                    ]);
+                }
+            }
+
+            // Xử lý upload video
+            if ($request->hasFile('video')) {
+                $videoPath = $request->file('video')->store('reviews/videos', 'public');
+                
+                // Lưu vào bảng order_review_videos
+                \App\Models\OrderReviewVideo::create([
+                    'review_id' => $review->id,
+                    'video_path' => $videoPath,
+                ]);
+            }
+
+            // Tính toán điểm thưởng
+            $points = 0;
+            $commentLength = strlen($request->comment);
+            $hasImages = $request->hasFile('images') && count($request->file('images')) > 0;
+            $hasVideo = $request->hasFile('video');
+
+            if ($commentLength >= 50) {
+                if ($hasImages && $hasVideo) {
+                    $points = 200;
+                } elseif ($hasImages || $hasVideo) {
+                    $points = 100;
+                }
+            }
+
+            // Cộng điểm cho user nếu có
+            if ($points > 0) {
+                $customer = Customer::where('userID', $user->id)->first();
+                if ($customer) {
+                    $customer->total_points += $points;
+                    $customer->save();
+
+                    PointTransaction::create([
+                        'userID' => $user->id,
+                        'orderID' => $request->orderID,
+                        'points' => $points,
+                        'type' => 'bonus',
+                        'description' => 'Nhận điểm từ đánh giá sản phẩm #' . $request->productID,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Đánh giá đã được gửi thành công!' . ($points > 0 ? " Bạn đã nhận được {$points} xu!" : '')
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi khi tạo đánh giá: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi gửi đánh giá: ' . $e->getMessage()]);
+        }
+    }
 }   
