@@ -389,7 +389,6 @@
                         </div>
                         @endif
 
-                        <!-- Order Status Changes -->
                         @php
                         $statusHistory = [
                             'pending' => [

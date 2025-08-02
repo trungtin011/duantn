@@ -505,16 +505,23 @@ class CheckoutController extends Controller
             'order_status' => 'pending'
         ]);
 
-        $orderProductIds = $order->items->pluck('productID')->toArray();
-        $orderVariantIds = $order->items->pluck('variantID')->toArray();
+        foreach ($order->items as $item) {
+            $cartQuery = Cart::where('userID', Auth::id())
+                ->where('productID', $item->productID);
 
-        Cart::where('userID', Auth::id())
-            ->whereIn('productID', $orderProductIds)
-            ->where(function ($query) use ($orderVariantIds) {
-                $query->whereNull('variantID')
-                      ->orWhereIn('variantID', $orderVariantIds);
-            })
-            ->delete();
+            if (!empty($item->combo_id)) {
+                $cartQuery->where('combo_id', $item->combo_id);
+            } else {
+                if (!empty($item->variantID)) {
+                    $cartQuery->where('variantID', $item->variantID);
+                } else {
+                    $cartQuery->whereNull('variantID')
+                             ->whereNull('combo_id');
+                }
+            }
+
+            $cartQuery->delete();
+        }
         session()->forget('selected_products');
 
         $products = [];
