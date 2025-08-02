@@ -64,7 +64,7 @@
                     <div class="flex flex-col gap-2 flex-1">
                         <h6
                             class="font-semibold text-sm sm:text-base mb-0 text-gray-800 {{ $order->status === 'cancelled' ? 'text-gray-400' : '' }}">
-                            {{ $item->product_name ?? $item->variant->variant_name }}
+                            {{ $item->product_name }}
                         </h6>
                         <div
                             class="text-xs sm:text-sm {{ $order->status === 'cancelled' ? 'text-gray-400' : 'text-gray-500' }}">
@@ -73,20 +73,48 @@
                                 <span
                                     class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">{{ $item->quantity }}</span>
                             </p>
-                            <p class="text-gray-600">{{ $item->variant->variant_name ?? $item->product_name }}</p>
+                            @if($item->variant && $item->variant->variant_name)
+                                <p class="text-gray-600">Phân loại: {{ $item->variant->variant_name }}</p>
+                            @elseif($item->combo && $item->combo->products)
+                                @php
+                                    $comboProduct = $item->combo->products->firstWhere('productID', $item->productID);
+                                @endphp
+                                @if($comboProduct && $comboProduct->variant && $comboProduct->variant->variant_name)
+                                    <p class="text-gray-600">Phân loại: {{ $comboProduct->variant->variant_name }}</p>
+                                @endif
+                            @endif
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center pr-4">
                     <span
                         class="font-bold text-sm sm:text-base flex items-center gap-2 {{ $order->status === 'cancelled' ? 'text-gray-400' : 'text-black' }}">
-                        <span
-                            class="font-thin line-through {{ $order->status === 'cancelled' ? 'text-gray-300' : 'text-gray-400' }}">
-                            {{ number_format($item->product->price ?? 0, 0, ',', '.') }}đ
-                        </span>
+                        @php
+                            $originalPrice = 0;
+                            $currentPrice = $item->unit_price;
+                            
+                            if ($item->variant && $item->variant->price) {
+                                $originalPrice = $item->variant->price;
+                            } elseif ($item->combo && $item->combo->products) {
+                                $comboProduct = $item->combo->products->firstWhere('productID', $item->productID);
+                                if ($comboProduct && $comboProduct->variant && $comboProduct->variant->price) {
+                                    $originalPrice = $comboProduct->variant->price;
+                                } else {
+                                    $originalPrice = $item->product->price ?? 0;
+                                }
+                            } else {
+                                $originalPrice = $item->product->price ?? 0;
+                            }
+                        @endphp
+                        @if($originalPrice > $currentPrice)
+                            <span
+                                class="font-thin line-through {{ $order->status === 'cancelled' ? 'text-gray-300' : 'text-gray-400' }}">
+                                {{ number_format($originalPrice, 0, ',', '.') }}đ
+                            </span>
+                        @endif
                         <span
                             class="font-semibold {{ $order->status === 'cancelled' ? 'text-gray-400' : 'text-red-600' }}">
-                            {{ number_format($item->unit_price, 0, ',', '.') }}đ
+                            {{ number_format($currentPrice, 0, ',', '.') }}đ
                         </span>
                     </span>
                 </div>

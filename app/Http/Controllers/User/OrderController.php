@@ -46,7 +46,7 @@ class OrderController extends Controller
             $orders = Order::where('userID', $user->id)
                 ->where('order_status', $status)
                 ->where('payment_status','pending')
-                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.items.combo.products.variant', 'shopOrders.shop'])
                 ->orderBy('created_at', 'desc')
                 ->paginate($perPage);
         }
@@ -54,7 +54,7 @@ class OrderController extends Controller
             $orders = Order::where('userID', $user->id)
                 ->where('order_status', 'pending')
                 ->whereIn('payment_status', ['paid', 'cod_paid'])
-                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.items.combo.products.variant', 'shopOrders.shop'])
                 ->orderBy('created_at', 'desc')
                 ->paginate($perPage);
         }
@@ -62,7 +62,7 @@ class OrderController extends Controller
             $orders = Order::where('userID', $user->id)
                 ->where('order_status', $status)
                 ->where('payment_status', '!=' ,'failed')
-                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.items.combo.products.variant', 'shopOrders.shop'])
                 ->orderBy('created_at', 'desc')
                 ->paginate($perPage);
         }
@@ -104,6 +104,7 @@ class OrderController extends Controller
             'items.variant' => function ($query) {
                 $query->select('id', 'productID', 'variant_name', 'price', 'sale_price');
             },
+            'items.combo.products.variant',
             'shop',
             'order.address',
             'order.user' => function ($query) {
@@ -152,6 +153,7 @@ class OrderController extends Controller
             'shopOrders.items.variant' => function ($query) {
                 $query->select('id', 'productID', 'variant_name', 'price', 'sale_price');
             },
+            'shopOrders.items.combo.products.variant',
             'shopOrders.shop',
             'address',
             'user' => function ($query) {
