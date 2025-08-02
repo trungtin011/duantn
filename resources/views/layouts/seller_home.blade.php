@@ -247,6 +247,12 @@
                         <ul x-show="open" x-transition
                             class="dropdown_products_content flex flex-col gap-2 px-[44px] py-[12px]">
                             <li class="text-sm text-[#64748b]">
+                                <a href="{{ route('seller.combo.index') }}" class="link_admin">Tạo combo</a>
+                            </li>
+                            <li class="text-sm text-[#64748b]">
+                                <a href="{{ route('seller.ads_campaigns.index') }}" class="link_admin">Quản lý quảng cáo</a>
+                            </li>
+                            <li class="text-sm text-[#64748b]">
                                 <a href="#" class="link_admin">Kênh Marketing</a>
                             </li>
                             <li class="text-sm text-[#64748b]">
@@ -273,6 +279,7 @@
                             <li class="text-sm text-[#64748b]">
                                 <a href="#" class="link_admin">Chương Trình Shopee</a>
                             </li>
+                            
                         </ul>
                     </div>
 
@@ -293,7 +300,7 @@
                         <ul x-show="open" x-transition
                             class="dropdown_products_content flex flex-col gap-2 px-[44px] py-[12px]">
                             <li class="text-sm text-[#64748b]">
-                                <a href="#" class="link_admin">Quản lý Chat</a>
+                                <a href="{{ route('seller.chat') }}" class="link_admin">Chat</a>
                             </li>
                             <li class="text-sm text-[#64748b]">
                                 <a href="{{ route('seller.reviews.index') }}" class="link_admin">Quản lý Đánh Giá</a>

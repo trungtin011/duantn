@@ -8,6 +8,23 @@
     <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
     <title>@yield('title', 'Default Title')</title>
 
+    @php
+        $laravelUserData = null;
+        if (Auth::check()) {
+            $laravelUserData = [
+                'id' => Auth::user()->id,
+                'name' => Auth::user()->fullname ?? Auth::user()->username,
+            ];
+        }
+    @endphp
+
+    <script>
+        window.Laravel = {
+            csrfToken: "{{ csrf_token() }}",
+            user: @json($laravelUserData)
+        };
+    </script>
+
     <!-- Font + Tailwind + Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
@@ -28,26 +45,181 @@
     @vite('resources/css/user/cart-sidebar.css')
     @stack('styles')
     @vite('resources/js/echo.js')
+    <style>
+        .floating-support-icons {
+            position: fixed;
+            top: 50%;
+            right: 36px;
+            transform: translateY(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .floating-support-icons.collapsed {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-50%) scale(0.7);
+        }
+
+        .support-icon {
+            width: 56px;
+            height: 56px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.22s, transform 0.18s, background 0.18s;
+            font-size: 30px;
+            color: #1976D2;
+            border: 2.5px solid #f3f3f3;
+            cursor: pointer;
+        }
+
+        .support-icon img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        .support-icon.zalo {
+            border-color: #008fe5;
+        }
+
+        .support-icon.messenger {
+            border-color: #0084ff;
+        }
+
+        .support-icon.phone {
+            border-color: #43a047;
+            color: #43a047;
+        }
+
+        .support-icon.email {
+            border-color: #fbc02d;
+            color: #fbc02d;
+        }
+
+        .support-icon.chat {
+            border-color: #ef3248;
+            color: #ef3248;
+        }
+
+        .support-icon:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+            transform: scale(1.12) translateY(-2px);
+            background: #f0f4ff;
+            border-width: 3px;
+        }
+
+        .floating-support-toggle {
+            position: fixed;
+            top: 50%;
+            right: 36px;
+            transform: translateY(-50%);
+            z-index: 10000;
+            width: 44px;
+            height: 44px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.13);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #ef3248;
+            color: #ef3248;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .floating-support-toggle:hover {
+            background: #ef3248;
+            color: #fff;
+        }
+
+        .floating-support-toggle ion-icon {
+            font-size: 28px;
+            transition: transform 0.2s;
+        }
+
+        .floating-support-icons.collapsed {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-50%) scale(0.7);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .floating-support-icons {
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        /* Loader Spinner */
+        .loader {
+            width: 50px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 8px solid #0000;
+            border-right-color: #ffa50097;
+            position: relative;
+            animation: l24 1s infinite linear;
+        }
+
+        .loader:before,
+        .loader:after {
+            content: "";
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: inherit;
+            animation: inherit;
+            animation-duration: 2s;
+        }
+
+        .loader:after {
+            animation-duration: 2s;
+        }
+
+        #global-loader {
+            transition: opacity 0.5s ease;
+            opacity: 1;
+        }
+
+        @keyframes l24 {
+            100% {
+                transform: rotate(1turn)
+            }
+        }
+    </style>
 </head>
 
 @auth
     <script>
         window.addEventListener('beforeunload', function() {
             navigator.sendBeacon('/update-session', JSON.stringify({
-                user_id: {{ Auth::id() }}
+                user_id: "{{ Auth::id() }}"
             }));
         });
     </script>
 @endauth
 
 <body class="font-[Inter]">
+    <!-- Loader Fullscreen -->
+    <div id="global-loader"
+        style="position:fixed;z-index:99999;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;">
+        <div class="loader"></div>
+    </div>
     <!-- Top Header -->
     <div class="bg-black text-white py-3">
         <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             @auth
                 @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
                     <div>
-                        <a href="{{ route('seller.index') }}" class="text-[#EF3248] text-sm capitalize hover:text-orange-600">
+                        <a href="{{ route('seller.index') }}"
+                            class="text-[#EF3248] text-sm capitalize hover:text-orange-600">
                             Kênh người bán
                         </a>
                     </div>
@@ -458,29 +630,22 @@
                 <i class="fa fa-bars"></i>
             </button>
 
-        <!-- Search & Icons -->
-        <div class="hidden md:flex items-center gap-10 w-5/6">
-            <form action="{{ route('search') }}" method="GET"
-                id="searchForm"
-                class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between relative">
-                
-                <input
-                    type="text"
-                    name="query"
-                    id="searchInput"
-                    placeholder="Bạn muốn tìm kiếm gì ?"
-                    class="text-sm focus:outline-none w-full"
-                    value="{{ request('query') }}"
-                    autocomplete="off"
-                />
-                <button type="submit">
-                    <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
-                </button>
+            <!-- Search & Icons -->
+            <div class="hidden md:flex items-center gap-10 w-5/6">
+                <form action="{{ route('search') }}" method="GET" id="searchForm"
+                    class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between relative">
 
-                <!-- Gợi ý tìm kiếm -->
-                <div id="searchSuggestions"
-                    class="absolute top-full left-0 bg-white border w-full mt-1 shadow-lg rounded-md hidden z-50">
-                </div>
+                    <input type="text" name="query" id="searchInput" placeholder="Bạn muốn tìm kiếm gì ?"
+                        class="text-sm focus:outline-none w-full" value="{{ request('query') }}"
+                        autocomplete="off" />
+                    <button type="submit">
+                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                    </button>
+
+                    <!-- Gợi ý tìm kiếm -->
+                    <div id="searchSuggestions"
+                        class="absolute top-full left-0 bg-white border w-full mt-1 shadow-lg rounded-md hidden z-50">
+                    </div>
                 </form>
 
                 <div class="relative">
@@ -488,7 +653,8 @@
                         class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
                         <span id="cart-count" class="text-center text-xs text-white">0</span>
                     </div>
-                    <button id="desktop-cart-trigger" class="cart-icon-trigger text-gray-700 hover:text-red-500 text-2xl p-0 border-none bg-transparent cursor-pointer">
+                    <button id="desktop-cart-trigger"
+                        class="cart-icon-trigger text-gray-700 hover:text-red-500 text-2xl p-0 border-none bg-transparent cursor-pointer">
                         <i class="fa fa-shopping-cart"></i>
                     </button>
                 </div>
@@ -747,8 +913,69 @@
         </div>
     </footer>
 
-    @stack('scripts')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Floating Support Toggle Button -->
+    <div id="floating-support-toggle" class="floating-support-toggle" onclick="toggleSupportIcons()">
+        <ion-icon id="toggle-icon" name="chevron-back-outline"></ion-icon>
+    </div>
+    <!-- Floating Support Icons -->
+    <div id="floating-support-icons" class="floating-support-icons">
+        <a href="https://zalo.me/0915571415" target="_blank" class="support-icon zalo" title="Chat Zalo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" />
+        </a>
+        <a href="https://m.me/yourfacebook" target="_blank" class="support-icon messenger" title="Messenger">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Facebook_Messenger_4_Logo.svg"
+                alt="Messenger" />
+        </a>
+        <a href="tel:0915571415" class="support-icon phone" title="Gọi điện">
+            <ion-icon name="call"></ion-icon>
+        </a>
+        <a href="mailto:exclusive@gmail.com" class="support-icon email" title="Gửi email">
+            <ion-icon name="mail"></ion-icon>
+        </a>
+        <a href="/chat" class="support-icon chat" title="Chat trực tiếp">
+            <ion-icon name="chatbubbles"></ion-icon>
+        </a>
+    </div>
+    <div class="group fixed bottom-0 right-0 p-2  flex items-end justify-end w-24 h-24 ">
+        <!-- main -->
+        <div
+            class="text-white shadow-xl flex items-center justify-center p-3 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 z-50 absolute  ">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor"
+                class="w-6 h-6 group-hover:rotate-90 transition  transition-all duration-[0.6s]">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </div>
+        <!-- sub left -->
+        <div
+            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-y-0 group-hover:scale-y-100 group-hover:-translate-x-16   flex  p-2 hover:p-3 bg-green-300 scale-100 hover:bg-green-400 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 10.5h.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H21M3.75 18h15A2.25 2.25 0 0021 15.75v-6a2.25 2.25 0 00-2.25-2.25h-15A2.25 2.25 0 001.5 9.75v6A2.25 2.25 0 003.75 18z" />
+            </svg>
+        </div>
+        <!-- sub top -->
+        <div
+            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-x-0 group-hover:scale-x-100 group-hover:-translate-y-16  flex  p-2 hover:p-3 bg-blue-300 hover:bg-blue-400  text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9.143 17.082a24.248 24.248 0 003.844.148m-3.844-.148a23.856 23.856 0 01-5.455-1.31 8.964 8.964 0 002.3-5.542m3.155 6.852a3 3 0 005.667 1.97m1.965-2.277L21 21m-4.225-4.225a23.81 23.81 0 003.536-1.003A8.967 8.967 0 0118 9.75V9A6 6 0 006.53 6.53m10.245 10.245L6.53 6.53M3 3l3.53 3.53" />
+            </svg>
+        </div>
+        <!-- sub middle -->
+        <div
+            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-x-0 group-hover:scale-x-100 group-hover:-translate-y-14 group-hover:-translate-x-14   flex  p-2 hover:p-3 bg-yellow-300 hover:bg-yellow-400 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+            </svg>
+        </div>
+    </div>
     <script>
         window.Laravel = {
             user: @json(Auth::user())
@@ -767,7 +994,10 @@
             let cartItemsCache = []; // Cache to store cart items
 
             function formatCurrency(amount) {
-                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+                return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(amount);
             }
 
             function updateCartCount() {
@@ -839,13 +1069,14 @@
                 if (items && items.length > 0) {
                     emptyCartMessage.classList.add('hidden');
                     items.forEach(item => {
-                        const itemPrice = item.variant ? (item.variant.sale_price ?? item.variant.price) : (item.product.sale_price ?? item.product.price);
+                        const itemPrice = item.variant ? (item.variant.sale_price ?? item.variant.price) : (
+                            item.product.sale_price ?? item.product.price);
                         const itemTotal = itemPrice * item.quantity;
                         totalPrice += itemTotal;
 
-                        const imageUrl = item.product.images && item.product.images.length > 0
-                            ? '/storage/' + item.product.images[0].image_path
-                            : '/images/default_product.png'; // Default image if no images
+                        const imageUrl = item.product.images && item.product.images.length > 0 ?
+                            '/storage/' + item.product.images[0].image_path :
+                            '/images/default_product.png'; // Default image if no images
 
                         // const itemName = item.variant ? item.variant.variant_name : item.product.name; // Removed this line
 
@@ -879,7 +1110,7 @@
                     fetchCartItems(); // Fetch items when sidebar is opened
                     cartSidebar.classList.remove('hidden'); // Ensure it's visible before transforming
                     // Remove 'open' first to reset transition, then add it immediately
-                    cartSidebar.classList.remove('open'); 
+                    cartSidebar.classList.remove('open');
                     void cartSidebar.offsetWidth; // Trigger reflow to apply 'open' after removal
                     cartSidebar.classList.add('open');
                     cartSidebarOverlay.classList.remove('hidden');
@@ -919,7 +1150,8 @@
     </script>
 
     <!-- Cart Sidebar -->
-    <div id="cart-sidebar" class="cart-sidebar fixed top-0 right-0 w-[500px] h-full bg-white shadow-lg transform translate-x-full transition-transform duration-700 ease-in-out z-[1000]">
+    <div id="cart-sidebar"
+        class="cart-sidebar fixed top-0 right-0 w-[500px] h-full bg-white shadow-lg transform translate-x-full transition-transform duration-700 ease-in-out z-[1000]">
         <div class="flex justify-between items-center p-4 border-b">
             <h3 class="text-lg font-semibold">Giỏ hàng của bạn</h3>
             <button id="close-cart-sidebar" class="text-gray-500 hover:text-gray-700">
@@ -956,10 +1188,44 @@
             window.repay_order_code = $order_code;
             document.getElementById('global-popup-overlay').style.display = 'block';
         }
+
         function closeGlobalPopup() {
             document.getElementById('global-popup-overlay').style.display = 'none';
         }
     </script>
+    let supportIconsOpen = true;
+    function toggleSupportIcons() {
+    const icons = document.getElementById('floating-support-icons');
+    const toggle = document.getElementById('floating-support-toggle');
+    const icon = document.getElementById('toggle-icon');
+    supportIconsOpen = !supportIconsOpen;
+    if (supportIconsOpen) {
+    icons.classList.remove('collapsed');
+    icon.setAttribute('name', 'chevron-back-outline');
+    toggle.style.right = '36px';
+    } else {
+    icons.classList.add('collapsed');
+    icon.setAttribute('name', 'chevron-forward-outline');
+    toggle.style.right = '36px';
+    }
+    }
+    </script>
+
+    @stack('scripts')
+    <script>
+        // Ẩn loader khi toàn bộ trang đã load (bao gồm ảnh, css, js...) với hiệu ứng mờ dần
+        window.addEventListener('load', function() {
+            var loader = document.getElementById('global-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 500); // Thời gian khớp với transition
+            }
+        });
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 </body>
 
 </html>

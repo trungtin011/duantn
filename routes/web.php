@@ -42,6 +42,7 @@ use App\Http\Controllers\Seller\ChatSettingsController;
 use App\Http\Controllers\Seller\ShopCategoryController;
 use App\Http\Controllers\Seller\CouponControllerSeller;
 use App\Http\Controllers\Seller\ReviewController;
+use App\Http\Controllers\Seller\AdsCampaignController; // Thêm dòng này
 
 //user
 use App\Http\Controllers\User\CheckoutController;
@@ -65,6 +66,7 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\User\ComboController as UserComboController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\MessageController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -278,6 +280,19 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/dashboard', function () {
         return view('seller.home');
     })->name('seller.dashboard');
+
+    // Ads Campaigns Routes
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
 
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
@@ -551,6 +566,18 @@ Route::post('/customer/apply-app-discount', [UserCouponController::class, 'apply
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/order-review/store', [UserOrderController::class, 'storeReview'])->name('order.reviews.store');
+    // Ads Campaigns Routes
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
 });
 
 Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
@@ -614,3 +641,35 @@ Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name(
 Route::get('/seller/reviews', [ReviewController::class, 'index'])->name('seller.reviews.index');
 Route::post('/seller/reviews/{review}/reply', [ReviewController::class, 'reply'])
     ->name('seller.reviews.reply');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/messages/{shop_id}', [ChatController::class, 'messages'])->name('chat.messages');
+    Route::post('/chat/send/{shop_id}', [ChatController::class, 'send'])->name('chat.send');
+    Route::get('/chat/popup', [ChatController::class, 'popup'])->name('chat.popup');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/seller/chat', [\App\Http\Controllers\ChatController::class, 'sellerIndex'])->name('seller.chat');
+    Route::get('/seller/chat/messages/{customer_id}', [\App\Http\Controllers\ChatController::class, 'sellerMessages'])->name('seller.chat.messages');
+    Route::post('/seller/chat/send/{customer_id}', [\App\Http\Controllers\ChatController::class, 'sellerSend'])->name('seller.chat.send');
+});
+
+// Route chi tiết shop
+Route::get('/shop/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
+
+
+Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.')->group(function () {
+    // Ads Campaigns Routes (Added as a separate group to avoid conflicts)
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Seller\AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [App\Http\Controllers\Seller\AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
+});
