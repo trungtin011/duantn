@@ -68,9 +68,36 @@
                     <div>
                         <p class="text-sm font-medium">{{ e($item->product_name) }}</p>
                         <p class="text-xs text-gray-500">Số lượng: {{ $item->quantity }}</p>
-                        <p class="text-xs text-gray-500">Giá: {{ number_format($item->unit_price, 0, ',', '.') }}đ</p>
+                        @php
+                            $originalPrice = 0;
+                            $currentPrice = $item->unit_price;
+                            
+                            if ($item->variant && $item->variant->price) {
+                                $originalPrice = $item->variant->price;
+                            } elseif ($item->combo && $item->combo->products) {
+                                $comboProduct = $item->combo->products->firstWhere('productID', $item->productID);
+                                if ($comboProduct && $comboProduct->variant && $comboProduct->variant->price) {
+                                    $originalPrice = $comboProduct->variant->price;
+                                } else {
+                                    $originalPrice = $item->product->price ?? 0;
+                                }
+                            } else {
+                                $originalPrice = $item->product->price ?? 0;
+                            }
+                        @endphp
+                        @if($originalPrice > $currentPrice)
+                            <p class="text-xs text-gray-400 line-through">Giá gốc: {{ number_format($originalPrice, 0, ',', '.') }}đ</p>
+                        @endif
+                        <p class="text-xs text-red-600 font-medium">Giá: {{ number_format($currentPrice, 0, ',', '.') }}đ</p>
                         @if ($item->variant)
                             <p class="text-xs text-gray-500">Biến thể: {{ e($item->variant->variant_name) }}</p>
+                        @elseif($item->combo && $item->combo->products)
+                            @php
+                                $comboProduct = $item->combo->products->firstWhere('productID', $item->productID);
+                            @endphp
+                            @if($comboProduct && $comboProduct->variant && $comboProduct->variant->variant_name)
+                                <p class="text-xs text-gray-500">Biến thể: {{ e($comboProduct->variant->variant_name) }}</p>
+                            @endif
                         @endif
                         <p class="text-xs text-gray-500">Shop: {{ e($item->shopOrder->shop->shop_name ?? 'N/A') }}</p>
                     </div>

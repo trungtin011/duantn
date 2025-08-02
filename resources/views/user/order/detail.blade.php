@@ -246,12 +246,43 @@
                                                                 <div class="font-medium text-gray-900">{{ e($item->product_name) }}</div>
                                                                 @if ($item->variant)
                                                                     <div class="text-sm text-gray-500">Biến thể: {{ e($item->variant->variant_name) }}</div>
+                                                                @elseif($item->combo && $item->combo->products)
+                                                                    @php
+                                                                        $comboProduct = $item->combo->products->firstWhere('productID', $item->productID);
+                                                                    @endphp
+                                                                    @if($comboProduct && $comboProduct->variant && $comboProduct->variant->variant_name)
+                                                                        <div class="text-sm text-gray-500">Biến thể: {{ e($comboProduct->variant->variant_name) }}</div>
+                                                                    @endif
                                                                 @endif
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-4 text-sm text-gray-900">
-                                                        {{ number_format($item->unit_price, 0, ',', '.') }} VND
+                                                        @php
+                                                            $originalPrice = 0;
+                                                            $currentPrice = $item->unit_price;
+                                                            
+                                                            if ($item->variant && $item->variant->price) {
+                                                                $originalPrice = $item->variant->price;
+                                                            } elseif ($item->combo && $item->combo->products) {
+                                                                $comboProduct = $item->combo->products->firstWhere('productID', $item->productID);
+                                                                if ($comboProduct && $comboProduct->variant && $comboProduct->variant->price) {
+                                                                    $originalPrice = $comboProduct->variant->price;
+                                                                } else {
+                                                                    $originalPrice = $item->product->price ?? 0;
+                                                                }
+                                                            } else {
+                                                                $originalPrice = $item->product->price ?? 0;
+                                                            }
+                                                        @endphp
+                                                        @if($originalPrice > $currentPrice)
+                                                            <div class="text-gray-400 line-through text-xs">
+                                                                {{ number_format($originalPrice, 0, ',', '.') }} VND
+                                                            </div>
+                                                        @endif
+                                                        <div class="font-medium text-red-600">
+                                                            {{ number_format($currentPrice, 0, ',', '.') }} VND
+                                                        </div>
                                                     </td>
                                                     <td class="px-4 py-4 text-sm text-gray-900">
                                                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
@@ -274,7 +305,7 @@
                                                                     data-product-name="{{ $item->product_name }}"
                                                                     data-order-id="{{ $order->id }}" 
                                                                     data-shop-id="{{ $item->shopOrder->shopID ?? $shop->id }}"
-                                                                    data-product-variant-name="{{ $item->variant->variant_name ?? '' }}">
+                                                                    data-product-variant-name="{{ $item->variant->variant_name ?? ($item->combo && $item->combo->products ? ($item->combo->products->firstWhere('productID', $item->productID)->variant->variant_name ?? '') : '') }}">
                                                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                                             d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">

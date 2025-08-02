@@ -168,18 +168,26 @@ class HomeController extends Controller
         // Lấy và tính toán xếp hạng shop
         $rankingShops = Shop::where('shop_status', 'active')
             ->where(function($query) {
-                $query->where('total_products', '>', 0)
-                      ->where('total_ratings', '>', 0);
+                $query->where('total_products', '>', 0);
             })
-            ->orderBy('shop_rating', 'desc')
+            ->withCount('followers') // Thêm eager loading để đếm followers từ bảng shop_followers
+            ->withCount('orderReviews') // Thêm eager loading để đếm reviews từ bảng order_reviews
+            ->withAvg('orderReviews', 'rating') // Thêm eager loading để tính trung bình rating từ bảng order_reviews
+            ->orderBy('order_reviews_avg_rating', 'desc')
             ->orderBy('total_sales', 'desc')
             ->take(10)
             ->get()
             ->map(function ($shop) {
-                $ratingScore = $shop->shop_rating / 5;
+                // Sử dụng rating thực tế từ bảng order_reviews
+                $actualRating = $shop->order_reviews_avg_rating ?? 0;
+                $actualReviewsCount = $shop->order_reviews_count ?? 0;
+                
+                $ratingScore = $actualRating / 5;
                 $salesScore = min($shop->total_sales / 1000000000, 1);
                 $productsScore = min($shop->total_products / 100, 1);
-                $followersScore = min($shop->total_followers / 1000, 1);
+                // Sử dụng số lượng followers thực tế từ bảng shop_followers
+                $actualFollowers = $shop->followers_count;
+                $followersScore = min($actualFollowers / 1000, 1);
 
                 $totalScore =
                     ($ratingScore * 0.4) +
@@ -203,6 +211,11 @@ class HomeController extends Controller
 
                 $shop->total_score = round($totalScore * 100, 1);
                 $shop->formatted_sales = number_format($shop->total_sales / 1000000, 1) . 'M';
+                // Gán số lượng followers thực tế
+                $shop->total_followers = $actualFollowers;
+                // Gán rating thực tế từ order_reviews
+                $shop->shop_rating = round($actualRating, 1);
+                $shop->total_reviews = $actualReviewsCount;
                 return $shop;
             });
 

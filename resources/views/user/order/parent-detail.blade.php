@@ -282,12 +282,43 @@
                                                                         <div class="font-medium text-gray-900">{{ e($item->product_name) }}</div>
                                                                         @if ($item->variant)
                                                                             <div class="text-sm text-gray-500">Biến thể: {{ e($item->variant->variant_name) }}</div>
+                                                                        @elseif($item->combo && $item->combo->products)
+                                                                            @php
+                                                                                $comboProduct = $item->combo->products->firstWhere('productID', $item->productID);
+                                                                            @endphp
+                                                                            @if($comboProduct && $comboProduct->variant && $comboProduct->variant->variant_name)
+                                                                                <div class="text-sm text-gray-500">Biến thể: {{ e($comboProduct->variant->variant_name) }}</div>
+                                                                            @endif
                                                                         @endif
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td class="px-4 py-4 text-sm text-gray-900">
-                                                                {{ number_format($item->unit_price, 0, ',', '.') }} VND
+                                                                @php
+                                                                    $originalPrice = 0;
+                                                                    $currentPrice = $item->unit_price;
+                                                                    
+                                                                    if ($item->variant && $item->variant->price) {
+                                                                        $originalPrice = $item->variant->price;
+                                                                    } elseif ($item->combo && $item->combo->products) {
+                                                                        $comboProduct = $item->combo->products->firstWhere('productID', $item->productID);
+                                                                        if ($comboProduct && $comboProduct->variant && $comboProduct->variant->price) {
+                                                                            $originalPrice = $comboProduct->variant->price;
+                                                                        } else {
+                                                                            $originalPrice = $item->product->price ?? 0;
+                                                                        }
+                                                                    } else {
+                                                                        $originalPrice = $item->product->price ?? 0;
+                                                                    }
+                                                                @endphp
+                                                                @if($originalPrice > $currentPrice)
+                                                                    <div class="text-gray-400 line-through text-xs">
+                                                                        {{ number_format($originalPrice, 0, ',', '.') }} VND
+                                                                    </div>
+                                                                @endif
+                                                                <div class="font-medium text-red-600">
+                                                                    {{ number_format($currentPrice, 0, ',', '.') }} VND
+                                                                </div>
                                                             </td>
                                                             <td class="px-4 py-4 text-sm text-gray-900">
                                                                 <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">

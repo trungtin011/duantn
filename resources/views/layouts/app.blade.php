@@ -1193,22 +1193,24 @@
             document.getElementById('global-popup-overlay').style.display = 'none';
         }
     </script>
-    let supportIconsOpen = true;
-    function toggleSupportIcons() {
-    const icons = document.getElementById('floating-support-icons');
-    const toggle = document.getElementById('floating-support-toggle');
-    const icon = document.getElementById('toggle-icon');
-    supportIconsOpen = !supportIconsOpen;
-    if (supportIconsOpen) {
-    icons.classList.remove('collapsed');
-    icon.setAttribute('name', 'chevron-back-outline');
-    toggle.style.right = '36px';
-    } else {
-    icons.classList.add('collapsed');
-    icon.setAttribute('name', 'chevron-forward-outline');
-    toggle.style.right = '36px';
-    }
-    }
+    <script>
+        let supportIconsOpen = true;
+
+        function toggleSupportIcons() {
+            const icons = document.getElementById('floating-support-icons');
+            const toggle = document.getElementById('floating-support-toggle');
+            const icon = document.getElementById('toggle-icon');
+            supportIconsOpen = !supportIconsOpen;
+            if (supportIconsOpen) {
+                icons.classList.remove('collapsed');
+                icon.setAttribute('name', 'chevron-back-outline');
+                toggle.style.right = '36px';
+            } else {
+                icons.classList.add('collapsed');
+                icon.setAttribute('name', 'chevron-forward-outline');
+                toggle.style.right = '36px';
+            }
+        }
     </script>
 
     @stack('scripts')
