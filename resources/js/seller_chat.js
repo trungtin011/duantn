@@ -92,13 +92,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div>
                                 <h2 class="text-sm font-semibold text-gray-900 leading-none">${data.customer.fullname || data.customer.username || data.customer.email}</h2>
                                 <div class="flex items-center text-xs text-gray-600 space-x-1">
-                                    {{-- You might want to add customer status or other info here --}}
-                                    <span>Đang hoạt động</span> {{-- Placeholder --}}
+                                  
+                                    <span>Đang hoạt động</span> 
                                 </div>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4 text-gray-600">
-                            {{-- Add chat header buttons here if needed --}}
+                            
                             <button aria-label="Search" class="hover:text-gray-900"><i class="fas fa-search text-lg"></i></button>
                             <button aria-label="More options" class="hover:text-gray-900"><i class="fas fa-bars text-lg"></i></button>
                         </div>
