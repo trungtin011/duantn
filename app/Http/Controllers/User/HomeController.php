@@ -22,6 +22,7 @@ use App\Models\PointTransaction;
 use App\Models\OrderReview;
 use App\Models\Post;
 use App\Models\Combo;
+use App\Models\Shop;
 
 class HomeController extends Controller
 {
@@ -164,8 +165,49 @@ class HomeController extends Controller
             ->orderByDesc('created_at')
             ->take(8)
             ->get();
+        // Lấy và tính toán xếp hạng shop
+        $rankingShops = Shop::where('shop_status', 'active')
+            ->where(function($query) {
+                $query->where('total_products', '>', 0)
+                      ->where('total_ratings', '>', 0);
+            })
+            ->orderBy('shop_rating', 'desc')
+            ->orderBy('total_sales', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function ($shop) {
+                $ratingScore = $shop->shop_rating / 5;
+                $salesScore = min($shop->total_sales / 1000000000, 1);
+                $productsScore = min($shop->total_products / 100, 1);
+                $followersScore = min($shop->total_followers / 1000, 1);
+
+                $totalScore =
+                    ($ratingScore * 0.4) +
+                    ($salesScore * 0.3) +
+                    ($productsScore * 0.2) +
+                    ($followersScore * 0.1);
+
+                if ($totalScore >= 0.8) {
+                    $shop->tier = 'diamond';
+                    $shop->tier_icon = 'diamond';
+                } elseif ($totalScore >= 0.6) {
+                    $shop->tier = 'gold';
+                    $shop->tier_icon = 'medal';
+                } elseif ($totalScore >= 0.4) {
+                    $shop->tier = 'silver';
+                    $shop->tier_icon = 'ribbon';
+                } else {
+                    $shop->tier = 'bronze';
+                    $shop->tier_icon = 'shield';
+                }
+
+                $shop->total_score = round($totalScore * 100, 1);
+                $shop->formatted_sales = number_format($shop->total_sales / 1000000, 1) . 'M';
+                return $shop;
+            });
 
         return view('user.home', compact(
+            'rankingShops',
             'parentCategory',
             'subCategories',
             'fashionSub',

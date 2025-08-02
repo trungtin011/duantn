@@ -346,7 +346,8 @@
                         </div>
                         <div class="flex justify-center gap-3">
                             <button
-                                class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2">
+                                class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
+                                onclick="window.location.href='/chat?shop_id={{ $product->shop->id }}&product_id={{ $product->id }}'">
                                 <i class="fa-solid fa-comment"></i> Nhắn tin
                             </button>
                             <a href="{{ route('shop.profile', $product->shop->id) }}"
@@ -1160,6 +1161,36 @@
                         });
                     }
                 });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const chatBtn = document.getElementById('open-chat-with-shop');
+                if (chatBtn) {
+                    chatBtn.addEventListener('click', function() {
+                        // Mở modal chat
+                        let chatModal = document.getElementById('chat-modal');
+                        let chatModalContent = document.getElementById('chat-modal-content');
+                        if (!chatModal || !chatModalContent) {
+                            alert('Không tìm thấy khung chat. Vui lòng tải lại trang hoặc liên hệ admin.');
+                            return;
+                        }
+                        chatModal.style.display = 'block';
+                        // Luôn reload popup để đảm bảo shop mới nhất
+                        const shopId = chatBtn.getAttribute('data-shop-id');
+                        fetch('/chat/popup?shop_id=' + shopId)
+                            .then(res => res.text())
+                            .then(html => {
+                                chatModalContent.innerHTML = html;
+                                chatModalContent.dataset.loaded = '1';
+                                // Đợi DOM render xong mới click
+                                setTimeout(function() {
+                                    const btn = chatModalContent.querySelector('.shop-btn[data-shop-id="' + shopId + '"]');
+                                    if (btn) btn.click();
+                                }, 200);
+                            });
+                    });
+                }
             });
         </script>
     @endpush
