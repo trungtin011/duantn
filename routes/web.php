@@ -462,7 +462,7 @@ Route::prefix('customer')->group(function () {
         Route::get('/checkout/vnpay/payment/{order_code}', [VNPayController::class, 'vnpayPayment'])->name('checkout.vnpay.payment');
 
         Route::prefix('user/order')->group(function () {
-            Route::get('/parent-order', [OrderController::class, 'parentOrder'])->name('user.order.parent-order');
+            Route::match(['get', 'post'], '/parent-order', [OrderController::class, 'parentOrder'])->name('user.order.parent-order');
             Route::get('/', [OrderController::class, 'getParentOrdersByStatus'])->name('order_history');
             Route::get('/ajax/{status}', [OrderController::class, 'getParentOrdersByStatus'])->name('user.order.ajax');
             Route::get('/{orderID}', [OrderController::class, 'show'])->name('user.order.detail');
