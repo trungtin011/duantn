@@ -23,7 +23,7 @@ class ReviewController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'video' => 'nullable|mimes:mp4,mov,avi|max:10240',
+            'video' => 'nullable|mimes:mp4,mov,avi|max:20240',
         ]);
 
         $userId = Auth::id();
@@ -83,25 +83,71 @@ class ReviewController extends Controller
         return redirect()->route('user.order.history')->with('success', 'Đánh giá đã được gửi thành công.');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $seller = Auth::user();
 
-        // Lấy shop của seller (vì shops.ownerID trỏ đến users.id)
+        // Lấy shop của seller
         $shop = $seller->shop;
 
-        // Lấy tất cả sản phẩm thuộc shop
-        $productIds = $shop->products()->select('products.id')->pluck('id');
+        if (!$shop) {
+            return redirect()->back()->with('error', 'Bạn chưa có shop nào!');
+        }
 
-        // Lấy tất cả đánh giá của các sản phẩm đó
-        $reviews = OrderReview::with(['product', 'user'])
-            ->whereIn('product_id', $productIds)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        // Lấy id các sản phẩm thuộc shop
+        $productIds = $shop->products()->pluck('id');
 
-        return view('seller.reviews.index', compact('reviews'));
+        // Truy vấn đánh giá sản phẩm
+        $query = OrderReview::with(['product', 'user', 'order'])
+            ->whereIn('product_id', $productIds);
+
+        // Lọc theo tên sản phẩm
+        if ($request->filled('product')) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->product . '%');
+            });
+        }
+
+        // Lọc theo phân loại hàng (giả sử bạn có cột `variation`)
+        if ($request->filled('variation')) {
+            $query->where('variation', 'like', '%' . $request->variation . '%');
+        }
+
+        // Lọc theo tên người mua
+        if ($request->filled('buyer')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->buyer . '%');
+            });
+        }
+
+        // Lọc theo ngày đánh giá
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        // Lọc theo sao
+        if ($request->filled('star')) {
+            $query->where('rating', $request->star);
+        }
+
+        // Lọc theo trạng thái phản hồi
+        if ($request->replied === 'yes') {
+            $query->whereNotNull('seller_reply');
+        } elseif ($request->replied === 'no') {
+            $query->whereNull('seller_reply');
+        }
+
+        // Sắp xếp & phân trang
+        $reviews = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        // Tính điểm trung bình đánh giá
+        $averageRating = OrderReview::whereIn('product_id', $productIds)->avg('rating');
+
+        return view('seller.reviews.index', [
+            'reviews' => $reviews,
+            'averageRating' => $averageRating,
+        ]);
     }
-
     public function show($id)
     {
         $review = Review::with('user', 'product.shop', 'product.images')->find($id);

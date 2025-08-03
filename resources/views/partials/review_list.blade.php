@@ -50,6 +50,12 @@
                         @endforeach
                     </div>
                 @endif
+                @if ($review->seller_reply)
+                    <div class="mt-3 p-3 bg-gray-100 border-l-4 border-blue-500 rounded">
+                        <strong class="text-gray-700 block mb-1">Phản hồi từ người bán:</strong>
+                        <p class="text-gray-800 text-sm">{{ $review->seller_reply }}</p>
+                    </div>
+                @endif
             </div>
             <div class="text-xs text-gray-500 flex items-center gap-3 mt-2">
                 @auth

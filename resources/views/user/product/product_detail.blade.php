@@ -308,6 +308,7 @@
                             @include('partials.review_list', ['reviews' => $filteredReviews])
                             {{ $filteredReviews->appends(['filter' => $filter])->links() }}
                         </div>
+                        
                     @endif
                 </div>
 
