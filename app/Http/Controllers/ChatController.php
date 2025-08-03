@@ -8,6 +8,7 @@ use App\Models\Shop;
 use App\Models\User;
 use App\Models\ShopQaMessage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Events\MessageSent;
 
 class ChatController extends Controller
@@ -67,15 +68,25 @@ class ChatController extends Controller
         if ($user->role != UserRole::CUSTOMER) abort(403);
 
         $request->validate([
-            'message' => 'required|string|max:1000',
-            'product_id' => 'nullable|exists:products,id' // Validate product_id
+            'message' => 'nullable|string|max:1000',
+            'product_id' => 'nullable|exists:products,id', // Validate product_id
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate image
         ]);
+
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('chat_images', $imageName, 'public');
+            $imageUrl = Storage::url($imagePath);
+        }
 
         $msg = ShopQaMessage::create([
             'shop_id' => $shop_id,
             'user_id' => $user->id,
             'sender_type' => 'user',
             'message' => $request->message,
+            'image_url' => $imageUrl,
             'product_id' => $request->product_id, // Lưu product_id
             'created_at' => now()
         ]);
@@ -83,6 +94,7 @@ class ChatController extends Controller
         event(new MessageSent([
             'id' => $msg->id,
             'content' => $msg->message,
+            'image_url' => $imageUrl,
             'created_at' => $msg->created_at->toDateTimeString(),
             'sender_type' => $msg->sender_type,
             'shop_id' => $msg->shop_id,
@@ -183,20 +195,31 @@ class ChatController extends Controller
         if (!$shop) abort(404, 'Shop not found');
 
         $request->validate([
-            'message' => 'required|string|max:1000'
+            'message' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' // Validate image
         ]);
+
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('chat_images', $imageName, 'public');
+            $imageUrl = Storage::url($imagePath);
+        }
 
         $msg = ShopQaMessage::create([
             'shop_id' => $shop->id,
             'user_id' => $customer_id,
             'sender_type' => 'seller',
             'message' => $request->message,
+            'image_url' => $imageUrl,
             'created_at' => now()
         ]);
 
         event(new MessageSent([
             'id' => $msg->id,
             'content' => $msg->message,
+            'image_url' => $imageUrl,
             'created_at' => $msg->created_at->toDateTimeString(),
             'sender_type' => $msg->sender_type,
             'shop_id' => $msg->shop_id,

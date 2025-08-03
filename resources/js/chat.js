@@ -6,6 +6,16 @@ document.addEventListener('DOMContentLoaded', function() {
     var chatMessages = document.getElementById('chat-messages');
     var chatHeader = document.getElementById('chat-header');
     var productContextDiv = document.getElementById('product-context');
+    
+    // Image upload elements
+    var imageUploadBtn = document.getElementById('image-upload-btn');
+    var imageInput = document.getElementById('image-input');
+    var imagePreviewModal = document.getElementById('image-preview-modal');
+    var previewImage = document.getElementById('preview-image');
+    var closePreview = document.getElementById('close-preview');
+    var cancelUpload = document.getElementById('cancel-upload');
+    var confirmUpload = document.getElementById('confirm-upload');
+    var selectedImageFile = null;
 
     if (shopBtns && chatForm && chatMessages && chatHeader) {
         shopBtns.forEach(function(btn) {
@@ -72,9 +82,16 @@ document.addEventListener('DOMContentLoaded', function() {
                             // User's messages (right, blue background)
                             if (msg.sender_type === 'user') {
                                 div.className = 'flex justify-end';
+                                let messageContent = '';
+                                if (msg.image_url) {
+                                    messageContent = `<img src="${msg.image_url}" alt="Image" class="max-w-full h-auto rounded mb-2" style="max-height: 200px;">`;
+                                }
+                                if (msg.message) {
+                                    messageContent += `<p class="text-sm text-gray-800 leading-tight break-words">${msg.message}</p>`;
+                                }
                                 div.innerHTML = `
                                     <article class="bg-blue-200 rounded-md p-3 max-w-[70%] inline-block break-words">
-                                        ${msg.message}
+                                        ${messageContent}
                                         ${productHtml}
                                         <time class="block text-xs text-gray-500 mt-1 select-text">
                                             ${new Date(msg.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}
@@ -83,15 +100,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                 `;
                             } else { // Shop's messages (left, white background)
                                 div.className = 'flex justify-start';
+                                let messageContent = '';
+                                if (msg.image_url) {
+                                    messageContent = `<img src="${msg.image_url}" alt="Image" class="max-w-full h-auto rounded mb-2" style="max-height: 200px;">`;
+                                }
+                                if (msg.message) {
+                                    messageContent += `<p class="text-sm text-gray-800 leading-tight break-words">${msg.message}</p>`;
+                                }
                                 div.innerHTML = `
                                     <article class="bg-white rounded-md p-3 border border-blue-300 max-w-[70%]">
                                         <header class="text-xs text-gray-600 font-semibold mb-1 select-text">
                                             ${data.shop.shop_name}
                                         </header>
-                                        <p class="text-sm text-gray-800 leading-tight break-words">
-                                            ${msg.message}
-                                            ${productHtml}
-                                        </p>
+                                        ${messageContent}
+                                        ${productHtml}
                                         <time class="text-xs text-gray-400 mt-1 block select-text">
                                             ${new Date(msg.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}
                                         </time>
@@ -103,6 +125,82 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 });
+        }
+
+        // Image upload functionality
+        if (imageUploadBtn && imageInput) {
+            imageUploadBtn.addEventListener('click', function() {
+                imageInput.click();
+            });
+
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                        alert('Kích thước ảnh không được vượt quá 2MB');
+                        return;
+                    }
+                    
+                    selectedImageFile = file;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        imagePreviewModal.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            closePreview.addEventListener('click', function() {
+                imagePreviewModal.classList.add('hidden');
+                imageInput.value = '';
+                selectedImageFile = null;
+            });
+
+            cancelUpload.addEventListener('click', function() {
+                imagePreviewModal.classList.add('hidden');
+                imageInput.value = '';
+                selectedImageFile = null;
+            });
+
+            confirmUpload.addEventListener('click', function() {
+                if (selectedImageFile && currentShopId) {
+                    sendImage(selectedImageFile);
+                }
+            });
+        }
+
+        function sendImage(imageFile) {
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            formData.append('_token', chatForm.querySelector('input[name=_token]').value);
+            
+            const productId = productContextDiv && productContextDiv.style.display !== 'none' ? productContextDiv.dataset.productId : null;
+            if (productId) {
+                formData.append('product_id', productId);
+            }
+
+            fetch('/chat/send/' + currentShopId, {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(res) {
+                if (!res.ok) {
+                    return res.json().then(err => { throw new Error(err.message || 'Error sending image'); });
+                }
+                return res.json();
+            })
+            .then(function(msg) {
+                loadMessages(currentShopId, currentShopName);
+                imagePreviewModal.classList.add('hidden');
+                imageInput.value = '';
+                selectedImageFile = null;
+                if (productContextDiv) productContextDiv.style.display = 'none';
+            })
+            .catch(function(error) {
+                console.error('Fetch error:', error);
+                alert('Không thể gửi ảnh: ' + error.message);
+            });
         }
 
         chatForm.addEventListener('submit', function(e) {
