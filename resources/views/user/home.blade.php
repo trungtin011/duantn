@@ -214,7 +214,7 @@
                         </ul>
                     </li>
                     <li class="menu-category">
-                        <a href="#" class="menu-title">Blog</a>
+                        <a href="" class="menu-title">Blog</a>
                     </li>
                     <li class="menu-category">
                         <a href="#" class="menu-title">Ưu đãi hấp dẫn</a>
