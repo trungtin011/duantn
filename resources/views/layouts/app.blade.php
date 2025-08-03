@@ -913,29 +913,7 @@
         </div>
     </footer>
 
-    <!-- Floating Support Toggle Button -->
-    <div id="floating-support-toggle" class="floating-support-toggle" onclick="toggleSupportIcons()">
-        <ion-icon id="toggle-icon" name="chevron-back-outline"></ion-icon>
-    </div>
-    <!-- Floating Support Icons -->
-    <div id="floating-support-icons" class="floating-support-icons">
-        <a href="https://zalo.me/0915571415" target="_blank" class="support-icon zalo" title="Chat Zalo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" />
-        </a>
-        <a href="https://m.me/yourfacebook" target="_blank" class="support-icon messenger" title="Messenger">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Facebook_Messenger_4_Logo.svg"
-                alt="Messenger" />
-        </a>
-        <a href="tel:0915571415" class="support-icon phone" title="Gọi điện">
-            <ion-icon name="call"></ion-icon>
-        </a>
-        <a href="mailto:exclusive@gmail.com" class="support-icon email" title="Gửi email">
-            <ion-icon name="mail"></ion-icon>
-        </a>
-        <a href="/chat" class="support-icon chat" title="Chat trực tiếp">
-            <ion-icon name="chatbubbles"></ion-icon>
-        </a>
-    </div>
+    <!-- Popup -->
     <div class="group fixed bottom-0 right-0 p-2  flex items-end justify-end w-24 h-24 ">
         <!-- main -->
         <div
@@ -948,34 +926,35 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
         </div>
-        <!-- sub left -->
-        <div
-            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-y-0 group-hover:scale-y-100 group-hover:-translate-x-16   flex  p-2 hover:p-3 bg-green-300 scale-100 hover:bg-green-400 text-white">
+        <!-- Chat với Shop -->
+        <a href="{{ route('chat.index') }}"
+            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-y-0 group-hover:scale-y-100 group-hover:-translate-x-16 flex p-2 hover:p-3 bg-green-300 scale-100 hover:bg-green-400 text-white cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M21 10.5h.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H21M3.75 18h15A2.25 2.25 0 0021 15.75v-6a2.25 2.25 0 00-2.25-2.25h-15A2.25 2.25 0 001.5 9.75v6A2.25 2.25 0 003.75 18z" />
+                    d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 1.12-.224 2.19-.623 3.176l-1.291 3.961A2.25 2.25 0 0116.315 21c-1.12-.224-2.19-.623-3.176-.623H9.684c-1.12.224-2.19.623-3.176.623a2.25 2.25 0 01-2.771-2.771L3.623 15.176A10.427 10.427 0 013 12c0-1.12.224-2.19.623-3.176l1.291-3.961A2.25 2.25 0 017.685 3c1.12.224 2.19.623 3.176.623H14.316c1.12-.224 2.19-.623 3.176-.623a2.25 2.25 0 012.771 2.771l-1.291 3.961A10.427 10.427 0 0121 12z" />
             </svg>
-        </div>
-        <!-- sub top -->
-        <div
-            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-x-0 group-hover:scale-x-100 group-hover:-translate-y-16  flex  p-2 hover:p-3 bg-blue-300 hover:bg-blue-400  text-white">
+        </a>
+        <!-- Hồ sơ cá nhân -->
+        <a href="{{ route('account.profile') }}"
+            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-x-0 group-hover:scale-x-100 group-hover:-translate-y-16 flex p-2 hover:p-3 bg-blue-300 hover:bg-blue-400 text-white cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M9.143 17.082a24.248 24.248 0 003.844.148m-3.844-.148a23.856 23.856 0 01-5.455-1.31 8.964 8.964 0 002.3-5.542m3.155 6.852a3 3 0 005.667 1.97m1.965-2.277L21 21m-4.225-4.225a23.81 23.81 0 003.536-1.003A8.967 8.967 0 0118 9.75V9A6 6 0 006.53 6.53m10.245 10.245L6.53 6.53M3 3l3.53 3.53" />
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
-        </div>
-        <!-- sub middle -->
-        <div
-            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-x-0 group-hover:scale-x-100 group-hover:-translate-y-14 group-hover:-translate-x-14   flex  p-2 hover:p-3 bg-yellow-300 hover:bg-yellow-400 text-white">
+        </a>
+        <!-- Chat Bot AI -->
+        <a href="{{ route('seller.chat.QA') }}"
+            class="absolute rounded-full transition-all duration-[0.2s] ease-out scale-x-0 group-hover:scale-x-100 group-hover:-translate-y-14 group-hover:-translate-x-14 flex p-2 hover:p-3 bg-purple-300 hover:bg-purple-400 text-white cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+                    d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423L16.5 15.75l.394 1.183a2.25 2.25 0 001.423 1.423L19.5 18.75l-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
             </svg>
-        </div>
+        </a>
     </div>
+    
     <script>
         window.Laravel = {
             user: @json(Auth::user())
@@ -1212,6 +1191,7 @@
             }
         }
     </script>
+
 
     @stack('scripts')
     <script>

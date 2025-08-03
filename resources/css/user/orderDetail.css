@@ -37,10 +37,6 @@ body {
     color: #28a745 !important;
 }
 
-.bi {
-    color: #007bff;
-}
-
 /* Hover effect for the Save button */
 .save-btn {
     transition: all 0.3s ease-in-out;

@@ -240,7 +240,8 @@
 
                                                             <img src="{{ $finalImage }}"
                                                                 alt="{{ e($item->product_name) }}"
-                                                                class="w-12 h-12 rounded-lg object-cover mr-3 border border-gray-200">
+                                                                class="w-12 h-12 rounded-lg object-cover mr-3 border border-gray-200 product-image"
+                                                                data-product-id="{{ $item->productID }}">
 
                                                             <div>
                                                                 <div class="font-medium text-gray-900">{{ e($item->product_name) }}</div>
@@ -418,7 +419,9 @@
 
                 <!-- Product Info -->
                 <div class="flex items-center mb-6 border border-gray-200 p-4 rounded-lg bg-gray-50">
-                    <img id="modalProductImage" src="" alt="Product Image" class="w-24 h-24 object-contain rounded-md mr-4 border p-1 bg-white">
+                    <div class="w-24 h-24 mr-4 border rounded-md p-1 bg-white flex items-center justify-center">
+                        <img id="modalProductImage" src="https://via.placeholder.com/96x96?text=Loading..." alt="Product Image" class="w-full h-full object-contain rounded">
+                    </div>
                     <div>
                         <h3 class="text-md font-semibold text-gray-800" id="modalProductDisplayName"></h3>
                         <p class="text-sm text-gray-600" id="modalProductVariantNameLabel"></p>
@@ -436,10 +439,12 @@
                     <div>
                         <label class="block text-gray-700 text-sm font-semibold mb-3">Chất lượng sản phẩm:</label>
                         <div class="flex justify-start items-center mb-4" id="modalStarRating">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <i class="bi bi-star-fill text-4xl text-gray-300 cursor-pointer mx-1 transition-colors duration-200 hover:text-yellow-400" data-value="{{ $i }}"></i>
-                            @endfor
-                            <span id="starRatingText" class="ml-3 text-lg font-semibold text-gray-600"></span>
+                            <div class="flex items-center star-container">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <i class="bi bi-star-fill text-xl text-gray-300 cursor-pointer mx-1 star-item" data-value="{{ $i }}"></i>
+                                @endfor
+                            </div>
+                            <span id="starRatingText" class="ml-3 text-lg font-semibold text-gray-600 transition-all duration-300"></span>
                             <input type="hidden" name="rating" id="modalRating" value="0">
                         </div>
                     </div>
@@ -457,12 +462,18 @@
                     <!-- File Upload Buttons -->
                     <div class="flex space-x-4 mb-6">
                         <label for="imagesUpload" class="flex items-center px-4 py-3 border-2 border-red-500 text-red-500 rounded-lg cursor-pointer hover:bg-red-50 transition-colors duration-200 font-medium">
-                            <i class="bi bi-image mr-2"></i> Thêm Hình ảnh (<span id="imageCount">0</span>)
+                            <div id="imageIcon" class="mr-2">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            <span>Thêm Hình ảnh (<span id="imageCount">0</span>)</span>
                         </label>
                         <input type="file" name="images[]" id="imagesUpload" accept="image/*" multiple class="hidden">
 
                         <label for="videoUpload" class="flex items-center px-4 py-3 border-2 border-red-500 text-red-500 rounded-lg cursor-pointer hover:bg-red-50 transition-colors duration-200 font-medium">
-                            <i class="bi bi-camera-video mr-2"></i> Thêm Video (<span id="videoCount">0</span>)
+                            <div id="videoIcon" class="mr-2">
+                                <i class="bi bi-camera-video"></i>
+                            </div>
+                            <span>Thêm Video (<span id="videoCount">0</span>)</span>
                         </label>
                         <input type="file" name="video" id="videoUpload" accept="video/*,.webm" class="hidden">
                     </div>
@@ -502,10 +513,6 @@
             to { transform: rotate(360deg); }
         }
         
-        .text-primary {
-            color: #007bff !important;
-        }
-        
         .visually-hidden {
             position: absolute !important;
             width: 1px !important;
@@ -517,6 +524,36 @@
             white-space: nowrap !important;
             border: 0 !important;
         }
+        
+        /* Star rating hover effects */
+        .star-container {
+            position: relative;
+        }
+        
+        .star-item {
+            position: relative;
+            z-index: 1;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .star-item:hover {
+            z-index: 2;
+        }
+        
+        /* Màu sắc sao rating */
+        .text-orange-400 {
+            color: #fb923c !important;
+        }
+        
+        .text-orange-500 {
+            color: #f97316 !important;
+        }
+        
+        .text-orange-600 {
+            color: #ea580c !important;
+        }
+        
+
     </style>
 @endsection
 
@@ -626,9 +663,33 @@
                     productNameEl.innerText = `Đánh Giá Sản Phẩm`;
 
                     // Set product info
-                    const productImage = e.target.closest('tr').querySelector('img');
-                    if (productImage) {
-                        document.getElementById('modalProductImage').src = productImage.src;
+                    const productId = e.target.dataset.productId;
+                    console.log('Tìm hình ảnh cho sản phẩm ID:', productId);
+                    
+                    // Tìm hình ảnh sản phẩm
+                    const productImage = document.querySelector(`img.product-image[data-product-id="${productId}"]`);
+                    const modalProductImage = document.getElementById('modalProductImage');
+                    
+                    console.log('Tìm thấy hình ảnh:', productImage);
+                    
+                    if (productImage && productImage.src) {
+                        modalProductImage.src = productImage.src;
+                        console.log('Đã set hình ảnh sản phẩm:', productImage.src);
+                        
+                        // Xử lý lỗi tải hình ảnh
+                        modalProductImage.onerror = function() {
+                            console.log('Lỗi tải hình ảnh, sử dụng hình ảnh mặc định');
+                            this.src = 'https://via.placeholder.com/96x96?text=No+Image';
+                        };
+                        
+                        // Xử lý khi tải hình ảnh thành công
+                        modalProductImage.onload = function() {
+                            console.log('Tải hình ảnh thành công');
+                        };
+                    } else {
+                        console.log('Không tìm thấy hình ảnh sản phẩm cho ID:', productId);
+                        console.log('Tất cả hình ảnh sản phẩm:', document.querySelectorAll('img.product-image'));
+                        modalProductImage.src = 'https://via.placeholder.com/96x96?text=No+Image';
                     }
                     document.getElementById('modalProductDisplayName').innerText = e.target.dataset.productName;
                     
@@ -641,12 +702,11 @@
                         document.getElementById('modalProductVariantName').innerText = '';
                     }
 
+                    // Reset rating
+                    currentRating = 0;
                     ratingInput.value = 0;
-                    stars.forEach(s => {
-                        s.classList.remove('text-yellow-500');
-                        s.classList.add('text-gray-300');
-                    });
-                    starRatingText.innerText = 'Chọn sao';
+                    updateStars(0, false);
+                    updateRatingText(0);
 
                     // Reset form fields
                     imagesUploadInput.value = '';
@@ -655,6 +715,10 @@
                     commentCharCount.innerText = '0';
                     imageCountSpan.innerText = '0';
                     videoCountSpan.innerText = '0';
+                    
+                    // Reset icons
+                    document.getElementById('imageIcon').innerHTML = '<i class="bi bi-image"></i>';
+                    document.getElementById('videoIcon').innerHTML = '<i class="bi bi-camera-video"></i>';
 
                     reviewModal.classList.remove('hidden');
                     reviewModal.classList.add('flex');
@@ -669,21 +733,86 @@
                 console.log('Đóng modal đánh giá.');
             });
 
-            // Logic chọn sao đánh giá
+            // Logic chọn sao đánh giá với hiệu ứng hover
+            let currentRating = 0;
+            let isHovering = false;
+            
+            // Hàm cập nhật hiển thị sao
+            function updateStars(rating, isHover = false) {
+                const colorClass = isHover ? 'text-orange-400' : 'text-orange-500';
+                console.log('Cập nhật sao - Rating:', rating, 'isHover:', isHover, 'Color:', colorClass);
+                
+                stars.forEach(s => {
+                    const sValue = parseInt(s.dataset.value);
+                    if (sValue <= rating) {
+                        s.classList.remove('text-gray-300', 'text-yellow-400', 'text-yellow-500', 'text-orange-400', 'text-orange-500');
+                        s.classList.add(colorClass);
+                        console.log('Sao', sValue, '->', colorClass);
+                    } else {
+                        s.classList.remove('text-yellow-400', 'text-yellow-500', 'text-orange-400', 'text-orange-500');
+                        s.classList.add('text-gray-300');
+                        console.log('Sao', sValue, '-> gray');
+                    }
+                });
+            }
+            
+            // Hàm cập nhật text đánh giá
+            function updateRatingText(rating) {
+                const ratingTexts = {
+                    0: 'Chọn sao',
+                    1: 'Rất không hài lòng',
+                    2: 'Không hài lòng', 
+                    3: 'Bình thường',
+                    4: 'Hài lòng',
+                    5: 'Rất hài lòng'
+                };
+                
+                starRatingText.innerText = ratingTexts[rating] || `${rating} sao`;
+                
+                // Thêm hiệu ứng màu sắc cho text
+                if (rating > 0) {
+                    starRatingText.classList.remove('text-gray-600');
+                    starRatingText.classList.add('text-orange-600');
+                } else {
+                    starRatingText.classList.remove('text-orange-600');
+                    starRatingText.classList.add('text-gray-600');
+                }
+            }
+            
             stars.forEach(star => {
-                star.addEventListener('click', function() {
-                    const value = parseInt(this.dataset.value);
-                    ratingInput.value = value;
-                    stars.forEach(s => {
-                        if (parseInt(s.dataset.value) <= value) {
-                            s.classList.remove('text-gray-300');
-                            s.classList.add('text-yellow-500');
-                        } else {
-                            s.classList.remove('text-yellow-500');
-                            s.classList.add('text-gray-300');
-                        }
-                    });
-                    starRatingText.innerText = `${value} sao`;
+                const starValue = parseInt(star.dataset.value);
+                
+                // Hiệu ứng hover
+                star.addEventListener('mouseenter', function(e) {
+                    e.stopPropagation();
+                    console.log('Hover vào sao:', starValue);
+                    isHovering = true;
+                    updateStars(starValue, true);
+                    updateRatingText(starValue);
+                });
+                
+                // Hiệu ứng khi rời chuột
+                star.addEventListener('mouseleave', function(e) {
+                    e.stopPropagation();
+                    isHovering = false;
+                    updateStars(currentRating, false);
+                    updateRatingText(currentRating);
+                });
+                
+                // Hiệu ứng click
+                star.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    currentRating = starValue;
+                    ratingInput.value = currentRating;
+                    
+                    updateStars(currentRating, false);
+                    updateRatingText(currentRating);
+                    
+                    // Thêm hiệu ứng animation cho sao được click
+                    this.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 200);
                 });
             });
 
@@ -704,21 +833,56 @@
 
             // Logic cho file upload hình ảnh
             imagesUploadInput.addEventListener('change', function() {
-                imageCountSpan.innerText = this.files.length;
-                if (this.files.length > 0) {
-                    console.log('Đã chọn ' + this.files.length + ' file hình ảnh.', this.files);
+                const files = this.files;
+                imageCountSpan.innerText = files.length;
+                
+                const imageIcon = document.getElementById('imageIcon');
+                
+                if (files.length > 0) {
+                    console.log('Đã chọn ' + files.length + ' file hình ảnh.', files);
+                    
+                    // Show first image as thumbnail
+                    const firstFile = files[0];
+                    if (firstFile.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imageIcon.innerHTML = `
+                                <img src="${e.target.result}" alt="Preview" 
+                                     class="w-6 h-6 object-cover rounded border border-gray-300">
+                            `;
+                        };
+                        reader.readAsDataURL(firstFile);
+                    }
                 } else {
                     console.log('Không có file hình ảnh nào được chọn.');
+                    // Reset to icon
+                    imageIcon.innerHTML = '<i class="bi bi-image"></i>';
                 }
             });
 
             // Logic cho file upload video
             videoUploadInput.addEventListener('change', function() {
-                videoCountSpan.innerText = this.files.length > 0 ? '1' : '0';
-                if (this.files.length > 0) {
-                    console.log('Đã chọn file video:', this.files[0]);
+                const file = this.files[0];
+                videoCountSpan.innerText = file ? '1' : '0';
+                
+                const videoIcon = document.getElementById('videoIcon');
+                
+                if (file && file.type.startsWith('video/')) {
+                    console.log('Đã chọn file video:', file);
+                    
+                    // Show video thumbnail
+                    videoIcon.innerHTML = `
+                        <div class="w-6 h-6 bg-gray-100 rounded border border-gray-300 flex items-center justify-center relative">
+                            <i class="bi bi-play-circle-fill text-red-500 text-sm"></i>
+                            <div class="absolute -bottom-1 -right-1 bg-red-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center">
+                                <i class="bi bi-camera-video text-xs"></i>
+                            </div>
+                        </div>
+                    `;
                 } else {
                     console.log('Không có file video nào được chọn.');
+                    // Reset to icon
+                    videoIcon.innerHTML = '<i class="bi bi-camera-video"></i>';
                 }
             });
 
@@ -728,6 +892,8 @@
                 reviewModal.classList.remove('flex');
                 console.log('Đóng modal đánh giá và trở lại.');
             });
+
+
 
             // Logic submit form đánh giá
             reviewForm.addEventListener('submit', function(e) {

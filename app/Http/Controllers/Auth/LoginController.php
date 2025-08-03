@@ -49,8 +49,15 @@ class LoginController extends Controller
             $request->session()->regenerate();
             RateLimiter::clear($key);
 
-            // Chuyển hướng đến URL mà người dùng muốn truy cập trước đó, hoặc về 'home' nếu không có
-            return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
+            // Kiểm tra role của user để chuyển hướng phù hợp
+            $user = Auth::user();
+            if ($user->role == \App\Enums\UserRole::ADMIN) {
+                return redirect()->route('admin.dashboard')->with('success', 'Đăng nhập thành công!');
+            } elseif ($user->role == \App\Enums\UserRole::SELLER) {
+                return redirect()->route('seller.dashboard')->with('success', 'Đăng nhập thành công!');
+            } else {
+                return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công!');
+            }
         }
 
         RateLimiter::hit($key, 300);

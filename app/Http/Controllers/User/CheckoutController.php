@@ -598,6 +598,25 @@ class CheckoutController extends Controller
                 ];
             }
         }
+        
+        // Trừ điểm của user nếu order có used_points > 0
+        if (isset($order->used_points) && $order->used_points > 0) {
+            $customer = Customer::where('userID', $order->userID)->first();
+            if ($customer) {
+                $customer->total_points = max(0, $customer->total_points - $order->used_points);
+                $customer->save();
+
+                // Ghi nhận lịch sử trừ điểm
+                PointTransaction::create([
+                    'userID' => $order->userID,
+                    'orderID' => $order->id,
+                    'points' => -abs($order->used_points),
+                    'type' => 'use_for_order',
+                    'description' => 'Trừ điểm khi sử dụng cho đơn hàng #' . $order->order_code,
+                ]);
+            }
+        }
+
         return view('user.checkout_status.success_payment', compact('order', 'products'));
     }
 
