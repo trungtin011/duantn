@@ -22,32 +22,33 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .quick-view-modal.active {
             display: flex;
         }
-        
+
         /* Animation for shop ranking cards */
         @keyframes slideInUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .shop-ranking-card {
             animation: slideInUp 0.3s ease-out;
         }
-        
+
         /* Hover effects for better interactivity */
         .shop-card-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .shop-card-hover:hover {
             transform: translateY(-2px);
         }
@@ -477,7 +478,8 @@
                                     <p class="category-item-amount">({{ $category->products_count }})</p>
                                 </div>
                                 <a href="{{ route('search', ['category' => [$category->id]]) }}" class="category-btn">Xem
-                                    tất cả</a>
+                                    tất cả
+                                </a>
                             </div>
                         </div>
                     @endforeach
@@ -494,11 +496,12 @@
                                 <ion-icon name="trophy-outline" class="text-yellow-500 text-xl"></ion-icon>
                                 Xếp hạng Shop
                             </h2>
-                            <button class="sidebar-close-btn p-2 hover:bg-gray-100 rounded-full transition-colors" data-mobile-menu-close-btn>
+                            <button class="sidebar-close-btn p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                data-mobile-menu-close-btn>
                                 <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
                             </button>
                         </div>
-                        
+
                         <!-- Header với legend -->
                         <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 mb-4">
                             <h3 class="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
@@ -506,19 +509,23 @@
                                 Top Shop Ranking
                             </h3>
                             <div class="flex flex-wrap gap-1">
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800">
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800">
                                     <ion-icon name="diamond-outline" class="mr-1 text-xs"></ion-icon>
                                     Kim cương
                                 </span>
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800">
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800">
                                     <ion-icon name="star" class="mr-1 text-xs"></ion-icon>
                                     Vàng
                                 </span>
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800">
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800">
                                     <ion-icon name="star-half" class="mr-1 text-xs"></ion-icon>
                                     Bạc
                                 </span>
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800">
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800">
                                     <ion-icon name="star-outline" class="mr-1 text-xs"></ion-icon>
                                     Đồng
                                 </span>
@@ -527,11 +534,13 @@
 
                         <!-- Danh sách shop -->
                         <div class="space-y-3">
-                            @foreach($rankingShops as $index => $shop)
-                                <div class="group relative bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 transition-all duration-300 shop-ranking-card shop-card-hover {{ $index < 3 ? 'ring-2 ring-opacity-50' : '' }} {{ $index === 0 ? 'ring-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : '' }} {{ $index === 1 ? 'ring-gray-400 bg-gradient-to-r from-gray-50 to-slate-50' : '' }} {{ $index === 2 ? 'ring-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50' : '' }}" style="animation-delay: {{ $index * 0.1 }}s;">
-                                    
+                            @foreach ($rankingShops as $index => $shop)
+                                <div class="group relative bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 transition-all duration-300 shop-ranking-card shop-card-hover {{ $index < 3 ? 'ring-2 ring-opacity-50' : '' }} {{ $index === 0 ? 'ring-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : '' }} {{ $index === 1 ? 'ring-gray-400 bg-gradient-to-r from-gray-50 to-slate-50' : '' }} {{ $index === 2 ? 'ring-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50' : '' }}"
+                                    style="animation-delay: {{ $index * 0.1 }}s;">
+
                                     <!-- Badge xếp hạng -->
-                                    <div class="absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg {{ $index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-400 to-slate-500' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-600 to-yellow-500' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-500 to-purple-600' : '' }}">
+                                    <div
+                                        class="absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg {{ $index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-400 to-slate-500' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-600 to-yellow-500' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-500 to-purple-600' : '' }}">
                                         {{ $index + 1 }}
                                     </div>
 
@@ -539,79 +548,99 @@
                                     <div class="flex items-center justify-between mb-3">
                                         <div class="flex items-center gap-2">
                                             <div class="relative">
-                                                <img src="{{ asset('storage/' . $shop->shop_logo) }}" 
-                                                     alt="{{ $shop->shop_name }}" 
-                                                     class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-300 transition-colors">
-                                                @if($index < 3)
-                                                    <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs {{ $index === 0 ? 'bg-yellow-500' : '' }} {{ $index === 1 ? 'bg-gray-500' : '' }} {{ $index === 2 ? 'bg-amber-600' : '' }}">
-                                                        <ion-icon name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : 'ribbon') }}" class="text-white text-xs"></ion-icon>
+                                                <img src="{{ asset('storage/' . $shop->shop_logo) }}"
+                                                    alt="{{ $shop->shop_name }}"
+                                                    class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-300 transition-colors">
+                                                @if ($index < 3)
+                                                    <div
+                                                        class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs {{ $index === 0 ? 'bg-yellow-500' : '' }} {{ $index === 1 ? 'bg-gray-500' : '' }} {{ $index === 2 ? 'bg-amber-600' : '' }}">
+                                                        <ion-icon
+                                                            name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : 'ribbon') }}"
+                                                            class="text-white text-xs"></ion-icon>
                                                     </div>
                                                 @endif
                                             </div>
                                             <div>
-                                                <h4 class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors text-sm">{{ $shop->shop_name }}</h4>
+                                                <h4
+                                                    class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors text-sm">
+                                                    {{ $shop->shop_name }}</h4>
                                                 <div class="flex items-center gap-2">
                                                     <div class="flex items-center gap-1">
-                                                        @for($i = 1; $i <= 5; $i++)
-                                                            @if($shop->shop_rating >= $i)
-                                                                <ion-icon name="star" class="text-yellow-400 text-xs"></ion-icon>
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            @if ($shop->shop_rating >= $i)
+                                                                <ion-icon name="star"
+                                                                    class="text-yellow-400 text-xs"></ion-icon>
                                                             @elseif($shop->shop_rating >= $i - 0.5)
-                                                                <ion-icon name="star-half" class="text-yellow-400 text-xs"></ion-icon>
+                                                                <ion-icon name="star-half"
+                                                                    class="text-yellow-400 text-xs"></ion-icon>
                                                             @else
-                                                                <ion-icon name="star-outline" class="text-gray-300 text-xs"></ion-icon>
+                                                                <ion-icon name="star-outline"
+                                                                    class="text-gray-300 text-xs"></ion-icon>
                                                             @endif
                                                         @endfor
                                                     </div>
-                                                    <span class="text-xs text-gray-600 font-medium">{{ number_format($shop->shop_rating, 1) }}</span>
+                                                    <span
+                                                        class="text-xs text-gray-600 font-medium">{{ number_format($shop->shop_rating, 1) }}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Tier badge -->
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $shop->tier === 'diamond' ? 'bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800' : '' }} {{ $shop->tier === 'gold' ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800' : '' }} {{ $shop->tier === 'silver' ? 'bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800' : '' }} {{ $shop->tier === 'bronze' ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800' : '' }}">
-                                            <ion-icon name="{{ $shop->tier_icon }}-outline" class="mr-1 text-xs"></ion-icon>
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $shop->tier === 'diamond' ? 'bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800' : '' }} {{ $shop->tier === 'gold' ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800' : '' }} {{ $shop->tier === 'silver' ? 'bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800' : '' }} {{ $shop->tier === 'bronze' ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800' : '' }}">
+                                            <ion-icon name="{{ $shop->tier_icon }}-outline"
+                                                class="mr-1 text-xs"></ion-icon>
                                             {{ ucfirst($shop->tier) }}
                                         </span>
                                     </div>
 
                                     <!-- Stats -->
                                     <div class="grid grid-cols-4 gap-2 mb-3">
-                                        <div class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                                        <div
+                                            class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
                                             <div class="flex items-center justify-center gap-1 mb-1">
                                                 <ion-icon name="cash-outline" class="text-green-500 text-xs"></ion-icon>
                                             </div>
                                             <p class="text-xs text-gray-600">Doanh thu</p>
-                                            <p class="text-xs font-semibold text-gray-800">{{ $shop->formatted_sales }}đ</p>
+                                            <p class="text-xs font-semibold text-gray-800">{{ $shop->formatted_sales }}đ
+                                            </p>
                                         </div>
-                                        <div class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                                        <div
+                                            class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
                                             <div class="flex items-center justify-center gap-1 mb-1">
                                                 <ion-icon name="cube-outline" class="text-blue-500 text-xs"></ion-icon>
                                             </div>
                                             <p class="text-xs text-gray-600">Sản phẩm</p>
                                             <p class="text-xs font-semibold text-gray-800">{{ $shop->total_products }}</p>
                                         </div>
-                                        <div class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                                        <div
+                                            class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
                                             <div class="flex items-center justify-center gap-1 mb-1">
                                                 <ion-icon name="star" class="text-yellow-500 text-xs"></ion-icon>
                                             </div>
                                             <p class="text-xs text-gray-600">Đánh giá</p>
-                                            <p class="text-xs font-semibold text-gray-800">{{ $shop->total_reviews ?? 0 }}</p>
+                                            <p class="text-xs font-semibold text-gray-800">{{ $shop->total_reviews ?? 0 }}
+                                            </p>
                                         </div>
-                                        <div class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                                        <div
+                                            class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
                                             <div class="flex items-center justify-center gap-1 mb-1">
-                                                <ion-icon name="people-outline" class="text-purple-500 text-xs"></ion-icon>
+                                                <ion-icon name="people-outline"
+                                                    class="text-purple-500 text-xs"></ion-icon>
                                             </div>
                                             <p class="text-xs text-gray-600">Theo dõi</p>
-                                            <p class="text-xs font-semibold text-gray-800">{{ $shop->total_followers }}</p>
+                                            <p class="text-xs font-semibold text-gray-800">{{ $shop->total_followers }}
+                                            </p>
                                         </div>
                                     </div>
 
                                     <!-- Action button -->
-                                    <a href="{{ route('shop.show', $shop->id) }}" 
-                                       class="block w-full text-center py-2 px-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-md text-sm">
+                                    <a href="{{ route('shop.show', $shop->id) }}"
+                                        class="block w-full text-center py-2 px-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-md text-sm">
                                         <span class="flex items-center justify-center gap-2">
                                             Xem shop
-                                            <ion-icon name="arrow-forward-outline" class="group-hover:translate-x-1 transition-transform text-sm"></ion-icon>
+                                            <ion-icon name="arrow-forward-outline"
+                                                class="group-hover:translate-x-1 transition-transform text-sm"></ion-icon>
                                         </span>
                                     </a>
                                 </div>
@@ -1403,7 +1432,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }
