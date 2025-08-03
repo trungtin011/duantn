@@ -52,6 +52,30 @@
         .shop-card-hover:hover {
             transform: translateY(-2px);
         }
+
+        /* Responsive fixes for shop ranking cards */
+        @media (max-width: 640px) {
+            .shop-ranking-card {
+                padding: 0.75rem;
+            }
+            
+            .shop-ranking-card .grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .shop-ranking-card .text-xs {
+                font-size: 0.625rem;
+            }
+        }
+
+        /* Ensure tier badges don't overflow */
+        .tier-badge {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
     </style>
 @endpush
 
@@ -69,7 +93,7 @@
             <div class="newsletter">
                 <form action="#">
                     <div class="newsletter-header">
-                        <h3 class="newsletter-title">Đăng ký nhận tin.</h3>
+                        <h3 class="newsletter-title">Đăng ký nhận tin</h3>
                         <p class="newsletter-desc">
                             Hãy đăng ký <b>Anon</b> để nhận thông tin sản phẩm mới và cập nhật khuyến mãi.
                         </p>
@@ -269,11 +293,11 @@
             </div>
             <ul class="mobile-menu-category-list">
                 <li class="menu-category">
-                    <a href="#" class="menu-title">Home</a>
+                    <a href="#" class="menu-title">Trang chủ</a>
                 </li>
                 <li class="menu-category">
                     <button class="accordion-menu" data-accordion-btn>
-                        <p class="menu-title">Men's</p>
+                        <p class="menu-title">Nam</p>
                         <div>
                             <ion-icon name="add-outline" class="add-icon"></ion-icon>
                             <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
@@ -281,22 +305,22 @@
                     </button>
                     <ul class="submenu-category-list" data-accordion>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Shirt</a>
+                            <a href="#" class="submenu-title">Áo sơ mi</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Shorts & Jeans</a>
+                            <a href="#" class="submenu-title">Quần short & Jeans</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Safety Shoes</a>
+                            <a href="#" class="submenu-title">Giày bảo hộ</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Wallet</a>
+                            <a href="#" class="submenu-title">Ví</a>
                         </li>
                     </ul>
                 </li>
                 <li class="menu-category">
                     <button class="accordion-menu" data-accordion-btn>
-                        <p class="menu-title">Women's</p>
+                        <p class="menu-title">Nữ</p>
                         <div>
                             <ion-icon name="add-outline" class="add-icon"></ion-icon>
                             <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
@@ -304,22 +328,22 @@
                     </button>
                     <ul class="submenu-category-list" data-accordion>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Dress & Frock</a>
+                            <a href="#" class="submenu-title">Váy & Đầm</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Earrings</a>
+                            <a href="#" class="submenu-title">Khuyên tai</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Necklace</a>
+                            <a href="#" class="submenu-title">Dây chuyền</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Makeup Kit</a>
+                            <a href="#" class="submenu-title">Bộ trang điểm</a>
                         </li>
                     </ul>
                 </li>
                 <li class="menu-category">
                     <button class="accordion-menu" data-accordion-btn>
-                        <p class="menu-title">Jewelry</p>
+                        <p class="menu-title">Trang sức</p>
                         <div>
                             <ion-icon name="add-outline" class="add-icon"></ion-icon>
                             <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
@@ -327,22 +351,22 @@
                     </button>
                     <ul class="submenu-category-list" data-accordion>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Earrings</a>
+                            <a href="#" class="submenu-title">Khuyên tai</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Couple Rings</a>
+                            <a href="#" class="submenu-title">Nhẫn cặp</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Necklace</a>
+                            <a href="#" class="submenu-title">Dây chuyền</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Bracelets</a>
+                            <a href="#" class="submenu-title">Vòng tay</a>
                         </li>
                     </ul>
                 </li>
                 <li class="menu-category">
                     <button class="accordion-menu" data-accordion-btn>
-                        <p class="menu-title">Perfume</p>
+                        <p class="menu-title">Nước hoa</p>
                         <div>
                             <ion-icon name="add-outline" class="add-icon"></ion-icon>
                             <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
@@ -350,56 +374,56 @@
                     </button>
                     <ul class="submenu-category-list" data-accordion>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Clothes Perfume</a>
+                            <a href="#" class="submenu-title">Nước hoa quần áo</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Deodorant</a>
+                            <a href="#" class="submenu-title">Chất khử mùi</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Flower Fragrance</a>
+                            <a href="#" class="submenu-title">Hương hoa</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Air Freshener</a>
+                            <a href="#" class="submenu-title">Chất làm thơm không khí</a>
                         </li>
                     </ul>
                 </li>
                 <li class="menu-category">
-                    <a href="#" class="menu-title">Blog</a>
+                    <a href="#" class="menu-title">Bài viết</a>
                 </li>
                 <li class="menu-category">
-                    <a href="#" class="menu-title">Hot Offers</a>
+                    <a href="#" class="menu-title">Ưu đãi hấp dẫn</a>
                 </li>
             </ul>
             <div class="menu-bottom">
                 <ul class="menu-category-list">
                     <li class="menu-category">
                         <button class="accordion-menu" data-accordion-btn>
-                            <p class="menu-title">Language</p>
+                            <p class="menu-title">Ngôn ngữ</p>
                             <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
                         </button>
                         <ul class="submenu-category-list" data-accordion>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">Tiếng Việt</a>
+                            </li>
                             <li class="submenu-category">
                                 <a href="#" class="submenu-title">English</a>
                             </li>
                             <li class="submenu-category">
                                 <a href="#" class="submenu-title">Español</a>
                             </li>
-                            <li class="submenu-category">
-                                <a href="#" class="submenu-title">Frençh</a>
-                            </li>
                         </ul>
                     </li>
                     <li class="menu-category">
                         <button class="accordion-menu" data-accordion-btn>
-                            <p class="menu-title">Currency</p>
+                            <p class="menu-title">Tiền tệ</p>
                             <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
                         </button>
                         <ul class="submenu-category-list" data-accordion>
                             <li class="submenu-category">
-                                <a href="#" class="submenu-title">USD $</a>
+                                <a href="#" class="submenu-title">VND ₫</a>
                             </li>
                             <li class="submenu-category">
-                                <a href="#" class="submenu-title">EUR €</a>
+                                <a href="#" class="submenu-title">USD $</a>
                             </li>
                         </ul>
                     </li>
@@ -422,29 +446,29 @@
                         <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="women's latest fashion sale"
                             class="banner-img">
                         <div class="banner-content">
-                            <p class="banner-subtitle">Trending item</p>
-                            <h2 class="banner-title">Women's latest fashion sale</h2>
-                            <p class="banner-text">starting at $ <b>20</b>.00</p>
-                            <a href="#" class="banner-btn">Shop now</a>
+                            <p class="banner-subtitle">Sản phẩm thịnh hành</p>
+                            <h2 class="banner-title">Thời trang nữ mới nhất</h2>
+                            <p class="banner-text">bắt đầu từ <b>20</b>.000₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
                         </div>
                     </div>
                     <div class="slider-item">
                         <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses" class="banner-img">
                         <div class="banner-content">
-                            <p class="banner-subtitle">Trending accessories</p>
-                            <h2 class="banner-title">Modern sunglasses</h2>
-                            <p class="banner-text">starting at $ <b>15</b>.00</p>
-                            <a href="#" class="banner-btn">Shop now</a>
+                            <p class="banner-subtitle">Phụ kiện thịnh hành</p>
+                            <h2 class="banner-title">Kính mát hiện đại</h2>
+                            <p class="banner-text">bắt đầu từ <b>15</b>.000₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
                         </div>
                     </div>
                     <div class="slider-item">
                         <img src="{{ asset('assets/images/banner-3.jpg') }}" alt="new fashion summer sale"
                             class="banner-img">
                         <div class="banner-content">
-                            <p class="banner-subtitle">Sale Offer</p>
-                            <h2 class="banner-title">New fashion summer sale</h2>
-                            <p class="banner-text">starting at $ <b>29</b>.99</p>
-                            <a href="#" class="banner-btn">Shop now</a>
+                            <p class="banner-subtitle">Ưu đãi giảm giá</p>
+                            <h2 class="banner-title">Thời trang hè mới</h2>
+                            <p class="banner-text">bắt đầu từ <b>29</b>.990₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
                         </div>
                     </div>
                 </div>
@@ -506,26 +530,26 @@
                         <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 mb-4">
                             <h3 class="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
                                 <ion-icon name="star" class="text-yellow-500 text-sm"></ion-icon>
-                                Top Shop Ranking
+                                Bảng xếp hạng Shop hàng đầu
                             </h3>
                             <div class="flex flex-wrap gap-1">
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800">
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800 flex-shrink-0">
                                     <ion-icon name="diamond-outline" class="mr-1 text-xs"></ion-icon>
                                     Kim cương
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800">
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800 flex-shrink-0">
                                     <ion-icon name="star" class="mr-1 text-xs"></ion-icon>
                                     Vàng
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800">
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800 flex-shrink-0">
                                     <ion-icon name="star-half" class="mr-1 text-xs"></ion-icon>
                                     Bạc
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800">
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 flex-shrink-0">
                                     <ion-icon name="star-outline" class="mr-1 text-xs"></ion-icon>
                                     Đồng
                                 </span>
@@ -545,9 +569,9 @@
                                     </div>
 
                                     <!-- Header shop -->
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center gap-2">
-                                            <div class="relative">
+                                    <div class="flex items-start justify-between mb-3 gap-2">
+                                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                                            <div class="relative flex-shrink-0">
                                                 <img src="{{ asset('storage/' . $shop->shop_logo) }}"
                                                     alt="{{ $shop->shop_name }}"
                                                     class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-300 transition-colors">
@@ -560,9 +584,9 @@
                                                     </div>
                                                 @endif
                                             </div>
-                                            <div>
+                                            <div class="min-w-0 flex-1">
                                                 <h4
-                                                    class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors text-sm">
+                                                    class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors text-sm truncate">
                                                     {{ $shop->shop_name }}</h4>
                                                 <div class="flex items-center gap-2">
                                                     <div class="flex items-center gap-1">
@@ -587,10 +611,20 @@
 
                                         <!-- Tier badge -->
                                         <span
-                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $shop->tier === 'diamond' ? 'bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800' : '' }} {{ $shop->tier === 'gold' ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800' : '' }} {{ $shop->tier === 'silver' ? 'bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800' : '' }} {{ $shop->tier === 'bronze' ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800' : '' }}">
+                                            class="tier-badge inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 {{ $shop->tier === 'diamond' ? 'bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800' : '' }} {{ $shop->tier === 'gold' ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800' : '' }} {{ $shop->tier === 'silver' ? 'bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800' : '' }} {{ $shop->tier === 'bronze' ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800' : '' }}">
                                             <ion-icon name="{{ $shop->tier_icon }}-outline"
                                                 class="mr-1 text-xs"></ion-icon>
-                                            {{ ucfirst($shop->tier) }}
+                                            @if($shop->tier === 'diamond')
+                                                Kim cương
+                                            @elseif($shop->tier === 'gold')
+                                                Vàng
+                                            @elseif($shop->tier === 'silver')
+                                                Bạc
+                                            @elseif($shop->tier === 'bronze')
+                                                Đồng
+                                            @else
+                                                {{ ucfirst($shop->tier) }}
+                                            @endif
                                         </span>
                                     </div>
 
@@ -612,15 +646,6 @@
                                             </div>
                                             <p class="text-xs text-gray-600">Sản phẩm</p>
                                             <p class="text-xs font-semibold text-gray-800">{{ $shop->total_products }}</p>
-                                        </div>
-                                        <div
-                                            class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
-                                            <div class="flex items-center justify-center gap-1 mb-1">
-                                                <ion-icon name="star" class="text-yellow-500 text-xs"></ion-icon>
-                                            </div>
-                                            <p class="text-xs text-gray-600">Đánh giá</p>
-                                            <p class="text-xs font-semibold text-gray-800">{{ $shop->total_reviews ?? 0 }}
-                                            </p>
                                         </div>
                                         <div
                                             class="text-center p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
@@ -1108,10 +1133,10 @@
                 <div class="cta-container">
                     <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection" class="cta-banner">
                     <a href="#" class="cta-content">
-                        <p class="discount">25% Discount</p>
-                        <h2 class="cta-title">Summer collection</h2>
-                        <p class="cta-text">Starting @ $10</p>
-                        <button class="cta-btn">Shop now</button>
+                        <p class="discount">Giảm 25%</p>
+                        <h2 class="cta-title">Bộ sưu tập hè</h2>
+                        <p class="cta-text">Bắt đầu từ 10.000₫</p>
+                        <button class="cta-btn">Mua ngay</button>
                     </a>
                 </div>
                 <div class="service">
@@ -1597,7 +1622,6 @@
                             });
                     });
                 });
-
             }
 
 

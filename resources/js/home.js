@@ -20,10 +20,16 @@ modalCloseBtn.addEventListener('click', modalCloseFunc);
 const notificationToast = document.querySelector('[data-toast]');
 const toastCloseBtn = document.querySelector('[data-toast-close]');
 
-// notification toast eventListener
-toastCloseBtn.addEventListener('click', function () {
-  notificationToast.classList.add('closed');
-});
+// Chỉ hiển một lần với mỗi load page
+if (notificationToast && toastCloseBtn) {
+  // Hiển thị toast khi load page (nếu chưa đóng)
+  notificationToast.classList.remove('closed');
+
+  // Đóng toast khi click nút đóng
+  toastCloseBtn.addEventListener('click', function () {
+    notificationToast.classList.add('closed');
+  });
+}
 
 
 // mobile menu variables

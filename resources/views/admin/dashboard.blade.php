@@ -151,7 +151,7 @@
         <div class="col-md-3">
             <div class="admin-card d-flex justify-content-between align-items-start">
                 <div>
-                    <h2 class="card-number font-semibold">{{ $platfrom_revenue }}</h2>
+                    <h2 class="card-number font-semibold">{{ number_format($platfrom_revenue) }} VNĐ</h2>
                     <p class="mb-0 text-muted text-xs mb-3">Hoa hồng từ các đơn hàng</p>
                     <span class="text-xs bg-[#FFF4E5] text-[#FF9800] px-2 py-1 rounded flex items-center gap-1 w-fit">
                         {{ $platfromGrowth }}%
