@@ -534,22 +534,22 @@
                             </h3>
                             <div class="flex flex-wrap gap-1">
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800 flex-shrink-0">
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-200 to-blue-200 text-blue-800 flex-shrink-0 border border-cyan-300">
                                     <ion-icon name="diamond-outline" class="mr-1 text-xs"></ion-icon>
                                     Kim cương
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800 flex-shrink-0">
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 flex-shrink-0 border border-yellow-300">
                                     <ion-icon name="star" class="mr-1 text-xs"></ion-icon>
                                     Vàng
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800 flex-shrink-0">
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 flex-shrink-0 border border-gray-300">
                                     <ion-icon name="star-half" class="mr-1 text-xs"></ion-icon>
                                     Bạc
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 flex-shrink-0">
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 flex-shrink-0 border border-amber-300">
                                     <ion-icon name="star-outline" class="mr-1 text-xs"></ion-icon>
                                     Đồng
                                 </span>
@@ -611,7 +611,7 @@
 
                                         <!-- Tier badge -->
                                         <span
-                                            class="tier-badge inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 {{ $shop->tier === 'diamond' ? 'bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800' : '' }} {{ $shop->tier === 'gold' ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800' : '' }} {{ $shop->tier === 'silver' ? 'bg-gradient-to-r from-gray-100 to-slate-100 text-slate-800' : '' }} {{ $shop->tier === 'bronze' ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800' : '' }}">
+                                            class="tier-badge inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 {{ $shop->tier === 'diamond' ? 'bg-gradient-to-r from-cyan-200 to-blue-200 text-blue-800 border border-cyan-300' : '' }} {{ $shop->tier === 'gold' ? 'bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 border border-yellow-300' : '' }} {{ $shop->tier === 'silver' ? 'bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 border border-gray-300' : '' }} {{ $shop->tier === 'bronze' ? 'bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 border border-amber-300' : '' }}">
                                             <ion-icon name="{{ $shop->tier_icon }}-outline"
                                                 class="mr-1 text-xs"></ion-icon>
                                             @if($shop->tier === 'diamond')
