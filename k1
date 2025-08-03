@@ -1,3 +1,125 @@
+<?php
+
+namespace App\Http\Controllers\Seller;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\ShopWallet;
+use App\Models\ShopOrder;
+use App\Models\ItemOrder;
+use App\Models\Product;
+use App\Models\Seller;
+use App\Models\WalletTransaction;
+
+class WalletController extends Controller
+{
+    public function index(Request $request)
+    {
+        $shopId = auth()->user()->shop->id;
+
+        // Tìm ngày có đơn hàng mới nhất của shop
+        $latestOrderDate = \App\Models\ShopOrder::where('shopID', $shopId)->max('created_at');
+
+        // Nếu không có đơn hàng nào thì lấy 30 ngày trước làm mặc định
+        $defaultStartDate = $latestOrderDate
+            ? \Carbon\Carbon::parse($latestOrderDate)->format('Y-m-d')
+            : now()->subDays(30)->format('Y-m-d');
+
+        // Ngày kết thúc là hôm nay
+        $defaultEndDate = now()->format('Y-m-d');
+
+        // Lấy từ request hoặc mặc định
+        $startDate = $request->input('start_date', $defaultStartDate);
+        $endDate = $request->input('end_date', $defaultEndDate);
+        $status = $request->input('status', 'all');
+
+
+        // Tính số dư hiện tại
+        $totalIncome = ShopOrder::where('shopID', $shopId)
+            ->where('status', 'completed')
+            ->with([
+                'items' => function ($query) {
+                    $query->with('product');
+                }
+            ])
+            ->get()
+            ->sum(function ($order) {
+                return $order->items->sum(function ($item) {
+                    return $item->quantity * $item->product->sale_price;
+                });
+            });
+
+        $totalRefund = ShopOrder::where('shopID', $shopId)
+            ->where('status', 'refunded')
+            ->with([
+                'items' => function ($query) {
+                    $query->with('product');
+                }
+            ])
+            ->get()
+            ->sum(function ($order) {
+                return $order->items->sum(function ($item) {
+                    return $item->quantity * $item->product->sale_price;
+                });
+            });
+
+        $balance = $totalIncome - $totalRefund;
+        $availableBalance = $balance - 600000; // Giả sử trừ 600k phí hoặc giữ lại
+
+        // Lấy lịch sử giao dịch
+        $transactions = ShopOrder::where('shopID', $shopId)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['items.product', 'order'])
+            ->get()
+            ->map(function ($order) {
+                $amount = $order->items->sum(function ($item) {
+                    return $item->quantity * $item->product->sale_price;
+                });
+                $transactionType = $order->status === 'completed' ? 'Tiền vào' : 'Tiền ra';
+                $status = $order->status === 'completed' ? 'Hoàn thành' : 'Hoàn hàng';
+                $method = $order->status === 'completed' ? 'Hoàn thành' : 'Hoàn hàng';
+
+                return [
+                    'date' => $order->created_at->format('Y-m-d'),
+                    'buyer' => 'Doanh Thu Từ Đơn Hàng',
+                    'order_id' => $order->order->id,
+                    'order_code' => $order->code,
+                    'amount' => $order->status === 'completed' ? "+$amount" : "-$amount",
+                    'method' => $method,
+                    'status' => $transactionType,
+                ];
+            });
+
+        if ($status !== 'all') {
+            $transactions = $transactions->where('status', $status);
+        }
+        $sellers = Seller::whereHas('businessLicense', function ($query) {
+            $query->whereNotNull('bank_name');
+        })->with('businessLicense')->get();
+
+        return view('seller.wallet.index', compact('balance', 'availableBalance', 'transactions', 'startDate', 'endDate', 'status', 'sellers'));
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @extends('layouts.seller_home')
 
 @section('title', 'Ví shop')
@@ -407,17 +529,10 @@
                         <div class="balance-amount">
                             <p>Số dư: đ {{ number_format($balance, 0, ',', '.') }}</p>
                         </div>
-                        <div class="balance-sub">
-                            Số dư khả dụng <strong>đ {{ number_format($availableBalance, 0, ',', '.') }}</strong> ⓘ
-                        </div>
+                        <div class="balance-sub">Số dư khả dụng <strong>đ
+                                {{ number_format($availableBalance, 0, ',', '.') }}</strong> ⓘ</div>
                     </div>
-                    <a href="{{ route('wallet.withdraw') }}">
-                        <button class="top-up-btn bg-red-500 text-white px-4 py-2 rounded">
-                            Yêu Cầu Thanh Toán
-                        </button>
-                    </a>
-
-
+                    <button class="top-up-btn">Yêu Cầu Thanh Toán</button>
                 </div>
             </div>
 
@@ -458,12 +573,12 @@
                         <!-- Lọc dòng tiền -->
                         <div class="filter-tabs flex items-center gap-2 mt-2">
                             <label class="font-tab">Dòng tiền:</label>
-                            <input type="hidden" name="status" id="statusInput" value="{{ $statusFilter}}">
-                            <button type="button" class="filter-tab {{ $statusFilter == 'all' ? 'active' : '' }}"
+                            <input type="hidden" name="status" id="statusInput" value="{{ $status }}">
+                            <button type="button" class="filter-tab {{ $status == 'all' ? 'active' : '' }}"
                                 data-value="all">Tất cả</button>
-                            <button type="button" class="filter-tab {{ $statusFilter == 'Tiền vào' ? 'active' : '' }}"
+                            <button type="button" class="filter-tab {{ $status == 'Tiền vào' ? 'active' : '' }}"
                                 data-value="Tiền vào">Tiền vào</button>
-                            <button type="button" class="filter-tab {{ $statusFilter == 'Tiền ra' ? 'active' : '' }}"
+                            <button type="button" class="filter-tab {{ $status == 'Tiền ra' ? 'active' : '' }}"
                                 data-value="Tiền ra">Tiền ra</button>
                         </div>
 
@@ -489,15 +604,32 @@
                                 data-value="Rút Tiền">Rút Tiền</button>
                         </div>
 
+
+                        <!-- Tìm kiếm mã đơn hàng + nút áp dụng -->
+                        <!-- <div class="flex justify-between items-center mt-4">
+                                                <div class="search-bar">
+                                                </div>
+                                                <div class="flex gap-2">
+                                                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">Áp dụng</button>
+                                                    <a href="{{ route('wallet.index') }}" class="bg-gray-300 text-black px-3 py-1 rounded">Thiết
+                                                        lập lại</a>
+                                                </div>
+                                            </div> -->
                     </div>
                 </form>
 
 
-                <form method="GET" action="{{ route('wallet.index') }}" class="mb-4 space-y-4" id="walletFilterForm">
+                <form method="GET" action="{{ route('wallet.index') }}" id="walletFilterForm" class="mb-4 space-y-4">
                     <div class="flex justify-between items-center">
                         <h2 class="text-xl font-bold">Các giao dịch gần đây</h2>
 
                         <div class="flex items-center gap-2">
+                            <div class="date-filter">
+                                <span>Thời gian phát sinh giao dịch</span>
+                                <select style="border: 1px solid #e0e0e0; padding: 4px 8px; border-radius: 4px;">
+                                    <option>Trong vòng 3 tháng trước 03/01/2024 - 03/04/2024</option>
+                                </select>
+                            </div>
                             <label>Thời gian:</label>
                             <input type="date" name="start_date" value="{{ $startDate }}" class="border px-2 py-1 rounded">
                             <span>—</span>
@@ -505,129 +637,86 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4 mt-2">
+                    <div class="flex items-center gap-4">
                         <label>Dòng tiền:</label>
                         <select name="status" class="border px-2 py-1 rounded">
-                            <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>Tất cả</option>
-                            <option value="Tiền vào" {{ $statusFilter == 'Tiền vào' ? 'selected' : '' }}>Tiền vào</option>
-                            <option value="Tiền ra" {{ $statusFilter == 'Tiền ra' ? 'selected' : '' }}>Tiền ra</option>
+                            <option value="all" {{ $status == 'all' ? 'selected' : '' }}>Tất cả</option>
+                            <option value="Tiền vào" {{ $status == 'Tiền vào' ? 'selected' : '' }}>Tiền vào</option>
+                            <option value="Tiền ra" {{ $status == 'Tiền ra' ? 'selected' : '' }}>Tiền ra</option>
                         </select>
 
                         <label>Loại giao dịch:</label>
                         <select name="transaction_type" class="border px-2 py-1 rounded">
-                            <option value="all" {{ $transactionTypeFilter == 'all' ? 'selected' : '' }}>Tất cả</option>
-                            <option value="Doanh Thu Từ Đơn Hàng" {{ $transactionTypeFilter == 'Doanh Thu Từ Đơn Hàng' ? 'selected' : '' }}>Doanh Thu Đơn Hàng</option>
-                            <option value="Rút Tiền" {{ $transactionTypeFilter == 'Rút Tiền' ? 'selected' : '' }}>Rút Tiền
+                            <option value="all" {{ request('transaction_type', 'all') == 'all' ? 'selected' : '' }}>Tất cả
                             </option>
-                            <!-- Thêm các loại khác nếu có -->
+                            <option value="Doanh Thu Từ Đơn Hàng" {{ request('transaction_type') == 'Doanh Thu Từ Đơn Hàng' ? 'selected' : '' }}>Doanh Thu Đơn Hàng</option>
+                            <option value="Rút Tiền" {{ request('transaction_type') == 'Rút Tiền' ? 'selected' : '' }}>Rút
+                                Tiền</option>
+                            <!-- thêm các loại khác nếu có -->
                         </select>
                     </div>
-
-                    <div class="flex justify-end mt-2 gap-2">
-                        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">Áp dụng</button>
-                        <a href="{{ route('wallet.index') }}" class="bg-gray-300 text-black px-3 py-1 rounded">Thiết lập
-                            lại</a>
+                    <div class="flex justify-between items-center mt-2">
+                        <div class="search-bar">
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">Áp dụng</button>
+                            <a href="{{ route('wallet.index') }}" class="bg-gray-300 text-black px-3 py-1 rounded">Thiết lập
+                                lại</a>
+                        </div>
                     </div>
                     <div class="search-bar">
-
                         <input type="text" class="search-input" name="search" placeholder="Tìm kiếm đơn hàng"
                             value="{{ request('search') }}">
                         <button class="search-btn" type="submit">Nhập</button>
                     </div>
                 </form>
-                <div class="transactions-summary">
-                    <span class="transactions-count">5 giao dịch</span>
-                    <span>(Tổng số tiền : <span class="total-change">+
-                            {{ number_format($totalCompletedRevenue, 0, ',', '.') }}</span>)</span>
-                </div>
-                <table class="transactions-table w-full mt-4 border">
-                    <thead class="bg-gray-100">
+
+
+                <table class="transactions-table">
+                    <thead>
                         <tr>
-                            <th class="p-2 border">Ngày</th>
-                            <th class="p-2 border">Loại Giao Dịch | Mô Tả</th>
-                            <th class="p-2 border">Mã Đơn Hàng</th>
-                            <th class="p-2 border">Dòng Tiền</th>
-                            <th class="p-2 border">Số Tiền</th>
-                            <th class="p-2 border">Trạng Thái</th>
-                            <th class="p-2 border"></th>
+                            <th>Ngày</th>
+                            <th>Loại Giao Dịch | Mô Tả</th>
+                            <th>Order ID</th>
+                            <th>Dòng tiền</th>
+                            <th>Số Tiền</th>
+                            <th>Trạng thái</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($transactions as $transaction)
-                            <tr class="hover:bg-gray-50 border-b">
-                                <!-- Ngày -->
-                                <td class="p-2">{{ $transaction['date'] }}</td>
-
-                                <!-- Loại Giao Dịch & Mô Tả -->
-                                <td class="p-2">
-                                    <div class="flex items-center gap-1">
-                                        @if ($transaction['transaction_type'] === 'Rút tiền')
-                                            <span>🏦</span>
-                                            <span>{{ $transaction['buyer'] }}</span>
-                                        @else
-                                            <span>💼</span>
-                                            <span>{{ $transaction['buyer'] }}
-                                                @if ($transaction['order_code'] !== '-')
-                                                    #{{ $transaction['order_code'] }}
-                                                @endif
-                                            </span>
-                                        @endif
+                        @foreach ($transactions as $transaction)
+                            <tr class="transaction-row">
+                                <td>{{ $transaction['date'] }}</td>
+                                <td>
+                                    <div class="transaction-info">
+                                        <div class="transaction-icon">💼</div>
+                                        <div class="transaction-details">
+                                            <div class="transaction-title">Doanh Thu từ Đơn Hàng #
+                                                {{ $transaction['order_code'] }}
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
-
-                                <!-- Mã Đơn Hàng -->
-                                <td class="p-2">
-                                    @if ($transaction['order_code'] !== '-')
-                                        <a href="#" class="text-blue-500 underline">{{ $transaction['order_code'] }}</a>
-                                    @else
-                                        <span class="text-gray-400">-</span>
-                                    @endif
+                                <td><a href="#" class="transaction-id">{{ $transaction['order_code'] }}</a></td>
+                                <td>{{ $transaction['status'] }}</td>
+                                <td
+                                    class="{{ strpos($transaction['amount'], '-') === 0 ? 'amount-negative' : '' }}{{ strpos($transaction['amount'], '+') === 0 ? 'amount-positive' : '' }}">
+                                    {{ $transaction['amount'] }}
                                 </td>
 
-                                <!-- Dòng Tiền -->
-                                <td class="p-2 font-medium
-                                    {{ $transaction['status'] === 'Tiền vào' ? 'text-green-600' : 'text-red-600' }}">
-                                    {{ $transaction['status'] }}
-                                </td>
-
-                                <!-- Số Tiền -->
-                                <td class="p-2 font-bold
-                                    {{ strpos($transaction['amount'], '-') === 0 ? 'text-red-500' : 'text-green-500' }}">
-                                    {{ $transaction['amount'] }} VND
-                                </td>
-
-                                <!-- Trạng Thái -->
-                                <td class="p-2">
-                                    <span class="
-                                        px-2 py-1 rounded text-sm
-                                        @if ($transaction['method'] === 'Hoàn thành')
-                                            bg-green-100 text-green-700
-                                        @elseif ($transaction['method'] === 'Rút tiền')
-                                            bg-red-100 text-red-700
-                                        @else
-                                            bg-yellow-100 text-yellow-700
-                                        @endif
-                                    ">
+                                <td>
+                                    <span
+                                        class="{{ $transaction['method'] === 'Hoàn thành' ? 'status-completed' : 'status-refunded' }}">
                                         {{ $transaction['method'] }}
                                     </span>
                                 </td>
 
-                                <!-- Action nút chi tiết (tùy chọn) -->
-                                <td class="p-2 text-center">
-                                    <button class="text-gray-500 hover:text-black">&gt;</button>
-                                </td>
+                                <td><button class="action-btn">></button></td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="p-4 text-center text-gray-500">
-                                    Không có giao dịch nào.
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
-
                 </table>
-
             </div>
         </div>
     </div>

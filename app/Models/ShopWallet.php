@@ -17,5 +17,6 @@ class ShopWallet extends Model
     {
         return $this->hasMany(WalletTransaction::class);
     }
+    
 }
 
