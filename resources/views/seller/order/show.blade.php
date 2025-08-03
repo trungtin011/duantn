@@ -111,6 +111,21 @@
                     </button>
                 </form>
             @endif
+<!-- Thêm nút Xác nhận hoàn thành -->
+    @if($shop_order->status === 'delivered')
+        <form action="{{ route('seller.order.update-status', ['id' => $shop_order->id]) }}" method="POST">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="status" value="completed">
+            <button class="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all transform hover:scale-105" type="submit">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Xác nhận hoàn thành
+            </button>
+        </form>
+    @endif
+</div>
         </div>
     </div>
 

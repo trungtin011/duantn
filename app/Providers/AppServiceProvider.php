@@ -10,18 +10,20 @@ use Illuminate\Support\Facades\Blade;
 use App\Enums\UserRole;
 use App\Models\NotificationReceiver;
 use Illuminate\Support\Facades\DB;
+use App\Models\ShopOrder; 
+use App\Observers\ShopOrderObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
 
     public function register(): void
     {
-        //
+       require_once app_path('Http/Helpers.php');
     }
 
     public function boot(): void
     {
-
+        ShopOrder::observe(ShopOrderObserver::class);
         
         View::composer('layouts.app', function ($view) {
             $settings = DB::table('settings')->first();
