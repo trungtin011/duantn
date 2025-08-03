@@ -151,10 +151,10 @@ class User extends Authenticatable
             default => 'Không xác định',
         };
     }
-    public function updateRank()
+   public function updateRank()
     {
         $ranks = [
-            ['name' => 'iron', 'threshold' => 0], // Start at 0 for iron
+            ['name' => 'iron', 'threshold' => 0],
             ['name' => 'bronze', 'threshold' => 1000000],
             ['name' => 'silver', 'threshold' => 5000000],
             ['name' => 'gold', 'threshold' => 10000000],
@@ -164,7 +164,7 @@ class User extends Authenticatable
 
         $currentRank = 'iron';
         foreach ($ranks as $rank) {
-            if ($this->total_spent >= $rank['threshold']) {
+            if (($this->total_spent ?? 0) >= $rank['threshold']) {
                 $currentRank = $rank['name'];
             } else {
                 break;
