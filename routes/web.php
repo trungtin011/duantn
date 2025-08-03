@@ -31,8 +31,7 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
-
-// seller
+use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
@@ -673,3 +672,11 @@ Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.
         Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
     });
 });
+Route::get('/admin/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
+
+Route::post('/admin/reviews/{shop}/warn', [AdminReviewController::class, 'warnSeller'])->name('admin.reviews.warnSeller');
+
+Route::post('/admin/reviews/{user}/ban', [AdminReviewController::class, 'banCustomer'])->name('admin.reviews.banCustomer');
+
+Route::delete('/admin/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+Route::post('/admin/reviews/{shop}/ban', [AdminReviewController::class, 'banSeller'])->name('admin.reviews.banSeller');
