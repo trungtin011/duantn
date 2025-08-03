@@ -1,162 +1,132 @@
 @extends('layouts.admin')
 
-@section('head')
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/admin/review.css') }}">
-@endpush
-@endsection
-
 @section('content')
-<div class="admin-page-header">
-    <h1 class="admin-page-title">Reviews</h1>
-    <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Reviews List</div>
-</div>
+    <div class="admin-page-header">
+        <h1 class="admin-page-title">Quản lý đánh giá</h1>
+        <a href="{{ route('admin.dashboard') }}" class="admin-breadcrumb-link">Trang chủ</a> / Danh sách đánh giá
 
-<div class="admin-card mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <div class="input-group search-input-group" style="width: 280px;">
-                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                <input type="text" class="form-control border-start-0" placeholder="Search by product name">
-            </div>
-        </div>
-        <div class="d-flex align-items-center gap-3">
-            <select class="form-select form-select-admin" style="width: 150px;">
-                <option selected>Rating: 5 Star</option>
-                <option>All</option>
-                <option>5 Star</option>
-                <option>4 Star</option>
-                <option>3 Star</option>
-                <option>2 Star</option>
-                <option>1 Star</option>
-            </select>
-            {{-- The "Add Product" button is not in the Reviews image, removing it --}}
-            {{-- <a href="#" class="btn btn-primary" style="font-weight:500;font-size:1em;padding: 10px 24px; border-radius: 8px;">Add Product</a> --}}
-        </div>
     </div>
 
-    <div class="table-responsive admin-table-container">
-        <table class="table align-middle mb-0 admin-table">
-            <thead class="admin-table-thead">
+    <form method="GET" class="row g-2 mb-3">
+        <div class="col-md-3">
+            <input type="text" name="product_name" value="{{ request('product_name') }}" class="form-control"
+                placeholder="Tìm theo tên sản phẩm">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="user" value="{{ request('user') }}" class="form-control"
+                placeholder="Tìm theo tên khách hàng">
+        </div>
+        <div class="col-md-2">
+            <select name="rating" class="form-select">
+                <option value="">Tất cả sao</option>
+                @for ($i = 5; $i >= 1; $i--)
+                    <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }}
+                        Sao</option>
+                @endfor
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Lọc</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
                 <tr>
-                    <th style="width: 40px; padding-left: 16px;"><input type="checkbox"></th>
-                    <th>PRODUCT</th>
-                    <th>CUSTOMER</th>
-                    <th>RATING</th>
-                    <th>DATE</th>
-                    <th>ACTION</th>
+                    <th>Sản phẩm</th>
+                    <th>Khách hàng</th>
+                    <th>Đánh giá</th>
+                    <th>Ngày</th>
+                    <th>Phản hồi của seller</th>
+                    <th>Thao tác</th>
                 </tr>
             </thead>
             <tbody>
-                {{-- Sample Review Data --}}
-                <tr>
-                    <td style="padding-left: 16px;"><input type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/40" alt="" class="me-3 product-img-table">
-                            <span>Whitetails Women's Open Sky</span>
-                        </div>
-                    </td>
-                    <td>Shahnewaz Sakil</td>
-                    <td class="rating-stars">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </td>
-                    <td>Jan 21, 2023 08:10 AM</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-success me-1 btn-action-icon"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                 <tr>
-                    <td style="padding-left: 16px;"><input type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/40" alt="" class="me-3 product-img-table">
-                            <span>School Bag for kids</span>
-                        </div>
-                    </td>
-                    <td>Steve Smith</td>
-                    <td class="rating-stars">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </td>
-                    <td>Jan 25, 2023 10:30 AM</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-success me-1 btn-action-icon"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                 <tr>
-                    <td style="padding-left: 16px;"><input type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/40" alt="" class="me-3 product-img-table">
-                            <span>Minimal Shoes for women</span>
-                        </div>
-                    </td>
-                    <td>Stella Thomas</td>
-                    <td class="rating-stars">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </td>
-                    <td>Feb 01, 2023 11:20 PM</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-success me-1 btn-action-icon"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                 <tr>
-                    <td style="padding-left: 16px;"><input type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://via.placeholder.com/40" alt="" class="me-3 product-img-table">
-                            <span>Whitetails Women's Open Sky</span>
-                        </div>
-                    </td>
-                    <td>Salim Rana</td>
-                    <td class="rating-stars">
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                    </td>
-                    <td>Feb 05, 2023 05:50 PM</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-success me-1 btn-action-icon"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action-icon"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
+                @forelse($reviews as $review)
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ $review->product->image_url ?? 'https://via.placeholder.com/40' }}"
+                                    class="me-2" style="width: 40px; height: 40px; object-fit: cover;" />
+                                <span>{{ $review->product->name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {{ $review->user->name }}
+                            <br>
+                            <small class="text-muted">ID: {{ $review->user->id }}</small>
+                        </td>
+                        <td>
+                            <div class="text-warning">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <i class="fas fa-star{{ $i <= $review->rating ? '' : '-o' }}"></i>
+                                @endfor
+                            </div>
+                            <div class="text-muted small mt-1">{{ $review->comment }}</div>
+                        </td>
+                        <td>{{ $review->created_at->format('d/m/Y H:i') }}</td>
+                        <td>
+                            @if ($review->seller_reply)
+                                <div class="bg-light border rounded p-2">
+                                    <strong>Seller:</strong><br>
+                                    {{ $review->seller_reply }}
+                                </div>
+                            @else
+                                <span class="text-muted">Chưa phản hồi</span>
+                            @endif
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ route('admin.reviews.banCustomer', $review->user->id) }}"
+                                class="d-inline">
+                                @csrf
+                                <button type="submit" onclick="return confirm('Xác nhận ban khách hàng này?')"
+                                    class="btn btn-sm btn-danger mb-1">Ban Khách</button>
+                            </form>
+
+                            @if ($review->product->shop)
+                                <form method="POST"
+                                    action="{{ route('admin.reviews.warnSeller', $review->product->shop->id) }}"
+                                    class="d-inline">
+                                    @csrf
+                                    <button type="submit" onclick="return confirm('Cảnh cáo hoặc ban seller?')"
+                                        class="btn btn-sm btn-warning">Cảnh Cáo Seller</button>
+                                </form>
+                            @endif
+                            <form method="POST" action="{{ route('admin.reviews.destroy', $review->id) }}"
+                                class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" onclick="return confirm('Bạn có chắc muốn xoá đánh giá này?')"
+                                    class="btn btn-sm btn-outline-danger">
+                                    Xoá
+                                </button>
+                            </form>
+
+                            <!-- Nút Ban seller thủ công -->
+                            @if ($review->product->shop && $review->product->shop->owner)
+                                <form method="POST"
+                                    action="{{ route('admin.reviews.banSeller', $review->product->shop->owner->id) }}"
+                                    class="d-inline">
+                                    @csrf
+                                    <button type="submit" onclick="return confirm('Xác nhận ban seller này?')"
+                                        class="btn btn-sm btn-outline-dark">
+                                        Ban Seller
+                                    </button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center">Không có đánh giá nào phù hợp.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
-    {{-- Pagination --}}
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div class="text-muted text-sm">Showing 10 Product of 120</div>
-        <nav aria-label="Pagination navigation">
-            <ul class="pagination pagination-sm mb-0 pagination-admin">
-                <li class="page-item disabled"><a class="page-link" href="#">&lt;</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item active"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">4</a></li>
-                <li class="page-item"><a class="page-link" href="#">&gt;</a></li>
-            </ul>
-        </nav>
+    <div class="mt-3">
+        {{ $reviews->withQueryString()->links() }}
     </div>
-</div>
 @endsection
-
-@section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-@endsection 
