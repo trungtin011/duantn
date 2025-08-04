@@ -219,9 +219,7 @@
                 <div class="flex items-center gap-4">
                     <div class="flex items-center py-4 ml-4">
                         <label>
-                            <input type="checkbox" id="select-all" class="mr-2"
-                            Chọn tất cả
-                        </label>
+                            <input type="checkbox" id="select-all" class="mr-2" Chọn tất cả </label>
                     </div>
                     <div class="border border-dashed border-gray-400 h-full"></div>
                     <div class="flex items-center py-4">
@@ -232,7 +230,7 @@
                     </div>
                 </div>
                 <a href="{{ route('checkout') }}"
-                    class="ml-4 bg-[#EF3248] text-white px-6 py-2 m-4 rounded hover:bg-[#EF3248]/80 transition" 
+                    class="ml-4 bg-[#EF3248] text-white px-6 py-2 m-4 rounded hover:bg-[#EF3248]/80 transition"
                     id="checkout-button">
                     Thanh toán
                 </a>
@@ -445,7 +443,7 @@
                                     timer: 1500,
                                     showConfirmButton: false,
                                 });
-                                window.location.reload(); 
+                                window.location.reload();
                             })
                             .catch(err => {
                                 console.error('Lỗi chi tiết:', err);
@@ -480,7 +478,8 @@
                                 quantity: checkbox.closest('.p-4')?.querySelector(
                                         '.cart-quantity-input, .combo-quantity-input')?.value ||
                                     checkbox.dataset.quantity,
-                                subtotal: checkbox.closest('.p-4')?.querySelector('.subtotal')?.dataset.subtotal,
+                                subtotal: checkbox.closest('.p-4')?.querySelector('.subtotal')?.dataset
+                                    .subtotal,
                             });
                         }
                     });
@@ -534,7 +533,7 @@
                             } else {
                                 // Tổng cho sản phẩm không thuộc combo
                                 const quantity = parseInt(row.querySelector('.cart-quantity-input')?.value) ||
-                                1;
+                                    1;
                                 const subtotal = parseFloat(row.querySelector('.subtotal')?.dataset.subtotal);
                                 total += subtotal;
                             }
@@ -603,29 +602,31 @@
                             return;
                         }
                         fetch('/customer/cart/selected', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': token,
-                                'Accept': 'application/json',
-                            },
-                            body: JSON.stringify({ selected }),
-                        })
-                        .then(res => {
-                            if (!res.ok) throw new Error('Không thể cập nhật session!');
-                            return res.json();
-                        })
-                        .then(data => {
-                            // Sau khi backend xác nhận, chuyển trang
-                            window.location.href = checkoutButton.href;
-                        })
-                        .catch(err => {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi',
-                                text: 'Không thể cập nhật session! Vui lòng thử lại.'
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    selected
+                                }),
+                            })
+                            .then(res => {
+                                if (!res.ok) throw new Error('Không thể cập nhật session!');
+                                return res.json();
+                            })
+                            .then(data => {
+                                // Sau khi backend xác nhận, chuyển trang
+                                window.location.href = checkoutButton.href;
+                            })
+                            .catch(err => {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể cập nhật session! Vui lòng thử lại.'
+                                });
                             });
-                        });
                     });
                 }
             });

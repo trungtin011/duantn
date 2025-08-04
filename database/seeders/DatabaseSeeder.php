@@ -6,9 +6,13 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Database\Seeders\IdentityVerificationSeeder;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     */
     /**
      * Seed the application's database.
      */
@@ -63,6 +67,23 @@ class DatabaseSeeder extends Seeder
                 'avatar' => 'avatars/Vq5Uh3ncvujRPMQXWJi0F9UrM5lgMTbOysnqSCbw.jpg',
                 'is_verified' => 0,
                 'birthday' => null,
+                'remember_token' => null,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'id' => 4,
+                'username' => 'seller2',
+                'fullname' => 'Seller Two',
+                'phone' => '0901234570',
+                'email' => 'Seller2@gmail.com',
+                'password' => Hash::make('123123123'),
+                'status' => 'active',
+                'gender' => 'female',
+                'role' => 'seller',
+                'avatar' => null,
+                'is_verified' => 1,
+                'birthday' => '1996-06-06',
                 'remember_token' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -178,6 +199,23 @@ class DatabaseSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
+            [
+                'userID' => 4,
+                'status' => 'active',
+                'identity_card' => 987654321,
+                'identity_card_date' => '2021-01-01',
+                'identity_card_place' => 'HCM',
+                'bank_account' => null,
+                'bank_name' => 'ACB',
+                'bank_account_name' => 'Seller Two',
+                'business_license_id' => 1,
+                'identity_card_type' => 'cccd',
+                'identity_card_image' => null,
+                'identity_card_holding_image' => null,
+                'privacy_policy_agreed' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
         ]);
 
         // Bảng seller_registrations
@@ -268,8 +306,44 @@ class DatabaseSeeder extends Seeder
                 'shop_province' => 'TP. Hồ Chí Minh',
                 'shop_district' => 'Quận 1',
                 'shop_ward' => 'Bến Nghé',
+                'shop_province' => 'Hà Nội',
+                'shop_district' => 'Hoàn Kiếm',
+                'shop_ward' => 'Hàng Bạc',
                 'note' => null,
                 'is_default' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'shopID' => 1,
+                'shop_address' => '789 Another St',
+                'shop_province' => 'Hà Nội',
+                'shop_district' => 'Ba Đình',
+                'shop_ward' => 'Điện Biên',
+                'note' => 'Chi nhánh 2',
+                'is_default' => 0,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'shopID' => 2,
+                'shop_address' => '123 Shop Avenue',
+                'shop_province' => 'TP. Hồ Chí Minh',
+                'shop_district' => 'Quận 1',
+                'shop_ward' => 'Bến Nghé',
+                'note' => null,
+                'is_default' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'shopID' => 2,
+                'shop_address' => '321 Another Ave',
+                'shop_province' => 'TP. Hồ Chí Minh',
+                'shop_district' => 'Quận 3',
+                'shop_ward' => 'Phường 7',
+                'note' => 'Chi nhánh 2',
+                'is_default' => 0,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -417,6 +491,7 @@ class DatabaseSeeder extends Seeder
                 'meta_keywords' => null,
                 'status' => 'active',
                 'parent_id' => null,
+                'parent_id' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -452,6 +527,7 @@ class DatabaseSeeder extends Seeder
                 'purchase_price' => 24000000,
                 'sale_price' => 27000000,
                 'sold_quantity' => 10,
+                'stock_total' => 500,
                 'stock_total' => 500,
                 'sku' => 'SPX001',
                 'status' => 'active',
@@ -540,6 +616,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'name' => 'Màu sắc',
+                'name' => 'Màu sắc',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
@@ -550,6 +627,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => 1,
                 'attribute_id' => 1,
+                'value' => 'Đen',
                 'value' => 'Đen',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -595,6 +673,7 @@ class DatabaseSeeder extends Seeder
                 'payment_method' => 'cod',
                 'payment_status' => 'pending',
                 'order_status' => 'pending',
+                'order_status' => 'pending',
                 'order_note' => null,
                 'cancel_reason' => null,
                 'paid_at' => null,
@@ -614,6 +693,10 @@ class DatabaseSeeder extends Seeder
                 'receiver_name' => 'Customer One',
                 'receiver_phone' => '0901234569',
                 'receiver_email' => null,
+                'address' => '13 Lý Thái Tổ',
+                'province' => 'Hà Nội',
+                'district' => 'Hoàn Kiếm',
+                'ward' => 'Hàng Bạc',
                 'address' => '13 Lý Thái Tổ',
                 'province' => 'Hà Nội',
                 'district' => 'Hoàn Kiếm',
@@ -746,6 +829,7 @@ class DatabaseSeeder extends Seeder
         // Bảng notifications
         DB::table('notifications')->insert([
             [
+                'shop_id' => null,
                 'shop_id' => null,
                 'sender_id' => 1,
                 'title' => 'Order Confirmation',

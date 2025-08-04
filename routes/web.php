@@ -43,6 +43,8 @@ use App\Http\Controllers\Seller\ShopCategoryController;
 use App\Http\Controllers\Seller\CouponControllerSeller;
 use App\Http\Controllers\Seller\ReviewController;
 use App\Http\Controllers\Seller\AdsCampaignController; // Thêm dòng này
+use App\Http\Controllers\Seller\WalletController;
+use App\Http\Controllers\Seller\WithdrawController;
 
 //user
 use App\Http\Controllers\User\CheckoutController;
@@ -294,6 +296,22 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::post('/{id}/toggle-status', [AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
     });
 
+    Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
+    Route::get('/wallet/withdraw', [WithdrawController::class, 'index'])->name('seller.withdraw.index');
+    Route::post('/wallet/withdraw', [WithdrawController::class, 'requestWithdraw'])->name('seller.withdraw.request');
+    Route::get('/withdraw', [WalletController::class, 'showWithdrawForm'])->name('seller.withdraw.create');
+    Route::post('/withdraw', [WalletController::class, 'processWithdraw'])->name('seller.withdraw.store');
+    Route::post('/wallet/withdraw', [WalletController::class, 'processWithdraw'])->name('wallet.withdraw.process');
+    Route::get('/wallet/withdraw', [WalletController::class, 'showWithdrawForm'])->name('wallet.withdraw');
+    Route::post('/wallet/transfer-revenue', [WalletController::class, 'transferCompletedOrdersToWallet'])->name('wallet.transfer.revenue');
+    Route::get('linked-banks', [WalletController::class, 'showLinkedBanks'])->name('seller.linked-banks.index');
+    Route::post('linked-banks', [WalletController::class, 'storeLinkedBank'])->name('seller.linked-banks.store');
+    Route::delete('linked-banks/{id}', [WalletController::class, 'deleteLinkedBank'])->name('seller.linked-banks.destroy');
+    Route::post('/wallet/reverse-revenue', [WalletController::class, 'reverseTransferredRevenue'])->name('wallet.reverse.revenue');
+
+
+
+
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
         Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
@@ -352,6 +370,17 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::patch('/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
         Route::delete('/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
     });
+
+    Route::get('/orders', function () {
+        return view('seller.orders');
+    })->name('seller.orders');
+
+    Route::get('/combos', [ComboController::class, 'index'])->name('seller.combo.index');
+    Route::get('/combos/create', [ComboController::class, 'create'])->name('seller.combo.create');
+    Route::post('/combos', [ComboController::class, 'store'])->name('seller.combo.store');
+    Route::get('/combos/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
+    Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
+    Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
 });
 
 Route::prefix('customer')->group(function () {

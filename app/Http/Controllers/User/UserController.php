@@ -181,16 +181,15 @@ class UserController extends Controller
                     <p>Hệ thống</p>
                 ");
             });
-            
+
             Log::info('Password reset code sent successfully', ['user_id' => $user->id, 'email' => $user->email]);
-            
         } catch (\Exception $e) {
             Log::error('Failed to send password reset email', [
-                'user_id' => $user->id, 
-                'email' => $user->email, 
+                'user_id' => $user->id,
+                'email' => $user->email,
                 'error' => $e->getMessage()
             ]);
-            
+
             return back()->withErrors(['email' => 'Không thể gửi email. Vui lòng thử lại sau.']);
         }
 
@@ -211,7 +210,7 @@ class UserController extends Controller
         $request->validate(['code' => 'required|numeric']);
 
         $user = Auth::user();
-        
+
         Log::info('Bắt đầu xác thực mã đổi mật khẩu', [
             'user_id' => $user->id,
             'email' => $user->email,
@@ -226,7 +225,7 @@ class UserController extends Controller
         // Convert both to string for comparison
         $receivedCode = (string) $request->code;
         $storedCode = (string) $user->reset_code;
-        
+
         if ($storedCode !== $receivedCode || $user->reset_code_expires_at < now()) {
             Log::warning('Xác thực mã thất bại', [
                 'user_id' => $user->id,
@@ -237,7 +236,7 @@ class UserController extends Controller
                 'is_expired' => $user->reset_code_expires_at < now(),
                 'reason' => $storedCode !== $receivedCode ? 'Mã không khớp' : 'Mã đã hết hạn'
             ]);
-            
+
             return back()->withErrors(['code' => 'Mã xác nhận không đúng hoặc đã hết hạn.']);
         }
 
@@ -263,7 +262,7 @@ class UserController extends Controller
     public function confirmNewPassword(Request $request)
     {
         Log::info('UserController@confirmNewPassword called', ['user_id' => Auth::id()]);
-        
+
         // Log tất cả dữ liệu request
         Log::info('Reset password form data received', [
             'user_id' => Auth::id(),
@@ -282,7 +281,7 @@ class UserController extends Controller
                 'email' => Auth::user()->email,
                 'session_password_verified' => session('password_verified')
             ]);
-            
+
             return redirect()->route('account.password.code.verify.form')
                 ->withErrors(['code' => 'Vui lòng xác thực mã trước khi đặt mật khẩu mới.']);
         }
@@ -292,7 +291,7 @@ class UserController extends Controller
         ]);
 
         $user = Auth::user();
-        
+
         Log::info('Bắt đầu quá trình đổi mật khẩu', [
             'user_id' => $user->id,
             'email' => $user->email,
@@ -302,7 +301,7 @@ class UserController extends Controller
         try {
             // Lưu mật khẩu cũ để log
             $oldPasswordHash = $user->password;
-            
+
             // Cập nhật mật khẩu mới
             $user->password = bcrypt($request->password);
             $user->reset_code = null;
@@ -320,14 +319,13 @@ class UserController extends Controller
 
             // Xóa session xác thực
             session()->forget('password_verified');
-            
+
             Log::info('Đã xóa session xác thực', [
                 'user_id' => $user->id,
                 'session_cleared' => !session('password_verified')
             ]);
 
             return redirect()->route('account.password')->with('password_success', 'Đổi mật khẩu thành công!');
-            
         } catch (\Exception $e) {
             Log::error('Lỗi khi đổi mật khẩu', [
                 'user_id' => $user->id,
@@ -335,15 +333,15 @@ class UserController extends Controller
                 'error' => $e->getMessage(),
                 'error_trace' => $e->getTraceAsString()
             ]);
-            
+
             return back()->withErrors(['password' => 'Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.']);
         }
     }
-    
+
     public function requestPasswordChangeConfirm(Request $request)
     {
         Log::info('UserController@requestPasswordChangeConfirm called', ['user_id' => Auth::id()]);
-        
+
         // Log tất cả dữ liệu request
         Log::info('Form data received', [
             'user_id' => Auth::id(),
@@ -386,16 +384,15 @@ class UserController extends Controller
             Mail::raw("Mã xác nhận đổi mật khẩu là: $code", function ($m) {
                 $m->to(Auth::user()->email)->subject('Mã xác nhận đổi mật khẩu');
             });
-            
+
             Log::info('Password change code sent successfully', ['user_id' => Auth::id(), 'email' => Auth::user()->email]);
-            
         } catch (\Exception $e) {
             Log::error('Failed to send password change email', [
-                'user_id' => Auth::id(), 
-                'email' => Auth::user()->email, 
+                'user_id' => Auth::id(),
+                'email' => Auth::user()->email,
                 'error' => $e->getMessage()
             ]);
-            
+
             return back()->withErrors(['email' => 'Không thể gửi email. Vui lòng thử lại sau.']);
         }
 
@@ -446,16 +443,15 @@ class UserController extends Controller
                 <p>Trân trọng,<br>Hệ thống</p>
             ");
             });
-            
+
             Log::info('Password verification code sent successfully', ['user_id' => $user->id, 'email' => $user->email]);
-            
         } catch (\Exception $e) {
             Log::error('Failed to send password verification email', [
-                'user_id' => $user->id, 
-                'email' => $user->email, 
+                'user_id' => $user->id,
+                'email' => $user->email,
                 'error' => $e->getMessage()
             ]);
-            
+
             return back()->withErrors(['email' => 'Không thể gửi email. Vui lòng thử lại sau.']);
         }
 
@@ -468,28 +464,27 @@ class UserController extends Controller
     {
         Log::info('UserController@testEmail called', ['user_id' => Auth::id()]);
         $user = Auth::user();
-        
+
         try {
             Mail::raw("Test email from Laravel application", function ($message) use ($user) {
                 $message->to($user->email)
                     ->subject('Test Email');
             });
-            
+
             Log::info('Test email sent successfully', ['user_id' => $user->id, 'email' => $user->email]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Test email sent successfully. Check logs for details.',
                 'email' => $user->email
             ]);
-            
         } catch (\Exception $e) {
             Log::error('Test email failed', [
-                'user_id' => $user->id, 
-                'email' => $user->email, 
+                'user_id' => $user->id,
+                'email' => $user->email,
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send test email: ' . $e->getMessage(),
@@ -503,7 +498,7 @@ class UserController extends Controller
     {
         Log::info('UserController@debugResetCode called', ['user_id' => Auth::id()]);
         $user = Auth::user();
-        
+
         return response()->json([
             'user_id' => $user->id,
             'reset_code' => $user->reset_code,

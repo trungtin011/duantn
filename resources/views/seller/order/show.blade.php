@@ -1,6 +1,7 @@
 @extends('layouts.seller_home')
 
 @section('title', 'Chi tiết đơn hàng')
+@section('title', 'Chi tiết đơn hàng')
 
 @section('content')
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">

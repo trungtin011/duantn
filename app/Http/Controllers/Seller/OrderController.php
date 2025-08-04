@@ -127,7 +127,7 @@ class OrderController extends Controller
         $shop_address = ShopAddress::where('shopID', $shop->id)->get();
         $items = ItemsOrder::where('shop_orderID', $shop_order->id)->get();
         $status = ShopOrderHistory::where('shop_order_id', $shop_order->id)->get();
-        return view('seller.order.show', compact('order', 'shop', 'shop_order', 'shop_address', 'status' , 'items'));
+        return view('seller.order.show', compact('order', 'shop', 'shop_order', 'shop_address', 'status', 'items'));
     }
 
     public function shippingOrder(Request $request, $id)
@@ -139,8 +139,8 @@ class OrderController extends Controller
         ]);
 
         $shop_order = ShopOrder::where('orderID', $id)
-        ->where('shopID', session('current_shop_id'))
-        ->with('shop')->first();
+            ->where('shopID', session('current_shop_id'))
+            ->with('shop')->first();
         $order = $shop_order->order;
         $id_shop_address = $request->shop_address;
         $shipping_provider = $request->shipping_provider;
@@ -177,13 +177,13 @@ class OrderController extends Controller
         $order = ShopOrder::where('id', $id)->with('order')->first();
         $shop = Shop::findOrFail($order->shopID);
 
-        if($order->status === 'confirmed'){
+        if ($order->status === 'confirmed') {
             return redirect()->back()->with('error', 'Đơn hàng đã được xác nhận trước đó');
         }
-        
+
         $order->status = 'confirmed';
         $order->save();
-        
+
         $shop_order_history = new ShopOrderHistory();
         $shop_order_history->shop_order_id = $order->id;
         $shop_order_history->status = 'confirmed';
@@ -194,9 +194,9 @@ class OrderController extends Controller
             $orders = Order::where('id', $order->orderID)->first();
 
             Order::orderStatusUpdate($orders->id);
-            
+
             event(new OrderStatusUpdate($order, 'confirmed'));
-            
+
             // Gửi email thông báo
             MailHelper::sendOrderStatusUpdateMail($order, 'confirmed');
 
@@ -222,9 +222,8 @@ class OrderController extends Controller
             $shop_order_history->description = 'Người bán đã hủy đơn hàng';
             $shop_order_history->save();
 
-            return redirect()->back()->with('success', 'Đã hủy đơn hàng #'. $order->order_code);
-        }
-        elseif($order_status === 'ready_to_pick' || $order_status === 'picked'){
+            return redirect()->back()->with('success', 'Đã hủy đơn hàng #' . $order->order_code);
+        } elseif ($order_status === 'ready_to_pick' || $order_status === 'picked') {
             $shipping_controller = new ShippingController();
             $order_status = $shipping_controller->cancelOrderGHN($order);
 
@@ -239,16 +238,15 @@ class OrderController extends Controller
                 $shop_order_history->save();
 
                 Order::orderStatusUpdate($order->order->id);
-                
+
                 event(new OrderStatusUpdate($order, 'cancelled'));
-                
+
                 // Gửi email thông báo
                 MailHelper::sendOrderStatusUpdateMail($order, 'cancelled');
-                
-                return redirect()->back()->with('success', 'Đã hủy đơn hàng #'. $order->order_code);
-            }
-            else{
-                return redirect()->back()->with('error', 'Lỗi hủy đơn hàng #'. $order->order_code);
+
+                return redirect()->back()->with('success', 'Đã hủy đơn hàng #' . $order->order_code);
+            } else {
+                return redirect()->back()->with('error', 'Lỗi hủy đơn hàng #' . $order->order_code);
             }
         }
 
@@ -261,7 +259,7 @@ class OrderController extends Controller
         $shipping_controller = new ShippingController();
         $shipping_controller->returnOrderGHN($order);
 
-        if($shipping_controller){
+        if ($shipping_controller) {
             $order->status = 'refunded';
             $order->save();
 
@@ -274,10 +272,9 @@ class OrderController extends Controller
             Order::orderStatusUpdate($order->order->id);
 
             event(new OrderStatusUpdate($order, 'refunded'));
-            return redirect()->back()->with('success', 'Đã trả đơn hàng #'. $order->order_code);
-        }
-        else{
-            return redirect()->back()->with('error', 'Lỗi trả đơn hàng #'. $order->order_code);
+            return redirect()->back()->with('success', 'Đã trả đơn hàng #' . $order->order_code);
+        } else {
+            return redirect()->back()->with('error', 'Lỗi trả đơn hàng #' . $order->order_code);
         }
     }
 
@@ -290,7 +287,7 @@ class OrderController extends Controller
         $order_status = new ShopOrderHistory();
         $order_status->shop_order_id = $order->id;
 
-        if($status === 'delivered'){
+        if ($status === 'delivered') {
             $order->actual_delivery_date = now();
             $order->save();
         }
@@ -377,7 +374,7 @@ class OrderController extends Controller
                     $order_status->save();
 
                     Order::orderStatusUpdate($order->order->id);
-                    
+
                     event(new OrderStatusUpdate($order, $mapping['status']));
                 }
             }
@@ -389,4 +386,3 @@ class OrderController extends Controller
         }
     }
 }
-?>
