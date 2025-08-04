@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class AppServiceProvider extends ServiceProvider
 {
 
+
     public function register(): void
     {
         // Load helper functions

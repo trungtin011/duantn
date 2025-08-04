@@ -167,12 +167,13 @@ class HomeController extends Controller
             ->get();
         // Lấy và tính toán xếp hạng shop
         $rankingShops = Shop::where('shop_status', 'active')
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('total_products', '>', 0);
             })
             ->withCount('followers') // Thêm eager loading để đếm followers từ bảng shop_followers
             ->withCount('orderReviews') // Thêm eager loading để đếm reviews từ bảng order_reviews
             ->withAvg('orderReviews', 'rating') // Thêm eager loading để tính trung bình rating từ bảng order_reviews
+            ->withSum('products', 'sold_quantity') // Thêm tổng số lượng sản phẩm đã bán
             ->orderBy('order_reviews_avg_rating', 'desc')
             ->orderBy('total_sales', 'desc')
             ->take(10)
@@ -181,7 +182,7 @@ class HomeController extends Controller
                 // Sử dụng rating thực tế từ bảng order_reviews
                 $actualRating = $shop->order_reviews_avg_rating ?? 0;
                 $actualReviewsCount = $shop->order_reviews_count ?? 0;
-                
+
                 $ratingScore = $actualRating / 5;
                 $salesScore = min($shop->total_sales / 1000000000, 1);
                 $productsScore = min($shop->total_products / 100, 1);
@@ -216,6 +217,8 @@ class HomeController extends Controller
                 // Gán rating thực tế từ order_reviews
                 $shop->shop_rating = round($actualRating, 1);
                 $shop->total_reviews = $actualReviewsCount;
+                // Gán tổng số lượng sản phẩm đã bán
+                $shop->total_products_sold = $shop->products_sum_sold_quantity ?? 0;
                 return $shop;
             });
 

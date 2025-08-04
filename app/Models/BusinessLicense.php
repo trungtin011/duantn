@@ -109,5 +109,4 @@ class BusinessLicense extends Model
     {
         $this->update(['is_active' => false]);
     }
-    
 }

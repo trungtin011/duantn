@@ -3,11 +3,13 @@
 @section('title', 'Thêm Sản Phẩm Mới')
 @section('content')
     <div class="container mx-auto px-4">
+    <div class="container mx-auto px-4">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-800">Thêm sản phẩm mới</h1>
                 <div class="text-sm text-gray-500">
+                    <a href="{{ route('seller.dashboard') }}" class="hover:underline">Trang chủ</a> / Thêm sản phẩm
                     <a href="{{ route('seller.dashboard') }}" class="hover:underline">Trang chủ</a> / Thêm sản phẩm
                 </div>
             </div>
@@ -16,11 +18,14 @@
                     class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và đăng</button>
                 <a href="{{ route('seller.products.index') }}"
                     class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Hủy</a>
+                <a href="{{ route('seller.products.index') }}"
+                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Hủy</a>
             </div>
         </div>
         <!-- Error Messages -->
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <ul class="list-disc pl-5 text-sm">
                 <ul class="list-disc pl-5 text-sm">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -746,6 +751,7 @@
 
                 <!-- Footer Buttons -->
                 <div class="col-span-12 flex justify-start space-x-3 mt-6">
+                <div class="col-span-12 flex justify-start space-x-3 mt-6">
                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và
                         đăng</button>
                     <a href="{{ route('seller.products.index') }}"
@@ -753,6 +759,7 @@
             </div>
         </form>
     </div>
+
 
 @endsection
 @push('scripts')

@@ -33,6 +33,9 @@
     @vite('resources/css/admin.css')
     @vite('resources/css/admin/product.css')
     @stack('styles')
+    @vite('resources/css/admin.css')
+    @vite('resources/css/admin/product.css')
+    @stack('styles')
     @yield('head')
 </head>
 
@@ -399,6 +402,12 @@
     </div>
 
     @yield('scripts')
+    @stack('scripts')
+    @vite('resources/js/admin/product.js')
+    @vite('resources/js/admin/variant.js')
+    @vite('resources/js/admin/admin.js')
+    @vite('resources/js/admin/order.js')
+    @vite('resources/js/admin/category.js')
     @stack('scripts')
     @vite('resources/js/admin/product.js')
     @vite('resources/js/admin/variant.js')

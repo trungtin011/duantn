@@ -147,7 +147,7 @@ class Order extends Model
                 $statusCounts[1]++;
             } elseif (in_array($status, ['confirmed', 'ready_to_pick', 'picked', 'shipping', 'delivered', 'refunded'])) {
                 $statusCounts[2]++;
-            } elseif (in_array($status, ['completed','returned'])) {
+            } elseif (in_array($status, ['completed', 'returned'])) {
                 $statusCounts[3]++;
             } elseif (in_array($status, ['cancelled'])) {
                 $statusCounts[4]++;
@@ -158,14 +158,11 @@ class Order extends Model
 
         if ($statusCounts[4] === $total) {
             $order->order_status = 'cancelled';
-        }
-        elseif (($statusCounts[3] + $statusCounts[4]) === $total && $statusCounts[3] > 0) {
+        } elseif (($statusCounts[3] + $statusCounts[4]) === $total && $statusCounts[3] > 0) {
             $order->order_status = 'completed';
-        }
-        elseif ($statusCounts[1] < $total) {
+        } elseif ($statusCounts[1] < $total) {
             $order->order_status = 'processing';
-        }
-        else {
+        } else {
             $order->order_status = 'pending';
         }
 
@@ -201,7 +198,7 @@ class Order extends Model
         $order->save();
         return true;
     }
-    
+
     public function markAsCompleted()
     {
         if ($this->status !== 'completed') {

@@ -9,6 +9,7 @@ use App\Models\ShopAddress;
 use App\Models\ShopShippingOption;
 use App\Models\Combo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\ShopWallet;
 
 class Shop extends Model
 {
@@ -122,5 +123,16 @@ class Shop extends Model
     public function combos()
     {
         return $this->hasMany(Combo::class, 'shopID', 'id');
+    }
+    public function wallet()
+    {
+        return $this->hasOne(ShopWallet::class, 'shop_id');
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($shop) {
+            ShopWallet::firstOrCreate(['shop_id' => $shop->id], ['balance' => 0]);
+        });
     }
 }
