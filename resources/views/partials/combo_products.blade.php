@@ -1,15 +1,31 @@
 @if (!$comboProducts->isEmpty())
-    <div class="product-featured pt-5">
+    <div class="product-featured pt-5 snow-container">
         <div class="flex items-center justify-between title">
             <h2 class="">Combo Sản Phẩm</h2>
-            <a href="{{ route('shop.profile', $comboProducts->first()->shop->id) }}"
-                class="text-[#ef3248] hover:underline text-sm font-medium whitespace-nowrap">
-                Xem tất cả
-            </a>
+            <ion-icon name="gift-outline" class="text-2xl text-[#ef3248]"></ion-icon>
         </div>
+        
+        <!-- Snow particles -->
+        <div class="snow-particles">
+            <div class="snowflake">❅</div>
+            <div class="snowflake">❆</div>
+            <div class="snowflake">❅</div>
+            <div class="snowflake">❆</div>
+            <div class="snowflake">❅</div>
+            <div class="snowflake">❆</div>
+            <div class="snowflake">❅</div>
+            <div class="snowflake">❆</div>
+            <div class="snowflake">❅</div>
+            <div class="snowflake">❆</div>
+        </div>
+
         <div class="showcase-wrapper has-scrollbar">
             @foreach ($comboProducts as $combo)
-                <div class="showcase-container">
+                <div class="showcase-container relative">
+                    <a href="{{ route('shop.profile', $combo->products->first()->product->shop->id) }}"
+                        class="text-[#ef3248] hover:underline text-sm font-medium whitespace-nowrap absolute top-5 right-5">
+                        Chi tiết
+                    </a>
                     <div class="flex gap-4 w-full">
                         <a href="{{ route('combo.show', $combo->id) }}"
                             class="showcase-banner block w-full h-48 overflow-hidden rounded-lg bg-gray-200 mb-4">
@@ -23,8 +39,9 @@
                             </h3>
                             <p class="text-sm text-gray-600 mb-3 flex items-center gap-1">
                                 <i class="fa-solid fa-store"></i>
-                                Shop: <a href="{{ route('shop.profile', $product->shop->id) }}"
-                                    class="text-blue-600 hover:underline">{{ $combo->shop->shop_name }}</a>
+                                Shop: <a
+                                    href="{{ route('shop.profile', $combo->products->first()->product->shop->id) }}"
+                                    class="text-blue-600 hover:underline">{{ $combo->products->first()->product->shop->shop_name }}</a>
                             </p>
                             <div class="combo-products-list flex flex-wrap gap-2 mb-4">
                                 @foreach ($combo->products as $comboProduct)

@@ -629,25 +629,22 @@
         <div class="product-container">
             <div class="container">
                 <div class="sidebar has-scrollbar relative" data-mobile-menu>
-                    <button class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-0"
+                    <button class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-2.5"
                         data-mobile-menu-close-btn>
                         <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
                     </button>
-                    <div class="shop-container-bg border border-orange-200 px-6 pt-4 pb-6 mb-8 relative mt-10 lg:mt-0">
+                    <div class="shop-container-bg rounded-xl border border-orange-200 p-6 mb-8 mt-10 lg:mt-0">
                         <div class="flex items-center justify-between mb-4">
                             <h2
-                                class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-between gap-2 w-full">
-                                <span class="shop-title">Shop Bán Chạy</span>
+                                class="text-lg font-bold text-gray-800 flex items-center justify-between gap-2 w-full shop-title">
+                                Shop Bán Chạy
                                 <ion-icon name="flame"
                                     class="text-orange-500 text-xl bg-white rounded-full p-2"></ion-icon>
                             </h2>
-
                         </div>
 
-                        <div class="absolute left-0 border border-dashed border-orange-200 w-full h-[1px]"></div>
-
                         <!-- Header với legend -->
-                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 mb-4 mt-10">
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 mb-4">
                             <h3 class="text-sm pl-3 pr-3 font-semibold text-gray-800 mb-2 flex items-center gap-2">
                                 Top Shop theo doanh số bán hàng
                             </h3>
@@ -1678,7 +1675,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }

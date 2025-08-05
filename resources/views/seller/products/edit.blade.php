@@ -2,8 +2,10 @@
 @push('styles')
     <style>
         .tab-button.active {
-            background-color: #e0f2fe; /* Light blue for active tab */
-            color: #2563eb; /* Darker blue text */
+            background-color: #e0f2fe;
+            /* Light blue for active tab */
+            color: #2563eb;
+            /* Darker blue text */
             font-weight: 600;
         }
 
@@ -14,17 +16,46 @@
         .tab-content.hidden {
             display: none;
         }
+
         .sticky {
-            position: -webkit-sticky; /* Safari */
+            position: -webkit-sticky;
+            /* Safari */
             position: sticky;
-            top: 1rem; /* Adjust as needed */
-            align-self: flex-start; /* For flex container parent */
+            top: 1rem;
+            /* Adjust as needed */
+            align-self: flex-start;
+            /* For flex container parent */
+        }
+
+        .field-error {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .name-check-spinner {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 14px;
+            display: none;
+            /* Hidden by default */
+            z-index: 10;
+        }
+
+        /* Đảm bảo container có position relative */
+        .mb-4 {
+            /* This class is on the parent div of the name input */
+            position: relative;
         }
     </style>
 @endpush
 @section('title', 'Chỉnh sửa sản phẩm')
 @section('content')
-    <div class="container mx-auto px-4">
+    <div class="mx-auto">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div>
@@ -64,9 +95,14 @@
                 <div class="mb-4">
                     <label class="block text-gray-700 font-medium mb-1">Tên sản phẩm <span
                             class="text-red-500">*</span></label>
-                    <input type="text" name="name" id="product-name"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Tên sản phẩm" value="{{ old('name', $product->name) }}" required>
+                    <div class="relative">
+                        <input type="text" name="name" id="product-name"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tên sản phẩm" value="{{ old('name', $product->name) }}" maxlength="100">
+                        <div class="absolute right-2 top-2 text-xs text-gray-400">
+                            <span id="name-char-count">0</span>/100
+                        </div>
+                    </div>
                     @error('name')
                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                     @enderror
@@ -95,10 +131,12 @@
                             class="text-red-500">*</span></label>
                     <div>
                         <label>
-                            <input type="radio" name="product_type" value="simple" {{ !$product->is_variant ? 'checked' : '' }}> Sản phẩm đơn
+                            <input type="radio" name="product_type" value="simple"
+                                {{ !$product->is_variant ? 'checked' : '' }}> Sản phẩm đơn
                         </label>
                         <label class="ml-4">
-                            <input type="radio" name="product_type" value="variant" {{ $product->is_variant ? 'checked' : '' }}> Sản phẩm có biến thể
+                            <input type="radio" name="product_type" value="variant"
+                                {{ $product->is_variant ? 'checked' : '' }}> Sản phẩm có biến thể
                         </label>
                     </div>
                 </div>
@@ -111,16 +149,24 @@
                     <div class="bg-white p-4 rounded-lg shadow-sm sticky top-4">
                         <nav class="flex flex-col space-y-2">
                             {{-- Tab buttons will be dynamically shown/hidden based on product_type --}}
-                            <button type="button" class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100" data-tab="general-details">
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="general-details">
                                 <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm & SEO
                             </button>
-                            <button type="button" class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100" data-tab="pricing-inventory">
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="pricing-inventory">
                                 <i class="fas fa-boxes mr-2"></i>Giá & Tồn kho
                             </button>
-                            <button type="button" class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100" data-tab="shipping">
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="shipping">
                                 <i class="fas fa-truck mr-2"></i>Vận chuyển
                             </button>
-                            <button type="button" class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100" data-tab="attributes-variants">
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="attributes-variants">
                                 <i class="fas fa-tags mr-2"></i>Thuộc tính & Biến thể
                             </button>
                         </nav>
@@ -138,8 +184,7 @@
                             <div class="flex flex-col gap-3 mb-4">
                                 <!-- Thương hiệu -->
                                 <div>
-                                    <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương hiệu <span
-                                            class="text-red-500">*</span></label>
+                                    <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương hiệu</label>
                                     <div
                                         class="flex flex-col gap-2 items-start bg-gray-100 rounded-md p-2 overflow-y-scroll h-auto max-h-40">
                                         @foreach ($brands as $brand)
@@ -150,7 +195,8 @@
                                                             id="brand_{{ $brand->id }}"
                                                             class="border border-gray-300 rounded-md p-2 focus:outline-none"
                                                             value="{{ $brand->id }}"
-                                                            {{ in_array($brand->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }} data-original-required="true">
+                                                            {{ in_array($brand->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}
+                                                            data-original-required="false">
                                                         <label for="brand_{{ $brand->id }}"
                                                             class="text-gray-700 font-medium">
                                                             {{ $brand->name }}
@@ -178,7 +224,8 @@
                                                                     id="brand_{{ $child->id }}"
                                                                     class="border border-gray-300 rounded-md p-2 focus:outline-none"
                                                                     value="{{ $child->id }}"
-                                                                    {{ in_array($child->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }} data-original-required="true">
+                                                                    {{ in_array($child->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}
+                                                                    data-original-required="false">
                                                                 <label for="brand_{{ $child->id }}"
                                                                     class="text-gray-700 font-medium">
                                                                     {{ $child->name }}
@@ -207,7 +254,8 @@
                                                                                 id="brand_{{ $grandchild->id }}"
                                                                                 class="border border-gray-300 rounded-md p-2 focus:outline-none"
                                                                                 value="{{ $grandchild->id }}"
-                                                                                {{ in_array($grandchild->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }} data-original-required="true">
+                                                                                {{ in_array($grandchild->id, old('brand_ids', $product->brands->pluck('id')->toArray())) ? 'checked' : '' }}
+                                                                                data-original-required="false">
                                                                             <label for="brand_{{ $grandchild->id }}"
                                                                                 class="text-gray-700 font-medium">
                                                                                 {{ $grandchild->name }}
@@ -242,7 +290,8 @@
                                                             id="category_{{ $category->id }}"
                                                             class="border border-gray-300 rounded-md p-2 focus:outline-none"
                                                             value="{{ $category->id }}"
-                                                            {{ in_array($category->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }} data-original-required="true">
+                                                            {{ in_array($category->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}
+                                                            data-original-required="true">
                                                         <label for="category_{{ $category->id }}"
                                                             class="text-gray-700 font-medium">
                                                             {{ $category->name }}
@@ -270,7 +319,8 @@
                                                                     id="category_{{ $child->id }}"
                                                                     class="border border-gray-300 rounded-md p-2 focus:outline-none"
                                                                     value="{{ $child->id }}"
-                                                                    {{ in_array($child->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }} data-original-required="true">
+                                                                    {{ in_array($child->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}
+                                                                    data-original-required="true">
                                                                 <label for="category_{{ $child->id }}"
                                                                     class="text-gray-700 font-medium">
                                                                     {{ $child->name }}
@@ -295,14 +345,13 @@
                                                                     data-category-id="{{ $child->id }}">
                                                                     @foreach ($child->children as $grandchild)
                                                                         <div class="flex items-center gap-2 ">
-                                                                            <input type="checkbox"
-                                                                                name="category_ids[]"
+                                                                            <input type="checkbox" name="category_ids[]"
                                                                                 id="category_{{ $grandchild->id }}"
                                                                                 class="border border-gray-300 rounded-md p-2 focus:outline-none"
                                                                                 value="{{ $grandchild->id }}"
-                                                                                {{ in_array($grandchild->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }} data-original-required="true">
-                                                                            <label
-                                                                                for="category_{{ $grandchild->id }}"
+                                                                                {{ in_array($grandchild->id, old('category_ids', $product->categories->pluck('id')->toArray())) ? 'checked' : '' }}
+                                                                                data-original-required="true">
+                                                                            <label for="category_{{ $grandchild->id }}"
                                                                                 class="text-gray-700 font-medium">
                                                                                 {{ $grandchild->name }}
                                                                             </label>
@@ -327,7 +376,8 @@
                             <div class="mb-4">
                                 <label class="flex items-center">
                                     <input type="checkbox" name="is_featured" value="1" class="mr-2"
-                                        {{ old('is_featured', $product->is_featured) ? 'checked' : '' }} data-original-required="false">
+                                        {{ old('is_featured', $product->is_featured) ? 'checked' : '' }}
+                                        data-original-required="false">
                                     <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
                                 </label>
                             </div>
@@ -336,7 +386,8 @@
                                 <input type="text" name="meta_keywords" id="meta-keywords"
                                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="Thêm từ khóa (phân cách bằng dấu phẩy)"
-                                    value="{{ old('meta_keywords', $product->meta_keywords) }}" data-original-required="false">
+                                    value="{{ old('meta_keywords', $product->meta_keywords) }}"
+                                    data-original-required="false">
                                 @error('meta_keywords')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
@@ -400,7 +451,8 @@
                                     <label for="mainImage"
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                         ảnh chính</label>
-                                    <input type="hidden" name="existing_main_image" value="{{ $product->images->first()->image_path ?? '' }}">
+                                    <input type="hidden" name="existing_main_image"
+                                        value="{{ $product->images->first()->image_path ?? '' }}">
                                     <input type="file" id="mainImage" name="main_image" class="hidden"
                                         accept="image/*" data-original-required="true">
                                     @error('main_image')
@@ -462,7 +514,8 @@
                                     <input type="number" name="purchase_price" step="0.01"
                                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Giá nhập sản phẩm"
-                                        value="{{ old('purchase_price', $product->purchase_price) }}" required data-original-required="true">
+                                        value="{{ old('purchase_price', $product->purchase_price) }}" required
+                                        data-original-required="true">
                                     @error('purchase_price')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -473,7 +526,8 @@
                                     <input type="number" name="sale_price" step="0.01"
                                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Giá bán sản phẩm"
-                                        value="{{ old('sale_price', $product->sale_price) }}" required data-original-required="true">
+                                        value="{{ old('sale_price', $product->sale_price) }}" required
+                                        data-original-required="true">
                                     @error('sale_price')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -484,7 +538,8 @@
                                     <input type="number" name="stock_total"
                                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Số lượng tồn kho"
-                                        value="{{ old('stock_total', $product->stock_total) }}" required data-original-required="true">
+                                        value="{{ old('stock_total', $product->stock_total) }}" required
+                                        data-original-required="true">
                                     @error('stock_total')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -503,7 +558,8 @@
                                     <input type="number" name="length" step="0.01"
                                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Chiều dài sản phẩm"
-                                        value="{{ old('length', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->length : '') }}" data-original-required="false">
+                                        value="{{ old('length', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->length : '') }}"
+                                        data-original-required="false">
                                     @error('length')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -513,7 +569,8 @@
                                     <input type="number" name="width" step="0.01"
                                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Chiều rộng sản phẩm"
-                                        value="{{ old('width', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->width : '') }}" data-original-required="false">
+                                        value="{{ old('width', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->width : '') }}"
+                                        data-original-required="false">
                                     @error('width')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -523,7 +580,8 @@
                                     <input type="number" name="height" step="0.01"
                                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Chiều cao sản phẩm"
-                                        value="{{ old('height', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->height : '') }}" data-original-required="false">
+                                        value="{{ old('height', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->height : '') }}"
+                                        data-original-required="false">
                                     @error('height')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -533,7 +591,8 @@
                                     <input type="number" name="weight" step="0.01"
                                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Trọng lượng sản phẩm"
-                                        value="{{ old('weight', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->weight : '') }}" data-original-required="false">
+                                        value="{{ old('weight', $product->dimensions->isNotEmpty() ? $product->dimensions->first()->weight : '') }}"
+                                        data-original-required="false">
                                     @error('weight')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -551,13 +610,15 @@
                                 <label class="block text-gray-700 font-medium mb-1">Thuộc tính sản phẩm</label>
                                 @php
                                     // Prepare attributes for JavaScript, including existing product attributes and all available attributes
-                                    $combinedAttributes = $attributes->map(function ($attr) {
-                                        return [
-                                            'id' => $attr->id,
-                                            'name' => $attr->name,
-                                            'values' => $attr->values->pluck('value')->toArray(),
-                                        ];
-                                    })->toArray();
+                                    $combinedAttributes = $attributes
+                                        ->map(function ($attr) {
+                                            return [
+                                                'id' => $attr->id,
+                                                'name' => $attr->name,
+                                                'values' => $attr->values->pluck('value')->toArray(),
+                                            ];
+                                        })
+                                        ->toArray();
 
                                     $allAttrIds = collect($combinedAttributes)->pluck('id')->toArray();
 
@@ -580,7 +641,8 @@
                                             <option value="" disabled {{ empty($attribute->id) ? 'selected' : '' }}>
                                                 Chọn hoặc nhập thuộc tính
                                             </option>
-                                            <option value="new" {{ ($attribute->id ?? '') === 'new' ? 'selected' : '' }}>
+                                            <option value="new"
+                                                {{ ($attribute->id ?? '') === 'new' ? 'selected' : '' }}>
                                                 Tạo thuộc tính mới
                                             </option>
                                             @foreach ($combinedAttributes as $attr)
@@ -593,11 +655,13 @@
                                         <input type="text" name="attributes[{{ $index }}][name]"
                                             value="{{ old("attributes.$index.name", $attribute->name ?? '') }}"
                                             class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name {{ ($attribute->id ?? '') === 'new' ? '' : 'hidden' }}"
-                                            placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)" data-original-required="true">
+                                            placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)"
+                                            data-original-required="true">
                                         <input type="text" name="attributes[{{ $index }}][values]"
                                             value="{{ old("attributes.$index.values", $attribute->values->isNotEmpty() ? $attribute->values->pluck('value')->implode(', ') : '') }}"
                                             class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values"
-                                            placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" required data-original-required="true">
+                                            placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" required
+                                            data-original-required="true">
                                         <button type="button"
                                             class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
                                     </div>
@@ -656,8 +720,8 @@
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                                                     <div>
                                                         <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                                        <input type="number" name="variants[{{ $index }}][price]"
-                                                            step="0.01"
+                                                        <input type="number"
+                                                            name="variants[{{ $index }}][price]" step="0.01"
                                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                             placeholder="Nhập giá gốc"
                                                             value="{{ old("variants.$index.price", $variant->price) }}"
@@ -709,16 +773,18 @@
                                                             name="variants[{{ $index }}][length]" step="0.01"
                                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                             placeholder="Chiều dài"
-                                                            value="{{ old("variants.$index.length", optional($variant->dimensions)->length ?? '') }}" data-original-required="false">
+                                                            value="{{ old("variants.$index.length", optional($variant->dimensions)->length ?? '') }}"
+                                                            data-original-required="false">
                                                     </div>
                                                     <div>
                                                         <label class="block text-gray-700 font-medium mb-1">Chiều rộng
                                                             (inch)</label>
-                                                        <input type="number" name="variants[{{ $index }}][width]"
-                                                            step="0.01"
+                                                        <input type="number"
+                                                            name="variants[{{ $index }}][width]" step="0.01"
                                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                             placeholder="Chiều rộng"
-                                                            value="{{ old("variants.$index.width", optional($variant->dimensions)->width ?? '') }}" data-original-required="false">
+                                                            value="{{ old("variants.$index.width", optional($variant->dimensions)->width ?? '') }}"
+                                                            data-original-required="false">
                                                     </div>
                                                     <div>
                                                         <label class="block text-gray-700 font-medium mb-1">Chiều cao
@@ -727,7 +793,8 @@
                                                             name="variants[{{ $index }}][height]" step="0.01"
                                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                             placeholder="Chiều cao"
-                                                            value="{{ old("variants.$index.height", optional($variant->dimensions)->height ?? '') }}" data-original-required="false">
+                                                            value="{{ old("variants.$index.height", optional($variant->dimensions)->height ?? '') }}"
+                                                            data-original-required="false">
                                                     </div>
                                                     <div>
                                                         <label class="block text-gray-700 font-medium mb-1">Trọng lượng
@@ -736,7 +803,8 @@
                                                             name="variants[{{ $index }}][weight]" step="0.01"
                                                             class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                             placeholder="Trọng lượng"
-                                                            value="{{ old("variants.$index.weight", optional($variant->dimensions)->weight ?? '') }}" data-original-required="false">
+                                                            value="{{ old("variants.$index.weight", optional($variant->dimensions)->weight ?? '') }}"
+                                                            data-original-required="false">
                                                     </div>
                                                 </div>
                                                 <!-- Hiển thị thuộc tính của biến thể -->
@@ -805,13 +873,15 @@
 
     @php
         // Prepare attributes for JavaScript, including existing product attributes and all available attributes
-        $combinedAttributes = $attributes->map(function ($attr) {
-            return [
-                'id' => $attr->id,
-                'name' => $attr->name,
-                'values' => $attr->values->pluck('value')->toArray(),
-            ];
-        })->toArray();
+        $combinedAttributes = $attributes
+            ->map(function ($attr) {
+                return [
+                    'id' => $attr->id,
+                    'name' => $attr->name,
+                    'values' => $attr->values->pluck('value')->toArray(),
+                ];
+            })
+            ->toArray();
 
         $allAttrIds = collect($combinedAttributes)->pluck('id')->toArray();
 
@@ -1060,11 +1130,11 @@
                             <div class="mb-4">
                                 <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                                 ${variant.map((value, attrIndex) => `
-                                                        <div class="flex items-center gap-4 mb-2">
-                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                        </div>
-                                                    `).join('')}
+                                                                <div class="flex items-center gap-4 mb-2">
+                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                </div>
+                                                            `).join('')}
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
@@ -1156,7 +1226,7 @@
                             input.value = '';
                             uploadIcon.src = "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
                             uploadIcon.alt = 'Upload Icon';
-                             if (existingMainImageInput) {
+                            if (existingMainImageInput) {
                                 uploadIcon.src = `{{ asset('storage/') }}/${existingMainImageInput.value}`;
                                 uploadIcon.alt = 'Uploaded Image';
                             }
@@ -1174,8 +1244,8 @@
                     } else {
                         // If no file is selected, revert to original image or default icon
                         if (existingMainImageInput && existingMainImageInput.value) {
-                             uploadIcon.src = `{{ asset('storage/') }}/${existingMainImageInput.value}`;
-                             uploadIcon.alt = 'Uploaded Image';
+                            uploadIcon.src = `{{ asset('storage/') }}/${existingMainImageInput.value}`;
+                            uploadIcon.alt = 'Uploaded Image';
                         } else {
                             uploadIcon.src = "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
                             uploadIcon.alt = 'Upload Icon';
@@ -1214,7 +1284,8 @@
                         const reader = new FileReader();
                         reader.onload = event => {
                             const imgContainer = document.createElement('div');
-                            imgContainer.classList.add('relative', 'w-24', 'h-24', 'new-image-preview'); // Add class for new images
+                            imgContainer.classList.add('relative', 'w-24', 'h-24',
+                            'new-image-preview'); // Add class for new images
                             imgContainer.innerHTML = `
                                 <img src="${event.target.result}" class="w-full h-full object-cover rounded-md border border-gray-300">
                                 <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-full" onclick="this.parentElement.remove()">✖</button>
@@ -1251,7 +1322,8 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const imgContainer = document.createElement('div');
-                        imgContainer.classList.add('relative', 'w-24', 'h-24', 'new-variant-image-preview'); // Add class for new variant images
+                        imgContainer.classList.add('relative', 'w-24', 'h-24',
+                        'new-variant-image-preview'); // Add class for new variant images
                         imgContainer.innerHTML = `
                             <img src="${e.target.result}" class="w-full h-full object-cover rounded-md border border-gray-300">
                             <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-full" onclick="this.parentElement.remove()">✖</button>
@@ -1294,7 +1366,8 @@
                     // If the current image is the one just removed, and no new file is selected, revert to default icon
                     if (currentMainImageSrc !== defaultUploadIconSrc && mainImageInput.files.length === 0) {
                         // If it was an existing image that was removed, restore the previous one if it exists
-                        if (existingMainImageInput && existingMainImageInput.value && !document.querySelector('input[name="deleted_images[]"][value="' + existingMainImageInput.value + '"]')) {
+                        if (existingMainImageInput && existingMainImageInput.value && !document.querySelector(
+                                'input[name="deleted_images[]"][value="' + existingMainImageInput.value + '"]')) {
                             uploadIcon1.src = `{{ asset('storage/') }}/${existingMainImageInput.value}`;
                             uploadIcon1.alt = 'Uploaded Image';
                         } else {
@@ -1421,7 +1494,8 @@
                 }
                 debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
                 const brandCheckboxes = document.querySelectorAll('#tab-general-details input[name="brand_ids[]"]:checked');
-                const categoryCheckboxes = document.querySelectorAll('#tab-general-details input[name="category_ids[]"]:checked');
+                const categoryCheckboxes = document.querySelectorAll(
+                    '#tab-general-details input[name="category_ids[]"]:checked');
                 let isValid = true;
 
                 // Kiểm tra loại sản phẩm
@@ -1434,21 +1508,35 @@
                 const productType = productTypeInput ? productTypeInput.value : null;
 
                 // Common validations (now in General Details tab)
-                if (!document.querySelector('input[name="name"]').value.trim()) {
+                const nameInput = document.querySelector('input[name="name"]');
+                if (!nameInput.value.trim()) {
                     e.preventDefault();
                     alert('Vui lòng nhập tên sản phẩm.');
                     isValid = false;
+                } else if (nameInput.value.trim().length > 100) {
+                    e.preventDefault();
+                    alert('Tên sản phẩm không được vượt quá 100 ký tự.');
+                    isValid = false;
+                } else {
+                    // Kiểm tra tên sản phẩm đã tồn tại
+                    const nameError = nameInput.parentNode.querySelector('.field-error');
+                    if (nameError && nameError.textContent.includes('đã tồn tại')) {
+                        e.preventDefault();
+                        alert('Tên sản phẩm đã tồn tại trong shop của bạn.');
+                        isValid = false;
+                    }
                 }
                 if (!document.querySelector('input[name="sku"]').value.trim()) {
                     e.preventDefault();
                     alert('Vui lòng nhập mã SKU.');
                     isValid = false;
                 }
-                if (brandCheckboxes.length === 0) {
-                    e.preventDefault();
-                    alert('Vui lòng chọn ít nhất một thương hiệu.');
-                    isValid = false;
-                }
+                // Thương hiệu không bắt buộc nữa
+                // if (brandCheckboxes.length === 0) {
+                //     e.preventDefault();
+                //     alert('Vui lòng chọn ít nhất một thương hiệu.');
+                //     isValid = false;
+                // }
                 if (categoryCheckboxes.length === 0) {
                     e.preventDefault();
                     alert('Vui lòng chọn ít nhất một danh mục.');
@@ -1475,12 +1563,14 @@
                         alert('Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
                         isValid = false;
                     }
-                    if (!purchasePriceInput || !purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(purchasePriceInput.value) < 0) {
+                    if (!purchasePriceInput || !purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
+                            purchasePriceInput.value) < 0) {
                         e.preventDefault();
                         alert('Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
                         isValid = false;
                     }
-                    if (!salePriceInput || !salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput.value) < 0) {
+                    if (!salePriceInput || !salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
+                            .value) < 0) {
                         e.preventDefault();
                         alert('Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
                         isValid = false;
@@ -1491,7 +1581,8 @@
                         isValid = false;
                     }
                 } else if (productType === 'variant') {
-                    const attributeSelects = document.querySelectorAll('#tab-attributes-variants .attribute-row .attribute-select');
+                    const attributeSelects = document.querySelectorAll(
+                        '#tab-attributes-variants .attribute-row .attribute-select');
                     const variantItems = document.querySelectorAll('#variant-container > .variant-item');
 
                     // Check attributes
@@ -1524,7 +1615,8 @@
                     } else {
                         variantItems.forEach((item, index) => {
                             const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
-                            const purchasePriceInput = item.querySelector(`input[name="variants[${index}][purchase_price]"]`);
+                            const purchasePriceInput = item.querySelector(
+                                `input[name="variants[${index}][purchase_price]"]`);
                             const salePriceInput = item.querySelector(`input[name="variants[${index}][sale_price]"]`);
                             const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
                             const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
@@ -1534,12 +1626,14 @@
                                 alert(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
                                 isValid = false;
                             }
-                            if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(purchasePriceInput.value) < 0) {
+                            if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
+                                    purchasePriceInput.value) < 0) {
                                 e.preventDefault();
                                 alert(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
                                 isValid = false;
                             }
-                            if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput.value) < 0) {
+                            if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
+                                .value) < 0) {
                                 e.preventDefault();
                                 alert(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
                                 isValid = false;
@@ -1564,6 +1658,68 @@
                 }
             }
 
+
+            // Hàm hiển thị lỗi field
+            function showFieldError(field, message) {
+                clearFieldError(field);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'field-error';
+                errorDiv.textContent = message;
+                field.parentNode.appendChild(errorDiv);
+                field.classList.add('border-red-500');
+            }
+
+            // Hàm xóa lỗi field
+            function clearFieldError(field) {
+                const existingError = field.parentNode.querySelector('.field-error');
+                if (existingError) {
+                    existingError.remove();
+                }
+                field.classList.remove('border-red-500');
+            }
+
+            // Hàm kiểm tra tên sản phẩm đã tồn tại
+            function checkProductName(name) {
+                if (!name.trim()) return;
+
+                const nameInput = document.querySelector('input[name="name"]');
+                const nameContainer = nameInput.parentNode;
+
+                // Tạo hoặc hiển thị spinner
+                let spinner = nameContainer.querySelector('.name-check-spinner');
+                if (!spinner) {
+                    spinner = document.createElement('div');
+                    spinner.className = 'name-check-spinner';
+                    spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    nameContainer.appendChild(spinner);
+                }
+                spinner.style.display = 'block'; // Show spinner
+
+                fetch('{{ route('seller.products.check-name') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            product_id: {{ $product->id }} // Include product ID for edit scenario
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        spinner.style.display = 'none'; // Hide spinner on success
+                        if (data.exists) {
+                            showFieldError(nameInput, data.message);
+                        } else {
+                            clearFieldError(nameInput);
+                        }
+                    })
+                    .catch(error => {
+                        spinner.style.display = 'none'; // Hide spinner on error
+                        console.error('Error checking product name:', error);
+                    });
+            }
 
             document.addEventListener('DOMContentLoaded', function() {
                 debugLog('DOM fully loaded');
@@ -1604,6 +1760,62 @@
                 const productForm = document.getElementById('product-form');
                 if (productForm) {
                     productForm.addEventListener('submit', validateForm);
+                }
+
+                // Validation cho tên sản phẩm
+                const nameInput = document.querySelector('input[name="name"]');
+                const nameCharCount = document.getElementById('name-char-count');
+
+                if (nameInput) {
+                    let nameCheckTimeout;
+
+                    // Cập nhật character counter
+                    const updateCharCount = () => {
+                        const length = nameInput.value.length;
+                        nameCharCount.textContent = length;
+
+                        // Thay đổi màu khi gần đạt giới hạn
+                        if (length >= 90) {
+                            nameCharCount.classList.add('text-red-500');
+                            nameCharCount.classList.remove('text-gray-400');
+                        } else if (length >= 80) {
+                            nameCharCount.classList.add('text-yellow-500');
+                            nameCharCount.classList.remove('text-gray-400', 'text-red-500');
+                        } else {
+                            nameCharCount.classList.remove('text-yellow-500', 'text-red-500');
+                            nameCharCount.classList.add('text-gray-400');
+                        }
+                    };
+
+                    // Cập nhật counter khi load trang
+                    updateCharCount();
+
+                    nameInput.addEventListener('input', function() {
+                        // Cập nhật character counter
+                        updateCharCount();
+
+                        // Clear timeout cũ
+                        clearTimeout(nameCheckTimeout);
+
+                        // Clear error nếu có
+                        clearFieldError(this);
+
+                        // Set timeout mới để kiểm tra sau 500ms
+                        nameCheckTimeout = setTimeout(() => {
+                            checkProductName(this.value.trim());
+                        }, 500);
+                    });
+
+                    nameInput.addEventListener('blur', function() {
+                        if (!this.value.trim()) {
+                            showFieldError(this, 'Vui lòng nhập tên sản phẩm.');
+                        } else if (this.value.trim().length > 100) {
+                            showFieldError(this, 'Tên sản phẩm không được vượt quá 100 ký tự.');
+                        } else {
+                            // Kiểm tra ngay khi blur
+                            checkProductName(this.value.trim());
+                        }
+                    });
                 }
 
                 // Xử lý SEO preview
@@ -1700,13 +1912,14 @@
                 initializeToggleButtons(); // For existing variants on load
                 initializeSubCategoryToggles();
                 initializeSubBrandToggles();
-                
+
                 // Ẩn/hiện thuộc tính và biến thể theo loại sản phẩm
                 const productTypeRadios = document.querySelectorAll('input[name="product_type"]');
                 const generalDetailsTabButton = document.querySelector('.tab-button[data-tab="general-details"]');
                 const pricingInventoryTabButton = document.querySelector('.tab-button[data-tab="pricing-inventory"]');
                 const shippingTabButton = document.querySelector('.tab-button[data-tab="shipping"]');
-                const attributesVariantsTabButton = document.querySelector('.tab-button[data-tab="attributes-variants"]');
+                const attributesVariantsTabButton = document.querySelector(
+                    '.tab-button[data-tab="attributes-variants"]');
 
                 const tabGeneralDetails = document.getElementById('tab-general-details');
                 const tabPricingInventory = document.getElementById('tab-pricing-inventory');
@@ -1727,7 +1940,7 @@
                     pricingInventoryTabButton.classList.remove('active');
                     shippingTabButton.classList.remove('active');
                     attributesVariantsTabButton.classList.remove('active');
-                    
+
                     // Helper to manage required attributes and disabled state
                     function setFieldsState(elements, isRequired, isDisabled) {
                         elements.forEach(el => {
@@ -1743,10 +1956,14 @@
                     }
 
                     // Get all relevant inputs within tabs
-                    const generalDetailsInputs = document.querySelectorAll('#tab-general-details input:not([type="hidden"]), #tab-general-details select, #tab-general-details textarea');
-                    const pricingInputs = document.querySelectorAll('#tab-pricing-inventory input:not([type="hidden"])');
+                    const generalDetailsInputs = document.querySelectorAll(
+                        '#tab-general-details input:not([type="hidden"]), #tab-general-details select, #tab-general-details textarea'
+                        );
+                    const pricingInputs = document.querySelectorAll(
+                    '#tab-pricing-inventory input:not([type="hidden"])');
                     const shippingInputs = document.querySelectorAll('#tab-shipping input:not([type="hidden"])');
-                    const attributesVariantsInputs = document.querySelectorAll('#tab-attributes-variants input:not([type="hidden"]), #tab-attributes-variants select');
+                    const attributesVariantsInputs = document.querySelectorAll(
+                        '#tab-attributes-variants input:not([type="hidden"]), #tab-attributes-variants select');
 
 
                     if (selectedProductType === 'variant') {
@@ -1787,12 +2004,14 @@
                 }
 
                 productTypeRadios.forEach(radio => radio.addEventListener('change', toggleProductTypeSections));
-                
+
                 // Store original required state for inputs inside tabs, so we can re-apply/remove dynamically
-                document.querySelectorAll('#tab-general-details input, #tab-general-details select, #tab-general-details textarea, #tab-pricing-inventory input, #tab-shipping input, #tab-attributes-variants input, #tab-attributes-variants select, #tab-attributes-variants textarea').forEach(input => {
+                document.querySelectorAll(
+                    '#tab-general-details input, #tab-general-details select, #tab-general-details textarea, #tab-pricing-inventory input, #tab-shipping input, #tab-attributes-variants input, #tab-attributes-variants select, #tab-attributes-variants textarea'
+                    ).forEach(input => {
                     if (input.required || input.hasAttribute('data-original-required')) {
                         // If it was already required in HTML, or explicitly marked as original-required
-                        input.setAttribute('data-original-required', input.required ? 'true' : 'false'); 
+                        input.setAttribute('data-original-required', input.required ? 'true' : 'false');
                     } else {
                         // For fields that were not originally required and don't have the attribute, set it to false.
                         input.setAttribute('data-original-required', 'false');
@@ -1809,15 +2028,17 @@
 
                 tabButtons.forEach(button => {
                     button.addEventListener('click', () => {
-                        const selectedProductType = document.querySelector('input[name="product_type"]:checked').value;
+                        const selectedProductType = document.querySelector(
+                            'input[name="product_type"]:checked').value;
                         const targetTabId = button.dataset.tab;
                         let shouldSwitch = true;
 
                         // Prevent switching to a tab not relevant for the current product type
                         if (selectedProductType === 'simple' && targetTabId === 'attributes-variants') {
-                            shouldSwitch = false; 
+                            shouldSwitch = false;
                         }
-                        if (selectedProductType === 'variant' && (targetTabId === 'pricing-inventory' || targetTabId === 'shipping')) {
+                        if (selectedProductType === 'variant' && (targetTabId === 'pricing-inventory' ||
+                                targetTabId === 'shipping')) {
                             // Allow switching, but the fields will remain disabled/unrequired by toggleProductTypeSections
                             // This case is already handled by setFieldsState, so just allow the tab switch.
                         }
@@ -1828,29 +2049,32 @@
 
                             button.classList.add('active');
                             document.getElementById(`tab-${targetTabId}`).classList.remove('hidden');
-                            
+
                             // It's important NOT to call toggleProductTypeSections() here directly,
                             // as it will reset the active tab. The product type change listener
                             // already handles the initial state and the field enabling/disabling.
                         } else {
                             // If switch is prevented, activate the currently displayed tab button
-                            const currentlyDisplayedTab = document.querySelector('.tab-content:not(.hidden)');
+                            const currentlyDisplayedTab = document.querySelector(
+                                '.tab-content:not(.hidden)');
                             if (currentlyDisplayedTab) {
-                                 document.querySelector(`.tab-button[data-tab="${currentlyDisplayedTab.id.replace('tab-', '')}"]`).classList.add('active');
+                                document.querySelector(
+                                    `.tab-button[data-tab="${currentlyDisplayedTab.id.replace('tab-', '')}"]`
+                                    ).classList.add('active');
                             }
                         }
                     });
                 });
-                
+
                 // Set initial active tab on page load based on product type
                 // After initial toggleProductTypeSections() run, this will ensure the correct tab is visibly active.
                 const initialProductType = document.querySelector('input[name="product_type"]:checked').value;
                 if (initialProductType === 'variant') {
                     // Default to General Details, but show Attributes & Variants if it's the only option for variants
                     if (attributesVariantsTabButton.style.display !== 'none') {
-                         document.querySelector('.tab-button[data-tab="attributes-variants"]').click();
+                        document.querySelector('.tab-button[data-tab="attributes-variants"]').click();
                     } else {
-                         document.querySelector('.tab-button[data-tab="general-details"]').click();
+                        document.querySelector('.tab-button[data-tab="general-details"]').click();
                     }
                 } else { // simple
                     document.querySelector('.tab-button[data-tab="general-details"]').click();

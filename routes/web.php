@@ -332,6 +332,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::get('/{id}', [ProductControllerSeller::class, 'show'])->name('seller.products.show');
         Route::get('/api/attribute-values', [ProductControllerSeller::class, 'getAttributeValues']);
         Route::post('/upload', [ProductControllerSeller::class, 'uploadImage'])->name('seller.upload.image');
+        Route::post('/check-name', [ProductControllerSeller::class, 'checkProductName'])->name('seller.products.check-name');
 
         Route::get('/simple', [ProductController::class, 'simple'])->name('product.simple');
         Route::get('/variable', [ProductController::class, 'variable'])->name('product.variable');
