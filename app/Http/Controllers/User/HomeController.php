@@ -23,6 +23,8 @@ use App\Models\OrderReview;
 use App\Models\Post;
 use App\Models\Combo;
 use App\Models\Shop;
+use App\Models\AdsCampaign;
+use App\Models\AdsCampaignItem;
 
 class HomeController extends Controller
 {
@@ -92,9 +94,11 @@ class HomeController extends Controller
             ->orderByDesc('updated_at')
             ->get();
 
-        // Sản phẩm trending (bán nhiều nhất)
+        // Sản phẩm được xem nhiều nhất
         $trendingProducts = Product::with(['defaultImage', 'categories', 'variants'])
-            ->orderByDesc('sold_quantity')
+            ->whereHas('viewHistory')
+            ->withCount('viewHistory')
+            ->orderByDesc('view_history_count')
             ->where('status', 'active')
             ->take(10)
             ->get();
@@ -164,6 +168,20 @@ class HomeController extends Controller
             ->where('status', 'active')
             ->orderByDesc('created_at')
             ->take(8)
+            ->get();
+            
+        // Lấy sản phẩm quảng cáo từ ads_campaigns
+        $advertisedProducts = AdsCampaignItem::with(['product.defaultImage', 'product.shop', 'adsCampaign.shop'])
+            ->whereHas('adsCampaign', function ($query) {
+                $query->where('status', 'active')
+                      ->where('start_date', '<=', now())
+                      ->where('end_date', '>=', now());
+            })
+            ->whereHas('product', function ($query) {
+                $query->where('status', 'active');
+            })
+            ->inRandomOrder()
+            ->take(6)
             ->get();
         // Lấy và tính toán xếp hạng shop
         $rankingShops = Shop::where('shop_status', 'active')
@@ -242,7 +260,8 @@ class HomeController extends Controller
             'testimonials',
             'blogs',
             'user',
-            'comboProducts'
+            'comboProducts',
+            'advertisedProducts'
         ));
     }
 }
