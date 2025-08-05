@@ -72,12 +72,12 @@
 
         /* Hiệu ứng lửa cho top 1 */
         .flame-effect {
-            background: linear-gradient(45deg, 
-                transparent 20%, 
-                rgba(255, 107, 53, 0.7) 35%, 
-                rgba(239, 50, 72, 0.9) 50%, 
-                rgba(255, 107, 53, 0.7) 65%, 
-                transparent 80%);
+            background: linear-gradient(45deg,
+                    transparent 20%,
+                    rgba(255, 107, 53, 0.7) 35%,
+                    rgba(239, 50, 72, 0.9) 50%,
+                    rgba(255, 107, 53, 0.7) 65%,
+                    transparent 80%);
             animation: flame-glow 1.5s ease-in-out infinite alternate;
             pointer-events: none;
         }
@@ -87,15 +87,14 @@
                 opacity: 0.6;
                 transform: scale(1);
             }
+
             100% {
                 opacity: 1;
                 transform: scale(1.08);
             }
         }
 
-        .flame-border {
-            box-shadow: 0 0 15px rgba(239, 50, 72, 0.6), 0 0 25px rgba(255, 107, 53, 0.4);
-        }
+
 
         /* Hiệu ứng lửa thực tế */
         .flame-particle {
@@ -119,10 +118,12 @@
                 opacity: 0.4;
                 transform: scale(0.8) translateY(0px);
             }
+
             50% {
                 opacity: 0.8;
                 transform: scale(1.1) translateY(-2px);
             }
+
             100% {
                 opacity: 1;
                 transform: scale(1) translateY(-1px);
@@ -132,6 +133,23 @@
         /* Shop ranking container */
         .shop-ranking-container {
             padding-top: 0.5rem;
+        }
+
+        /* Đồng nhất chiều cao tên sản phẩm */
+        .showcase-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 3rem;
+            line-height: 1.4;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .product-minimal .showcase-title {
+            min-height: 2.5rem;
         }
 
 
@@ -161,6 +179,16 @@
                 min-width: unset;
                 max-width: unset;
             }
+        }
+
+        .shop-title {
+            -webkit-text-stroke-width: 0.5px;
+            -webkit-text-stroke-color: rgb(0, 0, 0);
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
         }
     </style>
 @endpush
@@ -600,26 +628,30 @@
 
         <div class="product-container">
             <div class="container">
-                <div class="sidebar has-scrollbar" data-mobile-menu>
-                    <div class="bg-white rounded-xl border border-gray-100 p-6 mt-8 mb-8">
+                <div class="sidebar has-scrollbar relative" data-mobile-menu>
+                    <button class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-0"
+                        data-mobile-menu-close-btn>
+                        <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
+                    </button>
+                    <div class="shop-container-bg border border-orange-200 px-6 pt-4 pb-6 mb-8 relative mt-10 lg:mt-0">
                         <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <ion-icon name="trending-up" class="text-green-500 text-xl"></ion-icon>
-                                Shop Bán Chạy Nhất
+                            <h2
+                                class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-between gap-2 w-full">
+                                <span class="shop-title">Shop Bán Chạy</span>
+                                <ion-icon name="flame"
+                                    class="text-orange-500 text-xl bg-white rounded-full p-2"></ion-icon>
                             </h2>
-                            <button class="sidebar-close-btn p-2 hover:bg-gray-100 rounded-full transition-colors"
-                                data-mobile-menu-close-btn>
-                                <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
-                            </button>
+
                         </div>
 
+                        <div class="absolute left-0 border border-dashed border-orange-200 w-full h-[1px]"></div>
+
                         <!-- Header với legend -->
-                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 mb-4">
-                            <h3 class="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                <ion-icon name="bar-chart" class="text-green-500 text-sm"></ion-icon>
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 mb-4 mt-10">
+                            <h3 class="text-sm pl-3 pr-3 font-semibold text-gray-800 mb-2 flex items-center gap-2">
                                 Top Shop theo doanh số bán hàng
                             </h3>
-                            <div class="flex flex-wrap gap-1">
+                            <div class="grid grid-cols-2 gap-x-0 gap-y-2 justify-items-center">
                                 <span
                                     class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 flex-shrink-0 border border-yellow-300">
                                     <ion-icon name="trophy" class="mr-1 text-xs"></ion-icon>
@@ -638,7 +670,7 @@
                                 <span
                                     class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 flex-shrink-0 border border-blue-300">
                                     <ion-icon name="star" class="mr-1 text-xs"></ion-icon>
-                                    Top 4+
+                                    Top 4
                                 </span>
                             </div>
                         </div>
@@ -706,56 +738,67 @@
                                             </span>
                                         </div>
 
-                                                                            <!-- Stats -->
-                                    <div class="text-center p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded border border-green-200 mb-2">
-                                        <!-- Header với icon và label -->
-                                        <div class="flex items-center justify-center gap-1 mb-1">
-                                            <ion-icon name="bag-check-outline" class="text-[#ef3248] text-xs"></ion-icon>
-                                            <span class="text-xs font-medium text-gray-800">Đã bán</span>
-                                        </div>
-                                        
-                                        <!-- Số lượng bán -->
-                                        <p class="text-lg font-bold text-[#ef3248] mb-2">
-                                            {{ number_format($shop->total_products_sold) }}
-                                        </p>
-                                        
-                                        <!-- Progress bar -->
-                                        <div class="relative h-2 bg-gray-200 rounded-full overflow-hidden {{ $index === 0 ? 'flame-border' : '' }}">
-                                            @php
-                                                $maxSales = max($rankingShops->pluck('total_products_sold')->toArray());
-                                                $percentage = $maxSales > 0 ? ($shop->total_products_sold / $maxSales) * 100 : 0;
-                                                
-                                                // Phối màu chủ đạo với gradient đẹp
-                                                $barColor = 'bg-gradient-to-r from-[#ef3248] to-[#ff6b35]';
-                                            @endphp
-                                            <div class="h-full {{ $barColor }} rounded-full transition-all duration-300 relative" 
-                                                 style="width: {{ min($percentage, 100) }}%">
-                                                @if($shop->total_products_sold >= 100)
-                                                    <div class="absolute -right-1 -top-0.5">
-                                                        <ion-icon name="flame" class="text-orange-500 text-xs"></ion-icon>
+                                        <!-- Stats -->
+                                        <div
+                                            class="text-center p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded border border-green-200 mb-2">
+                                            <!-- Header với icon và label -->
+                                            <div class="flex items-center justify-center gap-1 mb-1">
+                                                <ion-icon name="bag-check-outline"
+                                                    class="text-[#ef3248] text-xs"></ion-icon>
+                                                <span class="text-xs font-medium text-gray-800">Đã bán</span>
+                                            </div>
+
+                                            <!-- Số lượng bán -->
+                                            <p class="text-lg font-bold text-[#ef3248] mb-2">
+                                                {{ number_format($shop->total_products_sold) }}
+                                            </p>
+
+                                            <!-- Progress bar -->
+                                            <div class="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                @php
+                                                    $maxSales = max(
+                                                        $rankingShops->pluck('total_products_sold')->toArray(),
+                                                    );
+                                                    $percentage =
+                                                        $maxSales > 0
+                                                            ? ($shop->total_products_sold / $maxSales) * 100
+                                                            : 0;
+
+                                                    // Phối màu chủ đạo với gradient đẹp
+                                                    $barColor = 'bg-gradient-to-r from-[#ef3248] to-[#ff6b35]';
+                                                @endphp
+                                                <div class="h-full {{ $barColor }} rounded-full transition-all duration-300 relative"
+                                                    style="width: {{ min($percentage, 100) }}%">
+                                                    @if ($shop->total_products_sold >= 100)
+                                                        <div class="absolute -right-1 -top-0.5">
+                                                            <ion-icon name="flame"
+                                                                class="text-orange-500 text-xs"></ion-icon>
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                <!-- Hiệu ứng lửa xung quanh cho top 1 -->
+                                                @if ($index === 0)
+                                                    <div class="absolute inset-0 rounded-full flame-effect"></div>
+                                                    <!-- Các ngọn lửa nhỏ -->
+                                                    <div class="absolute -top-1 left-1 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-orange-500 text-xs"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -top-1 right-1 flame-particle">
+                                                        <ion-icon name="flame" class="text-red-500 text-xs"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -bottom-1 left-3 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-yellow-500 text-xs"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -bottom-1 right-3 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-orange-500 text-xs"></ion-icon>
                                                     </div>
                                                 @endif
                                             </div>
-                                            
-                                            <!-- Hiệu ứng lửa xung quanh cho top 1 -->
-                                            @if($index === 0)
-                                                <div class="absolute inset-0 rounded-full flame-effect"></div>
-                                                <!-- Các ngọn lửa nhỏ -->
-                                                <div class="absolute -top-1 left-1 flame-particle">
-                                                    <ion-icon name="flame" class="text-orange-500 text-xs"></ion-icon>
-                                                </div>
-                                                <div class="absolute -top-1 right-1 flame-particle">
-                                                    <ion-icon name="flame" class="text-red-500 text-xs"></ion-icon>
-                                                </div>
-                                                <div class="absolute -bottom-1 left-3 flame-particle">
-                                                    <ion-icon name="flame" class="text-yellow-500 text-xs"></ion-icon>
-                                                </div>
-                                                <div class="absolute -bottom-1 right-3 flame-particle">
-                                                    <ion-icon name="flame" class="text-orange-500 text-xs"></ion-icon>
-                                                </div>
-                                            @endif
                                         </div>
-                                    </div>
 
                                         <!-- Action button -->
                                         <a href="{{ route('shop.show', $shop->id) }}"
@@ -782,7 +825,7 @@
                                                 width="75" height="75" class="showcase-img">
                                         </a>
                                         <div class="showcase-content">
-                                            <a href="{{ route('product.show', $product->slug) }}">
+                                            <a href="{{ route('product.show', $product->slug) }}" class="h-[30px]">
                                                 <h4 class="showcase-title">{{ $product->name }}</h4>
                                             </a>
                                             <div class="showcase-rating">
@@ -798,9 +841,9 @@
                                             </div>
                                             <div class="price-box">
                                                 @if ($product->display_original_price && $product->display_price < $product->display_original_price)
-                                                    <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                                     <p class="price">
                                                         {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
+                                                    <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                                 @else
                                                     <p class="price">
                                                         {{ number_format($product->display_price, 0, ',', '.') }}₫
@@ -899,10 +942,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
@@ -929,10 +974,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
@@ -955,9 +1002,9 @@
                         </div>
 
                         <div class="product-showcase">
-                            <h2 class="title">Đang thịnh hành</h2>
+                            <h2 class="title">Được xem nhiều</h2>
                             @if ($trendingProducts->isEmpty())
-                                <p>Hiện chưa có sản phẩm nào thịnh hành.</p>
+                                <p class="mt-4">Hiện chưa có sản phẩm nào được xem.</p>
                             @else
                                 @php
                                     $trendingProducts = $trendingProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
@@ -974,10 +1021,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
@@ -1004,10 +1053,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
@@ -1049,10 +1100,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="showcase-rating">
@@ -1088,10 +1141,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="showcase-rating">
@@ -1163,11 +1218,12 @@
                                         </div>
                                     </div>
                                     <div class="showcase-content">
-                                        <a href="#" class="showcase-category">
+                                        <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                            class="showcase-category">
                                             {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                         </a>
-                                        <a href="{{ route('product.show', $product->slug) }}">
-                                            <h3 class="showcase-title">{{ $product->name }}</h3>
+                                        <a href="{{ route('product.show', $product->slug) }}" class="h-[30px]">
+                                            <h3 class="showcase-title truncate">{{ $product->name }}</h3>
                                         </a>
                                         <div class="showcase-rating">
                                             @php
@@ -1182,7 +1238,8 @@
                                                 <p class="price">
                                                     {{ number_format($product->display_price, 0, ',', '.') }}₫
                                                 </p>
-                                                <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
+                                                <del
+                                                    class="truncate text-xs">{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                             @else
                                                 <p class="price">
                                                     {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
@@ -1204,21 +1261,24 @@
 
                     @foreach ($testimonials as $review)
                         <div class="testimonial-card">
-                            @include('partials.user-avatar', [
-                                'user' => $review->user,
-                                'size' => '2xl',
-                                'className' => 'testimonial-banner',
-                            ])
+                            <div class="flex items-center gap-2">
+                                @include('partials.user-avatar', [
+                                    'user' => $review->user,
+                                    'size' => '2xl',
+                                    'className' => 'testimonial-banner',
+                                ])
+                            </div>
 
-                            <p class="testimonial-name">{{ $review->user->name ?? 'Khách hàng ẩn danh' }}</p>
-                            <p class="testimonial-title">
+                            <p class="testimonial-name truncate">{{ $review->user->username ?? 'Khách hàng ẩn danh' }}
+                            </p>
+                            <p class="testimonial-title truncate">
                                 {{ $review->product->name ?? 'Sản phẩm đã mua' }}
                             </p>
 
                             <img src="{{ asset('assets/images/icons/quotes.svg') }}" alt="quotation"
                                 class="quotation-img" width="26">
 
-                            <p class="testimonial-desc">
+                            <p class="testimonial-desc truncate">
                                 {{ Str::limit($review->comment, 120) }}
                             </p>
                         </div>
@@ -1229,14 +1289,78 @@
                 </div>
 
                 <div class="cta-container">
-                    <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection" class="cta-banner">
-                    <a href="#" class="cta-content">
-                        <p class="discount">Giảm 25%</p>
-                        <h2 class="cta-title">Bộ sưu tập hè</h2>
-                        <p class="cta-text">Bắt đầu từ 10.000₫</p>
-                        <button class="cta-btn">Mua ngay</button>
-                    </a>
+                    @if ($advertisedProducts->isNotEmpty())
+                        <div class="advertised-products-container">
+                            <h3 class="advertised-title">Sản phẩm quảng cáo</h3>
+
+                            <!-- Slides Container -->
+                            <div class="advertised-slides-container">
+                                @php
+                                    $productsPerSlide = 2;
+                                    $totalSlides = ceil($advertisedProducts->count() / $productsPerSlide);
+                                @endphp
+
+                                @for ($slideIndex = 0; $slideIndex < $totalSlides; $slideIndex++)
+                                    <div class="advertised-slide {{ $slideIndex === 0 ? 'active' : '' }}"
+                                        data-slide="{{ $slideIndex }}">
+                                        <div class="advertised-grid">
+                                            @foreach ($advertisedProducts->slice($slideIndex * $productsPerSlide, $productsPerSlide) as $adItem)
+                                                <div class="advertised-item">
+                                                    <div class="ad-badge">Quảng cáo</div>
+                                                    <a href="{{ route('product.show', $adItem->product->slug) }}"
+                                                        class="ad-product-link">
+                                                        <img src="{{ $adItem->product->image_url }}"
+                                                            alt="{{ $adItem->product->name }}" class="ad-product-img">
+                                                        <div class="ad-product-info">
+                                                            <h4 class="ad-product-name">
+                                                                {{ Str::limit($adItem->product->name, 30) }}</h4>
+                                                            <div class="ad-product-price">
+                                                                @if (
+                                                                    $adItem->product->display_original_price &&
+                                                                        $adItem->product->display_price < $adItem->product->display_original_price)
+                                                                    <span
+                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
+                                                                    <span
+                                                                        class="ad-price-old">{{ number_format($adItem->product->display_original_price) }}₫</span>
+                                                                @else
+                                                                    <span
+                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+
+                            <!-- Dots Navigation -->
+                            @if ($totalSlides > 1)
+                                <div class="advertised-dots">
+                                    @for ($dotIndex = 0; $dotIndex < $totalSlides; $dotIndex++)
+                                        <button class="advertised-dot {{ $dotIndex === 0 ? 'active' : '' }}"
+                                            data-slide="{{ $dotIndex }}"
+                                            aria-label="Go to slide {{ $dotIndex + 1 }}">
+                                        </button>
+                                    @endfor
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <!-- Fallback banner nếu không có quảng cáo -->
+                        <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection"
+                            class="cta-banner">
+                        <a href="#" class="cta-content">
+                            <p class="discount">Giảm 25%</p>
+                            <h2 class="cta-title">Bộ sưu tập hè</h2>
+                            <p class="cta-text">Bắt đầu từ 10.000₫</p>
+                            <button class="cta-btn">Mua ngay</button>
+                        </a>
+                    @endif
                 </div>
+
                 <div class="service">
                     <h2 class="title">Dịch vụ của chúng tôi</h2>
                     <div class="service-container">
@@ -1298,7 +1422,6 @@
                         </div>
                     @endforeach
                     @if ($blogs->isEmpty())
-                        <p>Hiện chưa có bài viết nào.</p>
                     @endif
                 </div>
             </div>
@@ -1555,7 +1678,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }
@@ -1725,6 +1848,123 @@
 
             if (typeof initQuickViewScripts === 'function') {
                 initQuickViewScripts();
+            }
+
+            // Advertised Products Slider
+            function initAdvertisedSlider() {
+                const dots = document.querySelectorAll('.advertised-dot');
+                const slides = document.querySelectorAll('.advertised-slide');
+
+                if (dots.length === 0 || slides.length === 0) return;
+
+                let currentSlide = 0;
+                let isTransitioning = false;
+                let autoSlideInterval = null;
+
+                function goToSlide(slideIndex) {
+                    if (isTransitioning) return; // Prevent multiple transitions
+
+                    isTransitioning = true;
+
+                    // Remove active class from all slides and dots
+                    slides.forEach(slide => {
+                        slide.classList.remove('active', 'prev');
+                    });
+                    dots.forEach(dot => dot.classList.remove('active'));
+
+                    // Add active class to current slide and dot
+                    slides[slideIndex].classList.add('active');
+                    dots[slideIndex].classList.add('active');
+
+                    // Add prev class to previous slide for smooth transition
+                    if (slideIndex > 0) {
+                        slides[slideIndex - 1].classList.add('prev');
+                    }
+
+                    // Wait for transition to complete before allowing next transition
+                    setTimeout(() => {
+                        isTransitioning = false;
+                    }, 600); // Slightly longer than CSS transition (500ms)
+                }
+
+                function startAutoSlide() {
+                    if (autoSlideInterval) {
+                        clearInterval(autoSlideInterval);
+                    }
+
+                    autoSlideInterval = setInterval(() => {
+                        if (!isTransitioning) {
+                            currentSlide = (currentSlide + 1) % slides.length;
+                            goToSlide(currentSlide);
+                        }
+                    }, 4000); // 4 seconds between slides
+                }
+
+                function stopAutoSlide() {
+                    if (autoSlideInterval) {
+                        clearInterval(autoSlideInterval);
+                        autoSlideInterval = null;
+                    }
+                }
+
+                // Add click event to dots
+                dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => {
+                        if (!isTransitioning) {
+                            currentSlide = index;
+                            goToSlide(currentSlide);
+
+                            // Restart auto slide after manual click
+                            stopAutoSlide();
+                            startAutoSlide();
+                        }
+                    });
+                });
+
+                // Start auto slide
+                startAutoSlide();
+
+                // Pause auto slide on hover
+                const container = document.querySelector('.advertised-products-container');
+                if (container) {
+                    container.addEventListener('mouseenter', () => {
+                        stopAutoSlide();
+                    });
+
+                    container.addEventListener('mouseleave', () => {
+                        startAutoSlide();
+                    });
+                }
+            }
+
+            // Initialize advertised slider when DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                initAdvertisedSlider();
+                initPriceHandling();
+            });
+
+            // Handle long prices automatically
+            function initPriceHandling() {
+                const priceBoxes = document.querySelectorAll('.product-minimal .price-box');
+
+                priceBoxes.forEach(priceBox => {
+                    const price = priceBox.querySelector('.price');
+                    const delPrice = priceBox.querySelector('del');
+
+                    if (price) {
+                        // Check if price is too long
+                        if (price.scrollWidth > price.offsetWidth) {
+                            price.style.fontSize = '0.75rem';
+                        }
+                    }
+
+                    if (delPrice) {
+                        // Check if del price is too long
+                        if (delPrice.scrollWidth > delPrice.offsetWidth) {
+                            delPrice.style.fontSize = '0.625rem';
+                        }
+                    }
+                });
             }
         </script>
     @endpush

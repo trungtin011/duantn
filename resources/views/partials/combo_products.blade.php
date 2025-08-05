@@ -2,7 +2,7 @@
     <div class="product-featured pt-5">
         <div class="flex items-center justify-between title">
             <h2 class="">Combo Sản Phẩm</h2>
-            <a href="{{ route('combo.index') }}"
+            <a href="{{ route('shop.profile', $comboProducts->first()->shop->id) }}"
                 class="text-[#ef3248] hover:underline text-sm font-medium whitespace-nowrap">
                 Xem tất cả
             </a>

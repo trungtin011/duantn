@@ -242,6 +242,11 @@ class Product extends Model
         return $this->hasMany(OrderReview::class, 'product_id');
     }
 
+    public function viewHistory()
+    {
+        return $this->hasMany(ViewHistory::class, 'productID');
+    }
+
     public function getDisplayPriceAttribute()
     {
         if ($this->is_variant && $this->variants->isNotEmpty()) {
