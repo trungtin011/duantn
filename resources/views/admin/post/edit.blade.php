@@ -1,56 +1,47 @@
 @extends('layouts.admin')
 
+@section('head')
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('css/admin/product.css') }}">
+    @endpush
+@endsection
+
 @section('content')
-    <div class="card">
-        <h5 class="card-header">Edit Post</h5>
-        <div class="card-body">
-            <form action="{{ route('post.update', $post->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
+    <div class="admin-page-header">
+        <h1 class="admin-page-title">Chỉnh sửa bài viết</h1>
+        <div class="admin-breadcrumb">
+            <a href="#" class="admin-breadcrumb-link">Home</a> / 
+            <a href="{{ route('post.index') }}" class="admin-breadcrumb-link">Bài viết</a> / 
+            Chỉnh sửa
+        </div>
+    </div>
 
-                {{-- Title --}}
-                <div class="form-group">
-                    <label for="inputTitle" class="col-form-label">Tiêu đề <span class="text-danger">*</span></label>
-                    <input id="inputTitle" type="text" name="title" placeholder="Nhập tiêu đề"
-                        value="{{ old('title', $post->title) }}" class="form-control">
+    <section class="bg-white rounded-lg shadow-sm p-6">
+        <form action="{{ route('post.update', $post->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            @csrf
+            @method('PUT')
+            
+            <!-- Thông tin cơ bản -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <label for="inputTitle" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tiêu đề <span class="text-red-500">*</span>
+                    </label>
+                    <input id="inputTitle" type="text" name="title" placeholder="Nhập tiêu đề bài viết" 
+                           value="{{ old('title', $post->title) }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     @error('title')
-                        ass="
-                    <span class="text-danger">{{ $message }}</span>
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Quote --}}
-                <div class="form-group">
-                    <label for="quote" class="col-form-label">Trích dẫn</label>
-                    <textarea class="form-control summernote-short" id="quote" name="quote">{{ old('quote', $post->quote) }}</textarea>
-                    @error('quote')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Summary --}}
-                <div class="form-group">
-                    <label for="summary" class="col-form-label">Bản tóm tắt <span class="text-danger">*</span></label>
-                    <textarea class="form-control summernote-short" id="summary" name="summary">{{ old('summary', $post->summary) }}</textarea>
-                    @error('summary')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Description --}}
-                <div class="form-group">
-                    <label for="description" class="col-form-label">Miêu tả nội dung </label>
-                    <textarea class="form-control summernote" id="description" name="description">{{ old('description', $post->description) }}</textarea>
-                    @error('description')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Category --}}
-                <div class="form-group">
-                    <label for="post_cat_id">Loại<span class="text-danger">*</span></label>
-                    <select name="post_cat_id" class="form-control">
-                        <option value="">--Chọn bất kỳ doanh mục nào-</option>
+                <div>
+                    <label for="post_cat_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Danh mục <span class="text-red-500">*</span>
+                    </label>
+                    <select name="post_cat_id" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">-- Chọn danh mục --</option>
                         @foreach ($categories as $cat)
                             <option value="{{ $cat->id }}"
                                 {{ old('post_cat_id', $post->post_cat_id) == $cat->id ? 'selected' : '' }}>
@@ -58,16 +49,53 @@
                             </option>
                         @endforeach
                     </select>
+                    @error('post_cat_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
+            </div>
 
-                {{-- Tags --}}
-                @php
-                    $selectedTags = explode(',', old('tags', $post->tags));
-                @endphp
-                <div class="form-group">
-                    <label for="tags">Tags</label>
-                    <select name="tags[]" multiple data-live-search="true" class="form-control selectpicker">
-                        <option value="">--Chọn bất kỳ tag--</option>
+            <!-- Trích dẫn -->
+            <div>
+                <label for="quote" class="block text-sm font-medium text-gray-700 mb-2">Trích dẫn</label>
+                <textarea class="form-control summernote-short w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                          id="quote" name="quote" placeholder="Nhập trích dẫn...">{{ old('quote', $post->quote) }}</textarea>
+                @error('quote')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Tóm tắt -->
+            <div>
+                <label for="summary" class="block text-sm font-medium text-gray-700 mb-2">
+                    Bản tóm tắt <span class="text-red-500">*</span>
+                </label>
+                <textarea class="form-control summernote-short w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                          id="summary" name="summary" placeholder="Nhập tóm tắt bài viết...">{{ old('summary', $post->summary) }}</textarea>
+                @error('summary')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Nội dung chi tiết -->
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Nội dung chi tiết</label>
+                <textarea class="form-control summernote w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                          id="description" name="description" placeholder="Nhập nội dung bài viết...">{{ old('description', $post->description) }}</textarea>
+                @error('description')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Tags và Tác giả -->
+            @php
+                $selectedTags = explode(',', old('tags', $post->tags));
+            @endphp
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                    <select name="tags[]" multiple data-live-search="true" 
+                            class="form-control selectpicker w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         @foreach ($tags as $tag)
                             <option value="{{ $tag->title }}"
                                 {{ in_array($tag->title, $selectedTags) ? 'selected' : '' }}>
@@ -75,13 +103,16 @@
                             </option>
                         @endforeach
                     </select>
+                    @error('tags')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                {{-- Author --}}
-                <div class="form-group">
-                    <label for="added_by">Tác giả</label>
-                    <select name="added_by" class="form-control">
-                        <option value="">--Chọn bất kỳ tác giả--</option>
+                <div>
+                    <label for="added_by" class="block text-sm font-medium text-gray-700 mb-2">Tác giả</label>
+                    <select name="added_by" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">-- Chọn tác giả --</option>
                         @foreach ($users as $user)
                             <option value="{{ $user->id }}"
                                 {{ old('added_by', $post->added_by) == $user->id ? 'selected' : '' }}>
@@ -89,48 +120,74 @@
                             </option>
                         @endforeach
                     </select>
+                    @error('added_by')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
+            </div>
 
-                {{-- Photo Upload --}}
-                <div class="bg-white p-3 rounded-lg shadow-sm mb-4">
-                    <p class="font-weight-bold">Tải ảnh chính lên</p>
-                    @if ($post->photo)
-                        <div class="mb-2">
-                            <img src="{{ asset($post->photo) }}" id="uploadIcon1" class="w-25" alt="current photo">
-                        </div>
-                    @endif
-                    <label for="mainImage" class="btn btn-outline-secondary d-block text-center">
-                        Chọn ảnh mới
-                    </label>
-                    <input type="file" id="mainImage" name="photo" class="d-none" accept="image/*">
+            <!-- Upload ảnh -->
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Ảnh đại diện</h3>
+                
+                @if ($post->photo)
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-2">Ảnh hiện tại:</p>
+                        <img src="{{ asset($post->photo) }}" alt="Current photo" class="w-32 h-32 object-cover rounded-md">
+                    </div>
+                @endif
+                
+                <div class="text-center">
+                    <div class="mb-4">
+                        <img id="uploadIcon1" class="w-24 h-auto mx-auto mb-2" 
+                             src="https://html.hixstudio.net/ebazer/assets/img/icons/upload.png" alt="Upload Icon">
+                        <p class="text-sm text-gray-500">Kích thước ảnh phải nhỏ hơn 5MB</p>
+                    </div>
+                    
+                    <div class="flex items-center justify-center">
+                        <label for="mainImage" 
+                               class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer transition-colors">
+                            <i class="fas fa-upload mr-2"></i>
+                            Chọn ảnh mới
+                        </label>
+                        <input type="file" id="mainImage" name="photo" class="hidden" accept="image/*">
+                    </div>
+                    
                     @error('photo')
-                        <span class="text-danger d-block">{{ $message }}</span>
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
+            </div>
 
-                {{-- Status --}}
-                <div class="form-group">
-                    <label for="status">Trạng thái <span class="text-danger">*</span></label>
-                    <select name="status" class="form-control">
-                        <option value="active" {{ old('status', $post->status) == 'active' ? 'selected' : '' }}>Active
-                        </option>
-                        <option value="inactive" {{ old('status', $post->status) == 'inactive' ? 'selected' : '' }}>
-                            Inactive
-                        </option>
-                    </select>
-                    @error('status')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
+            <!-- Trạng thái -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                    Trạng thái <span class="text-red-500">*</span>
+                </label>
+                <select name="status" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="active" {{ old('status', $post->status) == 'active' ? 'selected' : '' }}>Hoạt động</option>
+                    <option value="inactive" {{ old('status', $post->status) == 'inactive' ? 'selected' : '' }}>Không hoạt động</option>
+                </select>
+                @error('status')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
 
-                {{-- Buttons --}}
-                <div class="form-group mb-3">
-                    <button type="reset" class="btn btn-warning">Reset</button>
-                    <button class="btn btn-success" type="submit">Update</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                <a href="{{ route('post.index') }}" 
+                   class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Quay lại
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-save mr-2"></i>Cập nhật bài viết
+                </button>
+            </div>
+        </form>
+    </section>
+
     <!-- jQuery (cần cho Summernote) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -138,7 +195,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('.summernote-short').summernote({
                 height: 150,
                 minHeight: 100,
