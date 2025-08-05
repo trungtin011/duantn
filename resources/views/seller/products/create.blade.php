@@ -2,13 +2,12 @@
 
 @section('title', 'Thêm Sản Phẩm Mới')
 @section('content')
-    <div class="container mx-auto px-4">
+    <div class="mx-auto">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-800">Thêm sản phẩm mới</h1>
                 <div class="text-sm text-gray-500">
-                    <a href="{{ route('seller.dashboard') }}" class="hover:underline">Trang chủ</a> / Thêm sản phẩm
                     <a href="{{ route('seller.dashboard') }}" class="hover:underline">Trang chủ</a> / Thêm sản phẩm
                 </div>
             </div>
@@ -17,19 +16,17 @@
                     class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và đăng</button>
                 <a href="{{ route('seller.products.index') }}"
                     class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Hủy</a>
-                <a href="{{ route('seller.products.index') }}"
-                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Hủy</a>
+
             </div>
         </div>
         <!-- Error Messages -->
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
                 <ul class="list-disc pl-5 text-sm">
-                    <ul class="list-disc pl-5 text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
@@ -44,13 +41,18 @@
                 <div class="mb-4">
                     <label class="block text-gray-700 font-medium mb-1">Tên sản phẩm <span
                             class="text-red-500">*</span></label>
-                    <input type="text" name="name" id="product-name"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Nhập tên sản phẩm" value="{{ old('name') }}">
-                    @error('name')
-                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                    @enderror
-                    <span class="text-sm text-gray-500 block mt-1">Tên sản phẩm nên ngắn gọn và duy nhất.</span>
+                                                <div class="relative">
+                                <input type="text" name="name" id="product-name"
+                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Nhập tên sản phẩm" value="{{ old('name') }}" maxlength="100">
+                                <div class="absolute right-2 top-2 text-xs text-gray-400">
+                                    <span id="name-char-count">0</span>/100
+                                </div>
+                            </div>
+                            @error('name')
+                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                            @enderror
+                            <span class="text-sm text-gray-500 block mt-1">Tên sản phẩm nên ngắn gọn và duy nhất.</span>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 font-medium mb-1">Mô tả sản phẩm</label>
@@ -127,8 +129,7 @@
                             <div class="flex flex-col gap-3 mb-4">
                                 <!-- Thương hiệu -->
                                 <div>
-                                    <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương hiệu <span
-                                            class="text-red-500">*</span></label>
+                                    <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương hiệu</label>
                                     <div
                                         class="flex flex-col gap-2 items-start bg-gray-100 rounded-md p-2 overflow-y-scroll h-auto max-h-40">
                                         @foreach ($brands as $brand)
@@ -221,8 +222,8 @@
 
                                 <!-- Danh mục -->
                                 <div>
-                                    <label for="category_id" class="block text-gray-700 font-medium mb-1">Danh mục
-                                        <span class="text-red-500">*</span></label>
+                                    <label for="category_id" class="block text-gray-700 font-medium mb-1">Danh mục <span
+                                            class="text-red-500">*</span></label>
                                     <div
                                         class="flex flex-col gap-2 items-start bg-gray-100 rounded-md p-2 overflow-y-scroll h-auto max-h-40">
                                         @foreach ($categories as $category)
@@ -352,8 +353,7 @@
                                 <textarea name="meta_description" id="meta-description"
                                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     maxlength="160" rows="4" placeholder="Tối đa 160 ký tự">{{ old('meta_description') }}</textarea>
-                                <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ
-                                    tìm
+                                <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ tìm
                                     kiếm.</span>
                                 @error('meta_description')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -657,8 +657,8 @@
                                                             @enderror
                                                         </div>
                                                         <div>
-                                                            <label class="block text-gray-700 font-medium mb-1">Số
-                                                                lượng tồn
+                                                            <label class="block text-gray-700 font-medium mb-1">Số lượng
+                                                                tồn
                                                                 kho</label>
                                                             <input type="number"
                                                                 name="variants[{{ $index }}][stock_total]"
@@ -671,8 +671,7 @@
                                                             @enderror
                                                         </div>
                                                         <div>
-                                                            <label class="block text-gray-700 font-medium mb-1">Chiều
-                                                                dài
+                                                            <label class="block text-gray-700 font-medium mb-1">Chiều dài
                                                                 (inch)
                                                             </label>
                                                             <input type="number"
@@ -680,52 +679,49 @@
                                                                 value="{{ old("variants.$index.length") }}"
                                                                 step="0.01"
                                                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Chiều dài">
+                                                                placeholder="Chiều dài" data-original-required="true">
                                                             @error("variants.$index.length")
                                                                 <span
                                                                     class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                                             @enderror
                                                         </div>
                                                         <div>
-                                                            <label class="block text-gray-700 font-medium mb-1">Chiều
-                                                                rộng
+                                                            <label class="block text-gray-700 font-medium mb-1">Chiều rộng
                                                                 (inch)</label>
                                                             <input type="number"
                                                                 name="variants[{{ $index }}][width]"
                                                                 value="{{ old("variants.$index.width") }}"
                                                                 step="0.01"
                                                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Chiều rộng">
+                                                                placeholder="Chiều rộng" data-original-required="true">
                                                             @error("variants.$index.width")
                                                                 <span
                                                                     class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                                             @enderror
                                                         </div>
                                                         <div>
-                                                            <label class="block text-gray-700 font-medium mb-1">Chiều
-                                                                cao
+                                                            <label class="block text-gray-700 font-medium mb-1">Chiều cao
                                                                 (inch)</label>
                                                             <input type="number"
                                                                 name="variants[{{ $index }}][height]"
                                                                 value="{{ old("variants.$index.height") }}"
                                                                 step="0.01"
                                                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Chiều cao">
+                                                                placeholder="Chiều cao" data-original-required="true">
                                                             @error("variants.$index.height")
                                                                 <span
                                                                     class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                                             @enderror
                                                         </div>
                                                         <div>
-                                                            <label class="block text-gray-700 font-medium mb-1">Trọng
-                                                                lượng
+                                                            <label class="block text-gray-700 font-medium mb-1">Trọng lượng
                                                                 (kg)</label>
                                                             <input type="number"
                                                                 name="variants[{{ $index }}][weight]"
                                                                 value="{{ old("variants.$index.weight") }}"
                                                                 step="0.01"
                                                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Trọng lượng">
+                                                                placeholder="Trọng lượng" data-original-required="true">
                                                             @error("variants.$index.weight")
                                                                 <span
                                                                     class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -733,8 +729,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="mb-4">
-                                                        <label class="block text-gray-700 font-medium mb-1">Thuộc tính
-                                                            biến
+                                                        <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến
                                                             thể</label>
                                                         @foreach ($variant['attributes'] ?? [] as $attrIndex => $attr)
                                                             <div class="flex items-center gap-4 mb-2">
@@ -757,8 +752,8 @@
                                                         <label class="block text-gray-700 font-medium mb-1">Hình
                                                             ảnh</label>
                                                         @if (session('error'))
-                                                            <span class="text-sm text-red-500 block mb-3">Vui lòng chọn
-                                                                lại ảnh
+                                                            <span class="text-sm text-red-500 block mb-3">Vui lòng chọn lại
+                                                                ảnh
                                                                 biến thể do lỗi trước đó.</span>
                                                         @endif
                                                         <input type="file"
@@ -783,14 +778,14 @@
             <!-- Footer Buttons -->
             <div class="col-span-12 flex justify-start space-x-3 mt-6">
                 <div class="col-span-12 flex justify-start space-x-3 mt-6">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu
-                        và
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và
                         đăng</button>
                     <a href="{{ route('seller.products.index') }}"
                         class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Hủy</a>
                 </div>
         </form>
     </div>
+
 
 @endsection
 @push('scripts')
@@ -914,7 +909,7 @@
                         .join('')}
                 </select>
                 <input type="text" name="attributes[${attributeIndex}][name]" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name hidden" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
-                <input type="text" name="attributes[${attributeIndex}][values]" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" >
+                <input type="text" name="attributes[${attributeIndex}][values]" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)">
                 <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
             `;
             container.appendChild(newAttribute);
@@ -936,7 +931,7 @@
                 const names = Array.from(container.querySelectorAll('input[name$="[name]"]'))
                     .map(input => input.value.trim().toLowerCase());
                 if (names.filter(name => name === this.value.trim().toLowerCase()).length > 1) {
-                    showError(this, 'Tên thuộc tính đã tồn tại!');
+                    alert('Tên thuộc tính đã tồn tại!');
                     this.value = '';
                 }
             });
@@ -989,7 +984,7 @@
                     .filter(v => v);
 
                 if (attrId === 'new' && !attrName) {
-                    showError(names[index], `Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+                    showFieldError(names[index], `Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
                     return;
                 }
 
@@ -1010,11 +1005,28 @@
             });
 
             if (!hasValidAttribute) {
-                showError(document.querySelector('#attribute-container'),
+                showFieldError(document.querySelector('#generate-variants-btn'),
                     'Vui lòng nhập ít nhất một thuộc tính hợp lệ với tên và giá trị.');
                 debugLog('No valid attributes provided');
                 return;
             }
+
+            // Lưu dữ liệu biến thể cũ nếu có
+            const oldVariants = {};
+            const existingVariants = variantContainer.querySelectorAll('.variant-item');
+            existingVariants.forEach((variant, index) => {
+                const variantName = variant.querySelector('input[name$="[name]"]')?.value;
+                if (variantName) {
+                    oldVariants[variantName] = {};
+                    const inputs = variant.querySelectorAll('input[type="number"], input[type="text"]');
+                    inputs.forEach(input => {
+                        const fieldName = input.name.match(/\[([^\]]+)\]$/)?.[1];
+                        if (fieldName) {
+                            oldVariants[variantName][fieldName] = input.value;
+                        }
+                    });
+                }
+            });
 
             variantContainer.innerHTML = '';
             const variants = getCombinations(attributeData.map(attr => attr.values));
@@ -1024,9 +1036,13 @@
                 const variantDiv = document.createElement('div');
                 variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white',
                     'relative', 'variant-item');
+
+                const variantName = variant.join(' - ');
+                const oldData = oldVariants[variantName] || {};
+
                 let variantHTML = `
                     <div class="flex justify-between items-center mb-3">
-                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
+                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variantName}</h5>
                         <div class="flex space-x-3">
                             <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
                             <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
@@ -1038,53 +1054,53 @@
                     </div>
                     <div class="variant-content transition-all duration-300 ease-in-out hidden">
                         <input type="hidden" name="variants[${index}][index]" value="${index}">
-                        <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
+                        <input type="hidden" name="variants[${index}][name]" value="${variantName}">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" >
+                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" value="${oldData.price || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
-                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" >
+                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" value="${oldData.purchase_price || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" >
+                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" value="${oldData.sale_price || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" >
+                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" value="${oldData.sku || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
-                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" >
+                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" value="${oldData.stock_total || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
-                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài" >
+                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài" value="${oldData.length || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
-                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng" >
+                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng" value="${oldData.width || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
-                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao" >
+                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao" value="${oldData.height || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
-                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng" >
+                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng" value="${oldData.weight || ''}">
                             </div>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                             ${variant.map((value, attrIndex) => `
-                                                                            <div class="flex items-center gap-4 mb-2">
-                                                                                <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                                                <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                                            </div>
-                                                                        `).join('')}
+                                                        <div class="flex items-center gap-4 mb-2">
+                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                        </div>
+                                                    `).join('')}
                         </div>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
@@ -1092,12 +1108,12 @@
                                 <span class="text-sm text-red-500 block mb-3">Vui lòng chọn lại ảnh
                                     biến thể do lỗi trước đó.</span>
                             @endif
-                            <input type="file" name="variant_images[{{ $index }}][]"
+                            <input type="file" name="variant_images[${index}][]"
                                 multiple
                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 accept="image/*"
-                                onchange="previewVariantImage(event, {{ $index }})">
-                            <div id="preview-images-{{ $index }}"
+                                onchange="previewVariantImage(event, ${index})">
+                            <div id="preview-images-${index}"
                                 class="mt-2 flex flex-wrap gap-2"></div>
                         </div>
                         </div>
@@ -1180,7 +1196,7 @@
                 const file = e.target.files[0];
                 if (file) {
                     if (file.size > 5 * 1024 * 1024) {
-                        showError(input, 'Kích thước ảnh phải nhỏ hơn 5Mb!');
+                        alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
                         input.value = '';
                         uploadIcon.src = "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
                         uploadIcon.alt = 'Upload Icon';
@@ -1188,7 +1204,7 @@
                         return;
                     }
                     if (!file.type.startsWith('image/')) {
-                        showError(input, 'Vui lòng chọn file hình ảnh hợp lệ!');
+                        alert('Vui lòng chọn file hình ảnh hợp lệ!');
                         input.value = '';
                         uploadIcon.src = "https://html.hixstudio.net/ebazer/assets/img/icons/upload.png";
                         uploadIcon.alt = 'Upload Icon';
@@ -1231,7 +1247,7 @@
                 previewContainer.innerHTML = '';
                 Array.from(e.target.files).forEach(file => {
                     if (file.size > 5 * 1024 * 1024) {
-                        showError(input, 'Kích thước ảnh phải nhỏ hơn 5Mb!');
+                        alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
                         input.value = '';
                         return;
                     }
@@ -1265,7 +1281,7 @@
             previewContainer.innerHTML = '';
             Array.from(event.target.files).forEach((file, fileIndex) => {
                 if (file.size > 5 * 1024 * 1024) {
-                    showError(event.target, 'Kích thước ảnh phải nhỏ hơn 5Mb!');
+                    alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
                     event.target.value = '';
                     return;
                 }
@@ -1388,18 +1404,19 @@
             });
         }
 
-        // Hàm validate form
+        // Hàm validate form với validation thủ công và hiển thị lỗi inline
         function validateForm(e) {
+            e.preventDefault();
             const productForm = document.getElementById('product-form');
             if (!productForm) {
                 debugLog('Product form not found');
                 return;
             }
-            debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
 
-            // Clear all previous error messages
+            // Xóa tất cả thông báo lỗi cũ
             clearAllErrors();
 
+            debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
             const brandCheckboxes = document.querySelectorAll('input[name="brand_ids[]"]:checked');
             const categoryCheckboxes = document.querySelectorAll('input[name="category_ids[]"]:checked');
             let isValid = true;
@@ -1416,35 +1433,41 @@
             // Common validations
             const nameInput = document.querySelector('input[name="name"]');
             if (!nameInput.value.trim()) {
-                e.preventDefault();
-                showError(nameInput, 'Vui lòng nhập tên sản phẩm.');
+                showFieldError(nameInput, 'Vui lòng nhập tên sản phẩm.');
                 isValid = false;
+            } else if (nameInput.value.trim().length > 100) {
+                showFieldError(nameInput, 'Tên sản phẩm không được vượt quá 100 ký tự.');
+                isValid = false;
+            } else {
+                // Kiểm tra tên sản phẩm đã tồn tại
+                const nameError = nameInput.parentNode.querySelector('.field-error');
+                if (nameError && nameError.textContent.includes('đã tồn tại')) {
+                    isValid = false;
+                }
             }
 
             const skuInput = document.querySelector('input[name="sku"]');
             if (!skuInput.value.trim()) {
-                e.preventDefault();
-                showError(skuInput, 'Vui lòng nhập mã SKU.');
+                showFieldError(skuInput, 'Vui lòng nhập mã SKU.');
                 isValid = false;
             }
 
-            // These are now in general-details tab, always required.
-            if (brandCheckboxes.length === 0) {
-                e.preventDefault();
-                showError(document.querySelector('input[name="brand_ids[]"]'), 'Vui lòng chọn ít nhất một thương hiệu.');
-                isValid = false;
-            }
+            // Thương hiệu không bắt buộc nữa
+            // if (brandCheckboxes.length === 0) {
+            //     showFieldError(document.querySelector('input[name="brand_ids[]"]'),
+            //         'Vui lòng chọn ít nhất một thương hiệu.');
+            //     isValid = false;
+            // }
 
             if (categoryCheckboxes.length === 0) {
-                e.preventDefault();
-                showError(document.querySelector('input[name="category_ids[]"]'), 'Vui lòng chọn ít nhất một danh mục.');
+                showFieldError(document.querySelector('input[name="category_ids[]"]'),
+                    'Vui lòng chọn ít nhất một danh mục.');
                 isValid = false;
             }
 
             const mainImageInput = document.getElementById('mainImage');
             if (!mainImageInput.files.length) {
-                e.preventDefault();
-                showError(mainImageInput, 'Vui lòng chọn ảnh chính.');
+                showFieldError(mainImageInput, 'Vui lòng chọn ảnh chính.');
                 isValid = false;
             }
 
@@ -1456,25 +1479,33 @@
                 const stockInput = document.querySelector('#tab-pricing-inventory input[name="stock_total"]');
 
                 if (!priceInput || !priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                    e.preventDefault();
-                    showError(priceInput, 'Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
+                    showFieldError(priceInput, 'Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
                     isValid = false;
                 }
                 if (!purchasePriceInput || !purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
                         purchasePriceInput.value) < 0) {
-                    e.preventDefault();
-                    showError(purchasePriceInput, 'Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
+                    showFieldError(purchasePriceInput, 'Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
                     isValid = false;
                 }
                 if (!salePriceInput || !salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
                         .value) < 0) {
-                    e.preventDefault();
-                    showError(salePriceInput, 'Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
+                    showFieldError(salePriceInput, 'Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
                     isValid = false;
                 }
+
+                // Kiểm tra logic giá nhập và giá bán
+                if (purchasePriceInput && salePriceInput && purchasePriceInput.value && salePriceInput.value) {
+                    const purchasePrice = parseFloat(purchasePriceInput.value);
+                    const salePrice = parseFloat(salePriceInput.value);
+
+                    if (purchasePrice > salePrice) {
+                        showFieldError(purchasePriceInput, 'Giá nhập không được lớn hơn giá bán.');
+                        showFieldError(salePriceInput, 'Giá bán phải lớn hơn hoặc bằng giá nhập.');
+                        isValid = false;
+                    }
+                }
                 if (!stockInput || !stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                    e.preventDefault();
-                    showError(stockInput, 'Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
+                    showFieldError(stockInput, 'Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
                     isValid = false;
                 }
             } else if (productType === 'variant') {
@@ -1484,8 +1515,7 @@
 
                 // Check attributes
                 if (attributeSelects.length === 0) {
-                    e.preventDefault();
-                    showError(document.querySelector('#attribute-container'),
+                    showFieldError(document.querySelector('#add-attribute-btn'),
                         'Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
                     isValid = false;
                 } else {
@@ -1493,13 +1523,12 @@
                         const nameInput = select.closest('.attribute-row').querySelector('.attribute-name');
                         const valuesInput = select.closest('.attribute-row').querySelector('.attribute-values');
                         if (select.value === 'new' && (!nameInput.value || !nameInput.value.trim())) {
-                            e.preventDefault();
-                            showError(nameInput, `Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+                            showFieldError(nameInput, `Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
                             isValid = false;
                         }
                         if (!valuesInput.value || !valuesInput.value.trim()) {
-                            e.preventDefault();
-                            showError(valuesInput, `Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
+                            showFieldError(valuesInput,
+                                `Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
                             isValid = false;
                         }
                     });
@@ -1507,8 +1536,7 @@
 
                 // Check variants
                 if (variantItems.length === 0) {
-                    e.preventDefault();
-                    showError(document.querySelector('#variant-container'),
+                    showFieldError(document.querySelector('#generate-variants-btn'),
                         'Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
                     isValid = false;
                 } else {
@@ -1521,31 +1549,41 @@
                         const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
 
                         if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                            e.preventDefault();
-                            showError(priceInput, `Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
+                            showFieldError(priceInput, `Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
                             isValid = false;
                         }
                         if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
                                 purchasePriceInput.value) < 0) {
-                            e.preventDefault();
-                            showError(purchasePriceInput,
+                            showFieldError(purchasePriceInput,
                                 `Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
                             isValid = false;
                         }
                         if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
-                                .value) < 0) {
-                            e.preventDefault();
-                            showError(salePriceInput, `Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
+                            .value) < 0) {
+                            showFieldError(salePriceInput,
+                                `Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
                             isValid = false;
                         }
+
+                        // Kiểm tra logic giá nhập và giá bán cho biến thể
+                        if (purchasePriceInput.value && salePriceInput.value) {
+                            const purchasePrice = parseFloat(purchasePriceInput.value);
+                            const salePrice = parseFloat(salePriceInput.value);
+
+                            if (purchasePrice > salePrice) {
+                                showFieldError(purchasePriceInput,
+                                    `Giá nhập không được lớn hơn giá bán cho biến thể ${index + 1}.`);
+                                showFieldError(salePriceInput,
+                                    `Giá bán phải lớn hơn hoặc bằng giá nhập cho biến thể ${index + 1}.`);
+                                isValid = false;
+                            }
+                        }
                         if (!skuInput.value || !skuInput.value.trim()) {
-                            e.preventDefault();
-                            showError(skuInput, `Vui lòng nhập SKU cho biến thể ${index + 1}.`);
+                            showFieldError(skuInput, `Vui lòng nhập SKU cho biến thể ${index + 1}.`);
                             isValid = false;
                         }
                         if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                            e.preventDefault();
-                            showError(stockInput,
+                            showFieldError(stockInput,
                                 `Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
                             isValid = false;
                         }
@@ -1556,165 +1594,56 @@
             if (isValid) {
                 tinymce.triggerSave();
                 debugLog('Form submission validated successfully');
-                // Clear saved form data on successful validation
-                clearSavedFormData();
+                // Nếu tất cả validation pass, submit form
+                productForm.submit();
             } else {
-                // Save form values when validation fails
-                saveFormValues();
+                // Scroll to first error
+                const firstError = document.querySelector('.field-error');
+                if (firstError) {
+                    firstError.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
             }
         }
 
-        // Hàm hiển thị lỗi inline
-        function showError(element, message) {
-            if (!element) return;
+        // Hàm hiển thị lỗi cho từng trường
+        function showFieldError(field, message) {
+            if (!field) return;
 
-            // Remove existing error message
-            const existingError = element.parentNode.querySelector('.inline-error');
+            // Xóa lỗi cũ nếu có
+            const existingError = field.parentNode.querySelector('.field-error');
             if (existingError) {
                 existingError.remove();
             }
 
-            // Create error message element
-            const errorSpan = document.createElement('span');
-            errorSpan.className = 'text-sm text-red-500 block mt-1 inline-error';
-            errorSpan.textContent = message;
+            // Thêm class lỗi cho field
+            field.classList.add('border-red-500');
 
-            // Insert error message after the input
-            element.parentNode.insertBefore(errorSpan, element.nextSibling);
+            // Tạo element hiển thị lỗi
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error text-sm text-red-500 mt-1';
+            errorDiv.textContent = message;
 
-            // Add red border to input
-            element.classList.add('border-red-500');
-            element.classList.remove('border-gray-300');
-
-            // Scroll to error
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
+            // Chèn lỗi sau field
+            field.parentNode.appendChild(errorDiv);
         }
 
         // Hàm xóa tất cả lỗi
         function clearAllErrors() {
-            // Remove all inline error messages
-            document.querySelectorAll('.inline-error').forEach(error => error.remove());
+            // Xóa tất cả thông báo lỗi
+            document.querySelectorAll('.field-error').forEach(error => error.remove());
 
-            // Remove red borders from inputs
-            document.querySelectorAll('.border-red-500').forEach(input => {
-                input.classList.remove('border-red-500');
-                input.classList.add('border-gray-300');
+            // Xóa class lỗi khỏi tất cả fields
+            document.querySelectorAll('.border-red-500').forEach(field => {
+                field.classList.remove('border-red-500');
             });
-        }
-
-        // Hàm lưu giá trị form vào localStorage
-        function saveFormValues() {
-            const formData = new FormData(document.getElementById('product-form'));
-            const formValues = {};
-
-            // Lưu tất cả input values
-            formData.forEach((value, key) => {
-                formValues[key] = value;
-            });
-
-            // Lưu checkbox states
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                if (checkbox.name) {
-                    if (!formValues[checkbox.name]) {
-                        formValues[checkbox.name] = [];
-                    }
-                    if (checkbox.checked) {
-                        formValues[checkbox.name].push(checkbox.value);
-                    }
-                }
-            });
-
-            // Lưu radio button states
-            const radioButtons = document.querySelectorAll('input[type="radio"]:checked');
-            radioButtons.forEach(radio => {
-                if (radio.name) {
-                    formValues[radio.name] = radio.value;
-                }
-            });
-
-            // Lưu TinyMCE content
-            if (tinymce.get('description')) {
-                formValues['description'] = tinymce.get('description').getContent();
-            }
-
-            localStorage.setItem('productFormData', JSON.stringify(formValues));
-            debugLog('Form values saved to localStorage', formValues);
-        }
-
-        // Hàm khôi phục giá trị form từ localStorage
-        function restoreFormValues() {
-            const savedData = localStorage.getItem('productFormData');
-            if (!savedData) return;
-
-            try {
-                const formValues = JSON.parse(savedData);
-                debugLog('Restoring form values from localStorage', formValues);
-
-                // Khôi phục input values
-                Object.keys(formValues).forEach(key => {
-                    const element = document.querySelector(`[name="${key}"]`);
-                    if (element && element.type !== 'checkbox' && element.type !== 'radio' && element.type !==
-                        'file') {
-                        element.value = formValues[key];
-                    }
-                });
-
-                // Khôi phục checkbox states
-                Object.keys(formValues).forEach(key => {
-                    if (Array.isArray(formValues[key])) {
-                        formValues[key].forEach(value => {
-                            const checkbox = document.querySelector(
-                                `input[name="${key}"][value="${value}"]`);
-                            if (checkbox) {
-                                checkbox.checked = true;
-                            }
-                        });
-                    }
-                });
-
-                // Khôi phục radio button states
-                Object.keys(formValues).forEach(key => {
-                    const radio = document.querySelector(`input[name="${key}"][value="${formValues[key]}"]`);
-                    if (radio && radio.type === 'radio') {
-                        radio.checked = true;
-                    }
-                });
-
-                // Khôi phục TinyMCE content
-                if (formValues['description'] && tinymce.get('description')) {
-                    tinymce.get('description').setContent(formValues['description']);
-                }
-
-                // Trigger product type change to update UI
-                const productTypeRadios = document.querySelectorAll('input[name="product_type"]');
-                productTypeRadios.forEach(radio => {
-                    if (radio.checked) {
-                        radio.dispatchEvent(new Event('change'));
-                    }
-                });
-
-                debugLog('Form values restored successfully');
-            } catch (error) {
-                debugLog('Error restoring form values', error);
-            }
-        }
-
-        // Hàm xóa dữ liệu form đã lưu
-        function clearSavedFormData() {
-            localStorage.removeItem('productFormData');
-            debugLog('Saved form data cleared');
         }
 
         // Main initialization
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('DOM fully loaded');
-
-            // Khôi phục giá trị form nếu có lỗi trước đó
-            restoreFormValues();
 
             // Khởi tạo TinyMCE
             tinymce.init({
@@ -1747,14 +1676,6 @@
                 },
                 setup: editor => editor.on('change', () => editor.save())
             });
-
-            // Xử lý server-side validation errors
-            @if ($errors->any())
-                // Nếu có lỗi từ server, lưu form data để khôi phục sau
-                setTimeout(() => {
-                    saveFormValues();
-                }, 100);
-            @endif
 
             // Xử lý submit form
             const productForm = document.getElementById('product-form');
@@ -1877,14 +1798,9 @@
                 shippingTabButton.classList.remove('active');
                 attributesVariantsTabButton.classList.remove('active');
 
-                // Helper to manage required attributes and disabled state
-                function setFieldsState(elements, isRequired, isDisabled) {
+                // Helper to manage disabled state (no more required attributes)
+                function setFieldsState(elements, isDisabled) {
                     elements.forEach(el => {
-                        if (el.hasAttribute('data-original-required') && isRequired) {
-                            el.setAttribute('required', 'required');
-                        } else {
-                            el.removeAttribute('required');
-                        }
                         el.disabled = isDisabled;
                     });
                 }
@@ -1892,13 +1808,12 @@
                 // Get all relevant inputs within tabs
                 const generalDetailsInputs = document.querySelectorAll(
                     '#tab-general-details input:not([type="hidden"]), #tab-general-details select, #tab-general-details textarea'
-                );
+                    );
                 const pricingInputs = document.querySelectorAll(
-                    '#tab-pricing-inventory input:not([type="hidden"])');
+                '#tab-pricing-inventory input:not([type="hidden"])');
                 const shippingInputs = document.querySelectorAll('#tab-shipping input:not([type="hidden"])');
                 const attributesVariantsInputs = document.querySelectorAll(
                     '#tab-attributes-variants input:not([type="hidden"]), #tab-attributes-variants select');
-
 
                 if (selectedProductType === 'variant') {
                     // Show General Details and Attributes & Variants tab content and buttons
@@ -1907,11 +1822,10 @@
                     tabAttributesVariants.classList.remove('hidden');
                     attributesVariantsTabButton.style.display = '';
 
-
-                    // Disable/unrequire simple product specific fields
-                    setFieldsState(pricingInputs, false, true);
-                    setFieldsState(shippingInputs, false, true);
-                    setFieldsState(attributesVariantsInputs, true, false); // Enable/require variant fields
+                    // Disable simple product specific fields
+                    setFieldsState(pricingInputs, true);
+                    setFieldsState(shippingInputs, true);
+                    setFieldsState(attributesVariantsInputs, false); // Enable variant fields
 
                     // Hide simple product specific tab buttons
                     pricingInventoryTabButton.style.display = 'none';
@@ -1926,10 +1840,10 @@
                     tabShipping.classList.remove('hidden');
                     shippingTabButton.style.display = '';
 
-                    // Enable/require simple fields, disable/unrequire variant fields
-                    setFieldsState(pricingInputs, true, false);
-                    setFieldsState(shippingInputs, true, false);
-                    setFieldsState(attributesVariantsInputs, false, true); // Disable/unrequire variant fields
+                    // Enable simple fields, disable variant fields
+                    setFieldsState(pricingInputs, false);
+                    setFieldsState(shippingInputs, false);
+                    setFieldsState(attributesVariantsInputs, true); // Disable variant fields
 
                     // Hide attributes-variants button in sidebar for simple
                     attributesVariantsTabButton.style.display = 'none';
@@ -1977,7 +1891,7 @@
                         if (currentlyDisplayedTab) {
                             document.querySelector(
                                 `.tab-button[data-tab="${currentlyDisplayedTab.id.replace('tab-', '')}"]`
-                            ).classList.add('active');
+                                ).classList.add('active');
                         }
                     }
                 });
@@ -1986,7 +1900,7 @@
             // Store original required state for inputs inside tabs, so we can re-apply/remove dynamically
             document.querySelectorAll(
                 '#tab-general-details input, #tab-general-details select, #tab-general-details textarea, #tab-pricing-inventory input, #tab-shipping input, #tab-attributes-variants input, #tab-attributes-variants select, #tab-attributes-variants textarea'
-            ).forEach(input => {
+                ).forEach(input => {
                 if (input.required) {
                     input.setAttribute('data-original-required', 'true');
                 }
@@ -1995,26 +1909,431 @@
             // Re-call toggleProductTypeSections after `data-original-required` is set to ensure correct initial state
             toggleProductTypeSections();
 
-            // Clear saved form data when form is successfully submitted
-            const productForm = document.getElementById('product-form');
-            if (productForm) {
-                productForm.addEventListener('submit', function() {
-                    // Clear saved data after a short delay to ensure form is submitted
-                    setTimeout(() => {
-                        clearSavedFormData();
-                    }, 1000);
+            // Thêm validation real-time cho các trường quan trọng
+            addRealTimeValidation();
+
+            // Khôi phục dữ liệu cũ nếu có lỗi validation
+            restoreFormData();
+
+            // Thêm validation cho logic giá nhập và giá bán khi load trang
+            setTimeout(() => {
+                validatePriceLogic();
+                validateVariantPriceLogic();
+            }, 200);
+
+        });
+
+        // Hàm thêm validation real-time
+        function addRealTimeValidation() {
+            // Validation cho tên sản phẩm
+            const nameInput = document.querySelector('input[name="name"]');
+            const nameCharCount = document.getElementById('name-char-count');
+            
+            if (nameInput) {
+                let nameCheckTimeout;
+                
+                // Cập nhật character counter
+                const updateCharCount = () => {
+                    const length = nameInput.value.length;
+                    nameCharCount.textContent = length;
+                    
+                    // Thay đổi màu khi gần đạt giới hạn
+                    if (length >= 90) {
+                        nameCharCount.classList.add('text-red-500');
+                        nameCharCount.classList.remove('text-gray-400');
+                    } else if (length >= 80) {
+                        nameCharCount.classList.add('text-yellow-500');
+                        nameCharCount.classList.remove('text-gray-400', 'text-red-500');
+                    } else {
+                        nameCharCount.classList.remove('text-yellow-500', 'text-red-500');
+                        nameCharCount.classList.add('text-gray-400');
+                    }
+                };
+                
+                // Cập nhật counter khi load trang
+                updateCharCount();
+                
+                nameInput.addEventListener('input', function() {
+                    // Cập nhật character counter
+                    updateCharCount();
+                    
+                    // Clear timeout cũ
+                    clearTimeout(nameCheckTimeout);
+                    
+                    // Clear error nếu có
+                    clearFieldError(this);
+                    
+                    // Set timeout mới để kiểm tra sau 500ms
+                    nameCheckTimeout = setTimeout(() => {
+                        checkProductName(this.value.trim());
+                    }, 500);
+                });
+                
+                nameInput.addEventListener('blur', function() {
+                    if (!this.value.trim()) {
+                        showFieldError(this, 'Vui lòng nhập tên sản phẩm.');
+                    } else if (this.value.trim().length > 100) {
+                        showFieldError(this, 'Tên sản phẩm không được vượt quá 100 ký tự.');
+                    } else {
+                        // Kiểm tra ngay khi blur
+                        checkProductName(this.value.trim());
+                    }
                 });
             }
 
-            // Add button to clear saved form data (for debugging/testing)
-            const clearDataButton = document.createElement('button');
-            clearDataButton.type = 'button';
-            clearDataButton.textContent = 'Xóa dữ liệu đã lưu';
-            clearDataButton.className = 'text-sm text-gray-500 hover:text-gray-700 underline';
-            clearDataButton.onclick = clearSavedFormData;
-            document.querySelector('.container').appendChild(clearDataButton);
+            // Validation cho SKU
+            const skuInput = document.querySelector('input[name="sku"]');
+            if (skuInput) {
+                skuInput.addEventListener('blur', function() {
+                    if (!this.value.trim()) {
+                        showFieldError(this, 'Vui lòng nhập mã SKU.');
+                    } else {
+                        clearFieldError(this);
+                    }
+                });
+            }
 
-        });
+            // Validation cho giá sản phẩm đơn
+            const priceInputs = document.querySelectorAll('#tab-pricing-inventory input[type="number"]');
+            priceInputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value && (isNaN(this.value) || parseFloat(this.value) < 0)) {
+                        showFieldError(this, 'Vui lòng nhập giá trị hợp lệ (>= 0).');
+                    } else if (this.value) {
+                        clearFieldError(this);
+                    }
+
+                    // Kiểm tra logic giá nhập và giá bán
+                    validatePriceLogic();
+                });
+            });
+
+            // Thêm validation cho giá biến thể
+            document.addEventListener('blur', function(e) {
+                if (e.target.name && e.target.name.includes('variants') && e.target.type === 'number') {
+                    if (e.target.value && (isNaN(e.target.value) || parseFloat(e.target.value) < 0)) {
+                        showFieldError(e.target, 'Vui lòng nhập giá trị hợp lệ (>= 0).');
+                    } else if (e.target.value) {
+                        clearFieldError(e.target);
+                    }
+
+                    // Kiểm tra logic giá nhập và giá bán cho biến thể
+                    validateVariantPriceLogic();
+                }
+            }, true);
+
+            // Validation cho thuộc tính
+            document.addEventListener('blur', function(e) {
+                if (e.target.classList.contains('attribute-values')) {
+                    if (!e.target.value.trim()) {
+                        showFieldError(e.target, 'Vui lòng nhập giá trị thuộc tính.');
+                    } else {
+                        clearFieldError(e.target);
+                    }
+                }
+            }, true);
+
+            // Validation cho SKU biến thể
+            document.addEventListener('blur', function(e) {
+                if (e.target.name && e.target.name.includes('variants') && e.target.name.includes('[sku]')) {
+                    if (!e.target.value.trim()) {
+                        showFieldError(e.target, 'Vui lòng nhập SKU cho biến thể.');
+                    } else {
+                        clearFieldError(e.target);
+                    }
+                }
+            }, true);
+        }
+
+        // Hàm xóa lỗi cho một trường cụ thể
+        function clearFieldError(field) {
+            if (!field) return;
+
+            // Xóa class lỗi
+            field.classList.remove('border-red-500');
+
+            // Xóa thông báo lỗi
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+        }
+
+        // Hàm validation logic giá nhập và giá bán cho sản phẩm đơn
+        function validatePriceLogic() {
+            const purchasePriceInput = document.querySelector('#tab-pricing-inventory input[name="purchase_price"]');
+            const salePriceInput = document.querySelector('#tab-pricing-inventory input[name="sale_price"]');
+
+            if (purchasePriceInput && salePriceInput && purchasePriceInput.value && salePriceInput.value) {
+                const purchasePrice = parseFloat(purchasePriceInput.value);
+                const salePrice = parseFloat(salePriceInput.value);
+
+                if (purchasePrice > salePrice) {
+                    showFieldError(purchasePriceInput, 'Giá nhập không được lớn hơn giá bán.');
+                    showFieldError(salePriceInput, 'Giá bán phải lớn hơn hoặc bằng giá nhập.');
+                } else {
+                    clearFieldError(purchasePriceInput);
+                    clearFieldError(salePriceInput);
+                }
+            }
+        }
+
+        // Hàm validation logic giá nhập và giá bán cho biến thể
+        function validateVariantPriceLogic() {
+            const variantItems = document.querySelectorAll('#variant-container .variant-item');
+
+            variantItems.forEach((variant, index) => {
+                const purchasePriceInput = variant.querySelector(
+                `input[name="variants[${index}][purchase_price]"]`);
+                const salePriceInput = variant.querySelector(`input[name="variants[${index}][sale_price]"]`);
+
+                if (purchasePriceInput && salePriceInput && purchasePriceInput.value && salePriceInput.value) {
+                    const purchasePrice = parseFloat(purchasePriceInput.value);
+                    const salePrice = parseFloat(salePriceInput.value);
+
+                    if (purchasePrice > salePrice) {
+                        showFieldError(purchasePriceInput, 'Giá nhập không được lớn hơn giá bán.');
+                        showFieldError(salePriceInput, 'Giá bán phải lớn hơn hoặc bằng giá nhập.');
+                    } else {
+                        clearFieldError(purchasePriceInput);
+                        clearFieldError(salePriceInput);
+                    }
+                }
+            });
+        }
+
+                // Hàm kiểm tra tên sản phẩm đã tồn tại
+        function checkProductName(name) {
+            if (!name || name.length < 2) {
+                return; // Không kiểm tra nếu tên quá ngắn
+            }
+
+            const nameInput = document.querySelector('input[name="name"]');
+            const nameContainer = nameInput.parentNode;
+            
+            // Tạo hoặc hiển thị spinner
+            let spinner = nameContainer.querySelector('.name-check-spinner');
+            if (!spinner) {
+                spinner = document.createElement('div');
+                spinner.className = 'name-check-spinner';
+                spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                nameContainer.appendChild(spinner);
+            }
+            spinner.style.display = 'block';
+            
+            fetch('{{ route("seller.products.check-name") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    name: name
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                spinner.style.display = 'none';
+                if (data.exists) {
+                    showFieldError(nameInput, data.message);
+                } else {
+                    clearFieldError(nameInput);
+                }
+            })
+            .catch(error => {
+                spinner.style.display = 'none';
+                console.error('Error checking product name:', error);
+            });
+        }
+
+        // Hàm khôi phục dữ liệu form từ session storage (nếu có)
+        function restoreFormData() {
+            // Kiểm tra xem có lỗi validation không
+            const hasErrors = document.querySelector('.bg-red-100');
+            if (hasErrors) {
+                // Nếu có lỗi, form sẽ tự động giữ dữ liệu cũ thông qua Laravel's old() helper
+                console.log('Form có lỗi validation, dữ liệu cũ đã được khôi phục');
+                
+                // Khôi phục trạng thái tab và loại sản phẩm
+                restoreProductTypeState();
+                
+                // Khôi phục dữ liệu biến thể nếu có
+                restoreVariantData();
+            }
+        }
+
+        // Hàm khôi phục trạng thái loại sản phẩm
+        function restoreProductTypeState() {
+            const productType = '{{ old('product_type', 'simple') }}';
+            const radioButton = document.querySelector(`input[name="product_type"][value="${productType}"]`);
+            if (radioButton) {
+                radioButton.checked = true;
+                // Trigger change event để cập nhật UI
+                radioButton.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // Hàm khôi phục dữ liệu biến thể
+        function restoreVariantData() {
+            const oldVariants = @json(old('variants', []));
+            const oldAttributes = @json(old('attributes', []));
+
+            if (oldVariants && oldVariants.length > 0) {
+                // Nếu có dữ liệu biến thể cũ, tạo lại biến thể
+                setTimeout(() => {
+                    generateVariantsFromOldData(oldVariants);
+                }, 100);
+            }
+
+            // Khôi phục dữ liệu thuộc tính nếu có
+            if (oldAttributes && oldAttributes.length > 0) {
+                restoreAttributeData(oldAttributes);
+            }
+        }
+
+        // Hàm khôi phục dữ liệu thuộc tính
+        function restoreAttributeData(oldAttributes) {
+            const attributeContainer = document.getElementById('attribute-container');
+            if (!attributeContainer) return;
+
+            // Xóa tất cả thuộc tính hiện tại
+            attributeContainer.innerHTML = '';
+
+            oldAttributes.forEach((attribute, index) => {
+                const attributeRow = document.createElement('div');
+                attributeRow.classList.add('flex', 'items-center', 'gap-4', 'mb-2', 'attribute-row');
+
+                let attributeHTML = `
+                    <select name="attributes[${index}][id]" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select">
+                        <option value="" disabled>Chọn hoặc nhập thuộc tính</option>
+                        <option value="new" ${attribute.id === 'new' ? 'selected' : ''}>Tạo thuộc tính mới</option>
+                        ${window.allAttributes
+                            .filter(attr => attr.id && attr.name)
+                            .map(attr => `<option value="${attr.id}" ${attribute.id == attr.id ? 'selected' : ''}>${attr.name}</option>`)
+                            .join('')}
+                    </select>
+                    <input type="text" name="attributes[${index}][name]" value="${attribute.name || ''}" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name ${attribute.id === 'new' ? '' : 'hidden'}" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
+                    <input type="text" name="attributes[${index}][values]" value="${attribute.values || ''}" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)">
+                    <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
+                `;
+
+                attributeRow.innerHTML = attributeHTML;
+                attributeContainer.appendChild(attributeRow);
+
+                // Thêm event listeners
+                const select = attributeRow.querySelector('.attribute-select');
+                select.addEventListener('change', function() {
+                    updateAttributeValues(this);
+                });
+
+                attributeRow.querySelector('.remove-attribute').addEventListener('click', () => {
+                    attributeRow.remove();
+                    updateAttributeIndices();
+                });
+            });
+
+            // Cập nhật index cho thuộc tính
+            attributeIndex = oldAttributes.length;
+        }
+
+        // Hàm tạo biến thể từ dữ liệu cũ
+        function generateVariantsFromOldData(oldVariants) {
+            const variantContainer = document.getElementById('variant-container');
+            if (!variantContainer) return;
+
+            variantContainer.innerHTML = '';
+
+            oldVariants.forEach((variant, index) => {
+                const variantDiv = document.createElement('div');
+                variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white',
+                    'relative', 'variant-item');
+
+                let variantHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.name || 'Biến thể'}</h5>
+                        <div class="flex space-x-3">
+                            <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
+                            <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="variant-content transition-all duration-300 ease-in-out">
+                        <input type="hidden" name="variants[${index}][index]" value="${index}">
+                        <input type="hidden" name="variants[${index}][name]" value="${variant.name || ''}">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" value="${variant.price || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" value="${variant.purchase_price || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" value="${variant.sale_price || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" value="${variant.sku || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" value="${variant.stock_total || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài" value="${variant.length || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
+                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng" value="${variant.width || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
+                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao" value="${variant.height || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
+                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng" value="${variant.weight || ''}">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
+                            ${variant.attributes ? variant.attributes.map((attr, attrIndex) => `
+                                    <div class="flex items-center gap-4 mb-2">
+                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attr.name || ''}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${attr.value || ''}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                    </div>
+                                `).join('') : ''}
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
+                            <input type="file" name="variant_images[${index}][]"
+                                multiple
+                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                accept="image/*"
+                                onchange="previewVariantImage(event, ${index})">
+                            <div id="preview-images-${index}"
+                                class="mt-2 flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                `;
+                variantDiv.innerHTML = variantHTML;
+                variantContainer.appendChild(variantDiv);
+
+                variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
+                    variantDiv.remove();
+                    updateVariantIndices();
+                });
+            });
+
+            initializeToggleButtons();
+            updateVariantIndices();
+        }
     </script>
 @endpush
 @push('styles')
@@ -2043,6 +2362,50 @@
             /* Adjust as needed */
             align-self: flex-start;
             /* For flex container parent */
+        }
+
+        /* Styles cho validation errors */
+        .field-error {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .border-red-500 {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px #ef4444;
+        }
+
+        .border-red-500:focus {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Loading state cho kiểm tra tên sản phẩm */
+        .name-check-spinner {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 14px;
+            display: none;
+            z-index: 10;
+        }
+
+        /* Đảm bảo container có position relative */
+        .mb-4 {
+            position: relative;
         }
     </style>
 @endpush

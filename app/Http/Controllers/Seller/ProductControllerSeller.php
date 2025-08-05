@@ -1097,6 +1097,9 @@ class ProductControllerSeller extends Controller
     // Tái sử dụng cho store & update
     protected function validationRules($isUpdate = false, $productId = null)
     {
+        $seller = Auth::user()->seller;
+        $shop = $seller->shops->first();
+        
         $skuRule = $isUpdate
             ? 'required|string|max:100|unique:products,sku,' . $productId
             : 'required|string|max:100|unique:products,sku';
@@ -1105,11 +1108,19 @@ class ProductControllerSeller extends Controller
             ? 'required|string|max:100|distinct'
             : 'required|string|max:100|unique:product_variants,sku';
 
+        // Tạo rule cho tên sản phẩm unique trong shop
+        $nameRule = 'required|string|max:100';
+        if ($shop) {
+            $nameRule = $isUpdate
+                ? 'required|string|max:100|unique:products,name,' . $productId . ',id,shopID,' . $shop->id
+                : 'required|string|max:100|unique:products,name,NULL,id,shopID,' . $shop->id;
+        }
+
         $rules = [
-            'name' => 'required|string|max:255',
+            'name' => $nameRule,
             'description' => 'nullable|string',
             'sku' => $skuRule,
-            'brand_ids' => 'required|array|min:1',
+            'brand_ids' => 'nullable|array',
             'brand_ids.*' => 'exists:brand,id',
             'category_ids' => 'required|array|min:1',
             'category_ids.*' => 'exists:categories,id',
@@ -1129,7 +1140,7 @@ class ProductControllerSeller extends Controller
                 'attributes.*.name' => 'nullable|string|max:100',
                 'attributes.*.values' => 'nullable|string',
                 'variants' => 'required|array|min:1',
-                'variants.*.name' => 'required|string|max:255',
+                'variants.*.name' => 'required|string|max:100',
                 'variants.*.price' => 'required|numeric|min:0',
                 'variants.*.purchase_price' => 'required|numeric|min:0',
                 'variants.*.sale_price' => 'required|numeric|min:0',
@@ -1157,11 +1168,11 @@ class ProductControllerSeller extends Controller
     {
         return [
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
-            'name.max' => 'Tên sản phẩm không được vượt quá :max ký tự.',
+            'name.max' => 'Tên sản phẩm không được vượt quá 100 ký tự.',
+            'name.unique' => 'Tên sản phẩm này đã tồn tại trong shop của bạn.',
             'sku.required' => 'Vui lòng nhập mã SKU.',
             'sku.unique' => 'Mã SKU này đã tồn tại.',
-            'brand_ids.required' => 'Vui lòng chọn ít nhất một thương hiệu.',
-            'brand_ids.min' => 'Vui lòng chọn ít nhất một thương hiệu.',
+            'brand_ids.array' => 'Thương hiệu phải được chọn dưới dạng danh sách.',
             'brand_ids.*.exists' => 'Thương hiệu được chọn không tồn tại.',
             'category_ids.required' => 'Vui lòng chọn ít nhất một danh mục.',
             'category_ids.min' => 'Vui lòng chọn ít nhất một danh mục.',
@@ -1233,5 +1244,40 @@ class ProductControllerSeller extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Lỗi: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Kiểm tra tên sản phẩm đã tồn tại
+     */
+    public function checkProductName(Request $request)
+    {
+        $name = $request->input('name');
+        $productId = $request->input('product_id'); // Cho trường hợp edit
+        
+        if (empty($name)) {
+            return response()->json(['exists' => false, 'message' => '']);
+        }
+
+        $seller = Auth::user()->seller;
+        $shop = $seller->shops->first();
+        
+        if (!$shop) {
+            return response()->json(['exists' => false, 'message' => 'Bạn chưa có shop.']);
+        }
+
+        $query = Product::where('name', $name)
+            ->where('shopID', $shop->id);
+        
+        // Nếu đang edit, loại trừ sản phẩm hiện tại
+        if ($productId) {
+            $query->where('id', '!=', $productId);
+        }
+
+        $exists = $query->exists();
+
+        return response()->json([
+            'exists' => $exists,
+            'message' => $exists ? 'Tên sản phẩm này đã tồn tại trong shop của bạn.' : ''
+        ]);
     }
 }

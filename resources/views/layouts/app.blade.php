@@ -43,8 +43,10 @@
     @vite('resources/css/user/orderDetail.css')
     @vite('resources/css/user/notifications.css')
     @vite('resources/css/user/cart-sidebar.css')
+    <link rel="stylesheet" href="{{ asset('css/snow-animation.css') }}">
     @stack('styles')
     @vite('resources/js/echo.js')
+    <script src="{{ asset('js/snow-animation.js') }}"></script>
     <style>
         .floating-support-icons {
             position: fixed;
@@ -994,6 +996,7 @@
                         }
                     })
                     .catch(error => console.error('Error fetching cart quantity:', error));
+
             }
 
             function fetchCartItems() {
