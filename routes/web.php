@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
+use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
@@ -261,17 +262,37 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::resource('post-tags', PostTagController::class);
     // Post
     Route::resource('post', PostController::class);
+    
+    // Comments Management
+    Route::prefix('comments')->group(function () {
+        Route::get('/', [AdminCommentController::class, 'index'])->name('admin.comments.index');
+        Route::get('/{comment}', [AdminCommentController::class, 'show'])->name('admin.comments.show');
+        Route::post('/{comment}/approve', [AdminCommentController::class, 'approve'])->name('admin.comments.approve');
+        Route::post('/{comment}/reject', [AdminCommentController::class, 'reject'])->name('admin.comments.reject');
+        Route::delete('/{comment}', [AdminCommentController::class, 'destroy'])->name('admin.comments.destroy');
+    });
+    
     // Help
     Route::resource('help-category', HelpCategoryController::class);
     Route::resource('help-article', HelpArticleController::class);
     Route::resource('logo', LogoController::class);
 
-    // Shop Approval (Admin)
+    // Shop Management (Admin)
     Route::prefix('shops')->group(function () {
+        Route::get('/', [AdminShopController::class, 'index'])->name('admin.shops.index');
         Route::get('/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
+        Route::get('/active', [AdminShopController::class, 'active'])->name('admin.shops.active');
+        Route::get('/banned', [AdminShopController::class, 'banned'])->name('admin.shops.banned');
+        Route::get('/analytics', [AdminShopController::class, 'analytics'])->name('admin.shops.analytics');
         Route::get('/{shop}', [AdminShopController::class, 'show'])->name('admin.shops.show');
         Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
         Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
+        Route::post('/{shop}/deactivate', [AdminShopController::class, 'deactivate'])->name('admin.shops.deactivate');
+        Route::post('/{shop}/ban', [AdminShopController::class, 'ban'])->name('admin.shops.ban');
+        Route::post('/{shop}/unban', [AdminShopController::class, 'unban'])->name('admin.shops.unban');
+        Route::post('/{shop}/reactivate', [AdminShopController::class, 'reactivate'])->name('admin.shops.reactivate');
+        Route::put('/{shop}', [AdminShopController::class, 'update'])->name('admin.shops.update');
+        Route::delete('/{shop}', [AdminShopController::class, 'destroy'])->name('admin.shops.destroy');
     });
 });
 
