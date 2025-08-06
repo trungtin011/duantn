@@ -13,6 +13,9 @@ use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantAttributeValue;
 use App\Models\ProductAttribute;
+use App\Models\Notification;
+use App\Models\NotificationReceiver;
+use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -27,7 +30,7 @@ class ProductControllerAdmin extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['variants', 'images']);
+        $query = Product::with(['variants', 'images', 'shop']);
 
         // Tìm kiếm theo tên hoặc SKU
         if ($request->filled('search')) {
@@ -40,9 +43,17 @@ class ProductControllerAdmin extends Controller
             $query->where('status', $request->status);
         }
 
+        // Lọc theo shop nếu có chọn
+        if ($request->filled('shop_id')) {
+            $query->where('shopID', $request->shop_id);
+        }
+
         $products = $query->paginate(5);
 
-        return view('admin.products.index', compact('products'));
+        // Lấy danh sách shops để hiển thị trong dropdown
+        $shops = Shop::where('shop_status', 'active')->get();
+
+        return view('admin.products.index', compact('products', 'shops'));
     }
 
 
@@ -633,6 +644,125 @@ class ProductControllerAdmin extends Controller
         } catch (\Exception $e) {
             Log::error('Lỗi khi lấy sub-categories: ' . $e->getMessage());
             return response()->json(['error' => 'Không thể lấy danh sách danh mục phụ'], 500);
+        }
+    }
+
+    /**
+     * Duyệt sản phẩm
+     */
+    public function approveProduct($id)
+    {
+        try {
+            $product = Product::with('shop.owner')->findOrFail($id);
+            $product->update(['status' => 'active']);
+            
+            Log::info('Product approved by admin', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'admin_id' => Auth::id()
+            ]);
+
+            // Gửi thông báo cho seller
+            if ($product->shop && $product->shop->owner) {
+                $notification = Notification::create([
+                    'sender_id' => Auth::id(),
+                    'title' => 'Sản phẩm đã được duyệt',
+                    'content' => "Sản phẩm '{$product->name}' của bạn đã được admin duyệt và hiện đang hoạt động.",
+                    'receiver_type' => 'shop',
+                    'type' => 'system',
+                    'priority' => 'normal',
+                    'status' => 'active',
+                ]);
+
+                NotificationReceiver::create([
+                    'notification_id' => $notification->id,
+                    'receiver_id' => $product->shop->id,
+                    'receiver_type' => 'shop',
+                ]);
+
+                Log::info('Notification sent to seller for product approval', [
+                    'product_id' => $product->id,
+                    'shop_id' => $product->shop->id,
+                    'notification_id' => $notification->id
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Sản phẩm đã được duyệt thành công.');
+        } catch (\Exception $e) {
+            Log::error('Error approving product: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi duyệt sản phẩm.');
+        }
+    }
+
+    /**
+     * Từ chối sản phẩm
+     */
+    public function rejectProduct($id)
+    {
+        try {
+            $product = Product::with('shop.owner')->findOrFail($id);
+            $product->update(['status' => 'inactive']);
+            
+            Log::info('Product rejected by admin', [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'admin_id' => Auth::id()
+            ]);
+
+            // Gửi thông báo cho seller
+            if ($product->shop && $product->shop->owner) {
+                $notification = Notification::create([
+                    'sender_id' => Auth::id(),
+                    'title' => 'Sản phẩm bị từ chối',
+                    'content' => "Sản phẩm '{$product->name}' của bạn đã bị admin từ chối. Vui lòng kiểm tra lại thông tin sản phẩm.",
+                    'receiver_type' => 'shop',
+                    'type' => 'system',
+                    'priority' => 'high',
+                    'status' => 'active',
+                ]);
+
+                NotificationReceiver::create([
+                    'notification_id' => $notification->id,
+                    'receiver_id' => $product->shop->id,
+                    'receiver_type' => 'shop',
+                ]);
+
+                Log::info('Notification sent to seller for product rejection', [
+                    'product_id' => $product->id,
+                    'shop_id' => $product->shop->id,
+                    'notification_id' => $notification->id
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Sản phẩm đã bị từ chối.');
+        } catch (\Exception $e) {
+            Log::error('Error rejecting product: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi từ chối sản phẩm.');
+        }
+    }
+
+    /**
+     * Duyệt nhiều sản phẩm cùng lúc
+     */
+    public function approveMultiple(Request $request)
+    {
+        try {
+            $ids = $request->input('ids', []);
+            if (empty($ids)) {
+                return response()->json(['message' => 'Không có sản phẩm nào được chọn'], 400);
+            }
+
+            Product::whereIn('id', $ids)->update(['status' => 'active']);
+            
+            Log::info('Multiple products approved by admin', [
+                'product_ids' => $ids,
+                'admin_id' => Auth::id()
+            ]);
+
+            return response()->json(['message' => 'Đã duyệt thành công ' . count($ids) . ' sản phẩm']);
+        } catch (\Exception $e) {
+            Log::error('Error approving multiple products: ' . $e->getMessage());
+            return response()->json(['message' => 'Lỗi: ' . $e->getMessage()], 500);
         }
     }
 }

@@ -162,6 +162,9 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::put('/{id}', [ProductControllerAdmin::class, 'update'])->name('admin.products.update');
         Route::delete('/{id}', [ProductControllerAdmin::class, 'destroy'])->name('admin.products.destroy');
         Route::get('/{id}', [ProductControllerAdmin::class, 'show'])->name('admin.products.show');
+        Route::post('/{id}/approve', [ProductControllerAdmin::class, 'approveProduct'])->name('admin.products.approve');
+        Route::post('/{id}/reject', [ProductControllerAdmin::class, 'rejectProduct'])->name('admin.products.reject');
+        Route::post('/approve-multiple', [ProductControllerAdmin::class, 'approveMultiple'])->name('admin.products.approveMultiple');
         Route::get('/get-sub-brands', [ProductControllerAdmin::class, 'getSubBrands'])->name('admin.get-sub-brands');
         Route::get('/get-sub-categories', [ProductControllerAdmin::class, 'getSubCategories'])->name('admin.get-sub-categories');
     });

@@ -167,7 +167,7 @@ class ProductControllerSeller extends Controller
                 'meta_keywords' => $metaKeywords,
                 'is_featured' => $request->has('is_featured') ? 1 : 0,
                 'is_variant' => $isVariant ? 1 : 0,
-                'status' => $request->save_draft ? 'draft' : 'active',
+                'status' => $request->save_draft ? 'draft' : 'pending',
                 'sold_quantity' => 0,
                 'shopID' => $shop->id,
             ]);
@@ -521,7 +521,7 @@ class ProductControllerSeller extends Controller
             }
 
             DB::commit();
-            return redirect()->route('seller.products.index')->with('success', 'Sản phẩm đã được tạo thành công.');
+            return redirect()->route('seller.products.index')->with('success', 'Sản phẩm đã được tạo thành công và đang chờ admin duyệt.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Product creation failed', [
@@ -673,7 +673,7 @@ class ProductControllerSeller extends Controller
                 'meta_keywords' => $metaKeywords,
                 'is_featured' => $request->has('is_featured') ? 1 : 0,
                 'is_variant' => $request->filled('variants') ? 1 : 0,
-                'status' => $request->save_draft ? 'draft' : 'active',
+                'status' => $request->save_draft ? 'draft' : 'pending',
             ]);
 
             // Xử lý danh mục

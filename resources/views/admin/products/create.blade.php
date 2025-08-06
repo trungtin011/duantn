@@ -248,8 +248,7 @@
                                             id="meta-description-count">0/160</span></label>
                                     <textarea name="meta_description" id="meta-description"
                                         class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        maxlength="160"
-                                        placeholder="Mô tả ngắn gọn (tối đa 160 ký tự)">{{ old('meta_description') }}</textarea>
+                                        maxlength="160" placeholder="Mô tả ngắn gọn (tối đa 160 ký tự)">{{ old('meta_description') }}</textarea>
                                     <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ
                                         tìm kiếm.</span>
                                     @error('meta_description')
@@ -281,7 +280,8 @@
                                         class="block w-full py-2 px-4 border border-gray-300 rounded-md text-center text-sm text-gray-700 hover:bg-blue-50 cursor-pointer">
                                         Tải ảnh chính lên
                                     </label>
-                                    <input type="file" id="mainImage" name="images[]" class="hidden" accept="image/*">
+                                    <input type="file" id="mainImage" name="images[]" class="hidden"
+                                        accept="image/*">
                                     @error('images.*')
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
@@ -322,7 +322,9 @@
                                             required>
                                             <option value="">Chọn thương hiệu</option>
                                             @foreach ($brands as $brand)
-                                                <option value="{{ $brand->name }}" {{ old('brand') == $brand->name ? 'selected' : '' }}>{{ $brand->name }}
+                                                <option value="{{ $brand->name }}"
+                                                    {{ old('brand') == $brand->name ? 'selected' : '' }}>
+                                                    {{ $brand->name }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -347,7 +349,9 @@
                                             required>
                                             <option value="">Chọn danh mục</option>
                                             @foreach ($categories as $category)
-                                                <option value="{{ $category->name }}" {{ old('category') == $category->name ? 'selected' : '' }}>{{ $category->name }}</option>
+                                                <option value="{{ $category->name }}"
+                                                    {{ old('category') == $category->name ? 'selected' : '' }}>
+                                                    {{ $category->name }}</option>
                                             @endforeach
                                         </select>
                                         @error('category')
@@ -367,7 +371,8 @@
                                 </div>
                                 <div class="mb-4">
                                     <label class="flex items-center">
-                                        <input type="checkbox" name="is_featured" value="1" class="mr-2" {{ old('is_featured') ? 'checked' : '' }}>
+                                        <input type="checkbox" name="is_featured" value="1" class="mr-2"
+                                            {{ old('is_featured') ? 'checked' : '' }}>
                                         <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
                                     </label>
                                 </div>
@@ -401,21 +406,21 @@
 @endsection
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    if (typeof window.generateVariants === 'function') {
-        const btn = document.getElementById('generate-variants-btn');
-        if (btn) {
-            btn.addEventListener('click', window.generateVariants);
-        }
-    }
-    if (typeof window.addAttribute === 'function') {
-        const btn = document.getElementById('add-attribute-btn');
-        if (btn) {
-            btn.addEventListener('click', window.addAttribute);
-        }
-    }
-});
-</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            if (typeof window.generateVariants === 'function') {
+                const btn = document.getElementById('generate-variants-btn');
+                if (btn) {
+                    btn.addEventListener('click', window.generateVariants);
+                }
+            }
+            if (typeof window.addAttribute === 'function') {
+                const btn = document.getElementById('add-attribute-btn');
+                if (btn) {
+                    btn.addEventListener('click', window.addAttribute);
+                }
+            }
+        });
+    </script>
 @endpush
