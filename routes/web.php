@@ -154,6 +154,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     // products admin
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerAdmin::class, 'index'])->name('admin.products.index');
+        Route::get('/select-shop', [ProductControllerAdmin::class, 'selectShop'])->name('admin.products.select-shop');
         Route::get('/create', [ProductControllerAdmin::class, 'create'])->name('admin.products.create');
         Route::post('/', [ProductControllerAdmin::class, 'store'])->name('admin.products.store');
         Route::get('/{product}/variants/create', [ProductControllerAdmin::class, 'createVariant'])->name('admin.products.variants.create');
