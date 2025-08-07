@@ -26,8 +26,8 @@ class NotificationsRequest extends FormRequest
             'content' => 'required|string|max:500',
             'sender_id' => 'required|exists:users,id',
             'receiver_type' => 'required|in:user,shop,admin,all,employee',
-            'direct_to' => 'nullable|exists:users,id|exists:shops,id',
-            'type' => 'required|in:promotion,system,order,security',
+            'direct_to' => 'nullable',
+            'type' => 'required|in:promotion,system,security',
             'priority' => 'required|in:low,normal,high',
             'status' => 'nullable|in:pending,active,inactive,failed',
         ];

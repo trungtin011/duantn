@@ -132,6 +132,7 @@ Route::get('/auth/google', [LoginController::class, 'redirectToGoogle'])->name('
 Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallback']);
 Route::get('/auth/facebook', [LoginController::class, 'redirectToFacebook'])->name('auth.facebook.login');
 Route::get('/auth/facebook/callback', [LoginController::class, 'handleFacebookCallback']);
+Route::post('notifications/{id}/mark-read', [AdminNotificationsControllers::class, 'markAsRead'])->name('admin.notifications.markAsRead');
 
 // admin routes
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
@@ -197,14 +198,16 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
 
     // notifications
     Route::prefix('notifications')->group(function () {
-        Route::get('/edit/{id}', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
+        Route::get('/ajax', [AdminNotificationsControllers::class, 'ajax'])->name('admin.notifications.ajax');
         Route::get('/create', [AdminNotificationsControllers::class, 'create'])->name('admin.notifications.create');
         Route::get('/', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
         Route::post('/', [AdminNotificationsControllers::class, 'store'])->name('admin.notifications.store');
+        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
+        Route::get('/edit/{id}', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
         Route::post('/mark-all-as-read', [AdminNotificationsControllers::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
         Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
+        Route::patch('/{id}/toggle-status', [AdminNotificationsControllers::class, 'toggleStatus'])->name('admin.notifications.toggleStatus');
         Route::get('/{id}', [AdminNotificationsControllers::class, 'show'])->name('admin.notifications.show');
-        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
     });
 
     // categories
@@ -230,6 +233,8 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::delete('/logo', [AdminSettingsController::class, 'destroyLogo'])->name('admin.settings.destroyLogo');
         Route::delete('/banner', [AdminSettingsController::class, 'destroyBanner'])->name('admin.settings.destroyBanner');
         Route::delete('/favicon', [AdminSettingsController::class, 'destroyFavicon'])->name('admin.settings.destroyFavicon');
+        Route::get('/emails', [AdminSettingsController::class, 'editEmails'])->name('admin.settings.emails');
+        Route::post('/emails', [AdminSettingsController::class, 'updateEmails'])->name('admin.settings.emails.update');
     });
 
     // users
@@ -492,7 +497,7 @@ Route::prefix('customer')->group(function () {
         Route::post('/checkout/submit', [CheckoutController::class, 'store'])->name('checkout.store');
         Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
         Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
-        Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('checkout.failed');
+        Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('failed_payment');
 
         Route::get('/checkout/momo/return', [MomoPaymentController::class, 'momoReturn'])->name('payment.momo.return');
         Route::post('/checkout/momo/ipn', [MomoPaymentController::class, 'momoIpn'])->name('payment.momo.ipn');
@@ -675,6 +680,7 @@ Route::post('/account/test-email', [UserController::class, 'testEmail'])->name('
 Route::get('/account/debug-reset_code', [UserController::class, 'debugResetCode'])->name('account.debug.reset.code');
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
 
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');

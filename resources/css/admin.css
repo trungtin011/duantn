@@ -85,6 +85,48 @@ main {
     padding: 32px 32px 0 32px;
 }
 
+/* Notification Dropdown Styles */
+.dropdown-notification {
+    position: relative;
+}
+
+.clip-triangle {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+/* Notification Item Styles */
+.notification-item {
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: #f9fafb;
+}
+
+.notification-item.unread {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+}
+
+.notification-item.read {
+    border-left: 4px solid transparent;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 /* Common Admin Page Styles */
 .admin-page-header {
     margin: -32px -32px 24px -32px;

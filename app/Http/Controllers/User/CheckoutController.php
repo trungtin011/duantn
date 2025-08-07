@@ -570,16 +570,23 @@ class CheckoutController extends Controller
             'order_status' => 'pending'
         ]);
 
-        $orderProductIds = $order->items->pluck('productID')->toArray();
-        $orderVariantIds = $order->items->pluck('variantID')->toArray();
+        foreach ($order->items as $item) {
+            $cartQuery = Cart::where('userID', Auth::id())
+                ->where('productID', $item->productID);
 
-        Cart::where('userID', Auth::id())
-            ->whereIn('productID', $orderProductIds)
-            ->where(function ($query) use ($orderVariantIds) {
-                $query->whereNull('variantID')
-                      ->orWhereIn('variantID', $orderVariantIds);
-            })
-            ->delete();
+            if (!empty($item->combo_id)) {
+                $cartQuery->where('combo_id', $item->combo_id);
+            } else {
+                if (!empty($item->variantID)) {
+                    $cartQuery->where('variantID', $item->variantID);
+                } else {
+                    $cartQuery->whereNull('variantID')
+                             ->whereNull('combo_id');
+                }
+            }
+
+            $cartQuery->delete();
+        }
         session()->forget('selected_products');
 
         $products = [];
@@ -622,28 +629,11 @@ class CheckoutController extends Controller
 
     public function failedPayment($order_code)
     {
-        $order = Order::where('order_code', $order_code)->first();
+        $order = Order::where('order_code', $order_code)->with('address','items','shop_order')->first();
         if (!$order) {
             return redirect()->route('home');
         }
-
-        $orderItems = ItemsOrder::where('orderID', $order->id)->get();
-        $items = [];
-        foreach ($orderItems as $item) {
-            $product = Product::with(['variants' => function ($query) use ($item) {
-                $query->where('id', $item->variantID);
-            }])->find($item->productID);
-
-            $items[] = [
-                'product' => $product,
-                'quantity' => $item->quantity,
-                'price' => $item->unit_price,
-                'total_price' => $item->total_price,
-            ];
-        }
-
-        session(['checkout_items' => $items]);
-        return redirect()->route('checkout')->with('error', 'Thanh toán thất bại. Vui lòng thử lại.');
+        return view('user.checkout_status.failed_payment', compact('order'));
     }    
 
     public function createPaymentTransaction($order, array $data)

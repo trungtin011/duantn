@@ -165,14 +165,25 @@
 @section('content')
 <div class="admin-container">
 
-
+        @if ($errors->any())
+            <div class="mb-4">
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">Đã xảy ra lỗi!</strong>
+                    <ul class="mt-2 list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
         <div class="notification-card">
             <h2 class="card-title">
                 <i class="fas fa-bell"></i>
                 Tạo thông báo mới
             </h2>
             
-            <form action="{{ route('admin.notifications.store') }}" method="post">
+            <form action="{{ route('admin.notifications.store') }}" method="post" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="sender_id" value="1">
                 
@@ -187,8 +198,7 @@
                         <label for="type" class="form-label">Loại thông báo</label>
                         <select name="type" id="type" class="form-select">
                             <option value="promotion">Khuyến mãi</option>
-                            <option value="system">Tin hệ thống</option>
-                            <option value="order">Đơn hàng</option>
+                            <option value="system">Hệ thống</option>
                             <option value="security">Bảo mật</option>
                         </select>
                         <div class="form-note">Chọn loại thông báo phù hợp với nội dung</div>
@@ -200,6 +210,32 @@
                     <textarea class="form-control" id="content" name="content" rows="5" placeholder="Nhập nội dung chi tiết thông báo" required></textarea>
                     <div class="form-note">Nội dung rõ ràng, đầy đủ thông tin</div>
                 </div>
+
+                <div class="form-group">
+                    <label for="image_path" class="form-label">Ảnh đính kèm</label>
+                    <input type="file" class="form-control" id="image_path" name="image_path" accept="image/*" onchange="previewImage(event)">
+                    <div class="form-note">Ảnh đính kèm (nếu có)</div>
+                    <div id="image_preview" style="margin-top: 10px;">
+                        <img id="preview_img" src="#" alt="Xem trước ảnh" style="display: none; max-width: 200px; max-height: 200px; border: 1px solid #ddd; border-radius: 4px;" />
+                    </div>
+                </div>
+                <script>
+                    function previewImage(event) {
+                        const input = event.target;
+                        const preview = document.getElementById('preview_img');
+                        if (input.files && input.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                preview.src = e.target.result;
+                                preview.style.display = 'block';
+                            }
+                            reader.readAsDataURL(input.files[0]);
+                        } else {
+                            preview.src = '#';
+                            preview.style.display = 'none';
+                        }
+                    }
+                </script>
                 
                 <div class="form-grid">
                     <div class="form-group">
@@ -240,16 +276,13 @@
 
 @push('scripts')
 <script>
-        // Thêm badge cho các option trong select mức độ ưu tiên
         document.addEventListener('DOMContentLoaded', function() {
             const prioritySelect = document.getElementById('priority');
             
-            // Cập nhật giao diện khi chọn mức độ ưu tiên
             prioritySelect.addEventListener('change', function() {
                 updatePriorityBadge();
             });
             
-            // Khởi tạo ban đầu
             updatePriorityBadge();
             
             function updatePriorityBadge() {
@@ -261,7 +294,6 @@
                     option.classList.remove('priority-badge', 'badge-low', 'badge-normal', 'badge-high');
                 });
                 
-                // Thêm class badge mới
                 if (value === 'low') {
                     selectedOption.classList.add('priority-badge', 'badge-low');
                 } else if (value === 'normal') {

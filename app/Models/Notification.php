@@ -15,14 +15,15 @@ class Notification extends Model
         'sender_id',
         'title',
         'content',
+        'image_path',
         'type',
         'reference_id',
         'receiver_type',
         'priority',
         'status',
+        'order_code',       
     ];
 
-    // Relationships
     public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);
@@ -36,5 +37,10 @@ class Notification extends Model
     public function receiver()
     {
         return $this->hasMany(NotificationReceiver::class, 'notification_id', 'id');
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_code', 'order_code');
     }
 }

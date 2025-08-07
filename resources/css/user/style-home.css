@@ -3845,7 +3845,6 @@ footer {
 
     .sidebar {
         --fs-5: 0.941rem;
-
         position: sticky;
         top: 30px;
         left: 0;
@@ -4121,7 +4120,7 @@ footer {
      */
 
     html {
-        font-size: 18px;
+        font-size: 16px;
     }
 
 

@@ -112,7 +112,6 @@
             </div>
         @endif
 
-        <!-- Thông tin khách hàng, thanh toán, giao hàng -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Khách hàng -->
             <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
