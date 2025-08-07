@@ -9,7 +9,8 @@
 @section('content')
     <div class="admin-page-header">
         <h1 class="admin-page-title">Sản phẩm</h1>
-        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Trang chủ</a> / Danh sách sản phẩm</div>
+        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Trang chủ</a> / Danh sách sản phẩm
+        </div>
     </div>
 
     <section class="bg-white rounded-lg shadow-sm p-6">
@@ -32,12 +33,18 @@
                         <select name="status" id="statusFilter"
                             class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="">Tất cả</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
-                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Không hoạt động</option>
-                            <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Số lượng thấp</option>
-                            <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Hết hàng</option>
-                            <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Lên lịch</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Hoạt động
+                            </option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt
+                            </option>
+                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Không hoạt động
+                            </option>
+                            <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Số lượng thấp
+                            </option>
+                            <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Hết
+                                hàng</option>
+                            <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Lên lịch
+                            </option>
                         </select>
                     </div>
                     <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
@@ -45,14 +52,29 @@
                         <select name="shop_id" id="shopFilter"
                             class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="">Tất cả cửa hàng</option>
-                            @foreach($shops as $shop)
-                                <option value="{{ $shop->id }}" {{ request('shop_id') == $shop->id ? 'selected' : '' }}>
+                            @foreach ($shops as $shop)
+                                <option value="{{ $shop->id }}"
+                                    {{ request('shop_id') == $shop->id ? 'selected' : '' }}>
                                     {{ $shop->shop_name }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
+                    <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
+                        <span>Ngày:</span>
+                        <input type="date" name="filter_date" id="filterDate" value="{{ request('filter_date') }}"
+                            class="border rounded px-3 py-2 text-xs">
+                    </div>
                 </div>
+                <button id="resetFilterBtn" type="button"
+                    class="border border-gray-300 text-xs text-white bg-red-500 px-3 py-2 rounded-md hover:bg-red-600 hover:text-white transition-colors"
+                    style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </button>
                 <button id="approve-selected"
                     class="hidden bg-green-500 text-white px-4 py-2 rounded-md text-sm hover:bg-green-600">
                     Duyệt đã chọn
@@ -68,7 +90,8 @@
             <thead class="text-gray-300 font-semibold border-b border-gray-100">
                 <tr>
                     <th class="w-6 py-3 pr-6">
-                        <input id="select-all" class="w-[18px] h-[18px]" aria-label="Chọn tất cả sản phẩm" type="checkbox" />
+                        <input id="select-all" class="w-[18px] h-[18px]" aria-label="Chọn tất cả sản phẩm"
+                            type="checkbox" />
                     </th>
                     <th class="py-3">Sản phẩm</th>
                     <th class="py-3">Cửa hàng</th>
@@ -98,44 +121,115 @@
                         </td>
                         <td class="py-4 text-[13px]">{{ $product->sku }}</td>
                         <td class="py-4 text-[13px]">
-                            {{ $product->stock_total }}
-                            @if ($product->stock_total <= 5 && $product->stock_total > 0)
-                                <span
-                                    class="inline-block bg-orange-100 text-orange-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                    Số lượng thấp
-                                </span>
-                            @elseif ($product->stock_total == 0)
-                                <span
-                                    class="inline-block bg-red-100 text-red-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                    Hết hàng
-                                </span>
+                            @if ($product->is_variant)
+                                {{-- Nếu là sản phẩm biến thể, hiển thị tổng số lượng các biến thể --}}
+                                @php
+                                    $variantStock = $product->variants->sum('stock');
+                                @endphp
+                                {{ $variantStock }}
+                                @if ($variantStock <= 5 && $variantStock > 0)
+                                    <span
+                                        class="inline-block bg-orange-100 text-orange-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                        Số lượng thấp
+                                    </span>
+                                @elseif ($variantStock == 0)
+                                    <span
+                                        class="inline-block bg-red-100 text-red-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                        Hết hàng
+                                    </span>
+                                @endif
+                            @else
+                                {{-- Nếu là sản phẩm đơn, hiển thị số lượng sản phẩm đơn --}}
+                                {{ $product->stock_total }}
+                                @if ($product->stock_total <= 5 && $product->stock_total > 0)
+                                    <span
+                                        class="inline-block bg-orange-100 text-orange-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                        Số lượng thấp
+                                    </span>
+                                @elseif ($product->stock_total == 0)
+                                    <span
+                                        class="inline-block bg-red-100 text-red-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                        Hết hàng
+                                    </span>
+                                @endif
                             @endif
                         </td>
-                        <td class="py-4 text-[13px]">{{ number_format($product->sale_price, 2) }}</td>
+                        <td class="py-4 text-[13px]">
+                            @if ($product->is_variant)
+                                {{-- Nếu là sản phẩm biến thể, hiển thị giá thấp nhất --}}
+                                @php
+                                    $minPrice = $product->variants->min('sale_price');
+                                    $maxPrice = $product->variants->max('sale_price');
+                                @endphp
+                                @if ($minPrice == $maxPrice)
+                                    {{ number_format($minPrice) }} VNĐ
+                                @else
+                                    Từ {{ number_format($minPrice) }} VNĐ đến {{ number_format($maxPrice) }} VNĐ
+                                @endif
+                            @else
+                                {{ number_format($product->sale_price) }} VNĐ
+                            @endif
+                        </td>
                         <td class="py-4">
                             <span
                                 class="inline-block 
-                                {{ $product->status == 'active' 
-                                    ? 'bg-green-100 text-green-600' 
-                                    : ($product->status == 'pending' 
-                                        ? 'bg-yellow-100 text-yellow-600' 
-                                        : ($product->status == 'inactive' 
-                                            ? 'bg-red-100 text-red-600' 
-                                            : 'bg-blue-100 text-blue-600')) }} 
+                                {{ $product->status == 'active'
+                                    ? 'bg-green-100 text-green-600'
+                                    : ($product->status == 'pending'
+                                        ? 'bg-yellow-100 text-yellow-600'
+                                        : ($product->status == 'inactive'
+                                            ? 'bg-red-100 text-red-600'
+                                            : ($product->status == 'scheduled'
+                                                ? 'bg-blue-100 text-blue-600'
+                                                : 'bg-gray-100 text-gray-600'))) }} 
                                 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                {{ $product->status == 'pending' ? 'Chờ duyệt' : ucfirst($product->status) }}
+                                {{-- Dịch trạng thái sang tiếng Việt --}}
+                                @switch($product->status)
+                                    @case('pending')
+                                        Chờ duyệt
+                                    @break
+
+                                    @case('active')
+                                        Hoạt động
+                                    @break
+
+                                    @case('inactive')
+                                        Không hoạt động
+                                    @break
+
+                                    @case('scheduled')
+                                        Lên lịch
+                                    @break
+
+                                    @case('low_stock')
+                                        Số lượng thấp
+                                    @break
+
+                                    @case('out_of_stock')
+                                        Hết hàng
+                                    @break
+
+                                    @case('draft')
+                                        Bản nháp
+                                    @break
+
+                                    @default
+                                        {{ ucfirst($product->status) }}
+                                @endswitch
                             </span>
                         </td>
                         <td class="py-4 pr-6 text-right flex items-center gap-2 justify-end">
-                            @if($product->status == 'pending')
-                                <form action="{{ route('admin.products.approve', $product->id) }}" method="POST" class="inline">
+                            @if ($product->status == 'pending')
+                                <form action="{{ route('admin.products.approve', $product->id) }}" method="POST"
+                                    class="inline">
                                     @csrf
                                     <button type="submit" aria-label="Duyệt {{ $product->name }}"
                                         class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-md focus:outline-none">
                                         <i class="fas fa-check text-xs"></i>
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.products.reject', $product->id) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.products.reject', $product->id) }}" method="POST"
+                                    class="inline">
                                     @csrf
                                     <button type="submit" aria-label="Từ chối {{ $product->name }}"
                                         class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md focus:outline-none">
@@ -162,7 +256,7 @@
                 @if ($products->isEmpty())
                     <tr>
                         <td colspan="8" class="text-center text-gray-400 py-4">
-                            @if(request('search') || request('status') || request('shop_id'))
+                            @if (request('search') || request('status') || request('shop_id'))
                                 Không tìm thấy sản phẩm nào phù hợp với bộ lọc hiện tại
                             @else
                                 Không tìm thấy sản phẩm nào
@@ -184,75 +278,74 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const selectAllCheckbox = document.getElementById('select-all');
-            const itemCheckboxes = document.querySelectorAll('.select-item');
-            const approveSelectedButton = document.getElementById('approve-selected');
             const statusFilter = document.getElementById('statusFilter');
             const shopFilter = document.getElementById('shopFilter');
+            const searchInput = document.querySelector('input[name="search"]');
+            const filterDate = document.getElementById('filterDate');
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+            const tbody = document.querySelector('table tbody');
 
-            // Hiện/ẩn nút Duyệt
-            function toggleApproveButton() {
-                const anyChecked = Array.from(itemCheckboxes).some(cb => cb.checked);
-                approveSelectedButton.classList.toggle('hidden', !anyChecked);
-            }
+            function checkShowResetBtn() {
+                const hasFilter =
+                    (searchInput && searchInput.value) ||
+                    (statusFilter && statusFilter.value) ||
+                    (shopFilter && shopFilter.value) ||
+                    (filterDate && filterDate.value);
 
-            selectAllCheckbox.addEventListener('change', function() {
-                itemCheckboxes.forEach(cb => cb.checked = this.checked);
-                toggleApproveButton();
-            });
-
-            itemCheckboxes.forEach(cb => {
-                cb.addEventListener('change', function() {
-                    selectAllCheckbox.checked = Array.from(itemCheckboxes).every(c => c.checked);
-                    toggleApproveButton();
-                });
-            });
-
-            // Tự động submit khi thay đổi filter
-            function submitFilters() {
-                const searchValue = document.querySelector('input[name="search"]').value;
-                const statusValue = statusFilter.value;
-                const shopValue = shopFilter.value;
-                
-                const params = new URLSearchParams();
-                if (searchValue) params.append('search', searchValue);
-                if (statusValue) params.append('status', statusValue);
-                if (shopValue) params.append('shop_id', shopValue);
-                
-                window.location.href = "{{ route('admin.products.index') }}?" + params.toString();
-            }
-
-            statusFilter.addEventListener('change', submitFilters);
-            shopFilter.addEventListener('change', submitFilters);
-
-            // Duyệt hàng loạt
-            approveSelectedButton.addEventListener('click', function() {
-                const selectedCheckboxes = document.querySelectorAll('.select-item:checked');
-                if (selectedCheckboxes.length === 0) return;
-
-                const ids = Array.from(selectedCheckboxes).map(cb => cb.closest('tr').dataset.productId);
-
-                if (confirm('Bạn có chắc muốn duyệt ' + ids.length + ' sản phẩm đã chọn?')) {
-                    fetch("{{ route('admin.products.approveMultiple') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            ids: ids
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        alert(data.message);
-                        location.reload();
-                    })
-                    .catch(err => {
-                        alert('Lỗi: Không thể duyệt sản phẩm.');
-                    });
+                if (resetFilterBtn) {
+                    resetFilterBtn.style.display = hasFilter ? 'inline-flex' : 'none';
                 }
+            }
+
+            function submitFilters() {
+                const params = new URLSearchParams();
+                if (searchInput && searchInput.value) params.append('search', searchInput.value);
+                if (statusFilter && statusFilter.value) params.append('status', statusFilter.value);
+                if (shopFilter && shopFilter.value) params.append('shop_id', shopFilter.value);
+                if (filterDate && filterDate.value) params.append('filter_date', filterDate.value);
+
+                fetch("{{ route('admin.products.ajax') }}?" + params.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.text())
+                    .then(html => {
+                        tbody.innerHTML = html;
+                        checkShowResetBtn();
+                    });
+            }
+
+            if (statusFilter) statusFilter.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
             });
+            if (shopFilter) shopFilter.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
+            });
+            if (filterDate) filterDate.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
+            });
+            if (searchInput) searchInput.addEventListener('input', function() {
+                clearTimeout(this._timer);
+                this._timer = setTimeout(function() {
+                    submitFilters();
+                    checkShowResetBtn();
+                }, 400);
+            });
+            if (resetFilterBtn) {
+                resetFilterBtn.addEventListener('click', function() {
+                    if (searchInput) searchInput.value = '';
+                    if (statusFilter) statusFilter.value = '';
+                    if (shopFilter) shopFilter.value = '';
+                    if (filterDate) filterDate.value = '';
+                    submitFilters();
+                    checkShowResetBtn();
+                });
+                checkShowResetBtn();
+            }
         });
     </script>
 @endsection

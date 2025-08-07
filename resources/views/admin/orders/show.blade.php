@@ -21,42 +21,7 @@
                 </span>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <form class="flex items-center gap-2" id="update-status-form"
-                action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="mr-3">
-                    <span class="text-xs">Trạng thái đơn hàng:</span>
-                    <select name="status" id="status" class="text-xs font-semibold focus:outline-none">
-                        <option value="pending" {{ $order->order_status == 'pending' ? 'selected' : '' }}>
-                            Chờ xử lý
-                        </option>
-                        <option value="processing" {{ $order->order_status == 'processing' ? 'selected' : '' }}>
-                            Đang xử lý
-                        </option>
-                        <option value="shipped" {{ $order->order_status == 'shipped' ? 'selected' : '' }}>
-                            Đang giao hàng
-                        </option>
-                        <option value="delivered" {{ $order->order_status == 'delivered' ? 'selected' : '' }}>
-                            Đã giao hàng
-                        </option>
-                        <option value="cancelled" {{ $order->order_status == 'cancelled' ? 'selected' : '' }}>
-                            Hủy đơn hàng
-                        </option>
-                        <option value="refunded" {{ $order->order_status == 'refunded' ? 'selected' : '' }}>
-                            Hoàn tiền
-                        </option>
-                    </select>
-                </div>
-                <input type="hidden" name="description" id="description">
-                <input type="hidden" name="shipping_provider" id="shipping_provider">
-                <input type="hidden" name="cancel_reason" id="cancel_reason">
-                <input type="hidden" name="note" id="status-note">
-                <button type="submit"
-                    class="text-md bg-[#0989ff] text-white px-4 py-2 rounded-md hover:bg-[#056ECE]">Lưu</button>
-            </form>
-        </div>
+        {{-- Đã bỏ form chỉnh trạng thái --}}
     </section>
 
     <div class="mb-[21px] grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -67,11 +32,7 @@
                     <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-3">
                         <p class="text-sm text-gray-500">Họ tên</p>
                         <p class="text-sm text-gray-900 flex items-center gap-2">
-                            <img src="{{ $order->user && $order->user->avatar ? (filter_var($order->user->avatar, FILTER_VALIDATE_URL) ? $order->user->avatar : asset($order->user->avatar)) : asset('images/icon-7797704_640.png') }}"
-                                alt="{{ $order->user ? $order->user->fullname : 'Khách vãng lai' }}"
-                                class="w-6 h-6 rounded-full object-cover"
-                                onerror="this.src='{{ asset('images/icon-7797704_640.png') }}'">
-                            {{ $order->user ? $order->user->fullname : 'Khách vãng lai' }}
+                            {{ $order->user ? $order->user->username : 'Khách hàng không đăng nhập' }}
                         </p>
                     </div>
                     <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-3">
@@ -152,8 +113,8 @@
                                 <tr>
                                     <td class="py-4 flex items-center gap-4">
                                         <img alt="{{ $item->product_name }} image"
-                                            class="w-10 h-10 rounded-md object-cover" height="40"
-                                            src="{{ $item->product_image }}" width="40" />
+                                            class="w-14 h-14 rounded-md object-cover border"
+                                            src="{{ Storage::url($item->product_image) ?? $item->product_image }}" />
                                         <span class="font-semibold text-[13px]">{{ $item->product_name }}</span>
                                     </td>
                                     <td class="py-4 text-[13px] text-right">{{ number_format($item->unit_price) }} VNĐ</td>

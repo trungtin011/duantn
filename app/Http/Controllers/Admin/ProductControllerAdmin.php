@@ -47,6 +47,11 @@ class ProductControllerAdmin extends Controller
             $query->where('shopID', $request->shop_id);
         }
 
+        // Lọc theo ngày tạo nếu có chọn
+        if ($request->filled('filter_date')) {
+            $query->whereDate('created_at', $request->filter_date);
+        }
+
         $products = $query->paginate(5);
 
         // Lấy danh sách shops để hiển thị trong dropdown
@@ -1132,6 +1137,7 @@ class ProductControllerAdmin extends Controller
                 'attributes.*.values' => 'nullable|string',
                 'variants' => 'required|array|min:1',
                 'variants.*.name' => 'required|string|max:100',
+                'variants.*' => 'required|array|min:1',
                 'variants.*.price' => 'required|numeric|min:0',
                 'variants.*.purchase_price' => 'required|numeric|min:0',
                 'variants.*.sale_price' => 'required|numeric|min:0',
@@ -1424,5 +1430,29 @@ class ProductControllerAdmin extends Controller
             Log::error('Error approving multiple products: ' . $e->getMessage());
             return response()->json(['message' => 'Lỗi: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function ajaxList(Request $request)
+    {
+        $query = Product::with(['variants', 'images', 'shop']);
+
+        if ($request->filled('search')) {
+            $query->where('name', 'LIKE', '%' . $request->search . '%')
+                ->orWhere('sku', 'LIKE', '%' . $request->search . '%');
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('shop_id')) {
+            $query->where('shopID', $request->shop_id);
+        }
+        // Thêm lọc ngày
+        if ($request->filled('filter_date')) {
+            $query->whereDate('created_at', $request->filter_date);
+        }
+
+        $products = $query->paginate(5);
+
+        return view('admin.products._table_body', compact('products'))->render();
     }
 }
