@@ -200,7 +200,7 @@
             <!-- Tồn kho -->
             <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
-                    <h2 class="section-title">Tồn kho</h2>
+                    <h2 class="section-title">Tồn kho thấp</h2>
                     <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">
                         Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
                     </a>
