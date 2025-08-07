@@ -57,7 +57,7 @@
                     class="hidden bg-green-500 text-white px-4 py-2 rounded-md text-sm hover:bg-green-600">
                     Duyệt đã chọn
                 </button>
-                <a href="{{ route('admin.products.create') }}"
+                <a href="{{ route('admin.products.select-shop') }}"
                     class="h-[44px] text-[15px] bg-blue-600 text-white px-4 py-2 flex items-center justify-center rounded-md hover:bg-blue-700 focus:outline-none">
                     Thêm sản phẩm
                 </a>
