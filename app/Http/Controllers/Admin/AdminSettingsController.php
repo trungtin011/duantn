@@ -13,14 +13,28 @@ class AdminSettingsController extends Controller
     
     public function index()
     {
-        $settings = $this->getSettings();
+        $settings = DB::table('settings')->first();
+        $settings = [
+            'site_title'    => $settings->site_title    ?? 'ZynoxMall',
+            'tagline'       => $settings->tagline       ?? 'Chào mừng đến với ZynoxMall',
+            'logo'          => $settings->logo          ?? null,
+            'banner_image'  => $settings->banner_image  ?? null,
+            'favicon'       => $settings->favicon       ?? null,
+        ];
         return view('admin.settings.index', compact('settings'));
     }
 
     
     public function create()
     {
-        $settings = $this->getSettings();
+        $settings = DB::table('settings')->first();
+        $settings = [
+            'site_title'    => $settings->site_title    ?? 'ZynoxMall',
+            'tagline'       => $settings->tagline       ?? 'Chào mừng đến với ZynoxMall',
+            'logo'          => $settings->logo          ?? null,
+            'banner_image'  => $settings->banner_image  ?? null,
+            'favicon'       => $settings->favicon       ?? null,
+        ];
         return view('admin.settings.create', compact('settings'));
     }
 
@@ -44,9 +58,9 @@ class AdminSettingsController extends Controller
 
         // Xử lý upload logo
         if ($request->hasFile('logo')) {
-            $settings = $this->getSettings();
-            if ($settings['logo'] ?? false) {
-                Storage::disk('public')->delete($settings['logo']);
+            $settings = DB::table('settings')->first();
+            if ($settings->logo ?? false) {
+                Storage::disk('public')->delete($settings->logo);
             }
             $path = $request->file('logo')->store('logos', 'public');
             $data['logo'] = $path;
@@ -54,9 +68,9 @@ class AdminSettingsController extends Controller
 
         // Xử lý upload banner image
         if ($request->hasFile('banner_image')) {
-            $settings = $this->getSettings();
-            if ($settings['banner_image'] ?? false) {
-                Storage::disk('public')->delete($settings['banner_image']);
+            $settings = DB::table('settings')->first();
+            if ($settings->banner_image ?? false) {
+                Storage::disk('public')->delete($settings->banner_image);
             }
             $path = $request->file('banner_image')->store('banners', 'public');
             $data['banner_image'] = $path;
@@ -64,9 +78,9 @@ class AdminSettingsController extends Controller
 
         // Xử lý upload favicon
         if ($request->hasFile('favicon')) {
-            $settings = $this->getSettings();
-            if ($settings['favicon'] ?? false) {
-                Storage::disk('public')->delete($settings['favicon']);
+            $settings = DB::table('settings')->first();
+            if ($settings->favicon ?? false) {
+                Storage::disk('public')->delete($settings->favicon);
             }
             $path = $request->file('favicon')->store('favicons', 'public');
             $data['favicon'] = $path;
@@ -124,9 +138,9 @@ class AdminSettingsController extends Controller
      */
     public function destroyLogo()
     {
-        $settings = $this->getSettings();
-        if ($settings['logo'] ?? false) {
-            Storage::disk('public')->delete($settings['logo']);
+        $settings = DB::table('settings')->first();
+        if ($settings->logo ?? false) {
+            Storage::disk('public')->delete($settings->logo);
             DB::table('settings')->update(['logo' => null]);
             Session::flash('success', 'Logo đã được xóa thành công!');
         } else {
@@ -142,9 +156,9 @@ class AdminSettingsController extends Controller
      */
     public function destroyBanner()
     {
-        $settings = $this->getSettings();
-        if ($settings['banner_image'] ?? false) {
-            Storage::disk('public')->delete($settings['banner_image']);
+        $settings = DB::table('settings')->first();
+        if ($settings->banner_image ?? false) {
+            Storage::disk('public')->delete($settings->banner_image);
             DB::table('settings')->update(['banner_image' => null]);
             Session::flash('success', 'Banner đã được xóa thành công!');
         } else {
@@ -160,9 +174,9 @@ class AdminSettingsController extends Controller
      */
     public function destroyFavicon()
     {
-        $settings = $this->getSettings();
-        if ($settings['favicon'] ?? false) {
-            Storage::disk('public')->delete($settings['favicon']);
+        $settings = DB::table('settings')->first();
+        if ($settings->favicon ?? false) {
+            Storage::disk('public')->delete($settings->favicon);
             DB::table('settings')->update(['favicon' => null]);
             Session::flash('success', 'Favicon đã được xóa thành công!');
         } else {
