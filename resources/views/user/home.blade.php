@@ -184,7 +184,6 @@
         .shop-title {
             -webkit-text-stroke-width: 0.5px;
             -webkit-text-stroke-color: rgb(0, 0, 0);
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             font-size: 1.1rem;
             font-weight: 600;
             color: #fff;
@@ -597,7 +596,7 @@
                         $homeCategories = $homeCategories->take(8); // Giới hạn tối đa 8 danh mục
                     @endphp
                     @foreach ($homeCategories as $category)
-                        <div class="category-item w-[calc(25%-0.9375rem)] min-w-[140px] flex-shrink-0">
+                        <div class="category-item w-1/2 sm:w-[calc(25%-0.9375rem)] sm:min-w-[140px] flex-shrink-0">
                             <div class="category-img-box h-10 w-10 flex items-center justify-center bg-gray-200">
                                 @if ($category->image_path && file_exists(public_path('storage/' . $category->image_path)))
                                     <img src="{{ asset('storage/' . $category->image_path) }}"
@@ -636,7 +635,7 @@
                     <div class="shop-container-bg rounded-xl border border-orange-200 p-6 mb-8 mt-10 lg:mt-0">
                         <div class="flex items-center justify-between mb-4">
                             <h2
-                                class="text-lg font-bold text-gray-800 flex items-center justify-between gap-2 w-full shop-title">
+                                class="text-lg font-bold flex items-center justify-between gap-2 w-full shop-title">
                                 Shop Bán Chạy
                                 <ion-icon name="flame"
                                     class="text-orange-500 text-xl bg-white rounded-full p-2"></ion-icon>
@@ -645,28 +644,28 @@
 
                         <!-- Header với legend -->
                         <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 mb-4">
-                            <h3 class="text-sm pl-3 pr-3 font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                            <h3 class="text-md pl-3 pr-3 font-semibold text-gray-800 mb-2 flex items-center gap-2">
                                 Top Shop theo doanh số bán hàng
                             </h3>
-                            <div class="grid grid-cols-2 gap-x-0 gap-y-2 justify-items-center">
+                            <div class="grid grid-cols-2 gap-x-2 w-[200px] gap-y-2 items-center mx-auto">
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 flex-shrink-0 border border-yellow-300">
-                                    <ion-icon name="trophy" class="mr-1 text-xs"></ion-icon>
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 flex-shrink-0 border border-yellow-300">
+                                    <ion-icon name="trophy" class="mr-1 text-md"></ion-icon>
                                     Top 1
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 flex-shrink-0 border border-gray-300">
-                                    <ion-icon name="medal" class="mr-1 text-xs"></ion-icon>
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 flex-shrink-0 border border-gray-300">
+                                    <ion-icon name="medal" class="mr-1 text-md"></ion-icon>
                                     Top 2
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 flex-shrink-0 border border-amber-300">
-                                    <ion-icon name="ribbon" class="mr-1 text-xs"></ion-icon>
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 flex-shrink-0 border border-amber-300">
+                                    <ion-icon name="ribbon" class="mr-1 text-md"></ion-icon>
                                     Top 3
                                 </span>
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 flex-shrink-0 border border-blue-300">
-                                    <ion-icon name="star" class="mr-1 text-xs"></ion-icon>
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 flex-shrink-0 border border-blue-300">
+                                    <ion-icon name="star" class="mr-1 text-md"></ion-icon>
                                     Top 4
                                 </span>
                             </div>
@@ -691,10 +690,10 @@
                                                 <div class="relative flex-shrink-0">
                                                     <img src="{{ asset('storage/' . $shop->shop_logo) }}"
                                                         alt="{{ $shop->shop_name }}"
-                                                        class="w-8 h-8 rounded-full object-cover border border-gray-200">
+                                                        class="w-10 h-10 rounded-full object-cover border border-gray-200">
                                                     @if ($index < 3)
                                                         <div
-                                                            class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full flex items-center justify-center text-xs {{ $index === 0 ? 'bg-yellow-500' : '' }} {{ $index === 1 ? 'bg-gray-500' : '' }} {{ $index === 2 ? 'bg-amber-600' : '' }}">
+                                                            class="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs {{ $index === 0 ? 'bg-yellow-500' : '' }} {{ $index === 1 ? 'bg-gray-500' : '' }} {{ $index === 2 ? 'bg-amber-600' : '' }}">
                                                             <ion-icon
                                                                 name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : 'ribbon') }}"
                                                                 class="text-white text-[8px]"></ion-icon>
@@ -702,35 +701,35 @@
                                                     @endif
                                                 </div>
                                                 <div class="min-w-0 flex-1">
-                                                    <h4 class="font-semibold text-gray-800 text-xs truncate">
+                                                    <h4 class="font-semibold text-gray-800 text-md truncate">
                                                         {{ $shop->shop_name }}</h4>
                                                     <div class="flex items-center gap-1 mt-1">
                                                         <div class="flex items-center gap-1">
                                                             @for ($i = 1; $i <= 5; $i++)
                                                                 @if ($shop->shop_rating >= $i)
                                                                     <ion-icon name="star"
-                                                                        class="text-yellow-400 text-xs"></ion-icon>
+                                                                        class="text-yellow-400 text-md"></ion-icon>
                                                                 @elseif($shop->shop_rating >= $i - 0.5)
                                                                     <ion-icon name="star-half"
-                                                                        class="text-yellow-400 text-xs"></ion-icon>
+                                                                        class="text-yellow-400 text-md"></ion-icon>
                                                                 @else
                                                                     <ion-icon name="star-outline"
-                                                                        class="text-gray-300 text-xs"></ion-icon>
+                                                                        class="text-gray-300 text-md"></ion-icon>
                                                                 @endif
                                                             @endfor
                                                         </div>
                                                         <span
-                                                            class="text-xs text-gray-600 font-medium">{{ number_format($shop->shop_rating, 1) }}</span>
+                                                            class="text-md text-gray-600 font-medium">{{ number_format($shop->shop_rating, 1) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <!-- Ranking badge -->
                                             <span
-                                                class="ranking-badge inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 {{ $index === 0 ? 'bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 border border-yellow-300' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 border border-gray-300' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 border border-amber-300' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 border border-blue-300' : '' }}">
+                                                class="ranking-badge inline-flex items-center px-1.5 py-0.5 rounded-full text-md font-medium flex-shrink-0 {{ $index === 0 ? 'bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 border border-yellow-300' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 border border-gray-300' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 border border-amber-300' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 border border-blue-300' : '' }}">
                                                 <ion-icon
                                                     name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : ($index === 2 ? 'ribbon' : 'star')) }}"
-                                                    class="mr-1 text-xs"></ion-icon>
+                                                    class="mr-1 text-md"></ion-icon>
                                                 <span class="text-[12px]">{{ $index + 1 }}</span>
                                             </span>
                                         </div>
@@ -741,8 +740,8 @@
                                             <!-- Header với icon và label -->
                                             <div class="flex items-center justify-center gap-1 mb-1">
                                                 <ion-icon name="bag-check-outline"
-                                                    class="text-[#ef3248] text-xs"></ion-icon>
-                                                <span class="text-xs font-medium text-gray-800">Đã bán</span>
+                                                    class="text-[#ef3248] text-md"></ion-icon>
+                                                <span class="text-md font-medium text-gray-800">Đã bán</span>
                                             </div>
 
                                             <!-- Số lượng bán -->
@@ -751,7 +750,7 @@
                                             </p>
 
                                             <!-- Progress bar -->
-                                            <div class="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="relative h-3 bg-gray-200 rounded-full overflow-hidden">
                                                 @php
                                                     $maxSales = max(
                                                         $rankingShops->pluck('total_products_sold')->toArray(),
@@ -769,7 +768,7 @@
                                                     @if ($shop->total_products_sold >= 100)
                                                         <div class="absolute -right-1 -top-0.5">
                                                             <ion-icon name="flame"
-                                                                class="text-orange-500 text-xs"></ion-icon>
+                                                                class="text-orange-500 text-md"></ion-icon>
                                                         </div>
                                                     @endif
                                                 </div>
@@ -780,18 +779,18 @@
                                                     <!-- Các ngọn lửa nhỏ -->
                                                     <div class="absolute -top-1 left-1 flame-particle">
                                                         <ion-icon name="flame"
-                                                            class="text-orange-500 text-xs"></ion-icon>
+                                                            class="text-orange-500 text-md"></ion-icon>
                                                     </div>
                                                     <div class="absolute -top-1 right-1 flame-particle">
-                                                        <ion-icon name="flame" class="text-red-500 text-xs"></ion-icon>
+                                                        <ion-icon name="flame" class="text-red-500 text-md"></ion-icon>
                                                     </div>
                                                     <div class="absolute -bottom-1 left-3 flame-particle">
                                                         <ion-icon name="flame"
-                                                            class="text-yellow-500 text-xs"></ion-icon>
+                                                            class="text-yellow-500 text-md"></ion-icon>
                                                     </div>
                                                     <div class="absolute -bottom-1 right-3 flame-particle">
                                                         <ion-icon name="flame"
-                                                            class="text-orange-500 text-xs"></ion-icon>
+                                                            class="text-orange-500 text-md"></ion-icon>
                                                     </div>
                                                 @endif
                                             </div>
@@ -799,10 +798,10 @@
 
                                         <!-- Action button -->
                                         <a href="{{ route('shop.show', $shop->id) }}"
-                                            class="block w-full text-center py-1 px-2 bg-[#ef3248] hover:bg-[#d62a3e] text-white font-medium rounded transition-colors duration-200 text-[10px]">
+                                            class="block w-full text-center py-1 px-2 bg-[#ef3248] hover:bg-[#d62a3e] text-white font-medium rounded transition-colors duration-200 text-md">
                                             <span class="flex items-center justify-center gap-1">
                                                 Xem shop
-                                                <ion-icon name="arrow-forward-outline" class="text-[10px]"></ion-icon>
+                                                <ion-icon name="arrow-forward-outline" class="text-md"></ion-icon>
                                             </span>
                                         </a>
                                     </div>

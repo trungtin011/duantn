@@ -130,11 +130,11 @@ class VNPayController extends Controller
                 } else {
                     $order = Order::where('order_code', $request->vnp_TxnRef)->first();
                     if ($order) {
-                        return redirect()->route('checkout.failed', ['order_code' => $order->order_code]);
+                        return redirect()->route('failed_payment', ['order_code' => $order->order_code])->with('error', 'Xác thực thanh toán thất bại');
                     }
                 }
             }
-            return redirect()->route('checkout')->with('error', 'Xác thực thanh toán thất bại');
+            return redirect()->route('failed_payment', ['order_code' => $order->order_code])->with('error', 'Xác thực thanh toán thất bại');
         } catch (\Exception $e) {
             Log::error('VNPay Return Exception:', [
                 'error' => $e->getMessage(),

@@ -184,4 +184,89 @@ class AdminSettingsController extends Controller
         }
         return redirect()->back();
     }
+
+    public function editEmails()
+    {
+        $settings = $this->getSettings();
+        // Lấy giá trị thực tế từ config/env
+        $settings['mail_from_address'] = old('mail_from_address', env('MAIL_FROM_ADDRESS', config('mail.from.address')));
+        $settings['mail_from_name'] = old('mail_from_name', env('MAIL_FROM_NAME', config('mail.from.name')));
+        $settings['mail_reply_to'] = old('mail_reply_to', env('MAIL_REPLY_TO', ''));
+        $settings['mail_driver'] = old('mail_driver', env('MAIL_MAILER', config('mail.default')));
+        $settings['mail_host'] = old('mail_host', env('MAIL_HOST', config('mail.mailers.smtp.host')));
+        $settings['mail_port'] = old('mail_port', env('MAIL_PORT', config('mail.mailers.smtp.port')));
+        $settings['mail_username'] = old('mail_username', env('MAIL_USERNAME', config('mail.mailers.smtp.username')));
+        $settings['mail_password'] = old('mail_password', env('MAIL_PASSWORD', config('mail.mailers.smtp.password')));
+        $settings['mail_encryption'] = old('mail_encryption', env('MAIL_ENCRYPTION', config('mail.mailers.smtp.encryption')));
+        return view('admin.settings.emails', compact('settings'));
+    }
+
+    public function updateEmails(Request $request)
+    {
+        $validated = $request->validate([
+            'mail_from_address' => 'required|email|max:255',
+            'mail_from_name' => 'required|string|max:255',
+            'mail_reply_to' => 'nullable|email|max:255',
+            'mail_driver' => 'required|in:smtp,sendmail,mailgun,ses',
+            'mail_host' => 'required|string|max:255',
+            'mail_port' => 'required|numeric',
+            'mail_username' => 'nullable|string|max:255',
+            'mail_password' => 'nullable|string|max:255',
+            'mail_encryption' => 'nullable|in:tls,ssl,null',
+        ]);
+        // Lưu vào DB (bảng settings)
+        $data = [
+            'mail_from_address' => $validated['mail_from_address'],
+            'mail_from_name' => $validated['mail_from_name'],
+            'mail_reply_to' => $validated['mail_reply_to'] ?? null,
+            'mail_driver' => $validated['mail_driver'],
+            'mail_host' => $validated['mail_host'],
+            'mail_port' => $validated['mail_port'],
+            'mail_username' => $validated['mail_username'],
+            'mail_password' => $validated['mail_password'],
+            'mail_encryption' => $validated['mail_encryption'],
+        ];
+        $exists = \DB::table('settings')->exists();
+        if ($exists) {
+            \DB::table('settings')->update($data);
+        } else {
+            \DB::table('settings')->insert($data);
+        }
+        // Đồng bộ vào file .env
+        $this->setEnv([
+            'MAIL_FROM_ADDRESS' => $validated['mail_from_address'],
+            'MAIL_FROM_NAME' => '"' . $validated['mail_from_name'] . '"',
+            'MAIL_REPLY_TO' => $validated['mail_reply_to'] ?? '',
+            'MAIL_MAILER' => $validated['mail_driver'],
+            'MAIL_HOST' => $validated['mail_host'],
+            'MAIL_PORT' => $validated['mail_port'],
+            'MAIL_USERNAME' => $validated['mail_username'],
+            'MAIL_PASSWORD' => $validated['mail_password'],
+            'MAIL_ENCRYPTION' => $validated['mail_encryption'],
+        ]);
+        // Reload config cache để giá trị mới có hiệu lực ngay
+        \Artisan::call('config:clear');
+        \Artisan::call('config:cache');
+        \Session::flash('success', 'Cập nhật cài đặt email thành công!');
+        return redirect()->route('admin.settings.emails');
+    }
+
+    /**
+     * Ghi các key vào file .env
+     */
+    protected function setEnv(array $data)
+    {
+        $envPath = base_path('.env');
+        $env = file_exists($envPath) ? file_get_contents($envPath) : '';
+        foreach ($data as $key => $value) {
+            $pattern = "/^{$key}=.*$/m";
+            $line = $key . '=' . $value;
+            if (preg_match($pattern, $env)) {
+                $env = preg_replace($pattern, $line, $env);
+            } else {
+                $env .= "\n" . $line;
+            }
+        }
+        file_put_contents($envPath, $env);
+    }
 }
