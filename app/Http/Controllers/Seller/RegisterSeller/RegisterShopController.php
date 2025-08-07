@@ -21,7 +21,7 @@ class RegisterShopController extends Controller
      */
     private function checkAlreadySeller()
     {
-        if (\App\Models\Seller::where('userID', Auth::id())->exists()) {
+        if (Seller::where('userID', Auth::id())->exists()) {
             return redirect()->route('seller.dashboard')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
         }
         return null;
@@ -47,6 +47,7 @@ class RegisterShopController extends Controller
      */
     public function step1(Request $request)
     {
+        
         $request->validate([
             'shop_name' => 'required|unique:shops,shop_name|max:100',
             'email' => 'required|email|unique:shops,shop_email|max:100',
@@ -88,58 +89,36 @@ class RegisterShopController extends Controller
             'shop_banner' => $bannerPath,
         ])]);
 
-        return redirect()->route('seller.register.step2')->with('success', 'Thông tin shop đã được lưu tạm.');
+        return redirect()->route('seller.register.step3')->with('success', 'Thông tin shop đã được lưu tạm.');
     }
 
     /**
-     * Hiển thị Trang 2: Dịch vụ vận chuyển
+     * Hiển thị Trang 2: Dịch vụ vận chuyển (Đã bỏ)
      */
     public function showStep2()
+    {
+        // Redirect to step 3 since step 2 is removed
+        return redirect()->route('seller.register.step3');
+    }
+
+    /**
+     * Xử lý dữ liệu Trang 2 (Đã bỏ)
+     */
+    public function step2(Request $request)
+    {
+        // Redirect to step 3 since step 2 is removed
+        return redirect()->route('seller.register.step3');
+    }
+
+    /**
+     * Hiển thị Trang 2: Thông tin kinh doanh (Trước đây là Trang 3)
+     */
+    public function showStep3()
     {
         if ($redirect = $this->checkAlreadySeller()) return $redirect;
         // Kiểm tra dữ liệu session từ Trang 1
         if (!session('register_shop.shop_name')) {
             return redirect()->route('seller.register.step1')->withErrors(['error' => 'Vui lòng hoàn thành bước 1 trước.']);
-        }
-        return view('seller.register.register1');
-    }
-
-    /**
-     * Xử lý dữ liệu Trang 2
-     */
-    public function step2(Request $request)
-    {
-        $request->validate([
-            'shipping_options.express.cod_enabled' => 'nullable|boolean',
-            'shipping_options.fast.cod_enabled' => 'nullable|boolean',
-            'shipping_options.economy.cod_enabled' => 'nullable|boolean',
-            'shipping_options.self_pickup.cod_enabled' => 'nullable|boolean',
-            'shipping_options.bulky.cod_enabled' => 'nullable|boolean',
-        ]);
-
-        // Lưu dữ liệu vận chuyển vào session
-        session(['register_shop' => array_merge(session('register_shop', []), [
-            'shipping_options' => [
-                'express' => ['cod_enabled' => $request->input('shipping_options.express.cod_enabled', 0)],
-                'fast' => ['cod_enabled' => $request->input('shipping_options.fast.cod_enabled', 0)],
-                'economy' => ['cod_enabled' => $request->input('shipping_options.economy.cod_enabled', 0)],
-                'self_pickup' => ['cod_enabled' => $request->input('shipping_options.self_pickup.cod_enabled', 0)],
-                'bulky' => ['cod_enabled' => $request->input('shipping_options.bulky.cod_enabled', 0)],
-            ],
-        ])]);
-
-        return redirect()->route('seller.register.step3')->with('success', 'Cấu hình vận chuyển đã được lưu tạm.');
-    }
-
-    /**
-     * Hiển thị Trang 3: Thông tin kinh doanh
-     */
-    public function showStep3()
-    {
-        if ($redirect = $this->checkAlreadySeller()) return $redirect;
-        // Kiểm tra dữ liệu session từ Trang 2
-        if (!session('register_shop.shipping_options')) {
-            return redirect()->route('seller.register.step2')->withErrors(['error' => 'Vui lòng hoàn thành bước 2 trước.']);
         }
         return view('seller.register.register2');
     }
@@ -149,6 +128,7 @@ class RegisterShopController extends Controller
      */
     public function step3(Request $request)
     {
+        
         $request->validate([
             'business_type' => 'required|in:personal,household,company', // sửa lại cho đúng value radio
             'business_province' => 'required',
@@ -216,45 +196,71 @@ class RegisterShopController extends Controller
      */
     public function step4(Request $request)
     {
+     
         $request->validate([
             'id_number' => 'required|string|max:20',
             'full_name' => 'required|string|max:100',
             'birthday' => 'required|date',
             'nationality' => 'required|string|max:100',
+            'gender' => 'required|in:male,female,other',
             'hometown' => 'required|string|max:255',
             'residence' => 'required|string|max:255',
+            'identity_card_date' => 'required|date',
+            'identity_card_place' => 'required|string|max:255',
             'confirm' => 'required',
         ], [
             'confirm.required' => 'Bạn phải xác nhận thông tin.',
+            'gender.required' => 'Giới tính là bắt buộc.',
+            'gender.in' => 'Giới tính không hợp lệ.',
         ]);
 
-        $exists = \App\Models\IdentityVerification::where('identity_number', $request->id_number)
-            ->where('full_name', $request->full_name)
-            ->where('birth_date', $request->birthday)
-            ->where('nationality', $request->nationality)
-            ->where('hometown', $request->hometown)
-            ->where('residence', $request->residence)
-            ->exists();
+        // Lưu trực tiếp vào bảng identity_verifications
+        $identityData = [
+            'userID' => Auth::id(),
+            'full_name' => $request->full_name,
+            'identity_number' => $request->id_number,
+            'birth_date' => $request->birthday,
+            'nationality' => $request->nationality,
+            'gender' => $request->gender,
+            'hometown' => $request->hometown,
+            'residence' => $request->residence,
+            'identity_type' => $request->id_type ?? 'cccd',
+            'identity_card_date' => $request->identity_card_date,
+            'identity_card_place' => $request->identity_card_place,
+            'identity_card_image' => $request->file ? $request->file('file')->store('identity_cards', 'public') : null,
+            'identity_card_holding_image' => $request->backfile ? $request->file('backfile')->store('identity_cards', 'public') : null,
+            'status' => 'pending',
+        ];
 
-        if (!$exists) {
-            return back()->withErrors(['id_number' => 'Thông tin định danh không đúng hoặc chưa được xác thực.'])->withInput();
+        // Lưu vào bảng identity_verifications
+        try {
+            \App\Models\IdentityVerification::create($identityData);
+        } catch (\Illuminate\Database\QueryException $ex) {
+            if ($ex->getCode() == 23000 && str_contains($ex->getMessage(), 'identity_number')) {
+                return back()->withErrors(['id_number' => 'Đã có người sử dụng CCCD này.'])->withInput();
+            }
+            throw $ex;
         }
 
-
-        $identity = [
+        // Lưu vào session để sử dụng ở bước tiếp theo
+        $sessionData = [
             'identity_card' => $request->id_number,
-            'identity_card_type' => $request->id_type,
-            'identity_card_image' => $request->file ? $request->file('file')->store('identity_cards', 'public') : null,
+            'identity_card_type' => $request->id_type ?? 'cccd',
+            'identity_card_image' => $identityData['identity_card_image'],
+            'identity_card_holding_image' => $identityData['identity_card_holding_image'],
             'full_name' => $request->full_name,
             'birth_date' => $request->birthday,
             'nationality' => $request->nationality,
+            'gender' => $request->gender,
             'hometown' => $request->hometown,
             'residence' => $request->residence,
+            'identity_card_date' => $request->identity_card_date,
+            'identity_card_place' => $request->identity_card_place,
             'privacy_policy_agreed' => $request->has('confirm') ? 1 : 0,
         ];
-        session(['register_shop' => array_merge(session('register_shop', []), $identity)]);
+        session(['register_shop' => array_merge(session('register_shop', []), $sessionData)]);
 
-        return redirect()->route('seller.register.step5')->with('success', 'Thông tin định danh đã được lưu tạm.');
+        return redirect()->route('seller.register.step5')->with('success', 'Thông tin định danh đã được lưu.');
     }
 
     /**
@@ -271,9 +277,7 @@ class RegisterShopController extends Controller
         if (!isset($data['shop_name'])) {
             return redirect()->route('seller.register.step1')->withErrors(['error' => 'Vui lòng nhập thông tin shop.']);
         }
-        if (!isset($data['shipping_options'])) {
-            return redirect()->route('seller.register.step2')->withErrors(['error' => 'Vui lòng cấu hình vận chuyển.']);
-        }
+        // Bỏ kiểm tra shipping_options vì đã xóa bước vận chuyển
         if (!isset($data['business_type'])) {
             return redirect()->route('seller.register.step3')->withErrors(['error' => 'Vui lòng nhập thông tin kinh doanh.']);
         }
@@ -316,27 +320,12 @@ class RegisterShopController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // 3. Lưu vào bảng shop_shipping_options
-            $shippingOptions = [
-                'express' => $data['shipping_options']['express']['cod_enabled'] ?? 0,
-                'fast' => $data['shipping_options']['fast']['cod_enabled'] ?? 0,
-                'economy' => $data['shipping_options']['economy']['cod_enabled'] ?? 0,
-                'self_pickup' => $data['shipping_options']['self_pickup']['cod_enabled'] ?? 0,
-                'bulky' => $data['shipping_options']['bulky']['cod_enabled'] ?? 0,
-            ];
-            foreach ($shippingOptions as $type => $codEnabled) {
-                ShopShippingOption::create([
-                    'shopID' => $shop->id,
-                    'shipping_type' => $type,
-                    'cod_enabled' => $codEnabled,
-                    'is_active' => 1,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
+            // 3. Lưu vào bảng shop_shipping_options (Đã bỏ bước vận chuyển nên tạo mặc định)
+            // Đã xóa logic tạo shop_shipping_options vì shop chỉ có 1 đơn vị vận chuyển
 
             // 4. Lưu vào bảng business_licenses
             $businessLicense = BusinessLicense::create([
+                'shop_id' => $shop->id, // Thêm dòng này
                 'business_license_number' => 'LIC' . time(),
                 'tax_number' => $data['tax_code'],
                 'business_ID' => 'BUS' . time(),
@@ -353,23 +342,46 @@ class RegisterShopController extends Controller
             ]);
 
             // 5. Lưu vào bảng sellers
-            Seller::create([
-                'userID' => Auth::id(),
-                'status' => 'suspended',
-                'identity_card' => $data['identity_card'],
-                'identity_card_type' => in_array($data['identity_card_type'], ['cccd', 'cmnd']) ? $data['identity_card_type'] : 'cccd',
-                'identity_card_date' => now(),
-                'identity_card_place' => 'Unknown',
-                'identity_card_image' => $data['identity_card_image'],
-                'identity_card_holding_image' => $data['identity_card_holding_image'] ?? null,
-                'privacy_policy_agreed' => $data['privacy_policy_agreed'] ?? 0,
-                'bank_account' => null,
-                'bank_name' => '',
-                'bank_account_name' => '',
-                'business_license_id' => $businessLicense->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            try {
+                Seller::create([
+                    'userID' => Auth::id(),
+                    'shop_id' => $shop->id, // Thêm dòng này
+                    'status' => 'suspended',
+                    'identity_card' => $data['identity_card'],
+                    'identity_card_type' => in_array($data['identity_card_type'], ['cccd', 'cmnd']) ? $data['identity_card_type'] : 'cccd',
+                    'identity_card_date' => $data['identity_card_date'] ?? now(),
+                    'identity_card_place' => $data['identity_card_place'] ?? 'Unknown',
+                    'identity_card_image' => $data['identity_card_image'],
+                    'identity_card_holding_image' => $data['identity_card_holding_image'] ?? null,
+                    'privacy_policy_agreed' => $data['privacy_policy_agreed'] ?? 0,
+                    'bank_account' => null,
+                    'bank_name' => '',
+                    'bank_account_name' => '',
+                    'business_license_id' => $businessLicense->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Illuminate\Database\QueryException $ex) {
+                if ($ex->getCode() == 23000 && str_contains($ex->getMessage(), 'identity_card')) {
+                    DB::rollBack();
+                    // Không xóa session, giữ lại dữ liệu
+                    return redirect()->route('seller.register.step4')->withErrors(['identity_card' => 'Đã có người sử dụng CCCD này.'])->withInput();
+                }
+                throw $ex;
+            }
+
+            // 6. Cập nhật bảng identity_verifications với shop_id
+            $identityVerification = \App\Models\IdentityVerification::where('userID', Auth::id())
+                ->where('identity_number', $data['identity_card'])
+                ->where('status', 'pending')
+                ->latest()
+                ->first();
+            
+            if ($identityVerification) {
+                $identityVerification->update([
+                    'shop_id' => $shop->id,
+                ]);
+            }
 
             // 7. Gửi thông báo
             DB::table('notifications')->insert([

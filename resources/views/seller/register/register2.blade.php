@@ -1,212 +1,361 @@
 @extends('layouts.seller')
 
 @section('content')
-    <div class="container mx-auto py-5 flex flex-col" style="min-height: 80vh;">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Breadcrumb -->
-        <div class="flex flex-wrap items-center gap-2 my-10 md:my-10 text-sm md:text-base">
-            <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
-            <span>/</span>
-            <span>Đăng ký trở thành người bán</span>
-        </div>
-        <div class="p-6 w-full shadow-[0_0_10px_0_rgba(0,0,0,0.1)] rounded-[10px]">
-            <!-- Stepper -->
-            @include('seller.register.stepper')
-            <script>
-                updateStepper(2);
-            </script>
-            <!-- Card Form -->
-            <div class="bg-white rounded-2xl p-6">
-                <div
-                    class="border border-blue-300 bg-blue-100 text-[#666666] text-sm p-4 rounded flex items-start space-x-2 mb-5">
-                    <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M8,1 C11.8659932,1 15,4.13400675 15,8 C15,11.8659932 11.8659932,15 8,15 C4.13400675,15 1,11.8659932 1,8 C1,4.13400675 4.13400675,1 8,1 Z M8.30163718,10.5595183 C8.14108673,10.7430046 8.00347205,10.8347477 7.91172893,10.8347477 C7.86585737,10.8347477 7.84292159,10.8347477 7.79705003,10.8118119 C7.75117847,10.7888761 7.75117847,10.7430046 7.75117847,10.6741972 C7.75117847,10.6053899 7.77411425,10.4219037 7.84292159,10.1696101 C7.86585737,10.077867 7.91172893,9.89438073 7.98053627,9.64208716 L8.80622434,6.6375 L8.34750874,6.72924312 C8.18695829,6.7521789 7.91172893,6.79805046 7.54475645,6.84392202 C7.15484819,6.88979358 6.87961884,6.91272936 6.67319682,6.93566514 L6.67319682,7.2108945 C6.90255462,7.2108945 7.06310507,7.23383028 7.15484819,7.27970183 C7.24659131,7.32557339 7.29246287,7.39438073 7.29246287,7.53199541 L7.29246287,7.60080275 C7.29246287,7.62373853 7.29246287,7.64667431 7.26952709,7.69254587 L6.62732526,10.077867 C6.5814537,10.2613532 6.53558214,10.3989679 6.51264636,10.490711 C6.4667748,10.6741972 6.44383902,10.8118119 6.44383902,10.903555 C6.44383902,11.1558486 6.51264636,11.3393349 6.67319682,11.4540138 C6.83374728,11.5686927 6.99429774,11.6375 7.20071975,11.6375 C7.54475645,11.6375 7.86585737,11.4998853 8.16402251,11.2017202 C8.34750874,11.0182339 8.59980232,10.6741972 8.94383902,10.1696101 L8.71448122,10.0090596 C8.59980232,10.1925459 8.43925186,10.3760321 8.30163718,10.5595183 L8.30163718,10.5595183 Z M8.19383902,4.3625 C7.97609708,4.3625 7.80674225,4.43508065 7.66158095,4.58024194 C7.51641966,4.72540323 7.44383902,4.89475806 7.44383902,5.1125 C7.44383902,5.33024194 7.51641966,5.49959677 7.66158095,5.64475806 C7.80674225,5.78991935 7.97609708,5.8625 8.19383902,5.8625 C8.41158095,5.8625 8.58093579,5.78991935 8.72609708,5.64475806 C8.87125837,5.49959677 8.94383902,5.33024194 8.94383902,5.1125 C8.94383902,4.89475806 8.87125837,4.72540323 8.72609708,4.58024194 C8.58093579,4.43508065 8.41158095,4.3625 8.19383902,4.3625 L8.19383902,4.3625 Z">
-                        </path>
-                    </svg>
-                    <p>
-                        Việc thu thập Thông Tin Thuế và Thông Tin Định Danh là bắt buộc
-                        theo quy định của Luật an ninh mạng, Thương mại điện tử và Thuế của Việt Nam. Thông Tin Thuế và
-                        Thông Tin Định Danh sẽ được bảo vệ theo chính sách bảo mật của ZynoxMall. Thông tin Người bán cung cấp
-                        sẽ được sử dụng cho mục đích khấu trừ thuế (nếu có) và xuất hóa đơn do Người bán hoàn toàn chịu
-                        trách nhiệm về tính chính xác của các thông tin đã cung cấp.
-                    </p>
-                </div>
+        <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-8">
+            <a href="{{ route('home') }}" class="hover:text-orange-500 transition-colors">
+                <i class="fas fa-home mr-1"></i>
+                Trang chủ
+            </a>
+            <i class="fas fa-chevron-right text-gray-400"></i>
+            <span class="text-gray-900 font-medium">Đăng ký trở thành người bán</span>
+        </nav>
 
-                <form method="POST" action="{{ route('seller.register.step3') }}" class="space-y-6">
-                    @csrf
-                    <!-- Loại hình kinh doanh -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                        <label class="w-full sm:w-1/3 text-right"><sup class="text-red-500 text-[12px]">*</sup>Loại
-                            hình kinh doanh</label>
-                        <div class="flex gap-6">
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="business_type" value="personal" class="form-radio"
-                                    {{ old('business_type', session('register.business_type')) == 'personal' ? 'checked' : '' }}>
-                                <span>Cá nhân</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="business_type" value="household" class="form-radio"
-                                    {{ old('business_type', session('register.business_type')) == 'household' ? 'checked' : '' }}>
-                                <span>Hộ kinh doanh</span>
-                            </label>
-                            <label class="flex items-center space-x-2">
-                                <input type="radio" name="business_type" value="company" class="form-radio"
-                                    {{ old('business_type', session('register.business_type')) == 'company' ? 'checked' : '' }}>
-                                <span>Công ty</span>
-                            </label>
-                        </div>
-                        @error('business_type')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Địa chỉ đăng ký kinh doanh -->
-                    <div class="flex flex-col sm:flex-row gap-4 mt-6">
-                        <label class="w-full sm:w-1/3 text-right font-medium pt-2"><sup
-                                class="text-red-500 text-[12px]">*</sup>Địa chỉ đăng ký kinh doanh</label>
-                        <div class="w-full sm:w-1/3 space-y-2">
-                            <div class="flex gap-2">
-                                <select name="business_province" id="business_province" class="w-1/3 border rounded px-3 py-2 text-sm">
-                                    <option value="" disabled {{ !old('business_province', session('register.business_province')) ? 'selected' : '' }}>Tỉnh / Thành phố</option>
-                                    <!-- Option tỉnh/thành sẽ được render bằng JS -->
-                                </select>
-                                <select name="business_district" id="business_district" class="w-1/3 border rounded px-3 py-2 text-sm">
-                                    <option value="" disabled {{ !old('business_district', session('register.business_district')) ? 'selected' : '' }}>Quận / Huyện</option>
-                                    <!-- Option quận/huyện sẽ được render bằng JS -->
-                                </select>
-                                <select name="business_ward" id="business_ward" class="w-1/3 border rounded px-3 py-2 text-sm">
-                                    <option value="" disabled {{ !old('business_ward', session('register.business_ward')) ? 'selected' : '' }}>Phường / Xã</option>
-                                    <!-- Option phường/xã sẽ được render bằng JS -->
-                                </select>
+        <!-- Main Content -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Left Column - Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-blue-400 to-purple-500 px-8 py-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-file-invoice text-white text-xl"></i>
                             </div>
-                            @error('business_province')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                            @error('business_district')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                            @error('business_ward')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                            <input type="text" name="business_address_detail"
-                                class="w-full border rounded px-3 py-2 text-sm mt-2"
-                                placeholder="Số nhà, tên đường..."
-                                value="{{ old('business_address_detail', session('register.business_address_detail')) }}">
-                            @error('business_address_detail')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
+                            <div>
+                                <h1 class="text-2xl font-bold text-white">Thông tin Thuế</h1>
+                                <p class="text-white/80">Bước 2/4 - Thông tin kinh doanh và thuế</p>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Form Content -->
+                    <div class="p-8">
+                        <form method="POST" action="{{ route('seller.register.step3') }}" class="space-y-8">
+                            @csrf
+                            
+                            @if ($errors->any())
+                                <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                                        <h3 class="font-semibold text-red-800">Có lỗi xảy ra</h3>
+                                    </div>
+                                    <ul class="mt-2 text-sm text-red-700 space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>• {{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
 
-                    <!-- Email -->
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <label class="w-full sm:w-1/3 text-right"><sup class="text-red-500 text-[12px]">*</sup>Email
-                            nhận hóa đơn điện tử</label>
-                        <div class="w-full sm:w-1/3">
-                            <input type="email" name="invoice_email" class="w-full border rounded px-3 py-2"
-                                value="{{ old('invoice_email', session('register.invoice_email')) }}">
-                            @error('invoice_email')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                            <p class="text-sm text-gray-500 mt-1">Hóa đơn điện tử của bạn sẽ được gửi đến địa chỉ email này
-                            </p>
+                            <!-- Business Type -->
+                            <div class="space-y-4">
+                                <label class="block text-sm font-semibold text-gray-700">
+                                    <i class="fas fa-building mr-2 text-blue-500"></i>
+                                    Loại hình kinh doanh <span class="text-red-500">*</span>
+                                </label>
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <label class="relative">
+                                        <input type="radio" name="business_type" value="personal" class="sr-only peer"
+                                            {{ old('business_type', session('register.business_type')) == 'personal' ? 'checked' : '' }}>
+                                        <div class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all duration-200">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center">
+                                                    <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold text-gray-900">Cá nhân</div>
+                                                    <div class="text-sm text-gray-500">Kinh doanh cá nhân</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="relative">
+                                        <input type="radio" name="business_type" value="household" class="sr-only peer"
+                                            {{ old('business_type', session('register.business_type')) == 'household' ? 'checked' : '' }}>
+                                        <div class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all duration-200">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center">
+                                                    <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold text-gray-900">Hộ kinh doanh</div>
+                                                    <div class="text-sm text-gray-500">Hộ gia đình kinh doanh</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="relative">
+                                        <input type="radio" name="business_type" value="company" class="sr-only peer"
+                                            {{ old('business_type', session('register.business_type')) == 'company' ? 'checked' : '' }}>
+                                        <div class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all duration-200">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center">
+                                                    <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold text-gray-900">Công ty</div>
+                                                    <div class="text-sm text-gray-500">Doanh nghiệp</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                @error('business_type')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Business Address -->
+                            <div class="space-y-4">
+                                <label class="block text-sm font-semibold text-gray-700">
+                                    <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                                    Địa chỉ đăng ký kinh doanh <span class="text-red-500">*</span>
+                                </label>
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-medium text-gray-600">Tỉnh / Thành phố</label>
+                                        <select name="business_province" id="business_province" 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                            <option value="" disabled {{ !old('business_province', session('register.business_province')) ? 'selected' : '' }}>
+                                                Chọn tỉnh/thành
+                                            </option>
+                                        </select>
+                                        @error('business_province')
+                                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-medium text-gray-600">Quận / Huyện</label>
+                                        <select name="business_district" id="business_district" 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                            <option value="" disabled {{ !old('business_district', session('register.business_district')) ? 'selected' : '' }}>
+                                                Chọn quận/huyện
+                                            </option>
+                                        </select>
+                                        @error('business_district')
+                                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-medium text-gray-600">Phường / Xã</label>
+                                        <select name="business_ward" id="business_ward" 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                            <option value="" disabled {{ !old('business_ward', session('register.business_ward')) ? 'selected' : '' }}>
+                                                Chọn phường/xã
+                                            </option>
+                                        </select>
+                                        @error('business_ward')
+                                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-medium text-gray-600">Địa chỉ chi tiết</label>
+                                    <input type="text" name="business_address_detail"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                        placeholder="Số nhà, tên đường..."
+                                        value="{{ old('business_address_detail', session('register.business_address_detail')) }}">
+                                    @error('business_address_detail')
+                                        <p class="text-red-500 text-sm">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Contact Information -->
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-gray-700">
+                                        <i class="fas fa-envelope mr-2 text-blue-500"></i>
+                                        Email nhận hóa đơn điện tử <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="email" name="invoice_email" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                        placeholder="invoice@example.com"
+                                        value="{{ old('invoice_email', session('register.invoice_email')) }}">
+                                    <p class="text-sm text-gray-500 mt-1">Hóa đơn điện tử sẽ được gửi đến email này</p>
+                                    @error('invoice_email')
+                                        <p class="text-red-500 text-sm">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-gray-700">
+                                        <i class="fas fa-id-card mr-2 text-blue-500"></i>
+                                        Mã số thuế <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="tax_code" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                        placeholder="0123456789"
+                                        value="{{ old('tax_code', session('register.tax_code')) }}">
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        Mã số thuế kinh doanh. 
+                                        <a href="#" class="text-blue-600 hover:underline">Tìm hiểu thêm</a>
+                                    </p>
+                                    @error('tax_code')
+                                        <p class="text-red-500 text-sm">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex justify-between items-center pt-8 border-t border-gray-200">
+                                <a href="{{ route('seller.register') }}"
+                                    class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition-all duration-200">
+                                    <i class="fas fa-arrow-left mr-2"></i>
+                                    Quay lại
+                                </a>
+                                <button type="submit"
+                                    class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-blue-400 to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+                                    Tiếp theo
+                                    <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Info & Tips -->
+            <div class="lg:col-span-1">
+                <div class="space-y-6">
+                    <!-- Info Card -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-info-circle text-blue-600"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-blue-900">Thông tin quan trọng</h3>
+                        </div>
+                        <p class="text-sm text-blue-800 leading-relaxed">
+                            Việc thu thập thông tin thuế và định danh là bắt buộc theo quy định của Luật an ninh mạng, 
+                            Thương mại điện tử và Thuế của Việt Nam. Thông tin sẽ được bảo vệ theo chính sách bảo mật của ZynoxMall.
+                        </p>
+                    </div>
+
+                    <!-- Tips Card -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-lightbulb text-green-600"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900">Lưu ý</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                <p class="text-sm text-gray-600">Mã số thuế phải chính xác và hợp lệ</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                <p class="text-sm text-gray-600">Địa chỉ kinh doanh phải đầy đủ và chính xác</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                <p class="text-sm text-gray-600">Email nhận hóa đơn phải hoạt động</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Mã số thuế -->
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <label class="w-full sm:w-1/3 text-right"><sup class="text-red-500 text-[12px]">*</sup>Mã số
-                            thuế</label>
-                        <div class="w-full sm:w-1/3">
-                            <input type="text" name="tax_code" class="w-full border rounded px-3 py-2"
-                                value="{{ old('tax_code', session('register.tax_code')) }}">
-                            @error('tax_code')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                            <p class="text-sm text-gray-500 mt-1">
-                                Mã số thuế là mã số thuế kinh doanh. <a href="#" class="text-blue-600 underline">Tìm
-                                    hiểu thêm.</a>
-                            </p>
+                    <!-- Progress Card -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tiến độ đăng ký</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Thông tin Shop</span>
+                                <span class="text-sm font-semibold text-green-500">Hoàn thành</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Thông tin Thuế</span>
+                                <span class="text-sm font-semibold text-blue-500">Đang thực hiện</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Định danh</span>
+                                <span class="text-sm font-semibold text-gray-400">Chưa thực hiện</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Hoàn tất</span>
+                                <span class="text-sm font-semibold text-gray-400">Chưa thực hiện</span>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- hr -->
-                    <hr class="my-10">
-                    <!-- Nút -->
-                    <div class="flex justify-between">
-                        <div class="">
-                            <a href="{{ route('seller.register.step2') }}"
-                                class="px-4 py-2 bg-white border rounded hover:bg-gray-100">Quay lại</a>
-                        </div>
-                        <div class="flex justify-end gap-3">
-                            <button type="submit"
-                                class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Tiếp
-                                theo</button>
-                        </div>
-                    </div>
-                </form>
-
+                </div>
             </div>
         </div>
     </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const provinceSelect = document.getElementById('business_province');
-        const districtSelect = document.getElementById('business_district');
-        const wardSelect = document.getElementById('business_ward');
+document.addEventListener('DOMContentLoaded', function () {
+    const provinceSelect = document.getElementById('business_province');
+    const districtSelect = document.getElementById('business_district');
+    const wardSelect = document.getElementById('business_ward');
 
-        // Fetch provinces
-        fetch('https://provinces.open-api.vn/api/?depth=1')
+    // Fetch provinces
+    fetch('https://provinces.open-api.vn/api/?depth=1')
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.code;
+                option.textContent = item.name;
+                if (option.value == "{{ old('business_province', session('register.business_province')) }}") {
+                    option.selected = true;
+                }
+                provinceSelect.appendChild(option);
+            });
+        });
+
+    provinceSelect.addEventListener('change', function () {
+        districtSelect.innerHTML = '<option value="" disabled selected>Chọn Quận / Huyện</option>';
+        wardSelect.innerHTML = '<option value="" disabled selected>Chọn Phường / Xã</option>';
+        wardSelect.disabled = true;
+        districtSelect.disabled = false;
+        
+        const provinceCode = this.value;
+        fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
             .then(res => res.json())
             .then(data => {
-                data.forEach(item => {
+                data.districts.forEach(item => {
                     const option = document.createElement('option');
-                    option.value = item.code; // dùng code
+                    option.value = item.code;
                     option.textContent = item.name;
-                    if (option.value == "{{ old('business_province', session('register.business_province')) }}") option.selected = true;
-                    provinceSelect.appendChild(option);
+                    if (option.value == "{{ old('business_district', session('register.business_district')) }}") {
+                        option.selected = true;
+                    }
+                    districtSelect.appendChild(option);
                 });
             });
-
-        provinceSelect.addEventListener('change', function () {
-            districtSelect.innerHTML = '<option value="" disabled selected>Quận / Huyện</option>';
-            wardSelect.innerHTML = '<option value="" disabled selected>Phường / Xã</option>';
-            wardSelect.disabled = true;
-            districtSelect.disabled = false;
-            const provinceCode = this.value;
-            fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
-                .then(res => res.json())
-                .then(data => {
-                    data.districts.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.code; // dùng code
-                        option.textContent = item.name;
-                        if (option.value == "{{ old('business_district', session('register.business_district')) }}") option.selected = true;
-                        districtSelect.appendChild(option);
-                    });
-                });
-        });
-
-        districtSelect.addEventListener('change', function () {
-            wardSelect.innerHTML = '<option value="" disabled selected>Phường / Xã</option>';
-            wardSelect.disabled = false;
-            const districtCode = this.value;
-            fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
-                .then(res => res.json())
-                .then(data => {
-                    data.wards.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.code; // dùng code
-                        option.textContent = item.name;
-                        if (option.value == "{{ old('business_ward', session('register.business_ward')) }}") option.selected = true;
-                        wardSelect.appendChild(option);
-                    });
-                });
-        });
     });
+
+    districtSelect.addEventListener('change', function () {
+        wardSelect.innerHTML = '<option value="" disabled selected>Chọn Phường / Xã</option>';
+        wardSelect.disabled = false;
+        
+        const districtCode = this.value;
+        fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
+            .then(res => res.json())
+            .then(data => {
+                data.wards.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.code;
+                    option.textContent = item.name;
+                    if (option.value == "{{ old('business_ward', session('register.business_ward')) }}") {
+                        option.selected = true;
+                    }
+                    wardSelect.appendChild(option);
+                });
+            });
+    });
+});
 </script>
 @endpush

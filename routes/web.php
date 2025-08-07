@@ -31,7 +31,7 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
-use App\Http\Controllers\Admin\CommentController as AdminCommentController;
+use App\Http\Controllers\Admin\CommentController;
 
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
@@ -212,6 +212,14 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         return view('admin.reviews.index');
     })->name('admin.reviews.index');
 
+    // comments
+    Route::prefix('comments')->group(function () {
+        Route::get('/', [CommentController::class, 'index'])->name('admin.comments.index');
+        Route::get('/{comment}', [CommentController::class, 'show'])->name('admin.comments.show');
+        Route::put('/{comment}', [CommentController::class, 'update'])->name('admin.comments.update');
+        Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('admin.comments.destroy');
+    });
+
     // settings
     Route::prefix('settings')->group(function () {
         Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
@@ -262,16 +270,6 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::resource('post-tags', PostTagController::class);
     // Post
     Route::resource('post', PostController::class);
-    
-    // Comments Management
-    Route::prefix('comments')->group(function () {
-        Route::get('/', [AdminCommentController::class, 'index'])->name('admin.comments.index');
-        Route::get('/{comment}', [AdminCommentController::class, 'show'])->name('admin.comments.show');
-        Route::post('/{comment}/approve', [AdminCommentController::class, 'approve'])->name('admin.comments.approve');
-        Route::post('/{comment}/reject', [AdminCommentController::class, 'reject'])->name('admin.comments.reject');
-        Route::delete('/{comment}', [AdminCommentController::class, 'destroy'])->name('admin.comments.destroy');
-    });
-    
     // Help
     Route::resource('help-category', HelpCategoryController::class);
     Route::resource('help-article', HelpArticleController::class);
@@ -283,6 +281,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
         Route::get('/active', [AdminShopController::class, 'active'])->name('admin.shops.active');
         Route::get('/banned', [AdminShopController::class, 'banned'])->name('admin.shops.banned');
+        Route::get('/suspended', [AdminShopController::class, 'suspended'])->name('admin.shops.suspended');
         Route::get('/analytics', [AdminShopController::class, 'analytics'])->name('admin.shops.analytics');
         Route::get('/{shop}', [AdminShopController::class, 'show'])->name('admin.shops.show');
         Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
@@ -291,6 +290,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/{shop}/ban', [AdminShopController::class, 'ban'])->name('admin.shops.ban');
         Route::post('/{shop}/unban', [AdminShopController::class, 'unban'])->name('admin.shops.unban');
         Route::post('/{shop}/reactivate', [AdminShopController::class, 'reactivate'])->name('admin.shops.reactivate');
+        Route::post('/{shop}/activate', [AdminShopController::class, 'activate'])->name('admin.shops.activate');
         Route::put('/{shop}', [AdminShopController::class, 'update'])->name('admin.shops.update');
         Route::delete('/{shop}', [AdminShopController::class, 'destroy'])->name('admin.shops.destroy');
     });
@@ -301,6 +301,11 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/dashboard', function () {
         return view('seller.home');
     })->name('seller.dashboard');
+    
+    // Thêm route seller.home
+    Route::get('/home', function () {
+        return view('seller.home');
+    })->name('seller.home');
 
     // Ads Campaigns Routes
     Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
@@ -525,8 +530,7 @@ Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
 Route::prefix('seller')->middleware('auth')->group(function () {
     Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
     Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
-    Route::get('/register1', [RegisterShopController::class, 'showStep2'])->name('seller.register.step2');
-    Route::post('/register1', [RegisterShopController::class, 'step2'])->name('seller.register.step2.post');
+    // Route register1 đã bị xóa vì bỏ bước vận chuyển
     Route::get('/register2', [RegisterShopController::class, 'showStep3'])->name('seller.register.step3');
     Route::post('/register2', [RegisterShopController::class, 'step3'])->name('seller.register.step3.post');
     Route::get('/register3', [RegisterShopController::class, 'showStep4'])->name('seller.register.step4');
@@ -694,3 +698,34 @@ Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.
         Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
     });
 });
+
+// Route upload ảnh CCCD tạm thời
+Route::post('/api/upload-cccd-temp', function(Request $request) {
+    if ($request->hasFile('file')) {
+        $file = $request->file('file');
+        $type = $request->input('type', 'cccd_front');
+        
+        // Validate file
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg|max:5120', // 5MB
+        ]);
+        
+        // Tạo tên file unique
+        $fileName = time() . '_' . $type . '.' . $file->getClientOriginalExtension();
+        
+        // Lưu vào thư mục tạm
+        $path = $file->storeAs('temp/cccd', $fileName, 'public');
+        
+        return response()->json([
+            'success' => true,
+            'path' => 'storage/' . $path,
+            'url' => asset('storage/' . $path),
+            'filename' => $fileName
+        ]);
+    }
+    
+    return response()->json([
+        'success' => false,
+        'message' => 'Không có file được upload'
+    ]);
+})->middleware('web');

@@ -277,6 +277,9 @@
                             <a href="{{ route('admin.shops.pending') }}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                                 <i class="fas fa-clock mr-2"></i>Chờ duyệt
                             </a>
+                            <a href="{{ route('admin.shops.suspended') }}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <i class="fas fa-pause mr-2"></i>Tạm ngưng
+                            </a>
                             <a href="{{ route('admin.shops.banned') }}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                                 <i class="fas fa-ban mr-2"></i>Đã bị cấm
                             </a>

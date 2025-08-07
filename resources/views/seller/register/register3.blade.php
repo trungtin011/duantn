@@ -1,367 +1,755 @@
 @extends('layouts.seller')
 
 @section('content')
-    <div class="container mx-auto py-5 flex flex-col" style="min-height: 80vh;">
+<!-- Add CSRF token meta tag -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Breadcrumb -->
-        <div class="flex flex-wrap items-center gap-2 my-10 md:my-10 text-sm md:text-base">
-            <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
-            <span>/</span>
-            <span>Đăng ký trở thành người bán</span>
+        <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-8">
+            <a href="{{ route('home') }}" class="hover:text-orange-500 transition-colors">
+                <i class="fas fa-home mr-1"></i>
+                Trang chủ
+            </a>
+            <i class="fas fa-chevron-right text-gray-400"></i>
+            <span class="text-gray-900 font-medium">Đăng ký trở thành người bán</span>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Left Column - Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-purple-400 to-pink-500 px-8 py-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-id-card text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-white">Thông tin Định danh</h1>
+                                <p class="text-white/80">Bước 3/4 - Xác thực danh tính</p>
+                            </div>
+                        </div>
         </div>
-        <div class="p-6 w-full shadow-md rounded-[10px]">
-            <!-- Stepper -->
-            @include('seller.register.stepper')
-            <script>
-                if (typeof updateStepper === 'function') {
-                    updateStepper(3);
-                } else {
-                    console.error('updateStepper function is not defined');
-                }
-            </script>
-            <form action="{{ route('seller.register.step4.post') }}" method="POST" enctype="multipart/form-data" class="rounded-2xl p-6">
+
+                    <!-- Form Content -->
+                    <div class="p-8">
+                        <form action="{{ route('seller.register.step4.post') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
                 @csrf
+                            
                 @if ($errors->any())
-                    <!-- Đã chuyển lỗi validate xuống từng trường -->
+                                <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                                        <h3 class="font-semibold text-red-800">Có lỗi xảy ra</h3>
+                                    </div>
+                                    <ul class="mt-2 text-sm text-red-700 space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>• {{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
                 @endif
-                <div class="min-h-screen bg-white flex items-center justify-center">
-                    <div class="rounded-2xl p-6 flex flex-col gap-10">
-                        <!-- Tiêu đề và thông báo -->
-                        <div class="flex items-center bg-blue-100 text-blue-700 border border-blue-300 p-3 rounded text-sm">
-                            <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M8,1 C11.8659932,1 15,4.13400675 15,8 C15,11.8659932 11.8659932,15 8,15 C4.13400675,15 1,11.8659932 1,8 C1,4.13400675 4.13400675,1 8,1 Z M8.30163718,10.5595183 C8.14108673,10.7430046 8.00347205,10.8347477 7.91172893,10.8347477 C7.86585737,10.8347477 7.84292159,10.8347477 7.79705003,10.8118119 C7.75117847,10.7888761 7.75117847,10.7430046 7.75117847,10.6741972 C7.75117847,10.6053899 7.77411425,10.4219037 7.84292159,10.1696101 C7.86585737,10.077867 7.91172893,9.89438073 7.98053627,9.64208716 L8.80622434,6.6375 L8.34750874,6.72924312 C8.18695829,6.7521789 7.91172893,6.79805046 7.54475645,6.84392202 C7.15484819,6.88979358 6.87961884,6.91272936 6.67319682,6.93566514 L6.67319682,7.2108945 C6.90255462,7.2108945 7.06310507,7.23383028 7.15484819,7.27970183 C7.24659131,7.32557339 7.29246287,7.39438073 7.29246287,7.53199541 L7.29246287,7.60080275 C7.29246287,7.62373853 7.29246287,7.64667431 7.26952709,7.69254587 L6.62732526,10.077867 C6.5814537,10.2613532 6.53558214,10.3989679 6.51264636,10.490711 C6.4667748,10.6741972 6.44383902,10.8118119 6.44383902,10.903555 C6.44383902,11.1558486 6.51264636,11.3393349 6.67319682,11.4540138 C6.83374728,11.5686927 6.99429774,11.6375 7.20071975,11.6375 C7.54475645,11.6375 7.86585737,11.4998853 8.16402251,11.2017202 C8.34750874,11.0182339 8.59980232,10.6741972 8.94383902,10.1696101 L8.71448122,10.0090596 C8.59980232,10.1925459 8.43925186,10.3760321 8.30163718,10.5595183 L8.30163718,10.5595183 Z M8.19383902,4.3625 C7.97609708,4.3625 7.80674225,4.43508065 7.66158095,4.58024194 C7.51641966,4.72540323 7.44383902,4.89475806 7.44383902,5.1125 C7.44383902,5.33024194 7.51641966,5.49959677 7.66158095,5.64475806 C7.80674225,5.78991935 7.97609708,5.8625 8.19383902,5.8625 C8.41158095,5.8625 8.58093579,5.78991935 8.72609708,5.64475806 C8.87125837,5.49959677 8.94383902,5.33024194 8.94383902,5.1125 C8.94383902,4.89475806 8.87125837,4.72540323 8.72609708,4.58024194 C8.58093579,4.43508065 8.41158095,4.3625 8.19383902,4.3625 L8.19383902,4.3625 Z"></path>
-                            </svg>
-                            <p>
-                                Vui lòng cung cấp Thông Tin Định Danh của Chủ Shop (nếu là cá nhân), hoặc Người Đại Diện Pháp Lý trên giấy đăng ký kinh doanh.
-                            </p>
+
+                            <!-- Info Alert -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                                    <div>
+                                        <h3 class="font-semibold text-blue-900 mb-2">Thông tin quan trọng</h3>
+                                        <p class="text-sm text-blue-800">
+                                            Vui lòng cung cấp ảnh mặt trước và mặt sau CCCD/CMND. Hệ thống sẽ tự động quét và điền thông tin vào form.
+                                        </p>
+                                    </div>
+                                </div>
                         </div>
 
-                        <!-- Hình thức định danh -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                            <label class="col-span-1 font-medium text-sm text-gray-700 text-end">
-                                <sup class="text-red-500 text-[12px]">*</sup> Hình Thức Định Danh
-                            </label>
-                            <div class="col-span-4 flex items-center gap-6 text-sm">
-                                <label>
-                                    <input type="radio" name="id_type" value="cccd" {{ old('id_type', 'cccd') == 'cccd' ? 'checked' : '' }}>
-                                    Căn Cước Công Dân (CCCD)
+                            <!-- Identity Type -->
+                            <div class="space-y-4">
+                                <label class="block text-sm font-semibold text-gray-700">
+                                    <i class="fas fa-id-card mr-2 text-purple-500"></i>
+                                    Hình thức định danh <span class="text-red-500">*</span>
                                 </label>
-                                <label>
-                                    <input type="radio" name="id_type" value="cmnd" {{ old('id_type') == 'cmnd' ? 'checked' : '' }}>
-                                    Chứng Minh Nhân Dân (CMND)
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <label class="relative">
+                                        <input type="radio" name="id_type" value="cccd" class="sr-only peer" {{ old('id_type', 'cccd') == 'cccd' ? 'checked' : '' }}>
+                                        <div class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer peer-checked:border-purple-500 peer-checked:bg-purple-50 transition-all duration-200">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:border-purple-500 peer-checked:bg-purple-500 flex items-center justify-center">
+                                                    <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold text-gray-900">CCCD</div>
+                                                    <div class="text-sm text-gray-500">Căn cước công dân</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                 </label>
-                                <label>
-                                    <input type="radio" name="id_type" value="passport" {{ old('id_type') == 'passport' ? 'checked' : '' }}>
-                                    Hộ chiếu
+                                    
+                                    <label class="relative">
+                                        <input type="radio" name="id_type" value="cmnd" class="sr-only peer" {{ old('id_type') == 'cmnd' ? 'checked' : '' }}>
+                                        <div class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer peer-checked:border-purple-500 peer-checked:bg-purple-50 transition-all duration-200">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-5 h-5 border-2 border-gray-300 rounded-full peer-checked:border-purple-500 peer-checked:bg-purple-500 flex items-center justify-center">
+                                                    <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold text-gray-900">CMND</div>
+                                                    <div class="text-sm text-gray-500">Chứng minh nhân dân</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                 </label>
+                                    
+                                   
                             </div>
                             @error('id_type')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Các trường nhập liệu định danh, bọc trong div để dễ ẩn/hiện -->
-                        <div id="identity-fields" @if(!$errors->any() && !old('id_number')) style="display:none;" @endif class="space-y-6 mt-6">
+                            <!-- Document Upload -->
+                            <div class="space-y-6">
+                                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                    <i class="fas fa-upload mr-2 text-purple-500"></i>
+                                    Tải lên giấy tờ định danh
+                                </h3>
+                                
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <!-- Front Side -->
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-gray-700">
+                                            Ảnh mặt trước CCCD/CMND <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <input type="file" name="file" accept="image/*" class="hidden" id="filechoose" 
+                                                   {{ !old('cccd_image') ? 'required' : '' }}>
+                                            <!-- Hidden input to store uploaded image path -->
+                                            <input type="hidden" name="cccd_image" id="cccd_image" value="{{ old('cccd_image') }}">
+                                            <label for="filechoose" 
+                                                   class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 transition-colors duration-200 bg-gray-50">
+                                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
+                                                    <p class="mb-2 text-sm text-gray-500">
+                                                        <span class="font-semibold">Click để tải lên</span> hoặc kéo thả
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">PNG, JPG, JPEG (Tối đa 5MB)</p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <!-- Preview image: ưu tiên old('cccd_image') nếu có -->
+                                        @if(old('cccd_image'))
+                                            <img id="filepreview" src="{{ asset(old('cccd_image')) }}" alt="Preview" class="w-full h-32 object-cover rounded-lg shadow-md mt-2" />
+                                        @else
+                                            <img id="filepreview" src="#" alt="Preview" class="hidden w-full h-32 object-cover rounded-lg shadow-md mt-2" />
+                                        @endif
+                                        @error('file')
+                                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                                        @enderror
+                                    </div>
 
-                            <!-- Phần Thông tin cá nhân -->
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4">📄 Thông tin cá nhân</h3>
-                                <div class="space-y-4 p-4 border rounded-lg bg-gray-50">
-                                    <!-- Họ và tên -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end pt-2">Họ & Tên</label>
-                                        <div class="col-span-4 space-y-1">
-                                            <input type="text" name="full_name" maxlength="100" required class="w-full md:w-1/2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('full_name') }}">
-                                            @error('full_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    <!-- Back Side -->
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-gray-700">
+                                            Ảnh mặt sau CCCD/CMND <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <input type="file" name="backfile" accept="image/*" class="hidden" id="backfilechoose" 
+                                                   {{ !old('back_cccd_image') ? 'required' : '' }}>
+                                            <!-- Hidden input to store uploaded back image path -->
+                                            <input type="hidden" name="back_cccd_image" id="back_cccd_image" value="{{ old('back_cccd_image') }}">
+                                            <label for="backfilechoose" 
+                                                   class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 transition-colors duration-200 bg-gray-50">
+                                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
+                                                    <p class="mb-2 text-sm text-gray-500">
+                                                        <span class="font-semibold">Click để tải lên</span> hoặc kéo thả
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">PNG, JPG, JPEG (Tối đa 5MB)</p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <!-- Preview image: ưu tiên old('back_cccd_image') nếu có -->
+                                        @if(old('back_cccd_image'))
+                                            <img id="backfilepreview" src="{{ asset(old('back_cccd_image')) }}" alt="Preview" class="w-full h-32 object-cover rounded-lg shadow-md mt-2" />
+                                        @else
+                                            <img id="backfilepreview" src="#" alt="Preview" class="hidden w-full h-32 object-cover rounded-lg shadow-md mt-2" />
+                                        @endif
+                                        @error('backfile')
+                                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <!-- Scan Button -->
+                                <div class="flex justify-center">
+                                    <button type="button" id="scan-cccd-btn" 
+                                            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+                                        <i class="fas fa-search mr-3"></i>
+                                        Quét và tự động điền thông tin
+                                    </button>
+                                </div>
+                                
+                                <div id="scan-cccd-loading" class="hidden text-center">
+                                    <div class="inline-flex items-center space-x-2">
+                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+                                        <span class="text-gray-600">Đang quét và xử lý thông tin...</span>
+                                    </div>
+                                </div>
+                                <div id="scan-cccd-error" class="text-red-500 text-sm text-center"></div>
+                                <div id="scan-cccd-success" class="text-green-600 text-sm text-center hidden"></div>
+                            </div>
+
+                            <!-- Hidden fields to preserve scanned data -->
+                            <input type="hidden" name="scanned_full_name" id="scanned_full_name" value="{{ old('scanned_full_name') }}">
+                            <input type="hidden" name="scanned_id_number" id="scanned_id_number" value="{{ old('scanned_id_number') }}">
+                            <input type="hidden" name="scanned_birthday" id="scanned_birthday" value="{{ old('scanned_birthday') }}">
+                            <input type="hidden" name="scanned_nationality" id="scanned_nationality" value="{{ old('scanned_nationality') }}">
+                            <input type="hidden" name="scanned_residence" id="scanned_residence" value="{{ old('scanned_residence') }}">
+                            <input type="hidden" name="scanned_hometown" id="scanned_hometown" value="{{ old('scanned_hometown') }}">
+                            <input type="hidden" name="scanned_gender" id="scanned_gender" value="{{ old('scanned_gender') }}">
+                            <input type="hidden" name="scanned_identity_card_date" id="scanned_identity_card_date" value="{{ old('scanned_identity_card_date') }}">
+                            <input type="hidden" name="scanned_identity_card_place" id="scanned_identity_card_place" value="{{ old('scanned_identity_card_place') }}">
+                            <input type="hidden" name="scanned_dac_diem_nhan_dang" id="scanned_dac_diem_nhan_dang" value="{{ old('scanned_dac_diem_nhan_dang') }}">
+
+                            <!-- Personal Information (Hidden initially, shown after scan) -->
+                            <div id="personal-info-section" class="hidden space-y-6">
+                                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                    <i class="fas fa-user mr-2 text-purple-500"></i>
+                                    Thông tin cá nhân (Tự động điền)
+                                </h3>
+                                
+                                <div class="bg-gray-50 rounded-xl p-6 space-y-6">
+                                    <div class="grid md:grid-cols-2 gap-6">
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Họ và tên <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="full_name" maxlength="100" required 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                placeholder="Sẽ được điền tự động" value="{{ old('full_name') }}">
                                             <p class="text-xs text-gray-500">Theo CMND/CCCD/Hộ Chiếu</p>
+                                            @error('full_name')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
                                         </div>
-                                    </div>
-                                    <!-- Giới tính -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Giới tính</label>
-                                        <div class="col-span-4 flex items-center gap-6 text-sm">
-                                            <label><input type="radio" name="gender" value="male" {{ old('gender') == 'male' ? 'checked' : '' }}> Nam</label>
-                                            <label><input type="radio" name="gender" value="female" {{ old('gender') == 'female' ? 'checked' : '' }}> Nữ</label>
-                                            @error('gender') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Giới tính <span class="text-red-500">*</span>
+                                            </label>
+                                            <div class="flex space-x-4">
+                                                <label class="flex items-center space-x-2">
+                                                    <input type="radio" name="gender" value="male" {{ old('gender') == 'male' ? 'checked' : '' }} class="text-purple-500">
+                                                    <span>Nam</span>
+                                                </label>
+                                                <label class="flex items-center space-x-2">
+                                                    <input type="radio" name="gender" value="female" {{ old('gender') == 'female' ? 'checked' : '' }} class="text-purple-500">
+                                                    <span>Nữ</span>
+                                                </label>
+                                            </div>
+                                            @error('gender')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
                                         </div>
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Ngày sinh <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="date" name="birthday" required 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                value="{{ old('birthday') }}">
+                                            @error('birthday')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Quốc tịch <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="nationality" maxlength="50" required 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                placeholder="Sẽ được điền tự động" value="{{ old('nationality') }}">
+                                            @error('nationality')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Quê quán <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="hometown" maxlength="100" required 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                placeholder="Sẽ được điền tự động" value="{{ old('hometown') }}">
+                                            @error('hometown')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
                                     </div>
-                                    <!-- Ngày sinh -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Ngày sinh</label>
-                                        <input type="date" name="birthday" required class="col-span-2 border rounded px-3 py-2 text-sm" value="{{ old('birthday') }}">
-                                        @error('birthday') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Nơi thường trú <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="residence" maxlength="100" required 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                placeholder="Sẽ được điền tự động" value="{{ old('residence') }}">
+                                            @error('residence')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
                                     </div>
-                                    <!-- Quốc tịch -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Quốc tịch</label>
-                                        <input type="text" name="nationality" maxlength="50" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('nationality') }}">
-                                        @error('nationality') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
-                                    <!-- Quê quán -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Quê quán</label>
-                                        <input type="text" name="hometown" maxlength="100" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('hometown') }}">
-                                        @error('hometown') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
-                                    <!-- Nơi thường trú -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Nơi thường trú</label>
-                                        <input type="text" name="residence" maxlength="100" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('residence') }}">
-                                        @error('residence') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Phần Thông tin CCCD -->
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4">🪪 Thông tin CCCD</h3>
-                                <div class="space-y-4 p-4 border rounded-lg bg-gray-50">
-                                    <!-- Số giấy tờ -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Số CCCD</label>
-                                        <input type="text" name="id_number" maxlength="20" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('id_number') }}">
-                                        @error('id_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            <!-- Identity Card Information (Hidden initially, shown after scan) -->
+                            <div id="identity-info-section" class="hidden space-y-6">
+                                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                                    <i class="fas fa-id-card mr-2 text-purple-500"></i>
+                                    Thông tin CCCD/CMND (Tự động điền)
+                                </h3>
+                                
+                                <div class="bg-gray-50 rounded-xl p-6 space-y-6">
+                                    <div class="grid md:grid-cols-2 gap-6">
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Số CCCD/CMND <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="id_number" maxlength="20" required 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                placeholder="Sẽ được điền tự động" value="{{ old('id_number') }}">
+                                            @error('id_number')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Ngày cấp <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="date" name="identity_card_date" required 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                value="{{ old('identity_card_date') }}">
+                                            @error('identity_card_date')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
                                     </div>
-                                    <!-- Ngày cấp -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Ngày cấp</label>
-                                        <input type="date" name="identity_card_date" required class="col-span-2 border rounded px-3 py-2 text-sm" value="{{ old('identity_card_date') }}">
-                                        @error('identity_card_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Nơi cấp <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="identity_card_place" maxlength="255" required 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                placeholder="Sẽ được điền tự động" value="{{ old('identity_card_place') }}">
+                                            @error('identity_card_place')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
                                     </div>
-                                    <!-- Nơi cấp -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Nơi cấp</label>
-                                        <input type="text" name="identity_card_place" maxlength="255" required class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('identity_card_place') }}">
-                                        @error('identity_card_place') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
-                                    <!-- Đặc điểm nhận dạng -->
-                                    <div class="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                                        <label class="col-span-1 text-sm font-medium text-gray-700 text-end">Đặc điểm nhận dạng</label>
-                                        <input type="text" name="dac_diem_nhan_dang" maxlength="255" class="col-span-2 border rounded px-3 py-2 text-sm" placeholder="Nhập vào" value="{{ old('dac_diem_nhan_dang') }}">
-                                        @error('dac_diem_nhan_dang') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Đặc điểm nhận dạng
+                                            </label>
+                                            <input type="text" name="dac_diem_nhan_dang" maxlength="255" 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                                placeholder="Sẽ được điền tự động" value="{{ old('dac_diem_nhan_dang') }}">
+                                            @error('dac_diem_nhan_dang')
+                                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                                            @enderror
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Ảnh mặt trước CCCD -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4 mb-4">
-                            <label class="col-span-1 block text-sm font-medium text-gray-700 text-end pt-2">
-                                <sup class="text-red-500 text-[12px]">*</sup> Ảnh mặt trước CCCD
+                            <!-- Confirmation -->
+                            <div class="bg-gray-50 rounded-xl p-6">
+                                <div class="flex items-start space-x-3">
+                                    <input type="checkbox" id="confirm" name="confirm" required 
+                                           class="mt-1 w-4 h-4 text-purple-500 border-gray-300 rounded focus:ring-purple-500">
+                                    <label for="confirm" class="text-sm text-gray-700">
+                                        Tôi xác nhận tất cả dữ liệu đã cung cấp là chính xác và trung thực. 
+                                        Tôi đã đọc và đồng ý với 
+                                        <a href="#" class="text-purple-600 hover:underline font-semibold">Chính Sách Bảo Mật</a>.
                             </label>
-                            <div class="col-span-4 w-full md:w-1/3 flex flex-col items-center justify-center border border-dashed border-blue-400 rounded p-6 text-center space-y-2 relative bg-blue-50">
-                                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                <p class="text-sm text-blue-700">Tải lên ảnh mặt trước CCCD (không vượt quá 5MB)</p>
-                                <input type="file" name="file" accept="image/*" class="hidden" id="filechoose" required>
-                                <button type="button" onclick="document.getElementById('filechoose').click()" class="px-4 py-2 bg-blue-500 text-white rounded text-sm">Chọn ảnh mặt trước</button>
-                                <img id="filepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
-                                @error('file')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                </div>
+                                @error('confirm')
+                                    <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
                                 @enderror
                             </div>
-                        </div>
-                        <!-- Ảnh mặt sau CCCD -->
-                        <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-4 mb-4">
-                            <label class="col-span-1 block text-sm font-medium text-gray-700 text-end pt-2">
-                                <sup class="text-red-500 text-[12px]">*</sup> Ảnh mặt sau CCCD
-                            </label>
-                            <div class="col-span-4 w-full md:w-1/3 flex flex-col items-center justify-center border border-dashed border-green-400 rounded p-6 text-center space-y-2 relative bg-green-50">
-                                <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                <p class="text-sm text-green-700">Tải lên ảnh mặt sau CCCD (không vượt quá 5MB)</p>
-                                <input type="file" name="backfile" accept="image/*" class="hidden" id="backfilechoose" required>
-                                <button type="button" onclick="document.getElementById('backfilechoose').click()" class="px-4 py-2 bg-green-600 text-white rounded text-sm">Chọn ảnh mặt sau</button>
-                                <img id="backfilepreview" src="#" alt="Preview" style="display:none;max-width:200px;margin-top:10px;border-radius:8px;box-shadow:0 0 4px #ccc;" />
-                                <div id="scan-cccd-back-error" class="text-red-500 text-xs mt-2"></div>
-                            </div>
-                        </div>
-                        <!-- Nút Quét CCCD đặt dưới cả hai khối -->
-                        <div class="flex justify-end mt-4 mb-2">
-                            <button type="button" id="scan-cccd-btn" class="px-4 py-2 bg-yellow-500 text-white rounded text-sm">Quét CCCD</button>
-                        </div>
-                        <div id="scan-cccd-loading" style="display:none;" class="mt-2"><span class="loader"></span> Đang quét...</div>
-                        <div id="scan-cccd-error" class="text-red-500 text-xs mt-2"></div>
-                        <div id="scan-cccd-success" class="text-green-600 text-sm mt-2" style="display:none;"></div>
 
-                        <!-- Xác nhận -->
-                        <div class="flex items-center space-x-2 text-sm bg-gray-100 p-3 rounded">
-                            <input type="checkbox" id="confirm" name="confirm" required>
-                            <label for="confirm">Tôi xác nhận tất cả dữ liệu đã cung cấp là chính xác và trung thực. Tôi đã đọc và đồng ý với <a href="" class="text-blue-500 hover:underline">Chính Sách Bảo Mật</a>.</label>
-                            @error('confirm')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
+                            <!-- Action Buttons -->
+                            <div class="flex justify-between items-center pt-8 border-t border-gray-200">
+                                <button type="button" onclick="window.history.back()" 
+                                        class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition-all duration-200">
+                                    <i class="fas fa-arrow-left mr-2"></i>
+                                    Quay lại
+                                </button>
+                                <button type="submit" 
+                                        class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-purple-400 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+                                    Tiếp theo
+                                    <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Info & Tips -->
+            <div class="lg:col-span-1">
+                <div class="space-y-6">
+                    <!-- Info Card -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-2xl p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-purple-600"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-purple-900">Bảo mật thông tin</h3>
+                        </div>
+                        <p class="text-sm text-purple-800 leading-relaxed">
+                            Thông tin định danh của bạn sẽ được mã hóa và bảo vệ theo tiêu chuẩn bảo mật cao nhất. 
+                            Chỉ được sử dụng cho mục đích xác thực.
+                        </p>
+                    </div>
+
+                    <!-- Tips Card -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-lightbulb text-yellow-600"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900">Lưu ý quan trọng</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                <p class="text-sm text-gray-600">Ảnh CCCD/CMND phải rõ ràng, không bị mờ</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                <p class="text-sm text-gray-600">Hệ thống sẽ tự động quét và điền thông tin</p>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                <p class="text-sm text-gray-600">Thông tin đã quét sẽ được giữ lại khi có lỗi</p>
+                        </div>
                         </div>
                     </div>
+
+                    <!-- Progress Card -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Tiến độ đăng ký</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Thông tin Shop</span>
+                                <span class="text-sm font-semibold text-green-500">Hoàn thành</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Thông tin Thuế</span>
+                                <span class="text-sm font-semibold text-green-500">Hoàn thành</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Định danh</span>
+                                <span class="text-sm font-semibold text-purple-500">Đang thực hiện</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Hoàn tất</span>
+                                <span class="text-sm font-semibold text-gray-400">Chưa thực hiện</span>
                 </div>
-                <!-- hr -->
-                <hr class="my-5">
-                <!-- Nút điều hướng -->
-                <div class="flex justify-between">
-                    <div>
-                        <button type="button" onclick="window.history.back()" class="px-4 py-2 bg-white border rounded hover:bg-gray-100">Quay lại</button>
                     </div>
-                    <div class="flex justify-end gap-3">
-                        <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">Tiếp theo</button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
+</div>
+
     <script>
+        // Upload ảnh mặt trước bằng AJAX
         document.getElementById('filechoose').addEventListener('change', function(e) {
             const file = e.target.files[0];
             const preview = document.getElementById('filepreview');
+            const hiddenInput = document.getElementById('cccd_image');
+            
             if (file) {
                 const maxSize = 5 * 1024 * 1024; // 5MB
                 if (file.size > maxSize) {
                     alert('Kích thước tệp vượt quá 5MB. Vui lòng chọn tệp nhỏ hơn.');
                     e.target.value = '';
-                    preview.style.display = 'none';
-                } else {
-                    const fileName = file.name;
-                    const label = document.createElement('p');
-                    label.textContent = `Tệp đã chọn: ${fileName}`;
-                    label.className = 'text-sm text-gray-500 mt-2';
-                    const container = this.parentElement;
-                    const existingLabel = container.querySelector('p.text-sm');
-                    if (existingLabel) existingLabel.remove();
-                    container.appendChild(label);
-                    // Hiển thị preview ảnh
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        preview.src = ev.target.result;
-                        preview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
+                    preview.classList.add('hidden');
+                    return;
                 }
+                
+                // Upload bằng AJAX
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('type', 'cccd_front');
+                
+                fetch('/api/upload-cccd-temp', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Lưu đường dẫn ảnh vào input hidden
+                        hiddenInput.value = data.path;
+                        // Hiển thị preview từ server
+                        preview.src = data.url;
+                        preview.classList.remove('hidden');
+                        // Bỏ required ở input file vì đã có ảnh
+                        e.target.removeAttribute('required');
+                    } else {
+                        alert('Lỗi upload ảnh: ' + data.message);
+                        e.target.value = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi upload ảnh. Vui lòng thử lại.');
+                    e.target.value = '';
+                });
             } else {
-                preview.style.display = 'none';
+                preview.classList.add('hidden');
+                hiddenInput.value = '';
+                // Thêm lại required nếu không có ảnh
+                if (!hiddenInput.value) {
+                    e.target.setAttribute('required', '');
+                }
             }
         });
+
+        // Upload ảnh mặt sau bằng AJAX
         document.getElementById('backfilechoose').addEventListener('change', function(e) {
             const file = e.target.files[0];
+            const preview = document.getElementById('backfilepreview');
+            const hiddenInput = document.getElementById('back_cccd_image');
+            
             if (file) {
                 const maxSize = 5 * 1024 * 1024; // 5MB
                 if (file.size > maxSize) {
                     alert('Kích thước tệp vượt quá 5MB. Vui lòng chọn tệp nhỏ hơn.');
                     e.target.value = '';
-                    document.getElementById('backfilepreview').style.display = 'none';
-                } else {
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        document.getElementById('backfilepreview').src = ev.target.result;
-                        document.getElementById('backfilepreview').style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
+                    preview.classList.add('hidden');
+                    return;
                 }
+                
+                // Upload bằng AJAX
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('type', 'cccd_back');
+                
+                fetch('/api/upload-cccd-temp', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Lưu đường dẫn ảnh vào input hidden
+                        hiddenInput.value = data.path;
+                        // Hiển thị preview từ server
+                        preview.src = data.url;
+                        preview.classList.remove('hidden');
+                        // Bỏ required ở input file vì đã có ảnh
+                        e.target.removeAttribute('required');
+                    } else {
+                        alert('Lỗi upload ảnh: ' + data.message);
+                        e.target.value = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Lỗi upload ảnh. Vui lòng thử lại.');
+                    e.target.value = '';
+                });
             } else {
-                document.getElementById('backfilepreview').style.display = 'none';
+                preview.classList.add('hidden');
+                hiddenInput.value = '';
+                // Thêm lại required nếu không có ảnh
+                if (!hiddenInput.value) {
+                    e.target.setAttribute('required', '');
+                }
             }
         });
-        // CCCD scan integration (gửi 2 file từ input đã có)
+
+// CCCD scan integration
         const scanBtn = document.getElementById('scan-cccd-btn');
-        const fileInput = document.getElementById('filechoose'); // mặt trước
+const fileInput = document.getElementById('filechoose');
         const loadingDiv = document.getElementById('scan-cccd-loading');
         const errorDiv = document.getElementById('scan-cccd-error');
+const successDiv = document.getElementById('scan-cccd-success');
+const personalInfoSection = document.getElementById('personal-info-section');
+const identityInfoSection = document.getElementById('identity-info-section');
+
         scanBtn.addEventListener('click', function() {
             errorDiv.textContent = '';
-            document.getElementById('scan-cccd-success').style.display = 'none';
-            document.getElementById('scan-cccd-success').textContent = '';
+    successDiv.classList.add('hidden');
+    successDiv.textContent = '';
+    
             if (!fileInput.files[0] || !document.getElementById('backfilechoose').files[0]) {
-                errorDiv.textContent = 'Vui lòng chọn đủ ảnh mặt trước và mặt sau CCCD trước khi quét.';
+        errorDiv.textContent = 'Vui lòng chọn đủ ảnh mặt trước và mặt sau CCCD/CMND trước khi quét.';
                 return;
             }
+    
             const formData = new FormData();
             formData.append('front_image', fileInput.files[0]);
             formData.append('back_image', document.getElementById('backfilechoose').files[0]);
-            loadingDiv.style.display = 'block';
+    
+    loadingDiv.classList.remove('hidden');
             scanBtn.disabled = true;
+    
             fetch('http://127.0.0.1:5000/process_cccd', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
-                loadingDiv.style.display = 'none';
+        loadingDiv.classList.add('hidden');
                 scanBtn.disabled = false;
+        
                 if (data.error) {
                     errorDiv.textContent = data.error;
                     return;
                 }
-                // ƯU TIÊN DỮ LIỆU FINAL_DATA (kiểu mới)
-                if (data.full_name) document.querySelector('input[name="full_name"]').value = data.full_name;
-                if (data.identity_number) document.querySelector('input[name="id_number"]').value = data.identity_number;
-                if (data.birth_date) {
-                    if (data.birth_date.length === 10) {
-                        document.querySelector('input[name="birthday"]').value = data.birth_date;
-                    } else {
-                        const parts = data.birth_date.split('-');
-                        if (parts.length === 3) {
-                            document.querySelector('input[name="birthday"]').value = `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
-                        }
-                    }
-                }
-                if (data.nationality) document.querySelector('input[name="nationality"]').value = data.nationality;
-                if (data.residence) document.querySelector('input[name="residence"]').value = data.residence;
-                if (data.hometown) document.querySelector('input[name="hometown"]').value = data.hometown;
+        
+        // Fill form data
+        fillFormData(data);
+        
+        // Show the sections
+        personalInfoSection.classList.remove('hidden');
+        identityInfoSection.classList.remove('hidden');
+        
+        successDiv.textContent = 'Quét thành công! Thông tin đã được điền tự động.';
+        successDiv.classList.remove('hidden');
+        
+        // Scroll to the filled sections
+        personalInfoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(err => {
+        loadingDiv.classList.add('hidden');
+        scanBtn.disabled = false;
+        errorDiv.textContent = 'Không thể quét CCCD/CMND. Vui lòng thử lại.';
+    });
+});
 
-                // BỔ SUNG CÁC TRƯỜNG CÒN LẠI
+// Fill form data from CCCD scan
+function fillFormData(data) {
+    const fieldMappings = {
+        'full_name': 'full_name',
+        'identity_number': 'id_number',
+        'birth_date': 'birthday',
+        'nationality': 'nationality',
+        'residence': 'residence',
+        'hometown': 'hometown',
+        'identity_card_date': 'identity_card_date',
+        'identity_card_place': 'identity_card_place',
+        'dac_diem_nhan_dang': 'dac_diem_nhan_dang'
+    };
+
+    Object.entries(fieldMappings).forEach(([apiField, formField]) => {
+        if (data[apiField]) {
+            const input = document.querySelector(`input[name="${formField}"]`);
+            const hiddenInput = document.querySelector(`input[name="scanned_${formField}"]`);
+            if (input) {
+                if (apiField === 'birth_date' || apiField === 'identity_card_date') {
+                    // Handle date formatting
+                    const date = new Date(data[apiField]);
+                    if (!isNaN(date.getTime())) {
+                        const formattedDate = date.toISOString().split('T')[0];
+                        input.value = formattedDate;
+                        if (hiddenInput) hiddenInput.value = formattedDate;
+                    }
+                } else {
+                    input.value = data[apiField];
+                    if (hiddenInput) hiddenInput.value = data[apiField];
+                }
+            }
+        }
+    });
+
+    // Handle gender
                 if (data.gender) {
                     const radios = document.querySelectorAll('input[name="gender"]');
+        const hiddenGender = document.querySelector('input[name="scanned_gender"]');
                     radios.forEach(radio => {
-                        if (radio.value === data.gender.toLowerCase()) radio.checked = true;
-                    });
-                }
-                if (data.identity_card_date) {
-                    const parts = data.identity_card_date.split('-');
-                    if (parts.length === 3) {
-                        document.querySelector('input[name="identity_card_date"]').value = `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
-                    }
-                }
-                if (data.identity_card_place) document.querySelector('input[name="identity_card_place"]').value = data.identity_card_place;
-                if (data.dac_diem_nhan_dang) document.querySelector('input[name="dac_diem_nhan_dang"]').value = data.dac_diem_nhan_dang;
-
-                // Nếu không có final_data thì fallback sang mat_truoc
-                if (!data.full_name && data.mat_truoc) {
-                    if (data.mat_truoc.ho_ten) document.querySelector('input[name="full_name"]').value = data.mat_truoc.ho_ten;
-                }
-                if (!data.identity_number && data.mat_truoc) {
-                    if (data.mat_truoc.so_CCCD) document.querySelector('input[name="id_number"]').value = data.mat_truoc.so_CCCD;
-                }
-                if (!data.birth_date && data.mat_truoc && data.mat_truoc.ngay_sinh) {
-                    const parts = data.mat_truoc.ngay_sinh.split('/');
-                    if (parts.length === 3) {
-                        document.querySelector('input[name="birthday"]').value = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-                    }
-                }
-                if (!data.nationality && data.mat_truoc && data.mat_truoc.quoc_tich) document.querySelector('input[name="nationality"]').value = data.mat_truoc.quoc_tich;
-                if (!data.residence && data.mat_truoc && data.mat_truoc.noi_thuong_tru) document.querySelector('input[name="residence"]').value = data.mat_truoc.noi_thuong_tru;
-                if (!data.hometown && data.mat_truoc && data.mat_truoc.que_quan) document.querySelector('input[name="hometown"]').value = data.mat_truoc.que_quan;
-                document.getElementById('scan-cccd-success').textContent = 'Quét CCCD thành công! Dữ liệu đã được điền vào form.';
-                document.getElementById('scan-cccd-success').style.display = 'block';
-                document.getElementById('identity-fields').style.display = 'block';
-            })
-            .catch(err => {
-                loadingDiv.style.display = 'none';
-                scanBtn.disabled = false;
-                errorDiv.textContent = 'Không thể quét CCCD. Vui lòng thử lại.';
-            });
+            if (radio.value === data.gender.toLowerCase()) {
+                radio.checked = true;
+                if (hiddenGender) hiddenGender.value = data.gender.toLowerCase();
+            }
         });
-    </script>
-    <style>
-    .loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      animation: spin 1s linear infinite;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+}
+
+// Check if there's existing scanned data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const hasScannedData = document.querySelector('input[name="scanned_full_name"]').value ||
+                          document.querySelector('input[name="scanned_id_number"]').value;
+    
+    if (hasScannedData) {
+        // Restore scanned data to visible fields
+        const scannedFields = [
+            'scanned_full_name', 'scanned_id_number', 'scanned_birthday', 
+            'scanned_nationality', 'scanned_residence', 'scanned_hometown',
+            'scanned_identity_card_date', 'scanned_identity_card_place', 
+            'scanned_dac_diem_nhan_dang'
+        ];
+        
+        scannedFields.forEach(field => {
+            const hiddenInput = document.querySelector(`input[name="${field}"]`);
+            const visibleInput = document.querySelector(`input[name="${field.replace('scanned_', '')}"]`);
+            if (hiddenInput && hiddenInput.value && visibleInput) {
+                visibleInput.value = hiddenInput.value;
+            }
+        });
+        
+        // Restore gender
+        const scannedGender = document.querySelector('input[name="scanned_gender"]').value;
+        if (scannedGender) {
+            const radios = document.querySelectorAll('input[name="gender"]');
+            radios.forEach(radio => {
+                if (radio.value === scannedGender) {
+                    radio.checked = true;
+                }
+            });
+        }
+        
+        // Show the sections
+        personalInfoSection.classList.remove('hidden');
+        identityInfoSection.classList.remove('hidden');
+        
+        successDiv.textContent = 'Thông tin đã quét trước đó được khôi phục.';
+        successDiv.classList.remove('hidden');
     }
-    </style>
+});
+
+// Preview ảnh mặt trước, ưu tiên old('cccd_image')
+document.addEventListener('DOMContentLoaded', function() {
+    var oldCccdImage = document.getElementById('cccd_image').value;
+    var preview = document.getElementById('filepreview');
+    if (oldCccdImage) {
+        preview.src = '/' + oldCccdImage.replace(/^\/+/, '');
+        preview.classList.remove('hidden');
+    }
+    
+    // Preview ảnh mặt sau, ưu tiên old('back_cccd_image')
+    var oldBackCccdImage = document.getElementById('back_cccd_image').value;
+    var backPreview = document.getElementById('backfilepreview');
+    if (oldBackCccdImage) {
+        backPreview.src = '/' + oldBackCccdImage.replace(/^\/+/, '');
+        backPreview.classList.remove('hidden');
+    }
+});
+</script>
 @endsection

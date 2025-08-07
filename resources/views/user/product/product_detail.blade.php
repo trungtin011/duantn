@@ -2,6 +2,7 @@
 @section('title', 'Chi tiết sản phẩm')
 @section('content')
     <div class="container mx-auto px-4 py-8">
+       
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 mb-6 text-sm font-medium">
             <a href="{{ route('home') }}" class="text-blue-600 hover:text-blue-800">Trang chủ</a>
@@ -319,14 +320,14 @@
                     <div class="bg-white rounded-lg p-6 shadow">
                         <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800">Cửa hàng</h2>
                         <div class="flex items-center gap-4 mb-4">
-                            <img src="{{ $product->shop ? ($product->shop->shop_logo ? Storage::url($product->shop->shop_logo) : Storage::url('shop_logos/default_shop_logo.png')) : Storage::url('shop_logos/default_shop_logo.png') }}"
-                                alt="Logo Shop" class="w-16 h-16 rounded-full object-cover border" loading="lazy">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">
-                                    {{ $product->shop ? $product->shop->shop_name : 'Tên Shop Không Xác Định' }}
-                                </h3>
-                                <p class="text-sm text-gray-600">
-                                    @if ($product->shop)
+                            @if(isset($product) && $product && $product->shop)
+                                <img src="{{ $product->shop->shop_logo ? Storage::url($product->shop->shop_logo) : Storage::url('shop_logos/default_shop_logo.png') }}"
+                                    alt="Logo Shop" class="w-16 h-16 rounded-full object-cover border" loading="lazy">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">
+                                        {{ $product->shop->shop_name }}
+                                    </h3>
+                                    <p class="text-sm text-gray-600">
                                         @php
                                             $lastActivity = DB::table('sessions')
                                                 ->where('user_id', $product->shop->ownerID)
@@ -338,22 +339,22 @@
                                                 : 'Không xác định';
                                         @endphp
                                         {{ $lastActivity ? "Online $lastOnline" : 'Hoạt động từ: ' . \Carbon\Carbon::parse($product->shop->created_at)->locale('vi')->diffForHumans() }}
-                                    @else
-                                        Chưa có thông tin
-                                    @endif
-                                </p>
-                            </div>
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                         <div class="flex justify-center gap-3">
-                            <button
-                                class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
-                                onclick="window.location.href='/chat?shop_id={{ $product->shop->id }}&product_id={{ $product->id }}'">
-                                <i class="fa-solid fa-comment"></i> Nhắn tin
-                            </button>
-                            <a href="{{ route('shop.profile', $product->shop->id) }}"
-                                class="border border-gray-300 px-5 py-2 rounded-lg hover:bg-gray-100">Xem
-                                cửa hàng
-                            </a>
+                            @if(isset($product) && $product && $product->shop)
+                                <button
+                                    class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
+                                    onclick="window.location.href='/chat?shop_id={{ $product->shop->id }}&product_id={{ $product->id }}'">
+                                    <i class="fa-solid fa-comment"></i> Nhắn tin
+                                </button>
+                                <a href="{{ route('shop.profile', $product->shop->id) }}"
+                                    class="border border-gray-300 px-5 py-2 rounded-lg hover:bg-gray-100">Xem
+                                    cửa hàng
+                                </a>
+                            @endif
                         </div>
                     </div>
 
@@ -450,6 +451,30 @@
         </div>
     </div>
 
+    @if(isset($product) && $product && ($product->shop->shop_status instanceof \App\Enums\ShopStatus ? $product->shop->shop_status->value : $product->shop->shop_status) === 'suspended')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Shop đang tạm ngưng bán',
+                    text: 'Cửa hàng này đang tạm ngưng hoạt động. Bạn không thể mua sản phẩm này vào lúc này.',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                    backdrop: true,
+                    didOpen: () => {
+                        document.querySelectorAll('button, a, input, select, textarea').forEach(el => {
+                            el.disabled = true;
+                            el.style.pointerEvents = 'none';
+                        });
+                    }
+                });
+            });
+        </script>
+    @endif
+    
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>

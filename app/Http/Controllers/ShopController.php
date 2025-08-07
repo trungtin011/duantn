@@ -7,6 +7,7 @@ use App\Models\Shop;
 use App\Models\ShopAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\ShopStatus;
 
 class ShopController extends Controller
 {
@@ -22,6 +23,11 @@ class ShopController extends Controller
             'address', 
             'followers'
         ])->findOrFail($id);
+
+        // Nếu shop bị cấm thì trả về trang lỗi 404 tùy chỉnh
+        if ($shop->shop_status === ShopStatus::BANNED) {
+            return response()->view('error.404NotFound', [], 404);
+        }
 
         return view('shop.profile', compact('shop'));
     }
@@ -81,6 +87,11 @@ class ShopController extends Controller
             'address', 
             'followers'
         ])->findOrFail($shopId);
+
+        // Nếu shop bị cấm thì trả về trang lỗi 404 tùy chỉnh
+        if ($shop->shop_status === ShopStatus::BANNED) {
+            return response()->view('error.404NotFound', [], 404);
+        }
 
         $category = $shop->categories()->findOrFail($categoryId);
 
