@@ -22,9 +22,6 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
-// Private channel for customer-shop chat
-// customer listens to chat.{shop_id}.{user_id}
-// seller listens to chat.{shop_id}.{user_id}
 Broadcast::channel('chat.{shopId}.{userId}', function ($user, $shopId, $userId) {
     // If the authenticated user is the customer in this conversation
     if ($user->id == $userId && $user->role->value === UserRole::CUSTOMER->value) {
@@ -38,28 +35,33 @@ Broadcast::channel('chat.{shopId}.{userId}', function ($user, $shopId, $userId) 
             return true;
         }
     }
-
     return false;
 });
 
-// Private channel for seller shop notifications (general notifications for new messages)
-// Seller listens to seller.shop.notifications.{shop_id}
 Broadcast::channel('seller.shop.notifications.{shopId}', function ($user, $shopId) {
     if ($user->role->value === UserRole::SELLER->value) {
         $shop = Shop::where('user_id', $user->id)->first();
         return $shop && $shop->id == $shopId;
     }
     return false;
+}); 
+
+Broadcast::channel('user.{role}', function ($user, $role) {
+    return (int) $user->role === (int) $role;
 });
 
-Broadcast::channel('user.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+Broadcast::channel('shop.{role}', function ($user, $role) {
+    return (int) $user->role === (int) $role;
 });
 
-Broadcast::channel('notifications.all', function ($user) {
+Broadcast::channel('notifications.all', function () {
     return true;    
 });
 
 Broadcast::channel('order.created.{shop_id}', function ($user, $shop_id) {
     return (int)$user->shop->id === (int)$shop_id;
+});
+
+Broadcast::channel('order-status-update.{user_id}', function ($user, $user_id) {
+    return (int)$user->id === (int)$user_id;
 });

@@ -109,4 +109,14 @@ class Seller extends Model
     {
         $this->update(['status' => 'active']);
     }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'seller_id');
+    }
+
+    public function linkedBanks()
+    {
+        return $this->hasMany(LinkedBank::class);
+    }
 }

@@ -13,6 +13,16 @@ class NotificationReceiver extends Model
 
     public function notification(): BelongsTo
     {
-        return $this->belongsTo(Notification::class);
+        return $this->belongsTo(Notification::class, 'notification_id', 'id');
+    }
+
+    public function receiver_user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'receiver_id', 'id');
+    }
+
+    public function receiver_shop(): BelongsTo
+    {
+        return $this->belongsTo(Shop::class, 'receiver_id', 'id');
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -15,7 +16,8 @@ class Order extends Model
         'userID',
         'order_code',
         'total_price',
-        'coupon_id',
+        'shipping_fee',
+        'used_points',
         'coupon_discount',
         'payment_method',
         'payment_status',
@@ -32,7 +34,8 @@ class Order extends Model
         'cancelled_at' => 'datetime',
         'delivered_at' => 'datetime',
         'total_price' => 'decimal:2',
-        'coupon_discount' => 'decimal:2'
+        'coupon_discount' => 'decimal:2',
+        'shipping_fee' => 'decimal:2'
     ];
 
     public function user(): BelongsTo
@@ -47,7 +50,7 @@ class Order extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class, 'orderID', 'id');
+        return $this->hasMany(ItemsOrder::class, 'orderID', 'id');
     }
 
     public function address(): HasOne
@@ -91,72 +94,34 @@ class Order extends Model
         return $this->total_price - ($this->coupon_discount ?? 0);
     }
 
-    public function getStatusLabelAttribute()
+    public function orderAddress()
     {
-        $statuses = [
-            'pending' => 'Đang chờ xử lý',
-            'processing' => 'Đang xử lý',
-            'shipped' => 'Đang giao hàng',
-            'delivered' => 'Hoàn thành',
-            'cancelled' => 'Đã hủy',
-            'refunded' => 'Trả hàng/Hoàn tiền',
-            'confirmed' => 'Đã xác nhận',
-            'preparing' => 'Đang chuẩn bị',
-            'ready_to_pick' => 'Sẵn sàng giao',
-            'picked' => 'Đã lấy hàng',
-            'shipping' => 'Đang vận chuyển',
-            'shipping_failed' => 'Giao hàng thất bại',
-            'returned' => 'Đã trả hàng',
-            'completed' => 'Hoàn tất',
-            'partially_pending' => 'Chờ xử lý một phần',
-            'partially_confirmed' => 'Xác nhận một phần',
-            'partially_preparing' => 'Chuẩn bị một phần',
-            'partially_ready_to_pick' => 'Sẵn sàng giao một phần',
-            'partially_picked' => 'Đã lấy hàng một phần',
-            'partially_shipping' => 'Đang vận chuyển một phần',
-            'partially_delivered' => 'Hoàn thành một phần',
-            'partially_cancelled' => 'Hủy một phần',
-            'partially_returned' => 'Trả hàng một phần',
-            'partially_completed' => 'Hoàn tất một phần',
-        ];
-
-        return $statuses[$this->order_status] ?? 'Không xác định';
+        return $this->hasOne(OrderAddress::class, 'order_id');
     }
 
-    public function getStatusClassesAttribute()
+    public function orderStatusHistory()
     {
-        $classes = [
-            'pending' => 'bg-yellow-100 text-yellow-800 ring-yellow-600/20',
-            'processing' => 'bg-blue-100 text-blue-800 ring-blue-600/20',
-            'shipped' => 'bg-green-100 text-green-800 ring-green-600/20',
-            'delivered' => 'bg-teal-100 text-teal-800 ring-teal-600/20',
-            'cancelled' => 'bg-gray-100 text-gray-800 ring-gray-600/20',
-            'refunded' => 'bg-red-100 text-red-800 ring-red-600/20',
-            'confirmed' => 'bg-indigo-100 text-indigo-800 ring-indigo-600/20',
-            'preparing' => 'bg-purple-100 text-purple-800 ring-purple-600/20',
-            'ready_to_pick' => 'bg-orange-100 text-orange-800 ring-orange-600/20',
-            'picked' => 'bg-lime-100 text-lime-800 ring-lime-600/20',
-            'shipping' => 'bg-cyan-100 text-cyan-800 ring-cyan-600/20',
-            'shipping_failed' => 'bg-red-200 text-red-900 ring-red-700/20',
-            'returned' => 'bg-pink-100 text-pink-800 ring-pink-600/20',
-            'completed' => 'bg-emerald-100 text-emerald-800 ring-emerald-600/20',
-            'partially_pending' => 'bg-yellow-200 text-yellow-900 ring-yellow-700/20',
-            'partially_confirmed' => 'bg-indigo-200 text-indigo-900 ring-indigo-700/20',
-            'partially_preparing' => 'bg-purple-200 text-purple-900 ring-purple-700/20',
-            'partially_ready_to_pick' => 'bg-orange-200 text-orange-900 ring-orange-700/20',
-            'partially_picked' => 'bg-lime-200 text-lime-900 ring-lime-700/20',
-            'partially_shipping' => 'bg-cyan-200 text-cyan-900 ring-cyan-700/20',
-            'partially_delivered' => 'bg-teal-200 text-teal-900 ring-teal-700/20',
-            'partially_cancelled' => 'bg-gray-200 text-gray-900 ring-gray-700/20',
-            'partially_returned' => 'bg-pink-200 text-pink-900 ring-pink-700/20',
-            'partially_completed' => 'bg-emerald-200 text-emerald-900 ring-emerald-700/20',
-        ];
+        return $this->hasMany(OrderStatusHistory::class, 'order_id');
+    }
 
-        return $classes[$this->order_status] ?? 'bg-gray-100 text-gray-800 ring-gray-600/20';
+    public static function isOrderSpam($userId, $limit = 3, $minutes = 5)
+    {
+        $recentOrdersCount = self::where('userID', $userId)
+            ->where('created_at', '>=', now()->subMinutes($minutes))
+            ->count();
+        return $recentOrdersCount >= $limit;
     }
 
     public static function orderStatusUpdate($order_id)
     {
+        $statusOrder = [
+            'pending'    => 1,
+            'processing' => 2,
+            'completed'  => 3,
+            'cancelled'  => 4,
+            'returned'   => 4,
+        ];
+
         $order = Order::find($order_id);
 
         if (!$order) {
@@ -164,64 +129,90 @@ class Order extends Model
         }
 
         $shopOrders = ShopOrder::where('orderID', $order_id)->get();
-        $countChildOrder = $shopOrders->count();
 
-        if ($countChildOrder == 0) {
+        if ($shopOrders->isEmpty()) {
             return false;
         }
 
-        $statusHierarchy = [
-            'pending',
-            'confirmed',
-            'preparing',
-            'ready_to_pick',
-            'picked',
-            'shipping',
-            'delivered',
-            'cancelled',
-            'shipping_failed',
-            'returned',
-            'completed'
+        $statusCounts = [
+            1 => 0, // pending
+            2 => 0, // processing
+            3 => 0, // completed
+            4 => 0, // cancel
         ];
 
-        $childStatuses = $shopOrders->pluck('status')->toArray();
-
-        if (in_array('confirmed', $childStatuses)) {
-            $order->order_status = 'confirmed';
-            $order->save();
-            return true;
-        }
-
-        if (in_array('shipping', $childStatuses)) {
-            $order->order_status = 'shipping';
-            $order->save();
-            return true;
-        }
-
-        if (in_array('delivered', $childStatuses)) {
-            $order->order_status = 'delivered';
-            $order->save();
-            return true;
-        }
-
-        $highestStatus = 'pending';
-        foreach ($statusHierarchy as $status) {
-            if (in_array($status, $childStatuses)) {
-                $highestStatus = $status;
+        foreach ($shopOrders as $shopOrder) {
+            $status = $shopOrder->status;
+            if ($status === 'pending') {
+                $statusCounts[1]++;
+            } elseif (in_array($status, ['confirmed', 'ready_to_pick', 'picked', 'shipping', 'delivered', 'refunded'])) {
+                $statusCounts[2]++;
+            } elseif (in_array($status, ['completed', 'returned'])) {
+                $statusCounts[3]++;
+            } elseif (in_array($status, ['cancelled'])) {
+                $statusCounts[4]++;
             }
         }
 
-        $countAtHighestStatus = count(array_filter($childStatuses, function ($status) use ($highestStatus) {
-            return $status === $highestStatus;
-        }));
+        $total = $shopOrders->count();
 
-        if ($countAtHighestStatus == $countChildOrder) {
-            $order->order_status = $highestStatus;
+        if ($statusCounts[4] === $total) {
+            $order->order_status = 'cancelled';
+        } elseif (($statusCounts[3] + $statusCounts[4]) === $total && $statusCounts[3] > 0) {
+            $order->order_status = 'completed';
+        } elseif ($statusCounts[1] < $total) {
+            $order->order_status = 'processing';
         } else {
-            $order->order_status = 'partially_' . $highestStatus;
+            $order->order_status = 'pending';
         }
 
+        $description = null;
+        switch ($order->order_status) {
+            case 'cancelled':
+                $description = 'Đơn hàng đã bị hủy';
+                break;
+            case 'completed':
+                $description = 'Đơn hàng đã hoàn thành';
+                break;
+            case 'processing':
+                $description = 'Đơn hàng đang được xử lý';
+                break;
+            case 'pending':
+                $description = 'Đơn hàng đang chờ xử lý';
+                break;
+            case 'returned':
+                $description = 'Đơn hàng đã được trả lại';
+                break;
+            default:
+                $description = null;
+        }
+
+        DB::table('order_status_history')->insert([
+            'order_id' => $order->id,
+            'order_status' => $order->order_status,
+            'description' => $description,
+            'note' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         $order->save();
         return true;
+    }
+
+    public function markAsCompleted()
+    {
+        if ($this->status !== 'completed') {
+            $this->status = 'completed';
+            $this->save();
+
+            $user = $this->user;
+            if ($user) {
+                // Tính tổng tiền từ items_order
+                $totalSpent = $this->items()->sum('price' * 'quantity');
+                $user->total_spent += $totalSpent;
+                $user->updateRank();
+                $user->save();
+            }
+        }
     }
 }

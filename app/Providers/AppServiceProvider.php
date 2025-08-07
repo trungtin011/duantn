@@ -14,13 +14,17 @@ use Illuminate\Support\Facades\DB;
 class AppServiceProvider extends ServiceProvider
 {
 
+
     public function register(): void
     {
-        //
+        // Load helper functions
+        require_once app_path('Http/Helpers.php');
     }
 
     public function boot(): void
     {
+
+
         View::composer('layouts.app', function ($view) {
             $settings = DB::table('settings')->first();
             $view->with('settings', $settings);
@@ -32,47 +36,47 @@ class AppServiceProvider extends ServiceProvider
                 // Lấy danh sách receiver_id từ NotificationReceiver
                 $receiver = NotificationReceiver::where(function ($query) {
                     $query->where('receiver_id', Auth::user()->shop->id)
-                          ->orWhere(function ($q) {
-                              $q->where('receiver_type', 'all')
+                        ->orWhere(function ($q) {
+                            $q->where('receiver_type', 'all')
                                 ->orWhere('receiver_type', 'shop');
-                          });
+                        });
                 })->pluck('notification_id'); // Giả sử NotificationReceiver có cột notification_id liên kết với notifications
-            
+
                 // Lấy danh sách notifications
                 $notifications = Notification::whereIn('id', function ($query) use ($receiver) {
                     $query->selectRaw('MIN(id)') // Chỉ lấy id nhỏ nhất để tránh trùng lặp
-                          ->from('notifications')
-                          ->whereIn('id', $receiver) // So sánh với notification_id từ NotificationReceiver
-                          ->where('receiver_type', 'shop')
-                          ->groupBy('title', 'type', 'receiver_type');
+                        ->from('notifications')
+                        ->whereIn('id', $receiver) // So sánh với notification_id từ NotificationReceiver
+                        ->where('receiver_type', 'shop')
+                        ->groupBy('title', 'type', 'receiver_type');
                 })
-                ->where('receiver_type', 'shop')
-                ->take(10)
-                ->get()
-                ->groupBy('type');
-            
+                    ->where('receiver_type', 'shop')
+                    ->take(10)
+                    ->get()
+                    ->groupBy('type');
+
                 $view->with('groupedNotifications', $notifications);
             } else if (Auth::check() && Auth::user()->role === UserRole::CUSTOMER) {
                 $receiver = NotificationReceiver::where(function ($query) {
                     $query->where('receiver_id', Auth::id())
-                          ->orWhere(function ($q) {
-                              $q->where('receiver_type', 'all')
+                        ->orWhere(function ($q) {
+                            $q->where('receiver_type', 'all')
                                 ->orWhere('receiver_type', 'user');
-                          });
+                        });
                 })->pluck('notification_id');
-            
+
                 $notifications = Notification::whereIn('id', function ($query) use ($receiver) {
                     $query->selectRaw('MIN(id)')
-                          ->from('notifications')
-                          ->whereIn('id', $receiver)
-                          ->where('receiver_type', 'user')
-                          ->groupBy('title', 'type', 'receiver_type');
+                        ->from('notifications')
+                        ->whereIn('id', $receiver)
+                        ->where('receiver_type', 'user')
+                        ->groupBy('title', 'type', 'receiver_type');
                 })
-                ->where('receiver_type', 'user')
-                ->take(10)
-                ->get()
-                ->groupBy('type');
-            
+                    ->where('receiver_type', 'user')
+                    ->take(10)
+                    ->get()
+                    ->groupBy('type');
+
                 $view->with('groupedNotifications', $notifications);
             } else {
                 $view->with('groupedNotifications', collect());

@@ -1,10 +1,12 @@
+
 @extends('layouts.seller_home')
+
 
 @section('content')
     <div class="admin-page-header mb-5">
         <h1 class="admin-page-title text-2xl">Combo sản phẩm</h1>
         <div class="admin-breadcrumb">
-            <a href="#" class="admin-breadcrumb-link">Home</a> / Quản lý Combo
+            <a href="{{ route('seller.dashboard') }}" class="admin-breadcrumb-link">Home</a> / Quản lý Combo
         </div>
     </div>
 
@@ -45,9 +47,11 @@
         <table class="w-full text-xs text-left text-gray-400 border-t border-gray-100">
             <thead class="text-gray-300 font-semibold border-b border-gray-100">
                 <tr>
+                    <th class="py-3">Hình ảnh</th>
                     <th class="py-3">Tên Combo</th>
-                    <th class="py-3">Giá gốc / Giá đã giảm</th>
+                    <th class="py-3">Giá đã giảm</th>
                     <th class="py-3">Giảm giá</th>
+                    <th class="py-3">Tồn kho</th>
                     <th class="py-3">Trạng thái</th>
                     <th class="py-3">Sản phẩm</th>
                     <th class="py-3 pr-6 text-right">Hành động</th>
@@ -56,20 +60,47 @@
             <tbody class="divide-y divide-gray-100 text-gray-900 font-normal">
                 @foreach ($combos as $combo)
                     <tr>
+                        <td class="py-4">
+                            @if ($combo->image)
+                                <img src="{{ asset('storage/' . $combo->image) }}" alt="{{ $combo->combo_name }}"
+                                    class="w-12 h-12 object-cover rounded-md border border-gray-200">
+                            @else
+                                <img src="{{ asset('images/no-image.png') }}" alt="{{ $combo->combo_name }}"
+                                    class="w-12 h-12 object-cover rounded-md border border-gray-200">
+                            @endif
+                        </td>
                         <td class="py-4 text-[13px] font-semibold">{{ $combo->combo_name }}</td>
                         <td class="py-4 text-[13px]">
                             @php
-                                $originalPrice = 0;
+                                $basePrice = 0;
                                 foreach ($combo->products as $cp) {
-                                    $originalPrice += $cp->product->price * $cp->quantity;
+                                    // Debugging individual product data
+                                    echo "<!-- CP ID: {$cp->id}, Product ID: {$cp->productID}, Variant ID: {$cp->variantID}, Quantity: {$cp->quantity} -->";
+                                    echo "<!-- Product Data: " . json_encode($cp->product) . " -->";
+                                    
+                                    $productPrice = $cp->product->price; // Default to product original price
+                                    if ($cp->variantID && $cp->variant) {
+                                        $productPrice = $cp->variant->sale_price ?? $cp->variant->price; // Use variant's sale or original price
+                                    } else {
+                                        $productPrice = $cp->product->sale_price ?? $cp->product->price; // Use product's sale or original price for simple products
+                                    }
+
+                                    $basePrice += $productPrice * $cp->quantity;
                                 }
+                                $discountedPrice = $combo->total_price; // Giá đã giảm từ database
                             @endphp
-                            <span class="line-through text-gray-400">{{ number_format($originalPrice) }}đ</span><br>
-                            <span class="text-red-500 font-semibold">{{ number_format($combo->total_price) }}đ</span>
+                            <!-- Debug: Raw basePrice: {{ $basePrice }}, Raw discountedPrice: {{ $discountedPrice }} -->
+                            <span class="line-through text-gray-400">{{ number_format((float)$basePrice) }}đ</span><br>
+                            <span class="text-red-500 font-semibold">{{ number_format((float)$discountedPrice) }}đ</span>
                         </td>
                         <td class="py-4 text-[13px]">
-                            {{ $combo->discount_value }} {{ $combo->discount_type == 'percentage' ? '%' : 'VNĐ' }}
+                            @if ($combo->discount_value)
+                                {{ number_format($combo->discount_value) }} {{ $combo->discount_type == 'percentage' ? '%' : 'VNĐ' }}
+                            @else
+                                Không giảm giá
+                            @endif
                         </td>
+                        <td class="py-4 text-[13px]">{{ $combo->quantity }}</td>
                         <td class="py-4">
                             <span
                                 class="inline-block {{ $combo->status == 'active' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }} text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
@@ -107,7 +138,7 @@
                 @endforeach
                 @if ($combos->isEmpty())
                     <tr>
-                        <td colspan="6" class="text-center text-gray-400 py-4">Không có combo nào</td>
+                        <td colspan="8" class="text-center text-gray-400 py-4">Không có combo nào</td>
                     </tr>
                 @endif
             </tbody>

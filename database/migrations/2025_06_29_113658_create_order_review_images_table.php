@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
      Schema::create('order_review_images', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('review_id')->constrained('order_reviews')->onDelete('cascade');
-    $table->string('image_path');
-    $table->timestamps();
-});
+        $table->id();
+        $table->foreignId('review_id')->constrained('order_reviews')->onDelete('cascade');
+        $table->string('image_path');
+        $table->timestamps();
+    });
 
 
     }

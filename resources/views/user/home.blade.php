@@ -1,1194 +1,1968 @@
 @extends('layouts.app')
 @section('title', 'Trang chủ')
+@section('meta-description',
+    'Trang chủ của website bán hàng trực tuyến, nơi bạn có thể tìm thấy các sản phẩm mới nhất
+    và ưu đãi hấp dẫn.')
+@section('meta-keywords', 'trang chủ, mua sắm trực tuyến, sản phẩm mới, ưu đãi, thời trang, điện tử')
+
+<!-- Custom style -->
+@push('styles')
+    @vite(['resources/css/user/style-home.css'])
+    <style>
+        /* Custom styles for enhanced shop ranking */
+        .quick-view-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quick-view-modal.active {
+            display: flex;
+        }
+
+        /* Animation for shop ranking cards */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shop-ranking-card {
+            animation: slideInUp 0.3s ease-out;
+        }
+
+
+
+        /* Responsive fixes for shop ranking cards */
+        @media (max-width: 640px) {
+            .shop-ranking-card {
+                padding: 0.75rem;
+            }
+
+            .shop-ranking-card .grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .shop-ranking-card .text-xs {
+                font-size: 0.625rem;
+            }
+        }
+
+        /* Ensure ranking badges don't overflow */
+        .ranking-badge {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        /* Hiệu ứng lửa cho top 1 */
+        .flame-effect {
+            background: linear-gradient(45deg,
+                    transparent 20%,
+                    rgba(255, 107, 53, 0.7) 35%,
+                    rgba(239, 50, 72, 0.9) 50%,
+                    rgba(255, 107, 53, 0.7) 65%,
+                    transparent 80%);
+            animation: flame-glow 1.5s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes flame-glow {
+            0% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1.08);
+            }
+        }
+
+
+
+        /* Hiệu ứng lửa thực tế */
+        .flame-particle {
+            animation: flame-flicker 1.2s ease-in-out infinite alternate;
+        }
+
+        .flame-particle:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .flame-particle:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .flame-particle:nth-child(4) {
+            animation-delay: 0.9s;
+        }
+
+        @keyframes flame-flicker {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.8) translateY(0px);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.1) translateY(-2px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(-1px);
+            }
+        }
+
+        /* Shop ranking container */
+        .shop-ranking-container {
+            padding-top: 0.5rem;
+        }
+
+        /* Đồng nhất chiều cao tên sản phẩm */
+        .showcase-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 3rem;
+            line-height: 1.4;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .product-minimal .showcase-title {
+            min-height: 2.5rem;
+        }
+
+
+
+        /* Responsive shop cards */
+        @media (max-width: 768px) {
+            .shop-ranking-container .grid {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 0.75rem;
+            }
+
+            .shop-ranking-container .shop-ranking-card {
+                width: 100%;
+                min-width: unset;
+                max-width: unset;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .shop-ranking-container .grid {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 1rem;
+            }
+
+            .shop-ranking-container .shop-ranking-card {
+                width: 100%;
+                min-width: unset;
+                max-width: unset;
+            }
+        }
+
+        .shop-title {
+            -webkit-text-stroke-width: 0.5px;
+            -webkit-text-stroke-color: rgb(0, 0, 0);
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+        }
+    </style>
+@endpush
+
 @section('content')
-    <!-- Main Banner -->
-    <section class="container mx-auto py-8 flex flex-col sm:flex-row relative">
-        <!-- Sidebar Menu with Dropdown -->
-        <div class="w-full h-[100px] sm:h-full overflow-y-scroll sm:overflow-y-hidden px-2 sm:w-1/4 sm:pr-10">
-            <ul class="space-y-2">
-                <li>
-                    <div id="dropdownToggle">
-                        <button
-                            class="focus:outline-none text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-md">
-                            Thời trang phụ nữ
-                            <!-- Arrow icon -->
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-[21px] h-[21px] ml-1 arrow-icon">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                            </svg>
-
-                        </button>
-                        <div id="dropdownMenu"
-                            class="dropdown-content hidden text-base shadow-lg font-emibold absolute sm:top-[32px] sm:left-[384px] z-10 sm:w-[1152px] sm:h-[400px] top-[58px] left-0 right-0 mx-auto z-10 w-max-w-4xl h-auto bg-white mt-2 sm:mt-0">
-                            <div class="sm:flex h-[100%]">
-                                <div class="flex flex-col gap-[25px] p-4">
-                                    <div
-                                        class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/48630b7c76a7b62bc070c9e227097847@resize_w320_nl.webp"
-                                                alt="phone" class="w-[100px] h-[100px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Giày dép nữ</span>
-                                        </a>
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/75ea42f9eca124e9cb3cde744c060e4d@resize_w320_nl.webp"
-                                                alt="phone" class="w-[100px] h-[100px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Thời trang nữ</span>
-                                        </a>
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/8e71245b9659ea72c1b4e737be5cf42e@resize_w320_nl.webp"
-                                                alt="phone" class="w-[100px] h-[100px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Phụ kiện & trang sức
-                                                nữ</span>
-                                        </a>
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/fa6ada2555e8e51f369718bbc92ccc52@resize_w320_nl.webp"
-                                                alt="phone" class="w-[100px] h-[100px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Túi ví nữ</span>
-                                        </a>
-                                    </div>
-                                    <div
-                                        class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
-                                                alt="phone" class="w-[80px] h-[80px] mt-[15px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Mẹ & bé</span>
-                                        </a>
-                                        <a href="#"
-                                            class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
-                                            <img src="https://down-vn.img.susercontent.com/file/ef1f336ecc6f97b790d5aae9916dcb72@resize_w320_nl.webp"
-                                                alt="phone" class="w-[80px] h-[80px] mt-[15px]">
-                                            <span class="capitalize text-[16px] w-[100px] text-center">Sắc đẹp</span>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="hidden sm:flex sm:justify-center sm:items-center">
-                                    <img src="{{ asset('images/thoitrangnu.jpg') }}" alt="banner"
-                                        class="object-cover w-[100%] h-[400px] object-cover">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-                <li>
-                    <button id="dropdownToggleSecond"
-                        class="focus:outline-none text-gray-700 hover:text-black flex items-center justify-between w-full mb-2 text-md">
-                        Thời trang nam
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-[21px] h-[21px] ml-1 arrow-icon-second">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                        </svg>
-                    </button>
-                    <div id="dropdownMenuSecond"
-                        class="dropdown-content hidden text-base shadow-lg font-emibold absolute sm:top-[32px] sm:left-[384px] z-10 sm:w-[1152px] sm:h-[400px] top-[88px] left-0 right-0 mx-auto z-10 w-max-w-4xl h-auto bg-white mt-2 sm:mt-0">
-                        <div class="sm:flex h-[100%]">
-                            <div class="flex flex-col gap-[25px] p-4">
-                                <div
-                                    class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
-                                    <a href="#"
-                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/74ca517e1fa74dc4d974e5d03c3139de@resize_w320_nl.webp"
-                                            alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Giày dép nam</span>
-                                    </a>
-                                    <a href="#"
-                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/687f3967b7c2fe6a134a2c11894eea4b@resize_w320_nl.webp"
-                                            alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Thời trang nam</span>
-                                    </a>
-                                    <a href="#"
-                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/86c294aae72ca1db5f541790f7796260@resize_w320_nl.webp"
-                                            alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Đồng hồ nam</span>
-                                    </a>
-                                    <a href="#"
-                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[5px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4@resize_w320_nl.webp"
-                                            alt="phone" class="w-[100px] h-[100px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Thể thao nam</span>
-                                    </a>
-                                </div>
-                                <div
-                                    class="w-full sm:w-1/2 flex flex-row gap-[22px] sm:gap-[40px] overflow-x-scroll sm:overflow-x-hidden">
-                                    <a href="#"
-                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/099edde1ab31df35bc255912bab54a5e@resize_w320_nl.webp"
-                                            alt="phone" class="w-[80px] h-[80px] mt-[15px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Mẹ & bé</span>
-                                    </a>
-                                    <a href="#"
-                                        class="text-gray-700 hover:text-black flex flex-col items-center gap-[10px]">
-                                        <img src="https://down-vn.img.susercontent.com/file/ef1f336ecc6f97b790d5aae9916dcb72@resize_w320_nl.webp"
-                                            alt="phone" class="w-[80px] h-[80px] mt-[15px]">
-                                        <span class="capitalize text-[16px] w-[100px] text-center">Sắc đẹp</span>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="hidden sm:flex sm:justify-center sm:items-center">
-                                <img src="{{ asset('images/thoitrangnam.jpg') }}" alt="banner"
-                                    class="object-cover w-[100%] h-[400px] object-cover">
-                            </div>
-                        </div>
-                    </div>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-md">Đồ điện tử</a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-md">phong cách sống</a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-md">Thuốc</a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-md">Thể thao</a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-md">Đồ chơi trẻ em</a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-md">Thực phẩm thú
-                        cưng
-                    </a>
-                </li>
-                <li>
-                    <a href="" class="text-gray-700 hover:text-black text-md">Sức khỏe và sắc
-                        đẹp
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <!-- Banner -->
-        <div class="relative w-full sm:w-3/4 hidden sm:block">
-            <div class="slider-container">
-                <div class="slides" id="slides">
-                    <!-- Slide 1 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
-                        </div>
-                    </div>
-                    <!-- Slide 2 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
-                        </div>
-                    </div>
-                    <!-- Slide 3 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
-                        </div>
-                    </div>
-                    <!-- Slide 4 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
-                        </div>
-                    </div>
-                    <!-- Slide 5 -->
-                    <div class="slide bg-black h-[400px] flex items-center p-5">
-                        <div class="text-star w-[400px]">
-                            <div class="flex items-center mb-4">
-                                <img src="{{ asset('images/apple.png') }}" alt="Apple" class="mr-2"
-                                    style="width: 40px; height: 49px;">
-                                <span class="text-white text-[16px]">iPhone 14 Series</span>
-                            </div>
-                            <h1 class="text-[48px] font-bold text-white w-full">Giảm Giá Lên Đến 10%</h1>
-                            <button class="mt-4 text-white buy-now-btn flex items-center">
-                                <span style="border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 18px;">Mua
-                                    ngay</span>
-                                <svg class="ml-3 size-6" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-center w-[600px]">
-                            <img src="{{ asset('images/banner.png') }}" alt="iPhone 14">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pagination -->
-            <div class="flex justify-center gap-3 mt-4 absolute bottom-3 left-0 right-0">
-                <button style="background-color: #BDBDBD;"
-                    class="pagination-button p-2 w-[20px] h-[20px] rounded-full active" data-index="0"></button>
-                <button style="background-color: #BDBDBD;" class="pagination-button p-2 w-[20px] h-[20px] rounded-full"
-                    data-index="1"></button>
-                <button style="background-color: #BDBDBD;" class="pagination-button p-2 w-[20px] h-[20px] rounded-full"
-                    data-index="2"></button>
-                <button style="background-color: #BDBDBD;" class="pagination-button p-2 w-[20px] h-[20px] rounded-full"
-                    data-index="3"></button>
-                <button style="background-color: #BDBDBD;" class="pagination-button p-2 w-[20px] h-[20px] rounded-full"
-                    data-index="4"></button>
-            </div>
-        </div>
-    </section>
-
-    <div class="container mx-auto mt-6">
-        <!-- DANH MUC -->
-        <div class="bg-white p-6 mb-8 border border-[#e5e5e5]">
-            <div class="text-md text-[#999] mb-3 select-none">
-                DANH MỤC
-            </div>
-            <div class="overflow-x-auto scrollbar-hide">
-                <div class="flex space-x-6 min-w-[1100px]">
-                    <!-- Row 1 -->
-                    <div class="flex space-x-6">
-                        <div class="flex flex-col items-center w-[100px]">
-                            <img alt="Blue men's polo shirt on white background" class="mb-2" height="40"
-                                src="https://storage.googleapis.com/a1aa/image/38ded9ae-f6b2-46d3-d2a3-e0c22e17a337.jpg"
-                                width="100" />
-                            <span class="text-xs text-center text-[#666]">
-                                Thời Trang Nam
-                            </span>
-                        </div>
-                    </div>
-                    <!-- Row 2 -->
-                    <div class="flex space-x-6">
-                        <div class="flex flex-col items-center w-[100px]">
-                            <img alt="Blue women's shirt on white background" class="mb-2" height="40"
-                                src="https://storage.googleapis.com/a1aa/image/b2d4b899-38c7-414d-997c-567223a1c151.jpg"
-                                width="100" />
-                            <span class="text-xs text-center text-[#666]">
-                                Thời Trang Nữ
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- FLASH SALE -->
-        <div class="bg-white p-6 mb-8 border border-[#e5e5e5]">
-            <div class="flex justify-between items-center mb-3">
-                <div class="flex items-center space-x-3 font-bold text-lg text-[#ff3a44] select-none">
-                    <span>
-                        FLASH SALE
-                    </span>
-                    <span class="bg-black text-white text-sm px-2 rounded">
-                        00
-                    </span>
-                    <span class="bg-black text-white text-sm px-2 rounded">
-                        00
-                    </span>
-                    <span class="bg-black text-white text-sm px-2 rounded">
-                        00
-                    </span>
-                </div>
-                <div class="text-sm text-[#ff3a44] cursor-pointer select-none">
-                    Xem tất cả &gt;
-                </div>
-            </div>
-            <div class="overflow-x-auto scrollbar-hide">
-                <div class="flex space-x-5 min-w-[1100px]">
-                    <!-- Each flash sale item -->
-                    <div class="w-[160px] bg-white border border-[#e5e5e5] rounded p-2 text-center text-sm">
-                        <div class="relative">
-                            <img alt="Product image with discount and flash sale tags" class="mx-auto mb-2"
-                                height="110"
-                                src="https://storage.googleapis.com/a1aa/image/56d4af76-fcec-4234-c1e6-634fe8ca8f4b.jpg"
-                                width="160" />
-                            <div
-                                class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                                7.7
-                            </div>
-                            <div
-                                class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                                -3%
-                            </div>
-                        </div>
-                        <div class="text-[#ff3a44] font-semibold mb-2 text-base">
-                            ₫614.900
-                        </div>
-                        <button class="bg-[#ff3a44] text-white text-xs rounded-full px-3 py-1 select-none">
-                            ĐANG BÁN CHẠY
-                        </button>
-                    </div>
-                    <div class="w-[160px] bg-white border border-[#e5e5e5] rounded p-2 text-center text-sm">
-                        <div class="relative">
-                            <img alt="Product image with discount and flash sale tags" class="mx-auto mb-2"
-                                height="110"
-                                src="https://storage.googleapis.com/a1aa/image/56d4af76-fcec-4234-c1e6-634fe8ca8f4b.jpg"
-                                width="160" />
-                            <div
-                                class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                                7.7
-                            </div>
-                            <div
-                                class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                                -44%
-                            </div>
-                        </div>
-                        <div class="text-[#ff3a44] font-semibold mb-2 text-base">
-                            ₫294.500
-                        </div>
-                        <button class="bg-[#ff3a44] text-white text-xs rounded-full px-3 py-1 select-none">
-                            ĐANG BÁN CHẠY
-                        </button>
-                    </div>
-                    <div class="w-[160px] bg-white border border-[#e5e5e5] rounded p-2 text-center text-sm">
-                        <div class="relative">
-                            <img alt="Product image with discount and flash sale tags" class="mx-auto mb-2"
-                                height="110"
-                                src="https://storage.googleapis.com/a1aa/image/56d4af76-fcec-4234-c1e6-634fe8ca8f4b.jpg"
-                                width="160" />
-                            <div
-                                class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                                7.7
-                            </div>
-                            <div
-                                class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                                -15%
-                            </div>
-                        </div>
-                        <div class="text-[#ff3a44] font-semibold mb-2 text-base">
-                            ₫6.151.200
-                        </div>
-                        <button class="bg-[#ff3a44] text-white text-xs rounded-full px-3 py-1 select-none">
-                            CHỈ CÒN 3
-                        </button>
-                    </div>
-                    <div class="w-[160px] bg-white border border-[#e5e5e5] rounded p-2 text-center text-sm">
-                        <div class="relative">
-                            <img alt="Product image with discount and flash sale tags" class="mx-auto mb-2"
-                                height="110"
-                                src="https://storage.googleapis.com/a1aa/image/56d4af76-fcec-4234-c1e6-634fe8ca8f4b.jpg"
-                                width="160" />
-                            <div
-                                class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                                7.7
-                            </div>
-                            <div
-                                class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                                -50%
-                            </div>
-                        </div>
-                        <div class="text-[#ff3a44] font-semibold mb-2 text-base">
-                            ₫174.000
-                        </div>
-                        <button class="bg-[#ff3a44] text-white text-xs rounded-full px-3 py-1 select-none">
-                            ĐANG BÁN CHẠY
-                        </button>
-                    </div>
-                    <div class="w-[160px] bg-white border border-[#e5e5e5] rounded p-2 text-center text-sm">
-                        <div class="relative">
-                            <img alt="Product image with discount and flash sale tags" class="mx-auto mb-2"
-                                height="110"
-                                src="https://storage.googleapis.com/a1aa/image/56d4af76-fcec-4234-c1e6-634fe8ca8f4b.jpg"
-                                width="160" />
-                            <div
-                                class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                                7.7
-                            </div>
-                            <div
-                                class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                                -26%
-                            </div>
-                        </div>
-                        <div class="text-[#ff3a44] font-semibold mb-2 text-base">
-                            ₫335.000
-                        </div>
-                        <button class="bg-[#ff3a44] text-white text-xs rounded-full px-3 py-1 select-none">
-                            ĐANG BÁN CHẠY
-                        </button>
-                    </div>
-                    <div class="w-[160px] bg-white border border-[#e5e5e5] rounded p-2 text-center text-sm">
-                        <div class="relative">
-                            <img alt="Product image with discount and flash sale tags" class="mx-auto mb-2"
-                                height="110"
-                                src="https://storage.googleapis.com/a1aa/image/56d4af76-fcec-4234-c1e6-634fe8ca8f4b.jpg"
-                                width="160" />
-                            <div
-                                class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                                7.7
-                            </div>
-                            <div
-                                class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                                -39%
-                            </div>
-                        </div>
-                        <div class="text-[#ff3a44] font-semibold mb-2 text-base">
-                            ₫284.000
-                        </div>
-                        <button class="bg-[#ff3a44] text-white text-xs rounded-full px-3 py-1 select-none">
-                            ĐANG BÁN CHẠY
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- SHOPEE MALL -->
-        <div class="bg-white p-6 mb-8 border border-[#e5e5e5]">
-            <div class="flex justify-between items-center mb-3 text-sm text-[#ff3a44] select-none">
-                <div class="flex items-center space-x-4">
-                    <span class="font-bold">
-                        SHOPEE MALL
-                    </span>
-                    <div class="flex items-center space-x-2 text-[#666]">
-                        <i class="fas fa-check-circle text-[#ff3a44] text-sm">
-                        </i>
-                        <span>
-                            Trả Hàng Miễn Phí 15 Ngày
-                        </span>
-                    </div>
-                    <div class="flex items-center space-x-2 text-[#666]">
-                        <i class="fas fa-check-circle text-[#ff3a44] text-sm">
-                        </i>
-                        <span>
-                            Hàng Chính Hãng 100%
-                        </span>
-                    </div>
-                    <div class="flex items-center space-x-2 text-[#666]">
-                        <i class="fas fa-check-circle text-[#ff3a44] text-sm">
-                        </i>
-                        <span>
-                            Miễn Phí Vận Chuyển
-                        </span>
-                    </div>
-                </div>
-                <div class="cursor-pointer text-sm">
-                    Xem Tất Cả &gt;
-                </div>
-            </div>
-            <div class="flex space-x-6 overflow-x-auto scrollbar-hide min-w-[1100px]">
-                <div class="w-[160px] flex-shrink-0">
-                    <img alt="Bright orange and yellow promotional banner with text Săn Deal Siêu Hot and discount up to 50%"
-                        class="mb-3" height="160"
-                        src="https://storage.googleapis.com/a1aa/image/83767fd3-2c95-4e91-03ed-90fcde712bbc.jpg"
-                        width="160" />
-                </div>
-                <div class="grid grid-cols-4 gap-4 w-[480px] flex-shrink-0 text-center text-sm text-[#666]">
-                    <div>
-                        <img alt="L'Oreal Paris cosmetic bottle on white background" class="mx-auto mb-2" height="80"
-                            src="https://storage.googleapis.com/a1aa/image/503c76f3-f5c5-4c0c-3515-9bd03ba584e6.jpg"
-                            width="100" />
-                        <div class="text-[#ff3a44] font-semibold text-base">
-                            Ưu đãi đến 50%
-                        </div>
-                    </div>
-                    <div>
-                        <img alt="Unilever cosmetic products on white background" class="mx-auto mb-2" height="80"
-                            src="https://storage.googleapis.com/a1aa/image/ceec7ecf-7f26-43a2-dfdd-262975c3939c.jpg"
-                            width="100" />
-                        <div>
-                            Mua 1 tặng 1
-                        </div>
-                    </div>
-                    <div>
-                        <img alt="Unilever cosmetic products on white background" class="mx-auto mb-2" height="80"
-                            src="https://storage.googleapis.com/a1aa/image/ceec7ecf-7f26-43a2-dfdd-262975c3939c.jpg"
-                            width="100" />
-                        <div>
-                            Mua 1 tặng 1
-                        </div>
-                    </div>
-                    <div>
-                        <img alt="Cosrx cosmetic product on white background" class="mx-auto mb-2" height="80"
-                            src="https://storage.googleapis.com/a1aa/image/374e17d6-2c4b-47fb-2c40-dd5419e9a85e.jpg"
-                            width="100" />
-                        <div>
-                            Mua 1 được 6
-                        </div>
-                    </div>
-                    <div>
-                        <img alt="Black cosmetic jar on white background" class="mx-auto mb-2" height="80"
-                            src="https://storage.googleapis.com/a1aa/image/abd247dd-e338-4d80-2711-3d0e944bf8da.jpg"
-                            width="100" />
-                        <div>
-                            Mua 1 tặng 1
-                        </div>
-                    </div>
-                    <div>
-                        <img alt="Detergent product on white background" class="mx-auto mb-2" height="80"
-                            src="https://storage.googleapis.com/a1aa/image/6460edaf-5ee9-4a11-773b-7d4b2baaafb4.jpg"
-                            width="100" />
-                        <div>
-                            Mua 1 được 2
-                        </div>
-                    </div>
-                    <div>
-                        <img alt="Pink cosmetic bottle on white background" class="mx-auto mb-2" height="80"
-                            src="https://storage.googleapis.com/a1aa/image/9688af06-57ff-4c6c-e444-f1a366e0d5f7.jpg"
-                            width="100" />
-                        <div>
-                            Mua là có quà
-                        </div>
-                    </div>
-                    <div>
-                        <img alt="Deli stationery product on white background" class="mx-auto mb-2" height="80"
-                            src="https://storage.googleapis.com/a1aa/image/a753d0ca-9e3d-48bb-7d5c-f26219dec5c9.jpg"
-                            width="100" />
-                        <div>
-                            Deli siêu sale
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- TÌM KIẾM HÀNG ĐẦU -->
-        <div class="bg-white p-6 mb-8 border border-[#e5e5e5]">
-            <div class="flex justify-between items-center mb-3 text-md text-[#999] select-none">
-                <div>
-                    TÌM KIẾM HÀNG ĐẦU
-                </div>
-                <div class="text-[#ff3a44] cursor-pointer text-sm">
-                    Xem Tất Cả &gt;
-                </div>
-            </div>
-            <div class="flex space-x-6 overflow-x-auto scrollbar-hide min-w-[1100px] text-sm text-[#666]">
-                <!-- Each item -->
-                <div class="w-[160px] flex-shrink-0 text-center">
-                    <div class="inline-block bg-[#ff6f61] text-white text-xs px-2 rounded select-none mb-2">
-                        TOP
-                    </div>
-                    <img alt="Children's short sleeve t-shirts in various colors on white background" class="mx-auto mb-2"
-                        height="110"
-                        src="https://storage.googleapis.com/a1aa/image/afa2965e-e227-4b7f-04b0-1056dee5f2aa.jpg"
-                        width="160" />
-                    <div>
-                        Áo Thun Bé Trai Cộc Tay
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bán 12k+ / tháng
-                    </div>
-                </div>
-                <div class="w-[160px] flex-shrink-0 text-center">
-                    <div class="inline-block bg-[#ff6f61] text-white text-xs px-2 rounded select-none mb-2">
-                        TOP
-                    </div>
-                    <img alt="Woman wearing babydoll dress with ruffled sleeves on white background" class="mx-auto mb-2"
-                        height="110"
-                        src="https://storage.googleapis.com/a1aa/image/c925b4f0-f4cf-4fc7-085f-861b5ba10abe.jpg"
-                        width="160" />
-                    <div>
-                        Áo Babydoll Nữ Tay Bèo
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bán 105k+ / tháng
-                    </div>
-                </div>
-                <div class="w-[160px] flex-shrink-0 text-center">
-                    <div class="inline-block bg-[#ff6f61] text-white text-xs px-2 rounded select-none mb-2">
-                        TOP
-                    </div>
-                    <img alt="Romand liquid lipstick set on white background" class="mx-auto mb-2" height="110"
-                        src="https://storage.googleapis.com/a1aa/image/c48e81fd-30dd-49a5-2286-7ecf31e43a7b.jpg"
-                        width="160" />
-                    <div>
-                        Son Kem Lì Mịn Môi Romand
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bán 110k+ / tháng
-                    </div>
-                </div>
-                <div class="w-[160px] flex-shrink-0 text-center">
-                    <div class="inline-block bg-[#ff6f61] text-white text-xs px-2 rounded select-none mb-2">
-                        TOP
-                    </div>
-                    <img alt="Handheld mini fan on white background" class="mx-auto mb-2" height="110"
-                        src="https://storage.googleapis.com/a1aa/image/1ec9171b-7600-47f6-f0dc-d27ba20df65c.jpg"
-                        width="160" />
-                    <div>
-                        Quạt Mini Cầm Tay
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bán 224k+ / tháng
-                    </div>
-                </div>
-                <div class="w-[160px] flex-shrink-0 text-center">
-                    <div class="inline-block bg-[#ff6f61] text-white text-xs px-2 rounded select-none mb-2">
-                        TOP
-                    </div>
-                    <img alt="Black t-shirt on white background" class="mx-auto mb-2" height="110"
-                        src="https://storage.googleapis.com/a1aa/image/644a9462-5500-45af-6a94-230ecc5a4da5.jpg"
-                        width="160" />
-                    <div>
-                        Áo Thun
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bán 72k+ / tháng
-                    </div>
-                </div>
-                <div class="w-[160px] flex-shrink-0 text-center">
-                    <div class="inline-block bg-[#ff6f61] text-white text-xs px-2 rounded select-none mb-2">
-                        TOP
-                    </div>
-                    <img alt="Two iPhone phone cases on white background" class="mx-auto mb-2" height="110"
-                        src="https://storage.googleapis.com/a1aa/image/aa71bfa5-3d35-4951-ce04-b2b43af9580d.jpg"
-                        width="160" />
-                    <div>
-                        Ốp Lưng Iphone
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bán 115k+ / tháng
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- GỢI Ý HÔM NAY -->
-        <div class="bg-white p-6 mb-8 border border-[#e5e5e5]">
-            <div class="text-sm text-[#ff6f61] font-semibold text-center mb-3 select-none">
-                GỢI Ý HÔM NAY
-            </div>
-            <div class="grid grid-cols-6 gap-4 text-sm text-[#666]">
-                <!-- Each product card -->
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Pink handheld fan M2 with rechargeable battery on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/c70f4c6e-b75e-4ce7-47b9-48dfd99d5770.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -60%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫8.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Quạt cầm tay M2 đi động có thể sạc gió nhẹ
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Set of red t-shirt and gray pants on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/1325226c-d1ef-487f-fc86-424ac63b9018.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -40%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫36.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Set đồ áo thun chất bozip kèm quần dài
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Hand using mini food processor with ingredients on white background"
-                            class="mx-auto mb-2" height="140"
-                            src="https://storage.googleapis.com/a1aa/image/ce110be6-3910-4ac7-a285-b146ff7602ac.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -40%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫4.800
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Máy xay đồ ăn mini cầm tay dễ dàng sử dụng
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Red sleeveless cotton shirt on white background" class="mx-auto mb-2" height="140"
-                            src="https://storage.googleapis.com/a1aa/image/6ef51a33-68f2-43cb-704b-a0224e1d7aba.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -22%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫35.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Áo thun cộc tay cotton giữ liệu hình tâm trái tim
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Blue handheld fan M2 5000mAh rechargeable on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/c4196ff0-0779-41e5-0f41-434d14955a26.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -78%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫4.500
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Quạt mini cầm tay M2 5000mAh đi động có thể sạc
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Compact folding makeup mirror on white background" class="mx-auto mb-2" height="140"
-                            src="https://storage.googleapis.com/a1aa/image/02c3668d-a32d-410d-2006-af40839209e2.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -50%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫12.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Gương trang điểm để bàn gấp gọn gương trang điểm
-                    </div>
-                </div>
-                <!-- Additional product cards truncated for brevity, replicate the above structure for all 42 items -->
-                <!-- The user requested full code with all items, so continuing with all items below -->
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Pink pig-shaped smart electronic scale on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/c6366ca5-ef4d-4a4f-2091-fea826853661.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -40%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫46.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Cân điện tử thông minh hình lợn hồng
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Retro style eye camera pendant necklace on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/b466b0f2-3afd-4449-9fe1-fdba50ff2b29.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -40%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫3.300
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Camerra Mắt Dây Chuyền Vòng Cổ Retro
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Blue handheld mini fan M2 5000mAh rechargeable on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/779ee0b1-5571-44a9-71c6-f9d086998382.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -28%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫18.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Quạt mini cầm tay M2 5000mAh đi động màu xanh
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Black patterned men's clothing set on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/3eb80327-0dfa-4ad5-b58c-ea019a712378.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -51%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫3.127
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bộ Quần Áo Họa Tiết Nam Áo Pa ns Jcr Đen L
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Set of wooden hair combs on white background" class="mx-auto mb-2" height="140"
-                            src="https://storage.googleapis.com/a1aa/image/ab238720-88e0-4635-f1e0-f8b797f06f27.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -51%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫9.900
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bộ lược gỗ rỗng to khểu chải tóc làm phòng tắm
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="White unisex drop shoulder t-shirt on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/d540a0e1-07c0-46b3-ec2f-233ade493b2d.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -50%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫16.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Áo thun in tay Unisex áo phông rớt vai
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Pink and blue mini desk fans on white background" class="mx-auto mb-2" height="140"
-                            src="https://storage.googleapis.com/a1aa/image/04318eb3-7f17-408b-77da-9cadb439d153.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -63%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫55.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Quạt mini để bàn PLSHARK tích điện 5m
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Set of black and white zip-up shirts and pants on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/3fc16aeb-cb80-44d6-e191-c0dc4fb37b10.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -42%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫29.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Set đồ áo thun zip kèm quần chất kato siêu đẹp
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Bear-shaped multifunctional wall sticker cup on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/e4a68711-c841-4b68-064f-c350cc2f0af6.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -57%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫1.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Cốc Gấu Dán Tường Đa Năng Để Bàn
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Woman wearing navy babydoll linen dress with puff sleeves on white background"
-                            class="mx-auto mb-2" height="140"
-                            src="https://storage.googleapis.com/a1aa/image/8854874a-aae1-4b0e-f883-b8b586143bd0.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -56%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫53.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Áo babydoll linen kín nút tay phồng tít đẹp
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Fast charging cable 3 heads 100W 1.2m length on white background" class="mx-auto mb-2"
-                            height="140"
-                            src="https://storage.googleapis.com/a1aa/image/46cdec19-ebbf-4f19-297e-5fb8c0fc383c.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -50%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫5.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Cáp Sạc Nhanh 3 Đầu 100W Dài 1.2m Bộ Sạc
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Set of 7 natural fiber pillows on white background" class="mx-auto mb-2" height="140"
-                            src="https://storage.googleapis.com/a1aa/image/192c8796-854c-4cc9-c7fa-983846038cd5.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff3a44] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -36%
-                        </div>
-                    </div>
-                    <div class="text-[#ff3a44] font-semibold mb-1 text-base">
-                        ₫27.000
-                    </div>
-                    <div class="bg-[#ff3a44] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Combo 7 bộ đệm gối cây tơ bố tự nhiên
-                    </div>
-                </div>
-                <div class="border border-[#e5e5e5] rounded bg-white p-2">
-                    <div class="relative">
-                        <img alt="Black and gray baseball caps on white background" class="mx-auto mb-2" height="140"
-                            src="https://storage.googleapis.com/a1aa/image/310aae95-4e10-462b-dc0e-a3c2e25805cb.jpg"
-                            width="160" />
-                        <div
-                            class="absolute top-0 left-0 bg-[#ff6f61] text-white text-xs px-2 rounded-tr rounded-bl select-none">
-                            7.7
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 bg-[#ff6f61] text-white text-xs px-2 rounded-tl rounded-br select-none">
-                            -81%
-                        </div>
-                    </div>
-                    <div class="text-[#ff6f61] font-semibold mb-1 text-base">
-                        ₫41.000
-                    </div>
-                    <div class="bg-[#ff6f61] text-white text-xs rounded-full px-2 py-1 select-none w-max">
-                        Yêu thích
-                    </div>
-                    <div class="text-xs text-[#999] mt-1">
-                        Bộ Quần Áo phông Thời Trang Hàn Quốc
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Login to see more -->
-        <div class="text-center mb-8">
-            <button class="bg-[#e5e5e5] text-[#999] text-sm rounded w-full max-w-[400px] py-2 select-none" disabled="">
-                Login To See More
+    <div class="overlay" data-overlay></div>
+    <div class="modal" data-modal>
+        <div class="modal-close-overlay" data-modal-overlay></div>
+        <div class="modal-content">
+            <button class="modal-close-btn" data-modal-close>
+                <ion-icon name="close-outline"></ion-icon>
             </button>
+            <div class="newsletter-img">
+                <img src="{{ asset('assets/images/newsletter.png') }}" alt="Đăng ký nhận tin" width="400" height="400">
+            </div>
+            <div class="newsletter">
+                <form action="#">
+                    <div class="newsletter-header">
+                        <h3 class="newsletter-title">Đăng ký nhận tin</h3>
+                        <p class="newsletter-desc">
+                            Hãy đăng ký <b>Anon</b> để nhận thông tin sản phẩm mới và cập nhật khuyến mãi.
+                        </p>
+                    </div>
+                    <input type="email" name="email" class="email-field" placeholder="Địa chỉ Email" required>
+                    <button type="submit" class="btn-newsletter">Đăng ký</button>
+                </form>
+            </div>
         </div>
     </div>
-    <!-- JavaScript -->
-    <script src="{{ asset('js/home.js') }}"></script>
+
+    @foreach ($purchasedProducts as $product)
+        <div class="notification-toast" data-toast>
+            <button class="toast-close-btn" data-toast-close>
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+            <div class="toast-banner">
+                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" width="80" height="70">
+            </div>
+            <div class="toast-detail">
+                <p class="toast-message">Ai đó vừa mua sản phẩm</p>
+                <p class="toast-title">{{ $product->name }}</p>
+                <p class="toast-meta">
+                    <time datetime="{{ $product->updated_at->toIso8601String() }}">
+                        {{ $product->updated_at->diffForHumans() }}
+                    </time> trước
+                </p>
+            </div>
+        </div>
+    @endforeach
+
+    <header>
+        <nav class="desktop-navigation-menu">
+            <div class="container">
+                <ul class="desktop-menu-category-list">
+                    <li class="menu-category"></li>
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Danh mục</a>
+                        <div class="dropdown-panel">
+                            <ul class="dropdown-panel-list">
+                                @if ($parentCategory)
+                                    <li class="menu-title">
+                                        <a href="#">{{ $parentCategory->name ?? 'Danh mục' }}</a>
+                                    </li>
+                                    @foreach ($subCategories as $subcategory)
+                                        <li class="panel-list-item">
+                                            <a href="#">{{ $subcategory->name }}</a>
+                                        </li>
+                                    @endforeach
+                                    @if ($parentCategory->image_path)
+                                        <li class="panel-list-item">
+                                            <a href="#" class="overflow-hidden">
+                                                <img src="{{ asset('storage/' . $parentCategory->image_path) }}"
+                                                    alt="{{ $parentCategory->name }} banner" class="object-cover">
+                                            </a>
+                                        </li>
+                                    @else
+                                        <li class="panel-list-item">
+                                            <a href="#">
+                                                <img src="{{ asset('assets/images/electronics-banner-1.jpg') }}"
+                                                    alt="headphone collection" width="250" height="119">
+                                            </a>
+                                        </li>
+                                    @endif
+                                @endif
+                            </ul>
+
+                            @foreach ($fashionSub as $subCategory)
+                                <ul class="dropdown-panel-list">
+                                    <li class="menu-title">
+                                        <a href="#">{{ $subCategory->name }}</a>
+                                    </li>
+                                    @foreach ($subCategory->subCategories as $child)
+                                        <li class="panel-list-item">
+                                            <a href="#">{{ $child->name }}</a>
+                                        </li>
+                                    @endforeach
+                                    @if ($subCategory->image_path)
+                                        <li class="panel-list-item">
+                                            <a href="#" class="overflow-hidden">
+                                                <img src="{{ asset('storage/' . $subCategory->image_path) }}"
+                                                    alt="{{ $subCategory->name }} banner" class="object-cover">
+                                            </a>
+                                        </li>
+                                    @else
+                                        <li class="panel-list-item">
+                                            <a href="#">
+                                                @if ($subCategory->name === 'Nam')
+                                                    <img src="{{ asset('assets/images/mens-banner.jpg') }}"
+                                                        alt="Men's Fashion" width="250" height="119">
+                                                @elseif ($subCategory->name === 'Nữ')
+                                                    <img src="{{ asset('assets/images/womens-banner.jpg') }}"
+                                                        alt="Women's Fashion" width="250" height="119">
+                                                @else
+                                                    <img src="{{ asset('assets/images/default.jpg') }}" alt="Fashion"
+                                                        width="250" height="119">
+                                                @endif
+                                            </a>
+                                        </li>
+                                    @endif
+                                </ul>
+                            @endforeach
+
+                            <ul class="dropdown-panel-list">
+                                <li class="menu-title"><a href="#">{{ $parentCategory->name ?? 'Danh mục' }}</a></li>
+                                @foreach ($filteredSubCategories as $child)
+                                    <li class="panel-list-item">
+                                        <a href="#">{{ $child->name }}</a>
+                                    </li>
+                                @endforeach
+                                @if (isset($parentCategory) && $parentCategory->image_path)
+                                    <li class="panel-list-item">
+                                        <a href="#" class="overflow-hidden">
+                                            <img src="{{ asset('storage/' . $parentCategory->image_path) }}"
+                                                alt="{{ $parentCategory->name }} banner" class="object-cover">
+                                        </a>
+                                    </li>
+                                @else
+                                    <li class="panel-list-item">
+                                        <a href="#">
+                                            <img src="{{ asset('assets/images/electronics-banner-1.jpg') }}"
+                                                alt="headphone collection" width="250" height="119">
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    </li>
+                    @foreach ($fashionSub as $subCategory)
+                        <li class="menu-category">
+                            <a href="#" class="menu-title">{{ $subCategory->name }}</a>
+                            <ul class="dropdown-list">
+                                @foreach ($subCategory->subCategories as $child)
+                                    <li class="dropdown-item">
+                                        <a href="#">{{ $child->name }}</a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </li>
+                    @endforeach
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Trang sức</a>
+                        <ul class="dropdown-list">
+                            @foreach ($jewelrySub as $item)
+                                <li class="dropdown-item">
+                                    <a href="#">{{ $item->name }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Nước hoa</a>
+                        <ul class="dropdown-list">
+                            @foreach ($perfumeSub as $item)
+                                <li class="dropdown-item">
+                                    <a href="#">{{ $item->name }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                    <li class="menu-category">
+                        <a href="{{ route('blog') }}" class="menu-title">BÀI VIẾT</a>
+                    </li>
+                    <li class="menu-category">
+                        <a href="#" class="menu-title">Ưu đãi hấp dẫn</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="mobile-bottom-navigation">
+            <button class="action-btn" data-mobile-menu-open-btn>
+                <ion-icon name="menu-outline"></ion-icon>
+            </button>
+            <button class="action-btn">
+                <ion-icon name="bag-handle-outline"></ion-icon>
+                <span class="count">0</span>
+            </button>
+            <button class="action-btn">
+                <ion-icon name="home-outline"></ion-icon>
+            </button>
+            <button class="action-btn">
+                <ion-icon name="heart-outline"></ion-icon>
+                <span class="count">0</span>
+            </button>
+            <button class="action-btn" data-mobile-menu-open-btn>
+                <ion-icon name="grid-outline"></ion-icon>
+            </button>
+        </div>
+
+        <nav class="mobile-navigation-menu has-scrollbar" data-mobile-menu>
+            <div class="menu-top">
+                <h2 class="menu-title">Menu</h2>
+                <button class="menu-close-btn" data-mobile-menu-close-btn>
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+            <ul class="mobile-menu-category-list">
+                <li class="menu-category">
+                    <a href="#" class="menu-title">Trang chủ</a>
+                </li>
+                <li class="menu-category">
+                    <button class="accordion-menu" data-accordion-btn>
+                        <p class="menu-title">Nam</p>
+                        <div>
+                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                        </div>
+                    </button>
+                    <ul class="submenu-category-list" data-accordion>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Áo sơ mi</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Quần short & Jeans</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Giày bảo hộ</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Ví</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <button class="accordion-menu" data-accordion-btn>
+                        <p class="menu-title">Nữ</p>
+                        <div>
+                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                        </div>
+                    </button>
+                    <ul class="submenu-category-list" data-accordion>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Váy & Đầm</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Khuyên tai</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Dây chuyền</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Bộ trang điểm</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <button class="accordion-menu" data-accordion-btn>
+                        <p class="menu-title">Trang sức</p>
+                        <div>
+                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                        </div>
+                    </button>
+                    <ul class="submenu-category-list" data-accordion>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Khuyên tai</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Nhẫn cặp</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Dây chuyền</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Vòng tay</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <button class="accordion-menu" data-accordion-btn>
+                        <p class="menu-title">Nước hoa</p>
+                        <div>
+                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
+                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+                        </div>
+                    </button>
+                    <ul class="submenu-category-list" data-accordion>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Nước hoa quần áo</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Chất khử mùi</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Hương hoa</a>
+                        </li>
+                        <li class="submenu-category">
+                            <a href="#" class="submenu-title">Chất làm thơm không khí</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <a href="#" class="menu-title">Bài viết</a>
+                </li>
+                <li class="menu-category">
+                    <a href="#" class="menu-title">Ưu đãi hấp dẫn</a>
+                </li>
+            </ul>
+            <div class="menu-bottom">
+                <ul class="menu-category-list">
+                    <li class="menu-category">
+                        <button class="accordion-menu" data-accordion-btn>
+                            <p class="menu-title">Ngôn ngữ</p>
+                            <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
+                        </button>
+                        <ul class="submenu-category-list" data-accordion>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">Tiếng Việt</a>
+                            </li>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">English</a>
+                            </li>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">Español</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="menu-category">
+                        <button class="accordion-menu" data-accordion-btn>
+                            <p class="menu-title">Tiền tệ</p>
+                            <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
+                        </button>
+                        <ul class="submenu-category-list" data-accordion>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">VND ₫</a>
+                            </li>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">USD $</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="menu-social-container">
+                    <li><a href="#" class="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-twitter"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-linkedin"></ion-icon></a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="banner">
+            <div class="container">
+                <div class="slider-container has-scrollbar">
+                    <div class="slider-item">
+                        <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="women's latest fashion sale"
+                            class="banner-img">
+                        <div class="banner-content">
+                            <p class="banner-subtitle">Sản phẩm thịnh hành</p>
+                            <h2 class="banner-title">Thời trang nữ mới nhất</h2>
+                            <p class="banner-text">bắt đầu từ <b>20</b>.000₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
+                        </div>
+                    </div>
+                    <div class="slider-item">
+                        <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses" class="banner-img">
+                        <div class="banner-content">
+                            <p class="banner-subtitle">Phụ kiện thịnh hành</p>
+                            <h2 class="banner-title">Kính mát hiện đại</h2>
+                            <p class="banner-text">bắt đầu từ <b>15</b>.000₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
+                        </div>
+                    </div>
+                    <div class="slider-item">
+                        <img src="{{ asset('assets/images/banner-3.jpg') }}" alt="new fashion summer sale"
+                            class="banner-img">
+                        <div class="banner-content">
+                            <p class="banner-subtitle">Ưu đãi giảm giá</p>
+                            <h2 class="banner-title">Thời trang hè mới</h2>
+                            <p class="banner-text">bắt đầu từ <b>29</b>.990₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="category">
+            <div class="container">
+                <div class="category-item-container has-scrollbar flex flex-wrap gap-5 max-w-full">
+                    @php
+                        $homeCategories = $homeCategories->take(8); // Giới hạn tối đa 8 danh mục
+                    @endphp
+                    @foreach ($homeCategories as $category)
+                        <div class="category-item w-[calc(25%-0.9375rem)] min-w-[140px] flex-shrink-0">
+                            <div class="category-img-box h-10 w-10 flex items-center justify-center bg-gray-200">
+                                @if ($category->image_path && file_exists(public_path('storage/' . $category->image_path)))
+                                    <img src="{{ asset('storage/' . $category->image_path) }}"
+                                        alt="{{ Str::limit($category->name, 20) }}" width="30"
+                                        class="object-contain">
+                                @elseif (file_exists(public_path('assets/images/icons/' . Str::slug($category->name) . '.svg')))
+                                    <img src="{{ asset('assets/images/icons/' . Str::slug($category->name) . '.svg') }}"
+                                        alt="{{ Str::limit($category->name, 20) }}" width="30"
+                                        class="object-contain">
+                                @else
+                                    <span class="text-xs text-gray-500">{{ Str::limit($category->name, 5) }}</span>
+                                @endif
+                            </div>
+                            <div class="category-content-box">
+                                <div class="category-content-flex">
+                                    <h3 class="category-item-title">{{ $category->name }}</h3>
+                                    <p class="category-item-amount">({{ $category->products_count }})</p>
+                                </div>
+                                <a href="{{ route('search', ['category' => [$category->id]]) }}" class="category-btn">Xem
+                                    tất cả
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <div class="product-container">
+            <div class="container">
+                <div class="sidebar has-scrollbar relative" data-mobile-menu>
+                    <button class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-2.5"
+                        data-mobile-menu-close-btn>
+                        <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
+                    </button>
+                    <div class="shop-container-bg rounded-xl border border-orange-200 p-6 mb-8 mt-10 lg:mt-0">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2
+                                class="text-lg font-bold text-gray-800 flex items-center justify-between gap-2 w-full shop-title">
+                                Shop Bán Chạy
+                                <ion-icon name="flame"
+                                    class="text-orange-500 text-xl bg-white rounded-full p-2"></ion-icon>
+                            </h2>
+                        </div>
+
+                        <!-- Header với legend -->
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 mb-4">
+                            <h3 class="text-sm pl-3 pr-3 font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                Top Shop theo doanh số bán hàng
+                            </h3>
+                            <div class="grid grid-cols-2 gap-x-0 gap-y-2 justify-items-center">
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 flex-shrink-0 border border-yellow-300">
+                                    <ion-icon name="trophy" class="mr-1 text-xs"></ion-icon>
+                                    Top 1
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 flex-shrink-0 border border-gray-300">
+                                    <ion-icon name="medal" class="mr-1 text-xs"></ion-icon>
+                                    Top 2
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 flex-shrink-0 border border-amber-300">
+                                    <ion-icon name="ribbon" class="mr-1 text-xs"></ion-icon>
+                                    Top 3
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 flex-shrink-0 border border-blue-300">
+                                    <ion-icon name="star" class="mr-1 text-xs"></ion-icon>
+                                    Top 4
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách shop -->
+                        <div class="shop-ranking-container">
+                            <div class="grid grid-cols-1 gap-3 pb-2 relative">
+                                @foreach ($rankingShops as $index => $shop)
+                                    <div class="relative bg-white border border-gray-200 rounded-lg p-2.5 shop-ranking-card {{ $index < 3 ? 'ring-1 ring-opacity-30' : '' }} {{ $index === 0 ? 'ring-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : '' }} {{ $index === 1 ? 'ring-gray-400 bg-gradient-to-r from-gray-50 to-slate-50' : '' }} {{ $index === 2 ? 'ring-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50' : '' }}"
+                                        style="animation-delay: {{ $index * 0.1 }}s;">
+
+                                        <!-- Badge xếp hạng -->
+                                        <div
+                                            class="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md z-10 {{ $index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-400 to-slate-500' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-600 to-yellow-500' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-500 to-purple-600' : '' }}">
+                                            {{ $index + 1 }}
+                                        </div>
+
+                                        <!-- Header shop -->
+                                        <div class="flex items-start justify-between mb-3 gap-2">
+                                            <div class="flex items-center gap-2 flex-1 min-w-0">
+                                                <div class="relative flex-shrink-0">
+                                                    <img src="{{ asset('storage/' . $shop->shop_logo) }}"
+                                                        alt="{{ $shop->shop_name }}"
+                                                        class="w-8 h-8 rounded-full object-cover border border-gray-200">
+                                                    @if ($index < 3)
+                                                        <div
+                                                            class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full flex items-center justify-center text-xs {{ $index === 0 ? 'bg-yellow-500' : '' }} {{ $index === 1 ? 'bg-gray-500' : '' }} {{ $index === 2 ? 'bg-amber-600' : '' }}">
+                                                            <ion-icon
+                                                                name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : 'ribbon') }}"
+                                                                class="text-white text-[8px]"></ion-icon>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <h4 class="font-semibold text-gray-800 text-xs truncate">
+                                                        {{ $shop->shop_name }}</h4>
+                                                    <div class="flex items-center gap-1 mt-1">
+                                                        <div class="flex items-center gap-1">
+                                                            @for ($i = 1; $i <= 5; $i++)
+                                                                @if ($shop->shop_rating >= $i)
+                                                                    <ion-icon name="star"
+                                                                        class="text-yellow-400 text-xs"></ion-icon>
+                                                                @elseif($shop->shop_rating >= $i - 0.5)
+                                                                    <ion-icon name="star-half"
+                                                                        class="text-yellow-400 text-xs"></ion-icon>
+                                                                @else
+                                                                    <ion-icon name="star-outline"
+                                                                        class="text-gray-300 text-xs"></ion-icon>
+                                                                @endif
+                                                            @endfor
+                                                        </div>
+                                                        <span
+                                                            class="text-xs text-gray-600 font-medium">{{ number_format($shop->shop_rating, 1) }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Ranking badge -->
+                                            <span
+                                                class="ranking-badge inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 {{ $index === 0 ? 'bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 border border-yellow-300' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 border border-gray-300' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 border border-amber-300' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 border border-blue-300' : '' }}">
+                                                <ion-icon
+                                                    name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : ($index === 2 ? 'ribbon' : 'star')) }}"
+                                                    class="mr-1 text-xs"></ion-icon>
+                                                <span class="text-[12px]">{{ $index + 1 }}</span>
+                                            </span>
+                                        </div>
+
+                                        <!-- Stats -->
+                                        <div
+                                            class="text-center p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded border border-green-200 mb-2">
+                                            <!-- Header với icon và label -->
+                                            <div class="flex items-center justify-center gap-1 mb-1">
+                                                <ion-icon name="bag-check-outline"
+                                                    class="text-[#ef3248] text-xs"></ion-icon>
+                                                <span class="text-xs font-medium text-gray-800">Đã bán</span>
+                                            </div>
+
+                                            <!-- Số lượng bán -->
+                                            <p class="text-lg font-bold text-[#ef3248] mb-2">
+                                                {{ number_format($shop->total_products_sold) }}
+                                            </p>
+
+                                            <!-- Progress bar -->
+                                            <div class="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                @php
+                                                    $maxSales = max(
+                                                        $rankingShops->pluck('total_products_sold')->toArray(),
+                                                    );
+                                                    $percentage =
+                                                        $maxSales > 0
+                                                            ? ($shop->total_products_sold / $maxSales) * 100
+                                                            : 0;
+
+                                                    // Phối màu chủ đạo với gradient đẹp
+                                                    $barColor = 'bg-gradient-to-r from-[#ef3248] to-[#ff6b35]';
+                                                @endphp
+                                                <div class="h-full {{ $barColor }} rounded-full transition-all duration-300 relative"
+                                                    style="width: {{ min($percentage, 100) }}%">
+                                                    @if ($shop->total_products_sold >= 100)
+                                                        <div class="absolute -right-1 -top-0.5">
+                                                            <ion-icon name="flame"
+                                                                class="text-orange-500 text-xs"></ion-icon>
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                <!-- Hiệu ứng lửa xung quanh cho top 1 -->
+                                                @if ($index === 0)
+                                                    <div class="absolute inset-0 rounded-full flame-effect"></div>
+                                                    <!-- Các ngọn lửa nhỏ -->
+                                                    <div class="absolute -top-1 left-1 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-orange-500 text-xs"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -top-1 right-1 flame-particle">
+                                                        <ion-icon name="flame" class="text-red-500 text-xs"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -bottom-1 left-3 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-yellow-500 text-xs"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -bottom-1 right-3 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-orange-500 text-xs"></ion-icon>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <!-- Action button -->
+                                        <a href="{{ route('shop.show', $shop->id) }}"
+                                            class="block w-full text-center py-1 px-2 bg-[#ef3248] hover:bg-[#d62a3e] text-white font-medium rounded transition-colors duration-200 text-[10px]">
+                                            <span class="flex items-center justify-center gap-1">
+                                                Xem shop
+                                                <ion-icon name="arrow-forward-outline" class="text-[10px]"></ion-icon>
+                                            </span>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="product-showcase">
+                        <h3 class="showcase-heading">Sản phẩm bán chạy</h3>
+                        <div class="showcase-wrapper">
+                            <div class="showcase-container">
+                                @foreach ($bestSellers as $product)
+                                    <div class="showcase">
+                                        <a href="{{ route('product.show', $product->slug) }}" class="showcase-img-box">
+                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                width="75" height="75" class="showcase-img">
+                                        </a>
+                                        <div class="showcase-content">
+                                            <a href="{{ route('product.show', $product->slug) }}" class="h-[30px]">
+                                                <h4 class="showcase-title">{{ $product->name }}</h4>
+                                            </a>
+                                            <div class="showcase-rating">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    @if ($product->orderReviews->avg('rating') >= $i)
+                                                        <ion-icon name="star"></ion-icon>
+                                                    @elseif ($product->orderReviews->avg('rating') >= $i - 0.5)
+                                                        <ion-icon name="star-half-outline"></ion-icon>
+                                                    @else
+                                                        <ion-icon name="star-outline"></ion-icon>
+                                                    @endif
+                                                @endfor
+                                            </div>
+                                            <div class="price-box">
+                                                @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                    <p class="price">
+                                                        {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
+                                                    <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
+                                                @else
+                                                    <p class="price">
+                                                        {{ number_format($product->display_price, 0, ',', '.') }}₫
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-box">
+                    @if ($flashSaleProducts->count())
+                        <div class="product-flash-sale">
+                            <div class="flex items-center justify-between title-flash-sale">
+                                {{-- Countdown --}}
+                                <div class="countdown-box flex items-center gap-2">
+                                    <h2 class="font-bold">Flash Sale</h2>
+                                    @if ($flashSaleProducts->first()->flash_sale_end_at)
+                                        <span class="countdown-timer"
+                                            id="countdown-{{ $flashSaleProducts->first()->id }}"
+                                            data-end-time="{{ $flashSaleProducts->first()->flash_sale_end_at->timestamp }}">
+                                            <span class="display-number">00</span> :
+                                            <span class="display-number">00</span> :
+                                            <span class="display-number">00</span>
+                                        </span>
+                                    @endif
+                                </div>
+                                <a href=""
+                                    class="text-[#ef3248] hover:underline text-sm font-medium whitespace-nowrap">
+                                    Xem tất cả
+                                </a>
+                            </div>
+
+                            <div class="product-demo">
+
+
+                                {{-- Khung flash sale không cuộn --}}
+                                <div class="flash-sale-container">
+                                    <div class="flash-sale-scroll-container">
+                                        <div class="flash-sale-box">
+                                            <div class="showcase-wrapper flex gap-4">
+                                                @foreach ($flashSaleProducts as $product)
+                                                    <div
+                                                        class="showcase-container flex flex-col justify-center items-center w-[200px]">
+                                                        <div class="flash-sale-header w-[200px] h-[200px] relative">
+                                                            <span class="discount absolute top-[10px] right-[10px]">
+                                                                @if ($product->display_original_price_for_flash_sale > 0)
+                                                                    -{{ round((1 - $product->display_flash_sale_price / $product->display_original_price_for_flash_sale) * 100) }}%
+                                                                @else
+                                                                    -0%
+                                                                @endif
+                                                            </span>
+                                                            <img src="{{ $product->image_url }}"
+                                                                alt="{{ $product->name }}"
+                                                                class="w-full h-full object-cover">
+                                                        </div>
+                                                        <div class="flash-sale-price">
+                                                            <span
+                                                                class="new-price">₫{{ number_format($product->display_flash_sale_price, 0) }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @include('partials.combo_products')
+
+                    <div class="product-minimal">
+                        <div class="product-showcase">
+                            <h2 class="title">Sản phẩm nổi bật</h2>
+                            @if ($featuredProducts->isEmpty())
+                                <p>Hiện chưa có sản phẩm nổi bật nào.</p>
+                            @else
+                                @php
+                                    $featuredProducts = $featuredProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFour = $featuredProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $others = $featuredProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
+                                <div class="showcase-wrapper has-scrollbar">
+                                    <div class="showcase-container">
+                                        @foreach ($firstFour as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="price-box">
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
+                                                        @else
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="showcase-container">
+                                        @foreach ($others as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="price-box">
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
+                                                        @else
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="product-showcase">
+                            <h2 class="title">Được xem nhiều</h2>
+                            @if ($trendingProducts->isEmpty())
+                                <p class="mt-4">Hiện chưa có sản phẩm nào được xem.</p>
+                            @else
+                                @php
+                                    $trendingProducts = $trendingProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFourTrending = $trendingProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $remainingTrending = $trendingProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
+                                <div class="showcase-wrapper has-scrollbar">
+                                    <div class="showcase-container">
+                                        @foreach ($firstFourTrending as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="price-box">
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
+                                                        @else
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="showcase-container">
+                                        @foreach ($remainingTrending as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="price-box">
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
+                                                        @else
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="product-showcase">
+                            <h2 class="title">Đánh giá cao</h2>
+                            @if ($topRatedProducts->isEmpty())
+                                <p>Chưa có sản phẩm nào được đánh giá.</p>
+                            @else
+                                @php
+                                    $topRatedProducts = $topRatedProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
+                                    $firstFourTopRated = $topRatedProducts->take(4); // Lấy 4 sản phẩm đầu
+                                    $remainingTopRated = $topRatedProducts->slice(4, 4); // Lấy 4 sản phẩm tiếp theo
+                                @endphp
+                                <div class="showcase-wrapper has-scrollbar">
+                                    <div class="showcase-container">
+                                        @foreach ($firstFourTopRated as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="showcase-rating">
+                                                        @php
+                                                            $avg = round($product->orderReviews->avg('rating') ?? 0);
+                                                        @endphp
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <ion-icon
+                                                                name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
+                                                        @endfor
+                                                    </div>
+                                                    <div class="price-box">
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
+                                                        @else
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="showcase-container">
+                                        @foreach ($remainingTopRated as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        class="showcase-img" width="70">
+                                                </a>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
+                                                        {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                                    </a>
+                                                    <div class="showcase-rating">
+                                                        @php
+                                                            $avg = round($product->orderReviews->avg('rating') ?? 0);
+                                                        @endphp
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <ion-icon
+                                                                name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
+                                                        @endfor
+                                                    </div>
+                                                    <div class="price-box">
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
+                                                        @else
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price) }}₫</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="product-main">
+                        <h2 class="title">Sản phẩm mới</h2>
+                        <div class="product-grid">
+                            @foreach ($newProducts as $product)
+                                <div class="showcase">
+                                    <div class="showcase-banner">
+                                        @php
+                                            $images = $product->images;
+                                            $defaultImage = $images->where('is_default', 1)->first();
+                                            $secondImage = $images->where('is_default', 0)->first(); // hoặc đơn giản: $images->get(1);
+                                        @endphp
+                                        <img src="{{ $defaultImage ? asset('storage/' . $defaultImage->image_path) : asset('images/default.jpg') }}"
+                                            alt="{{ $product->name }}" class="product-img default h-[200px]"
+                                            width="300">
+
+                                        <img src="{{ $secondImage ? asset('storage/' . $secondImage->image_path) : asset('images/default.jpg') }}"
+                                            alt="{{ $product->name }}" class="product-img hover h-[200px]"
+                                            width="300">
+                                        @if ($product->created_at >= now()->subDays(7))
+                                            <p class="showcase-badge angle pink">Mới</p>
+                                        @elseif ($product->sale_price)
+                                            <p class="showcase-badge">
+                                                {{ round((($product->price - $product->sale_price) / $product->price) * 100) }}%
+                                            </p>
+                                            <p class="showcase-badge angle black">sale</p>
+                                        @endif
+                                        <div class="showcase-actions">
+                                            <button class="btn-action toggle-wishlist-btn"
+                                                data-product-id="{{ $product->id }}"
+                                                data-is-wishlisted="{{ Auth::check() && Auth::user()->wishlist()->where('productID', $product->id)->exists() ? '1' : '0' }}">
+                                                <ion-icon
+                                                    name="{{ Auth::check() && Auth::user()->wishlist()->where('productID', $product->id)->exists() ? 'heart' : 'heart-outline' }}"></ion-icon>
+                                            </button>
+                                            <button class="btn-action quick-view-btn"
+                                                data-product-slug="{{ $product->slug }}">
+                                                <ion-icon name="eye-outline"></ion-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="showcase-content">
+                                        <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                            class="showcase-category">
+                                            {{ $product->categories->first()->name ?? 'Không có danh mục' }}
+                                        </a>
+                                        <a href="{{ route('product.show', $product->slug) }}" class="h-[30px]">
+                                            <h3 class="showcase-title truncate">{{ $product->name }}</h3>
+                                        </a>
+                                        <div class="showcase-rating">
+                                            @php
+                                                $avg = round($product->orderReviews->avg('rating') ?? 0);
+                                            @endphp
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <ion-icon name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
+                                            @endfor
+                                        </div>
+                                        <div class="price-box">
+                                            @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                <p class="price">
+                                                    {{ number_format($product->display_price, 0, ',', '.') }}₫
+                                                </p>
+                                                <del
+                                                    class="truncate text-xs">{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
+                                            @else
+                                                <p class="price">
+                                                    {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonials-box">
+            <div class="container flex gap-[30px]">
+                <div class="testimonial">
+                    <h2 class="title">Đánh giá khách hàng</h2>
+
+                    @foreach ($testimonials as $review)
+                        <div class="testimonial-card">
+                            <div class="flex items-center gap-2">
+                                @include('partials.user-avatar', [
+                                    'user' => $review->user,
+                                    'size' => '2xl',
+                                    'className' => 'testimonial-banner',
+                                ])
+                            </div>
+
+                            <p class="testimonial-name truncate">{{ $review->user->username ?? 'Khách hàng ẩn danh' }}
+                            </p>
+                            <p class="testimonial-title truncate">
+                                {{ $review->product->name ?? 'Sản phẩm đã mua' }}
+                            </p>
+
+                            <img src="{{ asset('assets/images/icons/quotes.svg') }}" alt="quotation"
+                                class="quotation-img" width="26">
+
+                            <p class="testimonial-desc truncate">
+                                {{ Str::limit($review->comment, 120) }}
+                            </p>
+                        </div>
+                    @endforeach
+                    @if ($testimonials->isEmpty())
+                        <p>Chưa có đánh giá nào từ khách hàng.</p>
+                    @endif
+                </div>
+
+                <div class="cta-container">
+                    @if ($advertisedProducts->isNotEmpty())
+                        <div class="advertised-products-container">
+                            <h3 class="advertised-title">Sản phẩm quảng cáo</h3>
+
+                            <!-- Slides Container -->
+                            <div class="advertised-slides-container">
+                                @php
+                                    $productsPerSlide = 2;
+                                    $totalSlides = ceil($advertisedProducts->count() / $productsPerSlide);
+                                @endphp
+
+                                @for ($slideIndex = 0; $slideIndex < $totalSlides; $slideIndex++)
+                                    <div class="advertised-slide {{ $slideIndex === 0 ? 'active' : '' }}"
+                                        data-slide="{{ $slideIndex }}">
+                                        <div class="advertised-grid">
+                                            @foreach ($advertisedProducts->slice($slideIndex * $productsPerSlide, $productsPerSlide) as $adItem)
+                                                <div class="advertised-item">
+                                                    <div class="ad-badge">Quảng cáo</div>
+                                                    <a href="{{ route('product.show', $adItem->product->slug) }}"
+                                                        class="ad-product-link">
+                                                        <img src="{{ $adItem->product->image_url }}"
+                                                            alt="{{ $adItem->product->name }}" class="ad-product-img">
+                                                        <div class="ad-product-info">
+                                                            <h4 class="ad-product-name">
+                                                                {{ Str::limit($adItem->product->name, 30) }}</h4>
+                                                            <div class="ad-product-price">
+                                                                @if (
+                                                                    $adItem->product->display_original_price &&
+                                                                        $adItem->product->display_price < $adItem->product->display_original_price)
+                                                                    <span
+                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
+                                                                    <span
+                                                                        class="ad-price-old">{{ number_format($adItem->product->display_original_price) }}₫</span>
+                                                                @else
+                                                                    <span
+                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+
+                            <!-- Dots Navigation -->
+                            @if ($totalSlides > 1)
+                                <div class="advertised-dots">
+                                    @for ($dotIndex = 0; $dotIndex < $totalSlides; $dotIndex++)
+                                        <button class="advertised-dot {{ $dotIndex === 0 ? 'active' : '' }}"
+                                            data-slide="{{ $dotIndex }}"
+                                            aria-label="Go to slide {{ $dotIndex + 1 }}">
+                                        </button>
+                                    @endfor
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <!-- Fallback banner nếu không có quảng cáo -->
+                        <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection"
+                            class="cta-banner">
+                        <a href="#" class="cta-content">
+                            <p class="discount">Giảm 25%</p>
+                            <h2 class="cta-title">Bộ sưu tập hè</h2>
+                            <p class="cta-text">Bắt đầu từ 10.000₫</p>
+                            <button class="cta-btn">Mua ngay</button>
+                        </a>
+                    @endif
+                </div>
+
+                <div class="service">
+                    <h2 class="title">Dịch vụ của chúng tôi</h2>
+                    <div class="service-container">
+                        <a href="#" class="service-item">
+                            <div class="service-icon">
+                                <ion-icon name="rocket-outline"></ion-icon>
+                            </div>
+                            <div class="service-content">
+                                <h3 class="service-title">Giao hàng nhanh</h3>
+                                <p class="service-desc">Nhận hàng trong 1–3 ngày</p>
+                            </div>
+                        </a>
+
+                        <a href="#" class="service-item">
+                            <div class="service-icon">
+                                <ion-icon name="call-outline"></ion-icon>
+                            </div>
+                            <div class="service-content">
+                                <h3 class="service-title">Hỗ trợ 24/7</h3>
+                                <p class="service-desc">Tư vấn mọi lúc mọi nơi</p>
+                            </div>
+                        </a>
+
+                        <a href="#" class="service-item">
+                            <div class="service-icon">
+                                <ion-icon name="return-up-back-outline"></ion-icon>
+                            </div>
+                            <div class="service-content">
+                                <h3 class="service-title">Đổi trả dễ dàng</h3>
+                                <p class="service-desc">Miễn phí trong 7 ngày</p>
+                            </div>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="blog">
+            <div class="container">
+                <div class="blog-container has-scrollbar">
+                    @foreach ($blogs as $blog)
+                        <div class="blog-card">
+                            <a href="{{ route('blog.detail', $blog->slug) }}">
+                                <img src="{{ asset($blog->image_path) }}" alt="{{ $blog->title }}" width="300"
+                                    class="blog-banner">
+                            </a>
+                            <div class="blog-content">
+                                <a href="#" class="blog-category">{{ $blog->category }}</a>
+                                <a href="{{ route('blog.detail', $blog->slug) }}">
+                                    <h3 class="blog-title">{{ $blog->title }}</h3>
+                                </a>
+                                <p class="blog-meta">
+                                    By <cite>{{ $blog->author ?? 'Admin' }}</cite> /
+                                    <time
+                                        datetime="{{ $blog->created_at->format('Y-m-d') }}">{{ $blog->created_at->format('M d, Y') }}</time>
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                    @if ($blogs->isEmpty())
+                    @endif
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Quick View -->
+    <div id="quick-view-modal" class="quick-view-modal">
+        <div class="w-[1200px] bg-[#fff] rounded-[10px]">
+            <div class="flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-gray-300 border-dashed mb-4">
+                    <h3>Xem nhanh</h3>
+                    <button class="close-btn text-2xl">×</button>
+                </div>
+                <div class="quick-view-body"></div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        @vite(['resources/js/home.js'])
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = document.getElementById('quick-view-modal');
+                const closeBtn = modal.querySelector('.close-btn');
+                closeBtn.addEventListener('click', function() {
+                    modal.classList.remove('active');
+                });
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+            document.addEventListener('DOMContentLoaded', function() {
+                // Xử lý toggle wishlist
+                document.querySelectorAll('.toggle-wishlist-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const productId = this.getAttribute('data-product-id');
+                        const isWishlisted = this.getAttribute('data-is-wishlisted') === '1';
+                        const icon = this.querySelector('ion-icon');
+
+                        axios.post(`/customer/product/${productId}/toggle-wishlist`, {}, {
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                }
+                            })
+                            .then(response => {
+                                if (response.data.success) {
+                                    this.setAttribute('data-is-wishlisted', response.data
+                                        .isWishlisted ? '1' : '0');
+                                    icon.setAttribute('name', response.data.isWishlisted ? 'heart' :
+                                        'heart-outline');
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        toast: true,
+                                        icon: 'success',
+                                        title: 'Thành công',
+                                        text: response.data.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        position: 'top-end',
+                                        toast: true,
+                                        icon: 'error',
+                                        title: 'Lỗi',
+                                        text: response.data.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: error.response?.status === 401 ?
+                                        'Vui lòng đăng nhập để sử dụng chức năng này!' :
+                                        'Đã có lỗi xảy ra!',
+                                    showConfirmButton: error.response?.status === 401,
+                                    confirmButtonText: 'Đăng nhập',
+                                }).then(result => {
+                                    if (result.isConfirmed && error.response?.status ===
+                                        401) {
+                                        window.location.href = '/login';
+                                    }
+                                });
+                            });
+                    });
+                });
+
+                // Xử lý quick view
+                document.querySelectorAll('.quick-view-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const slug = this.getAttribute('data-product-slug');
+                        const modal = document.getElementById('quick-view-modal');
+                        const modalBody = modal.querySelector('.quick-view-body');
+
+                        axios.get(`/customer/products/${slug}/quick-view`)
+                            .then(response => {
+                                if (response.data.success) {
+                                    modalBody.innerHTML = response.data.html;
+
+                                    // ✅ Gán dữ liệu biến thể
+                                    window.variantData = response.data.variantData;
+                                    console.log('✅ Gán variantData từ Laravel:', window
+                                        .variantData);
+
+                                    modal.classList.add('active');
+
+                                    if (typeof initQuickViewScripts === 'function') {
+                                        initQuickViewScripts();
+                                    }
+                                } else {
+                                    Swal.fire('Lỗi', response.data.message, 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Lỗi tải QuickView:', error);
+                                Swal.fire('Lỗi', 'Không thể tải sản phẩm!', 'error');
+                            });
+                    });
+                });
+
+                // Add Combo to Cart functionality (moved outside initQuickViewScripts)
+                document.querySelectorAll('.add-combo-cart-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const comboId = this.getAttribute('data-combo-id');
+
+                        fetch('/cart/add-combo', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    combo_id: comboId
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: data.success ? 'success' : 'error',
+                                    title: data.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error adding combo to cart:', error);
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể thêm combo vào giỏ!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                    });
+                });
+
+            });
+
+            function initQuickViewScripts() {
+                const mainImage = document.getElementById('main-image');
+                const priceDisplay = document.getElementById('price-display');
+                const stockInfo = document.getElementById('stock_info');
+                const quantityInput = document.getElementById('quantity');
+                const decreaseBtn = document.getElementById('decreaseQty');
+                const increaseBtn = document.getElementById('increaseQty');
+                const selectedVariantIdInput = document.getElementById('selected_variant_id');
+                const addToCartButtons = document.querySelectorAll('.add-to-cart');
+                const variantButtons = document.querySelectorAll('button[data-value]');
+                const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                let selectedVariantId = null;
+
+                if (!mainImage || !priceDisplay || !stockInfo || !quantityInput || !selectedVariantIdInput) {
+                    console.warn('Thiếu phần tử DOM trong quick view, dừng init.');
+                    return;
+                }
+
+                const hasVariants = variantButtons.length > 0;
+                if (!hasVariants) {
+                    selectedVariantId = 'default'; // sản phẩm không có biến thể
+                    selectedVariantIdInput.value = 'default';
+                    // Explicitly display default product price for simple products on modal open
+                    const defaultPrice = parseFloat(priceDisplay.dataset.price);
+                    const defaultOriginalPrice = parseFloat(priceDisplay.dataset.originalPrice);
+                    const defaultStock = parseInt(stockInfo.dataset.stock);
+                    resetToDefault(
+                        mainImage?.src || '/storage/product_images/default.jpg', // Use main image src as default
+                        defaultPrice,
+                        defaultOriginalPrice,
+                        defaultStock
+                    );
+                }
+
+                // Thay ảnh chính khi click ảnh phụ
+                document.querySelectorAll('.sub-image').forEach(img => {
+                    img.addEventListener('click', function() {
+                        const newSrc = this.dataset.src;
+                        if (mainImage && newSrc) mainImage.src = newSrc;
+                    });
+                });
+
+                // Format số
+                function number_format(number, decimals = 0, dec_point = ',', thousands_sep = '.') {
+                    number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
+                    let n = !isFinite(+number) ? 0 : +number;
+                    let prec = Math.abs(decimals);
+                    let s = (prec ? (Math.round(n * Math.pow(10, prec)) / Math.pow(10, prec)).toFixed(prec) : '' + Math.round(
+                        n)).split('.');
+                    s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, thousands_sep);
+                    if ((s[1] || '').length < prec) {
+                        s[1] = (s[1] || '') + '0'.repeat(prec - s[1].length);
+                    }
+                    return s.join(dec_point);
+                }
+
+                // Tăng/giảm số lượng
+                if (decreaseBtn) {
+                    decreaseBtn.addEventListener('click', () => {
+                        let qty = parseInt(quantityInput.value);
+                        if (qty > 1) quantityInput.value = qty - 1;
+                    });
+                }
+
+                if (increaseBtn) {
+                    increaseBtn.addEventListener('click', () => {
+                        let qty = parseInt(quantityInput.value);
+                        const stock = parseInt(stockInfo.textContent.split(' ')[0]) || 0;
+                        if (qty < stock) quantityInput.value = qty + 1;
+                    });
+                }
+
+
+                // Reset về trạng thái mặc định
+                function resetToDefault(defaultImage, price, originalPrice, stock) {
+                    selectedVariantId = null;
+                    selectedVariantIdInput.value = 'default';
+                    if (mainImage && defaultImage) mainImage.src = defaultImage;
+
+                    priceDisplay.innerHTML = `
+                        <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
+                        ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                    `;
+                    stockInfo.textContent = `${stock} sản phẩm có sẵn`;
+                }
+
+                // Xử lý chọn biến thể
+                variantButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const value = button.getAttribute('data-value');
+                        const attributeName = button.getAttribute('data-attribute-name');
+                        const optionsContainer = button.closest(`[id$="-options"]`);
+                        const allButtons = optionsContainer.querySelectorAll('button[data-value]');
+
+                        if (button.classList.contains('bg-gray-200') && button.classList.contains(
+                                'border-gray-500')) {
+                            button.classList.remove('bg-gray-200', 'border-gray-500');
+                            button.classList.add('border-gray-300');
+                            resetToDefault(button.dataset.defaultImage, button.dataset.price, button.dataset
+                                .originalPrice, button.dataset.stock);
+                            return;
+                        }
+
+                        allButtons.forEach(btn => {
+                            btn.classList.remove('bg-gray-200', 'border-gray-500');
+                            btn.classList.add('border-gray-300');
+                        });
+
+                        button.classList.remove('border-gray-300');
+                        button.classList.add('bg-gray-200', 'border-gray-500');
+
+                        const selectedAttributes = {};
+                        document.querySelectorAll('[id$="-options"] button[data-value].bg-gray-200').forEach(
+                            btn => {
+                                const attrName = btn.getAttribute('data-attribute-name');
+                                const attrValue = btn.getAttribute('data-value');
+                                selectedAttributes[attrName] = attrValue;
+                            });
+
+                        const variantData = window.variantData || {};
+                        let matched = null;
+
+                        for (let id in variantData) {
+                            let variant = variantData[id];
+                            let matchedAll = true;
+                            for (let attr in selectedAttributes) {
+                                if (!variant.attributes || variant.attributes[attr] !== selectedAttributes[
+                                        attr]) {
+                                    matchedAll = false;
+                                    break;
+                                }
+                            }
+                            if (matchedAll) {
+                                matched = {
+                                    id,
+                                    ...variant
+                                };
+                                break;
+                            }
+                        }
+
+                        console.log('Đã chọn attributes:', selectedAttributes);
+                        console.log('Dữ liệu variantData:', variantData);
+                        console.log('Biến thể phù hợp:', matched);
+
+                        if (matched) {
+                            selectedVariantId = matched.id;
+                            selectedVariantIdInput.value = matched.id;
+
+                            // Hiển thị lại giá
+                            if (priceDisplay) {
+                                priceDisplay.innerHTML = `
+                                    <span class="text-red-600 text-2xl font-bold">${number_format(matched.price)} VNĐ</span>
+                                    <span class="text-gray-500 line-through text-md">${number_format(matched.original_price)} VNĐ</span>
+                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${matched.discount_percentage}%</span>
+                                `;
+                            }
+
+                            if (mainImage) {
+                                console.log('Hiển thị ảnh biến thể:', matched.image);
+                                mainImage.src = matched.image || '/storage/product_images/default.jpg';
+                            }
+                            if (stockInfo) stockInfo.textContent = `${matched.stock} sản phẩm có sẵn`;
+                        } else {
+                            // Không tìm thấy biến thể phù hợp → reset
+                            selectedVariantId = null;
+                            selectedVariantIdInput.value = '';
+                            resetToDefault(
+                                mainImage?.dataset.default || '/storage/product_images/default.jpg',
+                                parseFloat(priceDisplay?.dataset.price || 0),
+                                parseFloat(priceDisplay?.dataset.originalPrice || 0),
+                                parseInt(stockInfo?.dataset.stock || 0)
+                            );
+
+                        }
+
+                    });
+                });
+
+                // Xử lý thêm vào giỏ hàng
+                addToCartButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        if (!selectedVariantId && hasVariants) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vui lòng chọn biến thể!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        const quantity = parseInt(quantityInput.value);
+                        const stock = parseInt(stockInfo.textContent.split(' ')[0]);
+
+                        if (quantity > stock) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vượt quá số lượng tồn kho!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        fetch('/customer/cart/add', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    product_id: button.getAttribute('data-product-id'),
+                                    variant_id: selectedVariantId,
+                                    quantity: quantity
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'success',
+                                    title: data.message || 'Thêm vào giỏ thành công',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể thêm sản phẩm vào giỏ!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                    });
+                });
+            }
+
+
+            if (typeof initQuickViewScripts === 'function') {
+                initQuickViewScripts();
+            }
+
+            // Advertised Products Slider
+            function initAdvertisedSlider() {
+                const dots = document.querySelectorAll('.advertised-dot');
+                const slides = document.querySelectorAll('.advertised-slide');
+
+                if (dots.length === 0 || slides.length === 0) return;
+
+                let currentSlide = 0;
+                let isTransitioning = false;
+                let autoSlideInterval = null;
+
+                function goToSlide(slideIndex) {
+                    if (isTransitioning) return; // Prevent multiple transitions
+
+                    isTransitioning = true;
+
+                    // Remove active class from all slides and dots
+                    slides.forEach(slide => {
+                        slide.classList.remove('active', 'prev');
+                    });
+                    dots.forEach(dot => dot.classList.remove('active'));
+
+                    // Add active class to current slide and dot
+                    slides[slideIndex].classList.add('active');
+                    dots[slideIndex].classList.add('active');
+
+                    // Add prev class to previous slide for smooth transition
+                    if (slideIndex > 0) {
+                        slides[slideIndex - 1].classList.add('prev');
+                    }
+
+                    // Wait for transition to complete before allowing next transition
+                    setTimeout(() => {
+                        isTransitioning = false;
+                    }, 600); // Slightly longer than CSS transition (500ms)
+                }
+
+                function startAutoSlide() {
+                    if (autoSlideInterval) {
+                        clearInterval(autoSlideInterval);
+                    }
+
+                    autoSlideInterval = setInterval(() => {
+                        if (!isTransitioning) {
+                            currentSlide = (currentSlide + 1) % slides.length;
+                            goToSlide(currentSlide);
+                        }
+                    }, 4000); // 4 seconds between slides
+                }
+
+                function stopAutoSlide() {
+                    if (autoSlideInterval) {
+                        clearInterval(autoSlideInterval);
+                        autoSlideInterval = null;
+                    }
+                }
+
+                // Add click event to dots
+                dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => {
+                        if (!isTransitioning) {
+                            currentSlide = index;
+                            goToSlide(currentSlide);
+
+                            // Restart auto slide after manual click
+                            stopAutoSlide();
+                            startAutoSlide();
+                        }
+                    });
+                });
+
+                // Start auto slide
+                startAutoSlide();
+
+                // Pause auto slide on hover
+                const container = document.querySelector('.advertised-products-container');
+                if (container) {
+                    container.addEventListener('mouseenter', () => {
+                        stopAutoSlide();
+                    });
+
+                    container.addEventListener('mouseleave', () => {
+                        startAutoSlide();
+                    });
+                }
+            }
+
+            // Initialize advertised slider when DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                initAdvertisedSlider();
+                initPriceHandling();
+            });
+
+            // Handle long prices automatically
+            function initPriceHandling() {
+                const priceBoxes = document.querySelectorAll('.product-minimal .price-box');
+
+                priceBoxes.forEach(priceBox => {
+                    const price = priceBox.querySelector('.price');
+                    const delPrice = priceBox.querySelector('del');
+
+                    if (price) {
+                        // Check if price is too long
+                        if (price.scrollWidth > price.offsetWidth) {
+                            price.style.fontSize = '0.75rem';
+                        }
+                    }
+
+                    if (delPrice) {
+                        // Check if del price is too long
+                        if (delPrice.scrollWidth > delPrice.offsetWidth) {
+                            delPrice.style.fontSize = '0.625rem';
+                        }
+                    }
+                });
+            }
+        </script>
+    @endpush
 @endsection
