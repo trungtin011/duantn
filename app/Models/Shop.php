@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ShopAddress;
 use App\Models\ShopShippingOption;
+use App\Models\Combo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\ShopWallet;
 
 class Shop extends Model
 {
@@ -23,6 +25,10 @@ class Shop extends Model
         'shop_logo',
         'shop_banner',
         'shop_status',
+        'total_sales',
+        'total_rating',
+        'total_products',
+        'total_followers',
     ];
 
     protected $casts = [
@@ -52,7 +58,7 @@ class Shop extends Model
 
     public function addresses()
     {
-        return $this->belongsTo(ShopAddress::class, 'shop_address_id');
+        return $this->hasMany(ShopAddress::class, 'shopID', 'id');
     }
 
     public function followers()
@@ -86,7 +92,7 @@ class Shop extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class, 'shop_orderID', 'id');
+        return $this->hasMany(ItemsOrder::class, 'shop_orderID', 'id');
     }
 
     public function seller()
@@ -103,5 +109,30 @@ class Shop extends Model
     {
         return $this->belongsToMany(User::class, 'shop_followers', 'shopID', 'followerID')
             ->withTimestamps();
+    }
+
+    public function shopCategories()
+    {
+        return $this->hasMany(\App\Models\ShopCategory::class);
+    }
+    public function categories()
+    {
+        return $this->hasMany(\App\Models\ShopCategory::class);
+    }
+
+    public function combos()
+    {
+        return $this->hasMany(Combo::class, 'shopID', 'id');
+    }
+    public function wallet()
+    {
+        return $this->hasOne(ShopWallet::class, 'shop_id');
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($shop) {
+            ShopWallet::firstOrCreate(['shop_id' => $shop->id], ['balance' => 0]);
+        });
     }
 }

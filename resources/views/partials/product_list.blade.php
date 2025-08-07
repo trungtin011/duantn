@@ -1,3 +1,7 @@
+@if ($advertisedProducts->isNotEmpty())
+    @include('partials.advertised_products', ['advertisedProducts' => $advertisedProducts])
+@endif
+
 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
     @forelse ($products as $product)
         <div
@@ -35,4 +39,14 @@
 
 <div class="mt-6">
     {{ $products->withQueryString()->links('pagination::bootstrap-5') }}
+</div>
+
+<div id="loading" class="hidden text-center text-gray-500 py-2">
+    <svg class="animate-spin h-5 w-5 mx-auto text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+        </circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"></path>
+    </svg>
+    Đang tải...
 </div>

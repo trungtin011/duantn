@@ -25,10 +25,10 @@ class ShippingFeeController extends Controller
 
     public function calculateShippingFee(Request $request)
     {
-        Log::info($request->all());
         $userAddress = UserAddress::find($request->address_id);
-        Log::info($userAddress);
-        $shopAddress = ShopAddress::where('is_default', 1)->first();
+        $shopAddress = ShopAddress::where('shopID', $request->shop_id)
+            ->where('is_default', 1)
+            ->first();
         Log::info($shopAddress);
         if (!$userAddress || !$shopAddress) {
             return response()->json(['error' => 'Không tìm thấy địa chỉ'], 404);
@@ -42,10 +42,10 @@ class ShippingFeeController extends Controller
             "required_note" => "KHONGCHOXEMHANG",
             "from_name" => "MinTien",
             "from_phone" => "0945520405",
-            "from_address" => $shopAddress->first()->shop_address,
-            "from_ward_name" => $shopAddress->first()->shop_ward,
-            "from_district_name" => $shopAddress->first()->shop_district,
-            "from_province_name" => $shopAddress->first()->shop_province,
+            "from_address" => $shopAddress->shop_address,
+            "from_ward_name" => $shopAddress->shop_ward,
+            "from_district_name" => $shopAddress->shop_district,
+            "from_province_name" => $shopAddress->shop_province,
             "to_name" => $userAddress->receiver_name,
             "to_phone" => $userAddress->receiver_phone,
             "to_address" => $userAddress->address,
@@ -90,7 +90,6 @@ class ShippingFeeController extends Controller
         ])
         ->post($url, $requestData);
 
-        Log::info($response->json());
         $expectedDeliveryTime = Carbon::parse($response->json()['data']['expected_delivery_time'])
         ->setTimezone('Asia/Ho_Chi_Minh')
         ->format('d/m/Y H:i');

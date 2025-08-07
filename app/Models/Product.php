@@ -12,6 +12,8 @@ class Product extends Model
 {
     protected $table = 'products';
 
+    protected $appends = ['display_price', 'display_original_price'];
+
     protected $fillable = [
         'shopID',
         'name',
@@ -43,6 +45,7 @@ class Product extends Model
         'stock_total' => 'integer',
         'is_featured' => 'boolean',
         'is_variant' => 'boolean',
+        'flash_sale_end_at' => 'datetime',
     ];
 
     // Relationships
@@ -65,7 +68,7 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
-    
+
     public function brand()
     {
         return $this->belongsTo(Brand::class);
@@ -92,9 +95,14 @@ class Product extends Model
         return $this->hasMany(ProductDimension::class, 'productID');
     }
 
-    public function reviews(): HasMany
+    public function brands()
     {
-        return $this->hasMany(Review::class, 'product_id');
+        return $this->belongsToMany(Brand::class, 'product_brands', 'product_id', 'brand_id')->withTimestamps();;
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'product_categories', 'product_id', 'category_id')->withTimestamps();;
     }
 
     // public function reviews()
@@ -126,6 +134,24 @@ class Product extends Model
             'id',
             'id'
         )->join('product_variant_attribute_values', 'attribute_values.id', '=', 'product_variant_attribute_values.attribute_value_id');
+    }
+
+    public function attributeValuesDirect()
+    {
+        return $this->belongsToMany(AttributeValue::class, 'product_attribute_values', 'product_id', 'attribute_value_id')
+            ->withPivot('attribute_id')
+            ->withTimestamps();
+    }
+
+    public function variantAttributes()
+    {
+        return $this->variants()
+            ->with(['attributeValues' => function ($query) {
+                $query->with('attribute');
+            }])
+            ->get()
+            ->pluck('attributeValues')
+            ->flatten();
     }
 
     // Scopes
@@ -214,5 +240,32 @@ class Product extends Model
     public function orderReviews()
     {
         return $this->hasMany(OrderReview::class, 'product_id');
+    }
+
+    public function viewHistory()
+    {
+        return $this->hasMany(ViewHistory::class, 'productID');
+    }
+
+    public function getDisplayPriceAttribute()
+    {
+        if ($this->is_variant && $this->variants->isNotEmpty()) {
+            return $this->variants->min('sale_price') ?? $this->variants->min('price');
+        }
+        return $this->sale_price ?? $this->price;
+    }
+
+    public function getDisplayOriginalPriceAttribute()
+    {
+        if ($this->is_variant && $this->variants->isNotEmpty()) {
+            // Find the variant with the minimum sale_price and return its original price,
+            // or if no sale_price, return the original price of the variant with the minimum price.
+            $minVariant = $this->variants->sortBy(function ($variant) {
+                return $variant->sale_price ?? $variant->price;
+            })->first();
+
+            return $minVariant->price ?? $minVariant->sale_price;
+        }
+        return $this->price;
     }
 }

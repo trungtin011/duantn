@@ -1,0 +1,689 @@
+@extends('layouts.seller_home')
+
+@section('title', 'Ví shop')
+@section('content')
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #ee4d2d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .balance-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .balance-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .balance-label {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .balance-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .balance-sub {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .top-up-btn {
+            background: #ee4d2d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .top-up-btn:hover {
+            background: #d73527;
+        }
+
+        .bank-account {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .bank-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .bank-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .bank-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bank-logo {
+            width: 32px;
+            height: 32px;
+            background: #0066cc;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .transactions-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .filter-tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .filter-tab {
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .filter-tab.active {
+            color: #ee4d2d;
+            border-bottom-color: #ee4d2d;
+        }
+
+        .transaction-filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: #ee4d2d;
+            color: #ee4d2d;
+        }
+
+        .transactions-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .transactions-count {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .total-change {
+            color: #00b894;
+            font-weight: 500;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-btn {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transactions-table th {
+            text-align: left;
+            padding: 12px;
+            font-weight: 500;
+            color: #666;
+            font-size: 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .transactions-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .transaction-row {
+            transition: background 0.2s;
+        }
+
+        .transaction-row:hover {
+            background: #f8f9fa;
+        }
+
+        .transaction-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e3f2fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .transaction-subtitle {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .transaction-id {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .transaction-id:hover {
+            text-decoration: underline;
+        }
+
+        .amount-positive {
+            color: #00b894;
+            font-weight: 600;
+        }
+
+        .amount-negative {
+            color: #e17055;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            color: #00b894;
+            /* xanh */
+            background: #d1f2eb;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-refunded {
+            color: #e74c3c;
+            /* đỏ */
+            background: #fddede;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .setup-btn {
+            background: none;
+            border: 1px solid #ee4d2d;
+            color: #ee4d2d;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .setup-btn:hover {
+            background: #ee4d2d;
+            color: white;
+        }
+    </style>
+
+
+    <div class="main-container">
+
+        <div class="content">
+            <h1 class="page-title">Tổng Quan</h1>
+
+            <div class="balance-card">
+                <div class="balance-info">
+                    <div>
+                        <div class="balance-label">
+                            Số dư Tu động có thể bật ⓘ
+                        </div>
+                        <div class="balance-amount">
+                            <p>Số dư: đ {{ number_format($balance, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="balance-sub">
+                            Số dư khả dụng <strong>đ {{ number_format($availableBalance, 0, ',', '.') }}</strong> ⓘ
+                        </div>
+                    </div>
+                    <a href="{{ route('wallet.withdraw') }}">
+                        <button class="top-up-btn bg-red-500 text-white px-4 py-2 rounded">
+                            Yêu Cầu Thanh Toán
+                        </button>
+                    </a>
+
+
+                </div>
+            </div>
+
+            <div class="bank-account">
+                <div class="bank-title">Tài khoản ngân hàng</div>
+                @php
+                    $seller = $sellers->first();
+                    $bankName = $seller->businessLicense ? $seller->businessLicense->bank_name : 'Unknown';
+                    $bankAccountName = $seller->businessLicense ? $seller->businessLicense->bank_account_name : 'Unknown';
+                @endphp
+                <div class="bank-info">
+                    <div class="bank-logo">{{ $bankName }}VCB</div>
+                    <div>
+                        <div style="font-weight: 500;">{{ $bankName }} - {{ $bankAccountName }} Vietcombank</div>
+                        <div style="color: #666; font-size: 12px;">Đã kích hoạt</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="transactions-section">
+                <form method="GET" action="{{ route('wallet.index') }}" id="walletFilterForm" class="mb-4 space-y-4">
+
+                    <div class="transactions-section">
+                        <!-- Phần tiêu đề và chọn ngày -->
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold">Các giao dịch gần đây</h2>
+                        </div>
+                        <br>
+                        <div class="flex items-center gap-2">
+                            <label>Thời gian:</label>
+                            <input type="date" name="start_date" value="{{ $startDate }}" class="border px-2 py-1 rounded">
+                            <span>—</span>
+                            <input type="date" name="end_date" value="{{ $endDate }}" class="border px-2 py-1 rounded">
+                        </div>
+
+
+                        <!-- Lọc dòng tiền -->
+                        <div class="filter-tabs flex items-center gap-2 mt-2">
+                            <label class="font-tab">Dòng tiền:</label>
+                            <input type="hidden" name="status" id="statusInput" value="{{ $statusFilter}}">
+                            <button type="button" class="filter-tab {{ $statusFilter == 'all' ? 'active' : '' }}"
+                                data-value="all">Tất cả</button>
+                            <button type="button" class="filter-tab {{ $statusFilter == 'Tiền vào' ? 'active' : '' }}"
+                                data-value="Tiền vào">Tiền vào</button>
+                            <button type="button" class="filter-tab {{ $statusFilter == 'Tiền ra' ? 'active' : '' }}"
+                                data-value="Tiền ra">Tiền ra</button>
+                        </div>
+
+                        <!-- Lọc loại giao dịch -->
+                        <div class="transaction-filters flex items-center gap-2 mt-2">
+                            <label>Loại giao dịch:</label>
+                            <input type="hidden" name="transaction_type" id="transactionTypeInput"
+                                value="{{ request('transaction_type', 'all') }}">
+                            <button type="button"
+                                class="filter-btn {{ request('transaction_type') == 'Doanh Thu Từ Đơn Hàng' ? 'active' : '' }}"
+                                data-value="Doanh Thu Từ Đơn Hàng">Doanh Thu Đơn Hàng</button>
+                            <button type="button"
+                                class="filter-btn {{ request('transaction_type') == 'Điều chỉnh' ? 'active' : '' }}"
+                                data-value="Điều chỉnh">Điều chỉnh</button>
+                            <button type="button"
+                                class="filter-btn {{ request('transaction_type') == 'Cản trủ Số dư TK Shopee' ? 'active' : '' }}"
+                                data-value="Cản trủ Số dư TK Shopee">Cản trủ Số dư TK Shop</button>
+                            <button type="button"
+                                class="filter-btn {{ request('transaction_type') == 'Giá trị hoàn được ghi nhận' ? 'active' : '' }}"
+                                data-value="Giá trị hoàn được ghi nhận">Giá trị hoàn được ghi nhận</button>
+                            <button type="button"
+                                class="filter-btn {{ request('transaction_type') == 'Rút Tiền' ? 'active' : '' }}"
+                                data-value="Rút Tiền">Rút Tiền</button>
+                        </div>
+
+                    </div>
+                </form>
+
+
+                <form method="GET" action="{{ route('wallet.index') }}" class="mb-4 space-y-4" id="walletFilterForm">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold">Các giao dịch gần đây</h2>
+
+                        <div class="flex items-center gap-2">
+                            <label>Thời gian:</label>
+                            <input type="date" name="start_date" value="{{ $startDate }}" class="border px-2 py-1 rounded">
+                            <span>—</span>
+                            <input type="date" name="end_date" value="{{ $endDate }}" class="border px-2 py-1 rounded">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 mt-2">
+                        <label>Dòng tiền:</label>
+                        <select name="status" class="border px-2 py-1 rounded">
+                            <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>Tất cả</option>
+                            <option value="Tiền vào" {{ $statusFilter == 'Tiền vào' ? 'selected' : '' }}>Tiền vào</option>
+                            <option value="Tiền ra" {{ $statusFilter == 'Tiền ra' ? 'selected' : '' }}>Tiền ra</option>
+                        </select>
+
+                        <label>Loại giao dịch:</label>
+                        <select name="transaction_type" class="border px-2 py-1 rounded">
+                            <option value="all" {{ $transactionTypeFilter == 'all' ? 'selected' : '' }}>Tất cả</option>
+                            <option value="Doanh Thu Từ Đơn Hàng" {{ $transactionTypeFilter == 'Doanh Thu Từ Đơn Hàng' ? 'selected' : '' }}>Doanh Thu Đơn Hàng</option>
+                            <option value="Rút Tiền" {{ $transactionTypeFilter == 'Rút Tiền' ? 'selected' : '' }}>Rút Tiền
+                            </option>
+                            <!-- Thêm các loại khác nếu có -->
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end mt-2 gap-2">
+                        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">Áp dụng</button>
+                        <a href="{{ route('wallet.index') }}" class="bg-gray-300 text-black px-3 py-1 rounded">Thiết lập
+                            lại</a>
+                    </div>
+                    <div class="search-bar">
+
+                        <input type="text" class="search-input" name="search" placeholder="Tìm kiếm đơn hàng"
+                            value="{{ request('search') }}">
+                        <button class="search-btn" type="submit">Nhập</button>
+                    </div>
+                </form>
+                <div class="transactions-summary">
+                    <span class="transactions-count">5 giao dịch</span>
+                    <span>(Tổng số tiền : <span class="total-change">+
+                            {{ number_format($totalCompletedRevenue, 0, ',', '.') }}</span>)</span>
+                </div>
+                <table class="transactions-table w-full mt-4 border">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2 border">Ngày</th>
+                            <th class="p-2 border">Loại Giao Dịch | Mô Tả</th>
+                            <th class="p-2 border">Mã Đơn Hàng</th>
+                            <th class="p-2 border">Dòng Tiền</th>
+                            <th class="p-2 border">Số Tiền</th>
+                            <th class="p-2 border">Trạng Thái</th>
+                            <th class="p-2 border"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($transactions as $transaction)
+                            <tr class="hover:bg-gray-50 border-b">
+                                <!-- Ngày -->
+                                <td class="p-2">{{ $transaction['date'] }}</td>
+
+                                <!-- Loại Giao Dịch & Mô Tả -->
+                                <td class="p-2">
+                                    <div class="flex items-center gap-1">
+                                        @if ($transaction['transaction_type'] === 'Rút tiền')
+                                            <span>🏦</span>
+                                            <span>{{ $transaction['buyer'] }}</span>
+                                        @else
+                                            <span>💼</span>
+                                            <span>{{ $transaction['buyer'] }}
+                                                @if ($transaction['order_code'] !== '-')
+                                                    #{{ $transaction['order_code'] }}
+                                                @endif
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                <!-- Mã Đơn Hàng -->
+                                <td class="p-2">
+                                    @if ($transaction['order_code'] !== '-')
+                                        <a href="#" class="text-blue-500 underline">{{ $transaction['order_code'] }}</a>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+
+                                <!-- Dòng Tiền -->
+                                <td class="p-2 font-medium
+                                    {{ $transaction['status'] === 'Tiền vào' ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ $transaction['status'] }}
+                                </td>
+
+                                <!-- Số Tiền -->
+                                <td class="p-2 font-bold
+                                    {{ strpos($transaction['amount'], '-') === 0 ? 'text-red-500' : 'text-green-500' }}">
+                                    {{ $transaction['amount'] }} VND
+                                </td>
+
+                                <!-- Trạng Thái -->
+                                <td class="p-2">
+                                    <span class="
+                                        px-2 py-1 rounded text-sm
+                                        @if ($transaction['method'] === 'Hoàn thành')
+                                            bg-green-100 text-green-700
+                                        @elseif ($transaction['method'] === 'Rút tiền')
+                                            bg-red-100 text-red-700
+                                        @else
+                                            bg-yellow-100 text-yellow-700
+                                        @endif
+                                    ">
+                                        {{ $transaction['method'] }}
+                                    </span>
+                                </td>
+
+                                <!-- Action nút chi tiết (tùy chọn) -->
+                                <td class="p-2 text-center">
+                                    <button class="text-gray-500 hover:text-black">&gt;</button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="p-4 text-center text-gray-500">
+                                    Không có giao dịch nào.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactive functionality
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                this.style.borderColor = '#ee4d2d';
+                this.style.color = '#ee4d2d';
+                setTimeout(() => {
+                    this.style.borderColor = '#e0e0e0';
+                    this.style.color = '';
+                }, 2000);
+            });
+        });
+
+        // Add search functionality
+        document.querySelector('.search-input').addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.transaction-row');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Add hover effects for transaction rows
+        document.querySelectorAll('.transaction-row').forEach(row => {
+            row.addEventListener('mouseenter', function () {
+                this.style.backgroundColor = '#f8f9fa';
+            });
+
+            row.addEventListener('mouseleave', function () {
+                this.style.backgroundColor = '';
+            });
+        });
+
+        // Add click handler for transaction IDs
+        document.querySelectorAll('.transaction-id').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                alert('Xem chi tiết giao dịch: ' + this.textContent);
+            });
+        });
+    </script>
+@endsection

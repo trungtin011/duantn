@@ -29,7 +29,11 @@ class User extends Authenticatable
         'role',
         'avatar',
         'is_verified',
-        'birthday'
+        'birthday',
+        'rank',
+        'total_spent',
+        'reset_code',
+        'reset_code_expires_at'
     ];
 
     protected $hidden = [
@@ -45,6 +49,8 @@ class User extends Authenticatable
         'status' => UserStatus::class,
         'gender' => UserGender::class,
         'role' => UserRole::class,
+        'total_spent' => 'decimal:2',
+        'reset_code_expires_at' => 'datetime',
     ];
 
     // Relationships
@@ -74,20 +80,21 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\AutoChatSetting::class, 'user_id');
     }
 
+    public function followedShops()
+    {
+        return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
+            ->withTimestamps();
+    }
+
     public function shop(): HasOne
     {
         return $this->hasOne(Shop::class, 'ownerID', 'id');
     }
 
-    public function reviews()
-    {
-        return $this->hasMany(ProductReview::class);
-    }
 
-    public function followedShops()
+    public function wishlist()
     {
-        return $this->belongsToMany(Shop::class, 'shop_followers', 'followerID', 'shopID')
-            ->withTimestamps();
+        return $this->hasMany(Wishlist::class, 'userID');
     }
 
     // Scopes
@@ -145,5 +152,39 @@ class User extends Authenticatable
             default => 'Không xác định',
         };
     }
-    
+    public function updateRank()
+    {
+        $ranks = [
+            ['name' => 'iron', 'threshold' => 0], // Start at 0 for iron
+            ['name' => 'bronze', 'threshold' => 1000000],
+            ['name' => 'silver', 'threshold' => 5000000],
+            ['name' => 'gold', 'threshold' => 10000000],
+            ['name' => 'diamond', 'threshold' => 20000000],
+            ['name' => 'supreme', 'threshold' => 50000000],
+        ];
+
+        $currentRank = 'iron';
+        foreach ($ranks as $rank) {
+            if ($this->total_spent >= $rank['threshold']) {
+                $currentRank = $rank['name'];
+            } else {
+                break;
+            }
+        }
+
+        $this->rank = $currentRank;
+        $this->save();
+    }
+
+    public function products()
+    {
+        return $this->hasManyThrough(
+            Product::class,
+            Shop::class,
+            'ownerID',   // trong bảng shops
+            'shopID',   // trong bảng products
+            'id',        // khóa chính của users
+            'id'         // khóa chính của shops
+        );
+    }
 }

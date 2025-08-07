@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Notification extends Model
 {
     protected $table = 'notifications';
-    
+
     protected $fillable = [
         'shop_id',
         'sender_id',
@@ -31,5 +31,10 @@ class Notification extends Model
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
+    }
+
+    public function receiver()
+    {
+        return $this->hasMany(NotificationReceiver::class, 'notification_id', 'id');
     }
 }

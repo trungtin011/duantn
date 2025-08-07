@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Order;
 use App\Models\ShopAddress;
 use App\Models\ShopOrderHistory;
+use App\Events\OrderStatusUpdate;
+use App\Models\ShopOrder;
 
 use Carbon\Carbon;
 
@@ -42,6 +44,11 @@ class ShippingController extends Controller
         if(!$orders){
            return redirect()->back()->with('error', 'Không tìm thấy đơn hàng');
         }
+
+        if($orders->total_price > 50000000){
+            return redirect()->back()->with('error', 'Tạm thời đơn hàng ko được quá 50 triệu');
+        }
+        
         $shop_address = ShopAddress::where('id', $id_shop_address)->first();
         $shop_province_name = $shop_address->shop_province;
         $shop_district_name = $shop_address->shop_district;
@@ -96,13 +103,26 @@ class ShippingController extends Controller
         ]);
         $responseData = $response->json();
         if ($response->status() == 200) {
+            Log::info('Cập nhật trạng thái đơn hàng sang ready_to_pick', [
+                'shop_order_id' => $shop_order->id,
+                'mã đơn hàng' => $shop_order->code,
+                'thời gian' => now()->toDateTimeString(),
+            ]);
             $shop_order->update(['status' => 'ready_to_pick']);
+
             $expectedDateTime = $responseData['data']['expected_delivery_time']; 
             $expectedDate = Carbon::parse($expectedDateTime)->format('Y-m-d H:i');
             $data = [
                 'tracking_code' => $responseData['data']['order_code'],
                 'expected_delivery_date' => $expectedDate,
+                'shipping_fee' => $responseData['data']['fee']['main_service'],
             ];
+            Log::info('Cập nhật thông tin vận chuyển cho đơn hàng', [
+                'shop_order_id' => $shop_order->id,
+                'tracking_code' => $data['tracking_code'],
+                'ngày giao dự kiến' => $data['expected_delivery_date'],
+                'phí vận chuyển' => $data['shipping_fee'],
+            ]);
             $shop_order->update($data);
 
             $shop_order_history = new ShopOrderHistory();
@@ -111,8 +131,14 @@ class ShippingController extends Controller
             $shop_order_history->description = 'Người bán đã giao cho đơn vị vận chuyển';
             $shop_order_history->note = $note;
             $shop_order_history->save();
+            Log::info('Đã lưu lịch sử trạng thái đơn hàng', [
+                'shop_order_id' => $shop_order->id,
+                'trạng thái' => 'ready_to_pick',
+                'mô tả' => $shop_order_history->description,
+                'ghi chú' => $note,
+            ]);
 
-            $orders = Order::orderStatusUpdate($orders->id);
+            event(new OrderStatusUpdate($shop_order, 'ready_to_pick'));
             return true;
         } else {
             return false;
@@ -138,6 +164,7 @@ class ShippingController extends Controller
             'order_codes' => [$order->tracking_code],
         ]);
         if($response->status() == 200){
+            event(new OrderStatusUpdate($order, 'cancelled'));
             return true;
         }
         else{
@@ -161,20 +188,38 @@ class ShippingController extends Controller
         }
     }
 
-    public function returnOrderGHN($order){
+    public function returnOrderGHN($code){
 
-        $status_orders = $this->getDetailOrder($order->tracking_code);
-        
-        if($status_orders !== 'storing' || $status_orders !== 'picked'){
-            return redirect()->back()->with('error', 'Đơn hàng đã được giao thành công, không thể hoàn trả');
+        $tracking_code = $code;
+
+        if($tracking_code == null){
+            return false;
         }
 
         $url = $this->ghnApiUrl . $this->returnEndpoint;
         $response = Http::withHeaders([
             'Token' => $this->token,
             'Content-Type' => $this->contentType,
-        ])->post($url, ['order_codes' => [$order->order_code]]);
-    }
+        ])->post($url, ['order_codes' => [$tracking_code]]);
 
+        if($response->status() == 200){
+
+            $order = ShopOrder::where('tracking_code', $tracking_code)->first();
+            $order->status = 'refunded';
+            $order->save();
+
+            $history = new ShopOrderHistory();
+            $history->shop_order_id = $order->id;
+            $history->status = 'refunded';
+            $history->description = 'Đơn hàng đã được yêu cầu trả lại từ người bán';
+            $history->save();
+
+            event(new OrderStatusUpdate($order));
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 
 }

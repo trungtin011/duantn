@@ -8,7 +8,13 @@ class OrderReview extends Model
 {
     protected $table = 'order_reviews';
 
-    protected $fillable = ['user_id', 'product_id', 'order_id', 'shop_id', 'rating', 'comment'];
+    protected $fillable = ['user_id', 'product_id', 'shop_order_id', 'shop_id', 'rating', 'comment'];
+
+
+    public function shopOrder()
+    {
+        return $this->belongsTo(ShopOrder::class, 'shopID');
+    }
 
     public function user()
     {
@@ -38,5 +44,10 @@ class OrderReview extends Model
     public function videos()
     {
         return $this->hasMany(OrderReviewVideo::class, 'review_id');
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(ReviewLike::class, 'order_review_id');
     }
 }

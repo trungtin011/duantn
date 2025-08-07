@@ -1,7 +1,21 @@
 @extends('layouts.app')
-
+@push('styles')
+    @vite('resources/css/user/post.css')
+@endpush
 @section('title', 'Bài viết')
 @section('content')
+    <div class="main-banner">
+        <div class="main-banner-content">
+            <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="Blog Banner" class="main-banner-image">
+            <div class="main-banner-info">
+                <h1 class="main-banner-title">Bài viết</h1>
+                <div class="breadcrumb">
+                    <a href="{{ route('home') }}">Trang chủ</a>
+                    <span>Bài viết</span>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="container_blog">
         <main class="main-content">
             @foreach($posts as $post)
@@ -136,7 +150,7 @@
 
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Tags</h3>
-                <div class="tag-cloud">
+                <div class="tag-cloud mb-3">
                     <a href="#" class="tag">Tag</a>
                     <a href="#" class="tag">Visit Nepal 2020</a>
                     <a href="#" class="tag">2020</a>
@@ -159,13 +173,6 @@
                         @endforeach
                     </form>
                 </ul>
-            </div>
-
-            <div class="sidebar-section newsletter">
-                <h3 class="sidebar-title">Bản tin</h3>
-                <p style="margin-bottom: 20px; color: #666;">Đăng ký & Nhận tin tức cập nhật mới nhất.</p>
-                <input type="email" class="newsletter-input" placeholder="Nhập email của bạn">
-                <button class="newsletter-btn">SUBMIT</button>
             </div>
         </aside>
     </div>

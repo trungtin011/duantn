@@ -26,7 +26,7 @@
                     <p>
                         Việc thu thập Thông Tin Thuế và Thông Tin Định Danh là bắt buộc
                         theo quy định của Luật an ninh mạng, Thương mại điện tử và Thuế của Việt Nam. Thông Tin Thuế và
-                        Thông Tin Định Danh sẽ được bảo vệ theo chính sách bảo mật của Shopee. Thông tin Người bán cung cấp
+                        Thông Tin Định Danh sẽ được bảo vệ theo chính sách bảo mật của ZynoxMall. Thông tin Người bán cung cấp
                         sẽ được sử dụng cho mục đích khấu trừ thuế (nếu có) và xuất hóa đơn do Người bán hoàn toàn chịu
                         trách nhiệm về tính chính xác của các thông tin đã cung cấp.
                     </p>

@@ -1,0 +1,68 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 10px !important;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+    padding: 0.75rem;
+}
+
+.table-light {
+    background-color: #f1f3f5 !important;
+}
+
+.table-borderless td {
+    padding: 0.5rem 0;
+}
+
+.text-primary {
+    color: #007bff !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+/* Hover effect for the Save button */
+.save-btn {
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.save-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.save-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+    z-index: -1;
+}
+
+.save-btn:hover::before {
+    left: 100%;
+}
