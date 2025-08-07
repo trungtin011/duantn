@@ -23,24 +23,34 @@
                             </h3>
                             <p class="text-sm text-gray-600 mb-3 flex items-center gap-1">
                                 <i class="fa-solid fa-store"></i>
-                                Shop: <a href="{{ route('shop.profile', $product->shop->id) }}"
-                                    class="text-blue-600 hover:underline">{{ $combo->shop->shop_name }}</a>
+                                @if($combo->shop)
+                                    Shop: <a href="{{ route('shop.profile', $combo->shop->id) }}" class="text-blue-600 hover:underline">{{ $combo->shop->shop_name }}</a>
+                                @else
+                                    Shop: <span class="text-gray-400">Không xác định</span>
+                                @endif
                             </p>
                             <div class="combo-products-list flex flex-wrap gap-2 mb-4">
                                 @foreach ($combo->products as $comboProduct)
-                                    <div
-                                        class="combo-product-item flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md text-xs text-gray-700">
-                                        <img src="{{ $comboProduct->product->defaultImage ? asset('storage/' . $comboProduct->product->defaultImage->image_path) : asset('images/default.jpg') }}"
-                                            alt="{{ $comboProduct->product->name }}"
-                                            class="w-6 h-6 object-cover rounded" loading="lazy">
-                                        <a href="{{ route('product.show', $comboProduct->product->slug) }}"
-                                            class="hover:underline">
-                                            <span>{{ \Illuminate\Support\Str::limit($comboProduct->product->name, 15) }}</span>
-                                        </a>
-                                        <span class="text-gray-500"> (x{{ $comboProduct->quantity }})</span>
-                                        <span
-                                            class="font-semibold text-gray-800 ml-auto">{{ number_format($comboProduct->product->display_price, 0, ',', '.') }}₫</span>
-                                    </div>
+                                    @if($comboProduct->product)
+                                        <div
+                                            class="combo-product-item flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md text-xs text-gray-700">
+                                            <img src="{{ $comboProduct->product->defaultImage ? asset('storage/' . $comboProduct->product->defaultImage->image_path) : asset('images/default.jpg') }}"
+                                                alt="{{ $comboProduct->product->name }}"
+                                                class="w-6 h-6 object-cover rounded" loading="lazy">
+                                            <a href="{{ route('product.show', $comboProduct->product->slug) }}"
+                                                class="hover:underline">
+                                                <span>{{ \Illuminate\Support\Str::limit($comboProduct->product->name, 15) }}</span>
+                                            </a>
+                                            <span class="text-gray-500"> (x{{ $comboProduct->quantity }})</span>
+                                            <span
+                                                class="font-semibold text-gray-800 ml-auto">{{ number_format($comboProduct->product->display_price, 0, ',', '.') }}₫</span>
+                                        </div>
+                                    @else
+                                        <div class="combo-product-item flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md text-xs text-gray-700">
+                                            <img src="{{ asset('images/default.jpg') }}" alt="Không xác định" class="w-6 h-6 object-cover rounded" loading="lazy">
+                                            <span class="text-gray-400">Không xác định</span>
+                                        </div>
+                                    @endif
                                 @endforeach
                             </div>
                             <div class="price-box flex items-baseline gap-2 mt-auto">

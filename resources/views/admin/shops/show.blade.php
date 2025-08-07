@@ -26,25 +26,32 @@
     </div>
 
     <!-- Status Badge -->
+    @php
+        $status = $shop->shop_status instanceof \App\Enums\ShopStatus ? $shop->shop_status->value : $shop->shop_status;
+    @endphp
     <div class="bg-white rounded-xl p-4 mb-6 shadow-md">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <span class="text-sm font-medium text-gray-600">Trạng thái:</span>
-                @if($shop->shop_status && $shop->shop_status->value == 'active')
+                @if($status == 'active')
                     <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-green-100 text-green-800">
                         <i class="fas fa-check-circle mr-2"></i>Đang hoạt động
                     </span>
-                @elseif($shop->shop_status && $shop->shop_status->value == 'inactive')
+                @elseif($status == 'inactive')
                     <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
                         <i class="fas fa-clock mr-2"></i>Chờ duyệt
                     </span>
-                @elseif($shop->shop_status && $shop->shop_status->value == 'banned')
+                @elseif($status == 'banned')
                     <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-red-100 text-red-800">
                         <i class="fas fa-ban mr-2"></i>Đã cấm
                     </span>
+                @elseif($status == 'suspended')
+                    <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-orange-100 text-orange-800">
+                        <i class="fas fa-pause mr-2"></i>Tạm ngưng
+                    </span>
                 @else
                     <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-gray-100 text-gray-800">
-                        <i class="fas fa-question-circle mr-2"></i>Không xác định ({{ $shop->shop_status ? $shop->shop_status->value : 'null' }})
+                        <i class="fas fa-question-circle mr-2"></i>Không xác định ({{ $status ?? 'null' }})
                     </span>
                 @endif
             </div>
@@ -53,6 +60,65 @@
             </div>
         </div>
     </div>
+
+    <!-- Action Buttons -->
+    @if($shop->shop_status && $shop->shop_status->value == 'inactive')
+        <div class="bg-white rounded-xl p-6 mb-6 shadow-md">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <i class="fas fa-tasks text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">Hành động duyệt</h3>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+                <!-- Approve as Active -->
+                <form action="{{ route('admin.shops.approve', $shop) }}" method="POST" class="flex-1">
+                    @csrf
+                    <input type="hidden" name="approval_type" value="active">
+                    <button type="submit" 
+                            class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-colors duration-200 flex items-center justify-center gap-2"
+                            onclick="return confirm('Bạn có chắc muốn duyệt cửa hàng này để hoạt động?')">
+                        <i class="fas fa-check"></i>
+                        Duyệt để hoạt động
+                    </button>
+                </form>
+                
+                <!-- Reject -->
+                <button type="button" 
+                        data-shop-id="{{ $shop->id }}" 
+                        data-shop-name="{{ $shop->shop_name }}" 
+                        class="flex-1 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 transition-colors duration-200 flex items-center justify-center gap-2 reject-shop-btn">
+                    <i class="fas fa-times"></i>
+                    Từ chối
+                </button>
+            </div>
+        </div>
+    @endif
+
+    <!-- Action for Suspended Shops -->
+    @if($shop->shop_status && $shop->shop_status->value == 'suspended')
+        <div class="bg-white rounded-xl p-6 mb-6 shadow-md">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                    <i class="fas fa-play text-orange-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">Kích hoạt cửa hàng</h3>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+                <form action="{{ route('admin.shops.activate', $shop) }}" method="POST" class="flex-1">
+                    @csrf
+                    <button type="submit" 
+                            class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-colors duration-200 flex items-center justify-center gap-2"
+                            onclick="return confirm('Bạn có chắc muốn kích hoạt cửa hàng này?')">
+                        <i class="fas fa-play"></i>
+                        Kích hoạt cửa hàng
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -79,25 +145,11 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Số điện thoại</label>
-                            <p class="text-gray-800">{{ $shop->shop_phone }}</p>
+                            <p class="text-gray-800">{{ $shop->shop_phone ?: 'Chưa cập nhật' }}</p>
                         </div>
                     </div>
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Đánh giá</label>
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-star text-yellow-400"></i>
-                                <span class="text-gray-800 font-medium">{{ number_format($shop->shop_rating, 1) }}</span>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Tổng doanh thu</label>
-                            <p class="text-gray-800 font-medium">{{ number_format($shop->total_sales, 0, ',', '.') }} VNĐ</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Số sản phẩm</label>
-                            <p class="text-gray-800">{{ $shop->total_products }}</p>
-                        </div>
+                        <!-- Đã xóa Đánh giá, Tổng doanh thu, Số sản phẩm -->
                     </div>
                 </div>
                 
@@ -149,7 +201,7 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Phường/Xã</label>
-                                <p class="text-gray-800">{{ $shop->shopAddress->shop_ward }}</p>
+                                <p class="text-gray-800">{{ $shop->shopAddress->shop_ward ?: 'Chưa cập nhật' }}</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Địa chỉ chi tiết</label>
@@ -191,39 +243,7 @@
             @endif
 
             <!-- Shipping Options Card -->
-            @if($shop->shopShippingOptions->isNotEmpty())
-                <div class="bg-white rounded-xl p-6 shadow-md">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <i class="fas fa-shipping-fast text-blue-600"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800">Tùy chọn Vận chuyển</h3>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        @foreach($shop->shopShippingOptions as $option)
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-truck text-gray-600"></i>
-                                    <span class="text-gray-800 font-medium">{{ ucfirst($option->shipping_type) }}</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm text-gray-600">COD:</span>
-                                    @if($option->cod_enabled)
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                            <i class="fas fa-check mr-1"></i>Bật
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                            <i class="fas fa-times mr-1"></i>Tắt
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
+            {{-- Đã xóa hoàn toàn phần hiển thị tùy chọn vận chuyển và mọi liên quan đến shopShippingOptions --}}
 
             <!-- Business License Card -->
             @if($shop->owner && $shop->owner->seller && $shop->owner->seller->businessLicense)
@@ -258,17 +278,28 @@
                                 <p class="text-gray-800">{{ $shop->owner->seller->businessLicense->expiry_date->format('d/m/Y') }}</p>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Trạng thái</label>
-                            @if($shop->owner->seller->businessLicense->status == 'active')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                    <i class="fas fa-check mr-1"></i>Hiệu lực
-                                </span>
-                            @else
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                    <i class="fas fa-times mr-1"></i>Hết hạn
-                                </span>
-                            @endif
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Trạng thái</label>
+                                @php $licenseStatus = $shop->owner->seller->businessLicense->status; @endphp
+                                @if($licenseStatus == 'active')
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                        <i class="fas fa-check mr-1"></i>Hiệu lực
+                                    </span>
+                                @elseif($licenseStatus == 'pending')
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock mr-1"></i>Chờ duyệt
+                                    </span>
+                                @elseif($licenseStatus == 'expired')
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                        <i class="fas fa-times mr-1"></i>Hết hạn
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <i class="fas fa-question mr-1"></i>{{ ucfirst($licenseStatus) }}
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -335,6 +366,11 @@
                                          class="w-full h-auto object-cover rounded-lg border border-gray-200 shadow-sm">
                                 </div>
                             </div>
+                        @else
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">Ảnh CMND/CCCD</label>
+                                <div class="bg-gray-50 p-4 rounded-lg text-gray-500 italic">Chưa cập nhật ảnh</div>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -342,4 +378,66 @@
         </div>
     </div>
 </div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <div class="mt-2 text-center">
+                <h3 class="text-lg font-medium text-gray-900">Từ chối cửa hàng</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Bạn sắp từ chối cửa hàng: <span id="shopNameReject" class="font-semibold text-gray-700"></span>
+                    </p>
+                </div>
+            </div>
+            <form id="rejectForm" method="POST">
+                @csrf
+                <div class="mt-4">
+                    <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2">Lý do từ chối:</label>
+                    <textarea id="rejection_reason" name="rejection_reason" rows="4" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                              placeholder="Nhập lý do từ chối cửa hàng..." required></textarea>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75">
+                        <i class="fas fa-times mr-2"></i>Gửi từ chối
+                    </button>
+                    <button type="button" 
+                            onclick="document.getElementById('rejectModal').classList.add('hidden')" 
+                            class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75">
+                        Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script>
+    document.querySelectorAll('.reject-shop-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const shopId = this.dataset.shopId;
+            const shopName = this.dataset.shopName;
+            showRejectModal(shopId, shopName);
+        });
+    });
+
+    function showRejectModal(shopId, shopName) {
+        const modal = document.getElementById('rejectModal');
+        const shopNameSpan = document.getElementById('shopNameReject');
+        const rejectForm = document.getElementById('rejectForm');
+        
+        shopNameSpan.textContent = shopName;
+        rejectForm.action = '/admin/shops/' + shopId + '/reject';
+        modal.classList.remove('hidden');
+    }
+</script>
 @endsection

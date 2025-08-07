@@ -35,6 +35,16 @@ class Shop extends Model
         'shop_status' => ShopStatus::class,
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope('userVisible', function ($builder) {
+            // Chỉ áp dụng cho frontend, không áp dụng cho admin
+            if (!app()->runningInConsole() && !request()->is('admin/*')) {
+                $builder->where('shop_status', '!=', 'banned');
+            }
+        });
+    }
+
     public function owner()
     {
         return $this->belongsTo(User::class, 'ownerID');
@@ -43,11 +53,6 @@ class Shop extends Model
     public function shopAddress()
     {
         return $this->hasOne(ShopAddress::class, 'shopID')->where('is_default', 1);
-    }
-
-    public function shopShippingOptions()
-    {
-        return $this->hasMany(ShopShippingOption::class, 'shopID');
     }
 
     public function address()

@@ -69,6 +69,18 @@
                 </div>
             </div>
         </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Tạm ngưng</p>
+                    <p class="text-2xl font-bold text-orange-600">{{ $stats['suspended'] }}</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                    <i class="fas fa-pause text-orange-600"></i>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Filters and Search -->
@@ -87,6 +99,7 @@
                     <option value="">Tất cả</option>
                     <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Đang hoạt động</option>
                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Chờ duyệt</option>
+                    <option value="suspended" {{ request('status') == 'suspended' ? 'selected' : '' }}>Tạm ngưng</option>
                     <option value="banned" {{ request('status') == 'banned' ? 'selected' : '' }}>Đã cấm</option>
                 </select>
             </div>
@@ -188,6 +201,10 @@
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                     <i class="fas fa-ban mr-1"></i>Đã cấm
                                 </span>
+                            @elseif($shop->shop_status && $shop->shop_status->value == 'suspended')
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                    <i class="fas fa-pause mr-1"></i>Tạm ngưng
+                                </span>
                             @else
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                     <i class="fas fa-question-circle mr-1"></i>Không xác định ({{ $shop->shop_status ? $shop->shop_status->value : 'null' }})
@@ -239,6 +256,16 @@
                                         <button type="submit" class="text-green-600 hover:text-green-900" title="Mở lại" 
                                                 onclick="return confirm('Bạn có chắc muốn mở lại cửa hàng này?')">
                                             <i class="fas fa-unlock"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                                
+                                @if($shop->shop_status && $shop->shop_status->value == 'suspended')
+                                    <form action="{{ route('admin.shops.activate', $shop) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="text-green-600 hover:text-green-900" title="Kích hoạt" 
+                                                onclick="return confirm('Bạn có chắc muốn kích hoạt cửa hàng này?')">
+                                            <i class="fas fa-play"></i>
                                         </button>
                                     </form>
                                 @endif

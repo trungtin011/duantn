@@ -651,39 +651,41 @@
                         <div class="showcase-wrapper">
                             <div class="showcase-container">
                                 @foreach ($bestSellers as $product)
-                                    <div class="showcase">
-                                        <a href="{{ route('product.show', $product->slug) }}" class="showcase-img-box">
-                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                width="75" height="75" class="showcase-img">
-                                        </a>
-                                        <div class="showcase-content">
-                                            <a href="{{ route('product.show', $product->slug) }}">
-                                                <h4 class="showcase-title">{{ $product->name }}</h4>
+                                    @if(isset($product) && $product)
+                                        <div class="showcase">
+                                            <a href="{{ route('product.show', $product->slug) }}" class="showcase-img-box">
+                                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                    width="75" height="75" class="showcase-img">
                                             </a>
-                                            <div class="showcase-rating">
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    @if ($product->orderReviews->avg('rating') >= $i)
-                                                        <ion-icon name="star"></ion-icon>
-                                                    @elseif ($product->orderReviews->avg('rating') >= $i - 0.5)
-                                                        <ion-icon name="star-half-outline"></ion-icon>
+                                            <div class="showcase-content">
+                                                <a href="{{ route('product.show', $product->slug) }}">
+                                                    <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                </a>
+                                                <div class="showcase-rating">
+                                                    @for ($i = 1; $i <= 5; $i++)
+                                                        @if ($product->orderReviews->avg('rating') >= $i)
+                                                            <ion-icon name="star"></ion-icon>
+                                                        @elseif ($product->orderReviews->avg('rating') >= $i - 0.5)
+                                                            <ion-icon name="star-half-outline"></ion-icon>
+                                                        @else
+                                                            <ion-icon name="star-outline"></ion-icon>
+                                                        @endif
+                                                    @endfor
+                                                </div>
+                                                <div class="price-box">
+                                                    @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                        <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
+                                                        <p class="price">
+                                                            {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
                                                     @else
-                                                        <ion-icon name="star-outline"></ion-icon>
+                                                        <p class="price">
+                                                            {{ number_format($product->display_price, 0, ',', '.') }}₫
+                                                        </p>
                                                     @endif
-                                                @endfor
-                                            </div>
-                                            <div class="price-box">
-                                                @if ($product->display_original_price && $product->display_price < $product->display_original_price)
-                                                    <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
-                                                    <p class="price">
-                                                        {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
-                                                @else
-                                                    <p class="price">
-                                                        {{ number_format($product->display_price, 0, ',', '.') }}₫
-                                                    </p>
-                                                @endif
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    @endif
                                 @endforeach
                             </div>
                         </div>
@@ -757,7 +759,7 @@
                         <div class="product-showcase">
                             <h2 class="title">Sản phẩm nổi bật</h2>
                             @if ($featuredProducts->isEmpty())
-                                <p>Hiện chưa có sản phẩm nổi bật nào.</p>
+                                <p>Không có sản phẩm nào.</p>
                             @else
                                 @php
                                     $featuredProducts = $featuredProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
@@ -832,7 +834,7 @@
                         <div class="product-showcase">
                             <h2 class="title">Đang thịnh hành</h2>
                             @if ($trendingProducts->isEmpty())
-                                <p>Hiện chưa có sản phẩm nào thịnh hành.</p>
+                                <p>Không có sản phẩm nào.</p>
                             @else
                                 @php
                                     $trendingProducts = $trendingProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
@@ -907,7 +909,7 @@
                         <div class="product-showcase">
                             <h2 class="title">Đánh giá cao</h2>
                             @if ($topRatedProducts->isEmpty())
-                                <p>Chưa có sản phẩm nào được đánh giá.</p>
+                                <p>Không có sản phẩm nào.</p>
                             @else
                                 @php
                                     $topRatedProducts = $topRatedProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm

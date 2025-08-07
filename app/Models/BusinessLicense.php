@@ -12,6 +12,7 @@ class BusinessLicense extends Model
     use HasFactory;
 
     protected $fillable = [
+        'shop_id',
         'business_license_number',
         'tax_number',
         'business_ID',

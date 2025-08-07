@@ -9,6 +9,7 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use App\Models\BusinessLicense;
 use App\Models\ShopAddress;
 use App\Models\ShopShippingOption;
@@ -57,6 +58,7 @@ class AdminShopController extends Controller
             'active' => Shop::where('shop_status', 'active')->count(),
             'inactive' => Shop::where('shop_status', 'inactive')->count(),
             'banned' => Shop::where('shop_status', 'banned')->count(),
+            'suspended' => Shop::where('shop_status', 'suspended')->count(),
         ];
 
         return view('admin.shops.index', compact('shops', 'stats'));
@@ -102,6 +104,19 @@ class AdminShopController extends Controller
     }
 
     /**
+     * Display suspended shops.
+     */
+    public function suspended()
+    {
+        $shops = Shop::where('shop_status', 'suspended')
+                    ->with(['owner', 'shopAddress'])
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(15);
+        
+        return view('admin.shops.suspended', compact('shops'));
+    }
+
+    /**
      * Display shop analytics and statistics.
      */
     public function analytics()
@@ -144,7 +159,7 @@ class AdminShopController extends Controller
      */
     public function show(Shop $shop)
     {
-        $shop->load('shopAddress', 'shopShippingOptions', 'owner.seller.businessLicense', 'owner.seller.identityVerification');
+        $shop->load('shopAddress', 'owner.seller.businessLicense', 'owner.seller.identityVerification');
 
         return view('admin.shops.show', compact('shop'));
     }
@@ -152,26 +167,57 @@ class AdminShopController extends Controller
     /**
      * Approve a shop registration.
      */
-    public function approve(Shop $shop)
+    public function approve(Request $request, Shop $shop)
     {
+        $request->validate([
+            'approval_type' => 'required|in:active,suspended'
+        ]);
+
         DB::beginTransaction();
         try {
-            $shop->update(['shop_status' => ShopStatus::ACTIVE]);
+            $approvalType = $request->approval_type;
+            $shop->update(['shop_status' => ShopStatus::from($approvalType)]);
+            
+            // Determine notification content based on approval type
+            if ($approvalType === ShopStatus::ACTIVE || $approvalType === ShopStatus::ACTIVE->value) {
+                $title = 'Cửa hàng đã được duyệt';
+                $content = "Cửa hàng '{$shop->shop_name}' của bạn đã được duyệt và có thể bắt đầu hoạt động.";
+                $type = 'shop_approval';
+                $successMessage = 'Cửa hàng đã được duyệt thành công!';
+            } else {
+                $title = 'Cửa hàng được duyệt nhưng tạm ngưng';
+                $content = "Cửa hàng '{$shop->shop_name}' của bạn đã được duyệt nhưng đang ở trạng thái tạm ngưng. Vui lòng liên hệ admin để được kích hoạt.";
+                $type = 'shop_approval_suspended';
+                $successMessage = 'Cửa hàng đã được duyệt nhưng ở trạng thái tạm ngưng!';
+            }
             
             // Create notification for shop owner
-            Notification::create([
-                'user_id' => $shop->ownerID,
-                'title' => 'Cửa hàng đã được duyệt',
-                'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã được duyệt và có thể bắt đầu hoạt động.",
-                'type' => 'shop_approval',
-                'receiver_type' => 'seller',
-                'link' => route('seller.products.index')
+            $notification = Notification::create([
+                'shop_id' => $shop->id,
+                'sender_id' => Auth::id(),
+                'title' => $title,
+                'content' => $content,
+                'type' => $type,
+                'receiver_type' => 'shop',
+                'priority' => 'high',
+                'status' => 'active'
             ]);
 
+            // Create notification receiver record
+            if ($shop->ownerID) {
+                \App\Models\NotificationReceiver::create([
+                    'notification_id' => $notification->id,
+                    'receiver_id' => $shop->ownerID,
+                    'receiver_type' => 'user',
+                    'is_read' => false
+                ]);
+            }
+
             DB::commit();
-            return redirect()->back()->with('success', 'Cửa hàng đã được duyệt thành công!');
+            return redirect()->back()->with('success', $successMessage);
         } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Lỗi khi duyệt cửa hàng: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi duyệt cửa hàng!');
         }
     }
@@ -190,19 +236,32 @@ class AdminShopController extends Controller
             $shop->update(['shop_status' => ShopStatus::BANNED]);
             
             // Create notification for shop owner
-            Notification::create([
-                'user_id' => $shop->ownerID,
+            $notification = Notification::create([
+                'shop_id' => $shop->id,
+                'sender_id' => Auth::id(),
                 'title' => 'Cửa hàng bị từ chối',
                 'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã bị từ chối. Lý do: {$request->rejection_reason}",
-                                        'type' => 'shop_rejection',
-                        'receiver_type' => 'seller',
-                        'link' => route('seller.products.index')
+                'type' => 'shop_rejection',
+                'receiver_type' => 'shop',
+                'priority' => 'high',
+                'status' => 'active'
             ]);
+
+            // Create notification receiver record
+            if ($shop->ownerID) {
+                \App\Models\NotificationReceiver::create([
+                    'notification_id' => $notification->id,
+                    'receiver_id' => $shop->ownerID,
+                    'receiver_type' => 'user',
+                    'is_read' => false
+                ]);
+            }
 
             DB::commit();
             return redirect()->back()->with('success', 'Cửa hàng đã bị từ chối!');
         } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Lỗi khi từ chối cửa hàng: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi từ chối cửa hàng!');
         }
     }
@@ -215,23 +274,33 @@ class AdminShopController extends Controller
         DB::beginTransaction();
         try {
             // Kiểm tra trạng thái hiện tại
-            if ($shop->shop_status === ShopStatus::INACTIVE) {
+            if ($shop->shop_status === ShopStatus::SUSPENDED) {
                 return redirect()->back()->with('error', 'Cửa hàng đã bị tạm ngưng rồi!');
             }
 
             // Cập nhật trạng thái
-            $shop->update(['shop_status' => ShopStatus::INACTIVE]);
+            $shop->update(['shop_status' => ShopStatus::SUSPENDED]);
             
             // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
             if ($shop->ownerID) {
                 try {
-                    Notification::create([
-                        'user_id' => $shop->ownerID,
+                    $notification = Notification::create([
+                        'shop_id' => $shop->id,
+                        'sender_id' => Auth::id(),
                         'title' => 'Cửa hàng bị tạm ngưng',
                         'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã bị tạm ngưng hoạt động.",
                         'type' => 'shop_deactivation',
-                        'receiver_type' => 'seller',
-                        'link' => route('seller.products.index')
+                        'receiver_type' => 'shop',
+                        'priority' => 'high',
+                        'status' => 'active'
+                    ]);
+
+                    // Create notification receiver record
+                    \App\Models\NotificationReceiver::create([
+                        'notification_id' => $notification->id,
+                        'receiver_id' => $shop->ownerID,
+                        'receiver_type' => 'user',
+                        'is_read' => false
                     ]);
                 } catch (\Exception $notificationError) {
                     // Log lỗi notification nhưng không rollback toàn bộ transaction
@@ -266,13 +335,23 @@ class AdminShopController extends Controller
             // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
             if ($shop->ownerID) {
                 try {
-                    Notification::create([
-                        'user_id' => $shop->ownerID,
+                    $notification = Notification::create([
+                        'shop_id' => $shop->id,
+                        'sender_id' => Auth::id(),
                         'title' => 'Cửa hàng bị cấm',
                         'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã bị cấm hoạt động vĩnh viễn.",
                         'type' => 'shop_ban',
-                        'receiver_type' => 'seller',
-                        'link' => route('seller.products.index')
+                        'receiver_type' => 'shop',
+                        'priority' => 'high',
+                        'status' => 'active'
+                    ]);
+
+                    // Create notification receiver record
+                    \App\Models\NotificationReceiver::create([
+                        'notification_id' => $notification->id,
+                        'receiver_id' => $shop->ownerID,
+                        'receiver_type' => 'user',
+                        'is_read' => false
                     ]);
                 } catch (\Exception $notificationError) {
                     // Log lỗi notification nhưng không rollback toàn bộ transaction
@@ -307,13 +386,23 @@ class AdminShopController extends Controller
             // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
             if ($shop->ownerID) {
                 try {
-                    Notification::create([
-                        'user_id' => $shop->ownerID,
+                    $notification = Notification::create([
+                        'shop_id' => $shop->id,
+                        'sender_id' => Auth::id(),
                         'title' => 'Cửa hàng đã được kích hoạt lại',
                         'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã được kích hoạt lại và có thể hoạt động bình thường.",
                         'type' => 'shop_reactivation',
-                        'receiver_type' => 'seller',
-                        'link' => route('seller.products.index')
+                        'receiver_type' => 'shop',
+                        'priority' => 'high',
+                        'status' => 'active'
+                    ]);
+
+                    // Create notification receiver record
+                    \App\Models\NotificationReceiver::create([
+                        'notification_id' => $notification->id,
+                        'receiver_id' => $shop->ownerID,
+                        'receiver_type' => 'user',
+                        'is_read' => false
                     ]);
                 } catch (\Exception $notificationError) {
                     // Log lỗi notification nhưng không rollback toàn bộ transaction
@@ -327,6 +416,57 @@ class AdminShopController extends Controller
             DB::rollback();
             Log::error('Lỗi khi kích hoạt lại cửa hàng: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi kích hoạt lại cửa hàng! Lỗi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Activate a suspended shop.
+     */
+    public function activate(Shop $shop)
+    {
+        DB::beginTransaction();
+        try {
+            // Kiểm tra trạng thái hiện tại
+            if ($shop->shop_status !== ShopStatus::SUSPENDED) {
+                return redirect()->back()->with('error', 'Cửa hàng không ở trạng thái tạm ngưng!');
+            }
+
+            // Cập nhật trạng thái
+            $shop->update(['shop_status' => ShopStatus::ACTIVE]);
+            
+            // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
+            if ($shop->ownerID) {
+                try {
+                    $notification = Notification::create([
+                        'shop_id' => $shop->id,
+                        'sender_id' => Auth::id(),
+                        'title' => 'Cửa hàng đã được kích hoạt',
+                        'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã được kích hoạt và có thể hoạt động bình thường.",
+                        'type' => 'shop_activation',
+                        'receiver_type' => 'shop',
+                        'priority' => 'high',
+                        'status' => 'active'
+                    ]);
+
+                    // Create notification receiver record
+                    \App\Models\NotificationReceiver::create([
+                        'notification_id' => $notification->id,
+                        'receiver_id' => $shop->ownerID,
+                        'receiver_type' => 'user',
+                        'is_read' => false
+                    ]);
+                } catch (\Exception $notificationError) {
+                    // Log lỗi notification nhưng không rollback toàn bộ transaction
+                    Log::error('Lỗi tạo notification: ' . $notificationError->getMessage());
+                }
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Cửa hàng đã được kích hoạt!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Lỗi khi kích hoạt cửa hàng: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi kích hoạt cửa hàng! Lỗi: ' . $e->getMessage());
         }
     }
 
@@ -348,13 +488,23 @@ class AdminShopController extends Controller
             // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
             if ($shop->ownerID) {
                 try {
-                    Notification::create([
-                        'user_id' => $shop->ownerID,
+                    $notification = Notification::create([
+                        'shop_id' => $shop->id,
+                        'sender_id' => Auth::id(),
                         'title' => 'Cửa hàng đã được mở lại',
                         'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã được mở lại và có thể hoạt động bình thường.",
                         'type' => 'shop_unban',
-                        'receiver_type' => 'seller',
-                        'link' => route('seller.products.index')
+                        'receiver_type' => 'shop',
+                        'priority' => 'high',
+                        'status' => 'active'
+                    ]);
+
+                    // Create notification receiver record
+                    \App\Models\NotificationReceiver::create([
+                        'notification_id' => $notification->id,
+                        'receiver_id' => $shop->ownerID,
+                        'receiver_type' => 'user',
+                        'is_read' => false
                     ]);
                 } catch (\Exception $notificationError) {
                     // Log lỗi notification nhưng không rollback toàn bộ transaction
@@ -400,14 +550,31 @@ class AdminShopController extends Controller
             $shop->delete();
             
             // Create notification for shop owner
-            Notification::create([
-                'user_id' => $shop->ownerID,
-                'title' => 'Cửa hàng đã bị xóa',
-                'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã bị xóa khỏi hệ thống.",
-                                        'type' => 'shop_deletion',
-                        'receiver_type' => 'seller',
-                        'link' => route('seller.products.index')
-            ]);
+            if ($shop->ownerID) {
+                try {
+                    $notification = Notification::create([
+                        'shop_id' => $shop->id,
+                        'sender_id' => Auth::id(),
+                        'title' => 'Cửa hàng đã bị xóa',
+                        'content' => "Cửa hàng '{$shop->shop_name}' của bạn đã bị xóa khỏi hệ thống.",
+                        'type' => 'shop_deletion',
+                        'receiver_type' => 'shop',
+                        'priority' => 'high',
+                        'status' => 'active'
+                    ]);
+
+                    // Create notification receiver record
+                    \App\Models\NotificationReceiver::create([
+                        'notification_id' => $notification->id,
+                        'receiver_id' => $shop->ownerID,
+                        'receiver_type' => 'user',
+                        'is_read' => false
+                    ]);
+                } catch (\Exception $notificationError) {
+                    // Log lỗi notification nhưng không rollback toàn bộ transaction
+                    Log::error('Lỗi tạo notification: ' . $notificationError->getMessage());
+                }
+            }
 
             DB::commit();
             return redirect()->route('admin.shops.index')->with('success', 'Cửa hàng đã được xóa!');
