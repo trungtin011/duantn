@@ -42,8 +42,8 @@
     @yield('head')
 </head>
 
-<body class="bg-gray-50">
-    <div x-data="{ sidebarOpen: true, mobileSidebarOpen: false, mobileCollapsed: false }" class="flex bg-gray-50">
+<body class="bg-gray-50 h-screen">
+    <div x-data="{ sidebarOpen: true, mobileSidebarOpen: false, mobileCollapsed: false }" class="flex bg-gray-50 h-screen">
         <!-- Mobile sidebar overlay -->
         <div x-show="mobileSidebarOpen" x-transition:enter="transition-opacity duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
@@ -187,18 +187,6 @@
                         </svg>
                         <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
                             x-transition>Danh mục</span>
-                    </a>
-
-                    <!-- Logo -->
-                    <a href="{{ route('logo.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('logo.index') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Logo</span>
                     </a>
 
                     <!-- Orders -->

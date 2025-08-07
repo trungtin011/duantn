@@ -144,6 +144,9 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::post('admin/users/{id}/ban', [UserControllerAdmin::class, 'ban'])->name('admin.users.ban');
+    Route::post('admin/users/{id}/unban', [UserControllerAdmin::class, 'unban'])->name('admin.users.unban');
+
 
     //quản lý review
     Route::get('/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
@@ -168,6 +171,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/approve-multiple', [ProductControllerAdmin::class, 'approveMultiple'])->name('admin.products.approveMultiple');
         Route::get('/get-sub-brands', [ProductControllerAdmin::class, 'getSubBrands'])->name('admin.get-sub-brands');
         Route::get('/get-sub-categories', [ProductControllerAdmin::class, 'getSubCategories'])->name('admin.get-sub-categories');
+        Route::get('admin/products/ajax', [ProductControllerAdmin::class, 'ajaxList'])->name('admin.products.ajax');
     });
 
     // attributes
@@ -187,8 +191,9 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::put('/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
         Route::post('/{id}/refund', [AdminOrderController::class, 'refund'])->name('admin.orders.refund');
         Route::get('/report', [AdminOrderController::class, 'report'])->name('admin.orders.report');
+        Route::get('admin/orders/ajax', [AdminOrderController::class, 'ajaxList'])->name('admin.orders.ajax');
+        Route::get('admin/orders/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
     });
-
 
     // notifications
     Route::prefix('notifications')->group(function () {
@@ -202,7 +207,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
     });
 
-    // products categories
+    // categories
     Route::prefix('categories')->group(function () {
         Route::get('/', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
         Route::post('/', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
@@ -234,6 +239,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::put('/{id}', [UserControllerAdmin::class, 'update'])->name('admin.users.update');
         Route::get('/{id}', [UserControllerAdmin::class, 'show'])->name('admin.users.show');
         Route::delete('/{id}', [UserControllerAdmin::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('admin/users/ajax', [UserControllerAdmin::class, 'ajaxList'])->name('admin.users.ajax');
     });
 
     // reports
@@ -241,6 +247,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/', [AdminReportController::class, 'index'])->name('admin.reports.index');
         Route::get('/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
         Route::put('/{report}/update-status', [AdminReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
+        Route::get('admin/reports/ajax', [AdminReportController::class, 'ajaxList'])->name('admin.reports.ajax');
     });
 
     // Admin Coupon Routes
@@ -665,7 +672,7 @@ Route::get('/account/password/verify-code', [UserController::class, 'showVerifyC
 Route::post('/account/test-email', [UserController::class, 'testEmail'])->name('account.test.email');
 
 // Debug route for checking reset code
-Route::get('/account/debug-reset-code', [UserController::class, 'debugResetCode'])->name('account.debug.reset.code');
+Route::get('/account/debug-reset_code', [UserController::class, 'debugResetCode'])->name('account.debug.reset.code');
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 

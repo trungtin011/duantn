@@ -8,23 +8,7 @@
         </div>
     </div>
     <div class="container">
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
-
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+        @include('layouts.notification')
 
         <div class="card shadow-sm">
             <div class="card-body">
@@ -43,7 +27,7 @@
                         <div class="col-md-6">
                             <label for="fullname" class="form-label">Họ và tên</label>
                             <input type="text" class="form-control @error('fullname') is-invalid @enderror"
-                                id="fullname" name="fullname" value="{{ old('fullname', $user->fullname) }}" required>
+                                id="fullname" name="fullname" value="{{ old('fullname', $user->fullname) }}" >
                             @error('fullname')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -52,7 +36,7 @@
                         <div class="col-md-6">
                             <label for="phone" class="form-label">Số điện thoại</label>
                             <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone"
-                                name="phone" value="{{ old('phone', $user->phone) }}" pattern="^\+?\d{9,15}$" required>
+                                name="phone" value="{{ old('phone', $user->phone) }}" pattern="^\+?\d{9,15}$" >
                             @error('phone')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -61,7 +45,7 @@
                         <div class="col-md-6">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
-                                name="email" value="{{ old('email', $user->email) }}" required>
+                                name="email" value="{{ old('email', $user->email) }}" >
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -70,22 +54,28 @@
                         <div class="col-md-6">
                             <label for="role" class="form-label">Quyền</label>
                             <select name="role" id="role" class="form-select @error('role') is-invalid @enderror"
-                                required>
+                                @if($user->role->value == 'seller') disabled @endif>
+                                <option value="">-- Chọn quyền --</option>
                                 @foreach ($roles as $value => $label)
                                     <option value="{{ $value }}"
-                                        {{ old('role', $user->role) == $value ? 'selected' : '' }}>{{ $label }}
+                                        {{ old('role', $user->role->value) == $value ? 'selected' : '' }}>{{ $label }}
                                     </option>
                                 @endforeach
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            @if($user->role->value == 'seller')
+                                <div class="text-danger mt-1" style="font-size:13px;">
+                                    Không thể thay đổi quyền của người bán tại đây.
+                                </div>
+                            @endif
                         </div>
 
                         <div class="col-md-6">
                             <label for="status" class="form-label">Trạng thái</label>
                             <select name="status" id="status" class="form-select @error('status') is-invalid @enderror"
-                                required>
+                                >
                                 @foreach ($statuses as $value => $label)
                                     <option value="{{ $value }}"
                                         {{ old('status', $user->status) == $value ? 'selected' : '' }}>{{ $label }}
@@ -100,7 +90,7 @@
                         <div class="col-md-6">
                             <label for="gender" class="form-label">Giới tính</label>
                             <select name="gender" id="gender" class="form-select @error('gender') is-invalid @enderror"
-                                required>
+                                >
                                 @foreach ($genders as $value => $label)
                                     <option value="{{ $value }}"
                                         {{ old('gender', $user->gender) == $value ? 'selected' : '' }}>{{ $label }}
