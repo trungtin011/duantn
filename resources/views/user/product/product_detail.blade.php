@@ -192,10 +192,15 @@
                         </div>
 
                         <!-- Nút hành động -->
-                        <div class="flex gap-4 mt-6">
-                            <button
-                                class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 flex items-center gap-2 add-to-cart"
-                                data-product-id="{{ $product->id }}">
+                        <div class="flex gap-3 mt-10">
+                        <form action="{{ route('cart.add') }}" method="POST" class="inline">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <input type="hidden" name="variant_id" value="{{ $variant->id ?? '' }}">
+                            <input type="hidden" name="quantity" value="1">
+
+                            <button type="submit"
+                                class="bg-red-100 text-red-600 px-6 py-3 rounded hover:bg-red-200 flex items-center gap-2">
                                 <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
                             </button>
                             <button id="instant_buy_btn"
