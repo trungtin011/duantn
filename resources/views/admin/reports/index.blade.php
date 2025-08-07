@@ -26,11 +26,12 @@
             </form>
 
             <div class="flex gap-4 items-center h-full">
-                <form method="GET" action="{{ route('admin.reports.index') }}">
+                <form method="GET" action="{{ route('admin.reports.index') }}" class="flex items-center gap-4">
+                    <!-- Trạng thái -->
                     <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
                         <span>Trạng thái:</span>
                         <select name="status" id="statusFilter"
-                            class="dropdown px-3 py-2 text-gray-600 text-xs focus:outline-none w-[100px]">
+                            class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="">Tất cả</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ xử lý
                             </option>
@@ -45,6 +46,45 @@
                             </option>
                         </select>
                     </div>
+                    <!-- Cửa hàng -->
+                    <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
+                        <span>Cửa hàng:</span>
+                        <select name="shop_id" id="shopFilter"
+                            class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="">Tất cả cửa hàng</option>
+                            @foreach ($shops as $shop)
+                                <option value="{{ $shop->id }}"
+                                    {{ request('shop_id') == $shop->id ? 'selected' : '' }}>{{ $shop->shop_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <!-- Ưu tiên -->
+                    <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
+                        <span>Ưu tiên:</span>
+                        <select name="priority" id="priorityFilter"
+                            class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="">Tất cả</option>
+                            <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Thấp</option>
+                            <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Trung bình
+                            </option>
+                            <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>Cao</option>
+                        </select>
+                    </div>
+                    <!-- Ngày báo cáo -->
+                    <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
+                        <span>Ngày báo cáo:</span>
+                        <input type="date" name="report_date" id="reportDate" value="{{ request('report_date') }}"
+                            class="border rounded px-3 py-2 text-xs">
+                    </div>
+                    <button id="resetFilterBtn" type="button"
+                        class="text-xs text-white bg-red-500 px-3 py-2 rounded-md hover:bg-red-600 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                    </button>
                 </form>
             </div>
         </div>
@@ -57,11 +97,12 @@
                     </th>
                     <th scope="col">ID</th>
                     <th scope="col">Sản phẩm</th>
+                    <th scope="col">Cửa hàng</th> <!-- Thêm cột này -->
                     <th scope="col">Người báo cáo</th>
                     <th scope="col">Loại báo cáo</th>
                     <th scope="col">Trạng thái</th>
                     <th scope="col">Ưu tiên</th>
-                    <th scope="col">Ngày tạo</th>
+                    <th scope="col">Ngày báo cáo</th>
                     <th scope="col" class="text-right pr-[24px]">Thao tác</th>
                 </tr>
             </thead>
@@ -78,6 +119,9 @@
                                 class="text-blue-600 hover:underline">
                                 {{ $report->product->name ?? 'Không có' }}
                             </a>
+                        </td>
+                        <td class="py-4 text-[13px]">
+                            {{ $report->product && $report->product->shop ? $report->product->shop->shop_name : 'Không xác định' }}
                         </td>
                         <td class="py-4 text-[13px]">
                             {{ $report->is_anonymous ? 'Ẩn danh' : $report->reporter->fullname ?? 'N/A' }}
@@ -119,7 +163,7 @@
                                                     : ($report->status == 'rejected'
                                                         ? 'Từ chối'
                                                         : '')))) }}
-                                                        </span>
+                                </span>
                             </span>
                         </td>
                         <td class="py-4">
@@ -157,7 +201,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="text-center text-gray-400 py-4">Không có báo cáo nào</td>
+                        <td colspan="10" class="text-center text-gray-400 py-4">Không có báo cáo nào</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -169,4 +213,87 @@
             {{ $reports->links('pagination::bootstrap-5') }}
         </div>
     </section>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusFilter = document.getElementById('statusFilter');
+            const shopFilter = document.getElementById('shopFilter');
+            const priorityFilter = document.getElementById('priorityFilter');
+            const reportDate = document.getElementById('reportDate');
+            const searchInput = document.querySelector('input[name="search"]');
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+            const tbody = document.querySelector('table tbody');
+
+            function checkShowResetBtn() {
+                const hasFilter =
+                    (searchInput && searchInput.value) ||
+                    (statusFilter && statusFilter.value) ||
+                    (shopFilter && shopFilter.value) ||
+                    (priorityFilter && priorityFilter.value) ||
+                    (reportDate && reportDate.value);
+
+                if (resetFilterBtn) {
+                    resetFilterBtn.style.display = hasFilter ? 'inline-flex' : 'none';
+                }
+            }
+
+            function submitFilters() {
+                const params = new URLSearchParams();
+                if (searchInput && searchInput.value) params.append('search', searchInput.value);
+                if (statusFilter && statusFilter.value) params.append('status', statusFilter.value);
+                if (shopFilter && shopFilter.value) params.append('shop_id', shopFilter.value);
+                if (priorityFilter && priorityFilter.value) params.append('priority', priorityFilter.value);
+                if (reportDate && reportDate.value) params.append('report_date', reportDate.value);
+
+                fetch("{{ route('admin.reports.ajax') }}?" + params.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.text())
+                    .then(html => {
+                        tbody.innerHTML = html;
+                        checkShowResetBtn();
+                    });
+            }
+
+            if (statusFilter) statusFilter.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
+            });
+            if (shopFilter) shopFilter.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
+            });
+            if (priorityFilter) priorityFilter.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
+            });
+            if (reportDate) reportDate.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
+            });
+            if (searchInput) searchInput.addEventListener('input', function() {
+                clearTimeout(this._timer);
+                this._timer = setTimeout(function() {
+                    submitFilters();
+                    checkShowResetBtn();
+                }, 400);
+            });
+            if (resetFilterBtn) {
+                resetFilterBtn.addEventListener('click', function() {
+                    if (searchInput) searchInput.value = '';
+                    if (statusFilter) statusFilter.value = '';
+                    if (shopFilter) shopFilter.value = '';
+                    if (priorityFilter) priorityFilter.value = '';
+                    if (reportDate) reportDate.value = '';
+                    submitFilters();
+                    checkShowResetBtn();
+                });
+                checkShowResetBtn(); // Khởi tạo trạng thái ẩn/hiện khi load trang
+            }
+        });
+    </script>
 @endsection

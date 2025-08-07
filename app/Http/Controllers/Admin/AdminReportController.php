@@ -18,7 +18,7 @@ class AdminReportController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Report::query();
+        $query = Report::query()->with(['product.shop', 'reporter']);
 
         // Tìm kiếm
         if ($request->has('search') && $request->search != '') {
@@ -34,14 +34,35 @@ class AdminReportController extends Controller
             });
         }
 
-        // Lọc theo trạng thái
+        // Lọc trạng thái
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
-        $reports = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Lọc theo cửa hàng
+        if ($request->has('shop_id') && $request->shop_id != '') {
+            $query->whereHas('product.shop', function ($q) use ($request) {
+                $q->where('id', $request->shop_id);
+            });
+        }
 
-        return view('admin.reports.index', compact('reports'));
+        // Lọc ưu tiên
+        if ($request->has('priority') && $request->priority != '') {
+            $query->where('priority', $request->priority);
+        }
+
+        // Lọc theo ngày báo cáo
+        if ($request->date_from && $request->date_to) {
+            $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
+        }
+        if ($request->report_date) {
+            $query->whereDate('created_at', $request->report_date);
+        }
+
+        $reports = $query->orderBy('created_at', 'desc')->paginate(10);
+        $shops = \App\Models\Shop::where('shop_status', 'active')->get();
+
+        return view('admin.reports.index', compact('reports', 'shops'));
     }
 
     /**
@@ -74,5 +95,46 @@ class AdminReportController extends Controller
         $report->save();
 
         return redirect()->back()->with('success', 'Trạng thái báo cáo đã được cập nhật.');
+    }
+
+    /**
+     * Danh sách báo cáo cho ajax.
+     */
+    public function ajaxList(Request $request)
+    {
+        $query = Report::query()->with(['product.shop', 'reporter']);
+
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('id', 'like', "%{$request->search}%")
+                    ->orWhereHas('product', function ($q) use ($request) {
+                        $q->where('name', 'like', "%{$request->search}%");
+                    })
+                    ->orWhereHas('reporter', function ($q) use ($request) {
+                        $q->where('fullname', 'like', "%{$request->search}%");
+                    });
+            });
+        }
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        if ($request->shop_id) {
+            $query->whereHas('product.shop', function ($q) use ($request) {
+                $q->where('id', $request->shop_id);
+            });
+        }
+        if ($request->priority) {
+            $query->where('priority', $request->priority);
+        }
+        if ($request->date_from && $request->date_to) {
+            $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
+        }
+        if ($request->report_date) {
+            $query->whereDate('created_at', $request->report_date);
+        }
+
+        $reports = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('admin.reports._table_body', compact('reports'))->render();
     }
 }
