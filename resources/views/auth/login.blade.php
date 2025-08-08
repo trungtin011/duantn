@@ -55,7 +55,7 @@
                         </a>
                     </div>
                     <div class="mt-4">
-    <a href="{{ route('login.qr.generate') }}"
+    <a href=""
         class="w-full flex items-center justify-center border border-gray-400 hover:bg-gray-100 py-2 text-sm md:text-base rounded bg-white text-black">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">

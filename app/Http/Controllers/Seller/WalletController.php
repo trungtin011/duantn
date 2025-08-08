@@ -82,21 +82,17 @@ class WalletController extends Controller
             ]);
         }
 
-        // Tính số dư thực tế
         $balance = $totalIncome - $totalExpense;
         $availableBalance = $balance - 600000; // Ví dụ giữ lại 600k
 
-        // Lọc theo status (Tiền vào/ra)
         if ($statusFilter !== 'all') {
             $transactions = $transactions->filter(fn($tran) => $tran['status'] === $statusFilter);
         }
 
-        // Lọc theo loại giao dịch
         if ($transactionTypeFilter !== 'all') {
             $transactions = $transactions->filter(fn($tran) => $tran['transaction_type'] === $transactionTypeFilter);
         }
 
-        // Tìm kiếm theo mã đơn hàng
         if ($search) {
             $transactions = $transactions->filter(
                 fn($tran) =>
@@ -110,7 +106,6 @@ class WalletController extends Controller
         $shop = auth()->user()->shop;
         $wallet = $shop->wallet;
 
-        // Tính doanh thu đã chuyển vào ví (doanh thu từ đơn đã `is_revenue_transferred = true`)
         $transferredOrders = ShopOrder::where('shopID', $shop->id)
             ->where('status', 'completed')
             ->where('is_revenue_transferred', true)
@@ -122,11 +117,9 @@ class WalletController extends Controller
             $transferredRevenue += $order->items->sum(fn($item) => $item->quantity * $item->product->sale_price);
         }
 
-        // Lấy số dư ví, nếu null thì mặc định là 0
         $balance = $wallet->balance ?? 0;
         $availableBalance = max(0, $balance - 600000);
 
-        // Tổng doanh thu đơn đã hoàn thành (cả đã chuyển và chưa chuyển)
         $completedOrders = ShopOrder::where('shopID', $shop->id)
             ->where('status', 'completed')
             ->with(['items.product'])
@@ -136,7 +129,7 @@ class WalletController extends Controller
         foreach ($completedOrders as $order) {
             $totalCompletedRevenue += $order->items->sum(fn($item) => $item->quantity * $item->product->sale_price);
         }
-        
+
         $withdrawTransactions = collect();
         if ($wallet) {
             $withdrawTransactions = $wallet->transactions()
@@ -158,6 +151,19 @@ class WalletController extends Controller
                 'transaction_type' => 'Rút tiền',
             ]);
         }
+        $sellerId = auth()->user()->seller->id;
+        $linkedBanks = LinkedBank::where('seller_id', $sellerId)
+            ->with('bank')
+            ->where('is_default', true)
+            ->get();
+        $banks = Bank::all();
+        $defaultBank = LinkedBank::where('seller_id', $sellerId)
+            ->where('is_default', true)
+            ->with('bank')
+            ->first();
+
+        $banks = Bank::all();
+        $linked = $linkedBanks->first(); // Lấy tài khoản đầu tiên nếu có
 
 
         return view('seller.wallet.index', compact(
@@ -173,7 +179,11 @@ class WalletController extends Controller
             'transferredRevenue',
             'totalCompletedRevenue',
             'wallet',
-            'withdrawTransactions'
+            'withdrawTransactions',
+            'linkedBanks',
+            'banks',
+            'defaultBank',
+            'linked'
         ));
     }
     public function showWithdrawForm()
@@ -224,8 +234,9 @@ class WalletController extends Controller
                 ->orderByDesc('created_at')
                 ->get();
         }
-
+        $sellerId = auth()->user()->seller->id;
         $linkedBanks = LinkedBank::where('seller_id', $seller->id)->with('bank')->get();
+        $defaultBank = LinkedBank::where('seller_id', $sellerId)->where('is_default', true)->with('bank')->first();
 
         return view('seller.wallet.withdraw', compact(
             'wallet',
@@ -237,7 +248,8 @@ class WalletController extends Controller
             'transferredRevenue',
             'untransferredRevenue',
             'banks',
-            'linkedBanks'
+            'linkedBanks',
+            'defaultBank'
         ));
     }
 
@@ -349,12 +361,14 @@ class WalletController extends Controller
             'account_number' => 'required|string',
             'account_name' => 'required|string',
         ]);
+        $isFirst = !LinkedBank::where('seller_id', auth()->user()->seller->id)->exists();
 
         LinkedBank::create([
             'seller_id' => auth()->user()->seller->id,
             'bank_id' => $request->bank_id,
             'account_number' => $request->account_number,
             'account_name' => $request->account_name,
+            'is_default' => $isFirst,
         ]);
 
         return back()->with('success', 'Đã liên kết ngân hàng thành công.');
@@ -371,6 +385,21 @@ class WalletController extends Controller
 
         return back()->with('success', 'Đã xóa ngân hàng liên kết.');
     }
+    public function setDefaultLinkedBank($id)
+    {
+        $sellerId = auth()->user()->seller->id;
+
+        // Reset tất cả ngân hàng về không mặc định
+        LinkedBank::where('seller_id', $sellerId)->update(['is_default' => false]);
+
+        // Đặt ngân hàng được chọn thành mặc định
+        LinkedBank::where('id', $id)
+            ->where('seller_id', $sellerId)
+            ->update(['is_default' => true]);
+
+        return back()->with('success', 'Đã đặt ngân hàng mặc định.');
+    }
+
     public function reverseTransferredRevenue()
     {
         $shop = auth()->user()->shop;

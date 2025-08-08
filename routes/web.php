@@ -294,6 +294,8 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
     });
 });
+Route::post('/seller/linked-banks/{id}/set-default', [SellerLinkedBankController::class, 'setDefault'])
+    ->name('seller.linked-banks.set-default');
 
 // seller routes
 Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
@@ -325,6 +327,8 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::post('linked-banks', [WalletController::class, 'storeLinkedBank'])->name('seller.linked-banks.store');
     Route::delete('linked-banks/{id}', [WalletController::class, 'deleteLinkedBank'])->name('seller.linked-banks.destroy');
     Route::post('/wallet/reverse-revenue', [WalletController::class, 'reverseTransferredRevenue'])->name('wallet.reverse.revenue');
+    Route::post('linked-banks/{id}/set-default', [WalletController::class, 'setDefaultLinkedBank'])
+    ->name('seller.linked-banks.set-default');
 
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
