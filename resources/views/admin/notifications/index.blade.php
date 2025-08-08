@@ -63,7 +63,7 @@
             <thead class="text-gray-300 font-semibold border-b border-gray-100">
                 <tr>
                     <th class="w-6 py-3 pr-6">
-                        <input id="select-all" class="w-[18px] h-[18px]" aria-label="Select all notifications"
+                        <input id="select-all" class="w-[18px] h-[18px]" aria-label="Chọn tất cả thông báo"
                             type="checkbox" />
                     </th>
                     <th class="py-3">Tiêu đề</th>
@@ -82,19 +82,19 @@
                 @foreach ($notifications as $notification)
                     <tr>
                         <td class="py-4 pr-6">
-                            <input class="select-item w-[18px] h-[18px]" aria-label="Select {{ $notification['title'] }}"
+                            <input class="select-item w-[18px] h-[18px]" aria-label="Chọn {{ $notification['title'] }}"
                                 type="checkbox" />
                         </td>
                         <td class="py-4">
                             <span class="font-semibold text-[13px]">{{ $notification['title'] }}</span>
                         </td>
                         <td class="py-4 text-[13px]">{{ $notification['content'] }}</td>
-                        <td class="py-4 text-[13px]">{{ $notification['sender']?->username ?? 'N/A' }}</td>
+                        <td class="py-4 text-[13px]">{{ $notification['sender']?->username ?? 'Không có' }}</td>
                         <td class="py-4 text-[13px]">{{ $notification['receiver_type'] }}</td>
                         <td class="py-4">
                             <span
                                 class="inline-block {{ $notification['priority'] == 'high' ? 'bg-red-100 text-red-600' : ($notification['priority'] == 'medium' ? 'bg-yellow-100 text-yellow-600' : 'bg-green-100 text-green-600') }} text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                {{ ucfirst($notification['priority']) }}
+                                {{ $notification['priority'] == 'high' ? 'Cao' : ($notification['priority'] == 'medium' ? 'Trung bình' : 'Thấp') }}
                             </span>
                         </td>
                         <td class="py-4 text-[13px]">{{ $notification['type'] }}</td>

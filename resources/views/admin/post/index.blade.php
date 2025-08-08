@@ -115,14 +115,14 @@
                 @endforeach
                 @if ($posts->isEmpty())
                     <tr>
-                        <td colspan="7" class="text-center text-gray-400 py-4">Không tìm thấy bài viết nào</td>
+                        <td colspan="7" class="text-center text-gray-400 py-4">No posts found</td>
                     </tr>
                 @endif
             </tbody>
         </table>
         <div class="mt-6 flex items-center justify-between text-[11px] text-gray-500 select-none">
             <div>
-                Hiển thị {{ $posts->count() }} bài viết trên {{ $posts->total() }} bài viết
+                Hiển thị {{ $posts->count() }} posts trên {{ $posts->total() }} posts
             </div>
             {{ $posts->links('pagination::bootstrap-5') }}
         </div>
