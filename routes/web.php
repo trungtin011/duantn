@@ -759,3 +759,30 @@ Route::post('/api/upload-cccd-temp', function(Request $request) {
         'message' => 'Không có file được upload'
     ]);
 })->middleware('web');
+
+// Test route để kiểm tra thông tin shop
+Route::get('/test-shop-info/{shopId}', function($shopId) {
+    $shop = \App\Models\Shop::withCount('followers')
+        ->withCount('orderReviews')
+        ->withAvg('orderReviews', 'rating')
+        ->findOrFail($shopId);
+    
+    $actualRating = $shop->order_reviews_avg_rating ?? 0;
+    $actualFollowers = $shop->followers_count ?? 0;
+    
+    $shop->shop_rating = round($actualRating, 1);
+    $shop->total_followers = $actualFollowers;
+    
+    return response()->json([
+        'shop' => [
+            'id' => $shop->id,
+            'shop_name' => $shop->shop_name,
+            'shop_logo' => $shop->shop_logo,
+            'shop_rating' => $shop->shop_rating,
+            'total_followers' => $shop->total_followers,
+            'order_reviews_avg_rating' => $shop->order_reviews_avg_rating,
+            'followers_count' => $shop->followers_count,
+            'order_reviews_count' => $shop->order_reviews_count,
+        ]
+    ]);
+});
