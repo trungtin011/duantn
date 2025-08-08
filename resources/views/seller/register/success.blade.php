@@ -101,7 +101,7 @@
                     <a href="{{ route('home') }}" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                         Về trang chủ
                     </a>
-                    <a href="{{ route('seller.home') }}" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                    <a href="{{ route('seller.dashboard') }}" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                         Vào trang người bán
                     </a>
                 </div>
