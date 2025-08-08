@@ -53,7 +53,7 @@
             <thead class="text-gray-300 font-semibold border-b border-gray-100">
                 <tr>
                     <th class="w-6 py-3 pr-6">
-                        <input id="select-all" class="w-[18px] h-[18px]" aria-label="Select all orders" type="checkbox" />
+                        <input id="select-all" class="w-[18px] h-[18px]" aria-label="Chọn tất cả đơn hàng" type="checkbox" />
                     </th>
                     <th class="py-3">Mã đơn hàng</th>
                     <th class="py-3">Khách hàng</th>
@@ -69,7 +69,7 @@
                 @foreach ($orders as $order)
                     <tr>
                         <td class="py-4 pr-6">
-                            <input class="select-item w-[18px] h-[18px]" aria-label="Select {{ $order->order_code }}"
+                            <input class="select-item w-[18px] h-[18px]" aria-label="Chọn {{ $order->order_code }}"
                                 type="checkbox" />
                         </td>
                         <td class="py-4 text-[13px]">{{ $order->order_code }}</td>
@@ -78,9 +78,9 @@
                         <td class="py-4 text-[13px]">{{ $order->items->sum('quantity') }}</td>
                         <td class="py-4 text-[13px]">{{ number_format($order->final_price, 2) }} VNĐ</td>
                         <td class="py-4">
-                            <span
-                                class="inline-block {{ $order->order_status == 'pending' ? 'bg-yellow-100 text-yellow-600' : ($order->order_status == 'processing' ? 'bg-blue-100 text-blue-600' : ($order->order_status == 'shipped' ? 'bg-purple-100 text-purple-600' : ($order->order_status == 'delivered' ? 'bg-green-100 text-green-600' : ($order->order_status == 'cancelled' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600')))) }} text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                {{ ucfirst($order->order_status) }}
+                                                            <span
+                                    class="inline-block {{ $order->order_status == 'pending' ? 'bg-yellow-100 text-yellow-600' : ($order->order_status == 'processing' ? 'bg-blue-100 text-blue-600' : ($order->order_status == 'shipped' ? 'bg-purple-100 text-purple-600' : ($order->order_status == 'delivered' ? 'bg-green-100 text-green-600' : ($order->order_status == 'cancelled' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600')))) }} text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
+                                {{ $order->order_status == 'pending' ? 'Chờ xác nhận' : ($order->order_status == 'processing' ? 'Đang xử lý' : ($order->order_status == 'shipped' ? 'Đang giao hàng' : ($order->order_status == 'delivered' ? 'Đã giao hàng' : ($order->order_status == 'cancelled' ? 'Đã hủy' : 'Đã hoàn tiền')))) }}
                             </span>
                         </td>
                         <td class="py-4 text-[13px]">{{ $order->created_at->format('d/m/Y') }}</td>
@@ -96,7 +96,7 @@
                 @endforeach
                 @if ($orders->isEmpty())
                     <tr>
-                        <td colspan="9" class="text-center text-gray-400 py-4">No orders found</td>
+                        <td colspan="9" class="text-center text-gray-400 py-4">Không tìm thấy đơn hàng nào</td>
                     </tr>
                 @endif
             </tbody>

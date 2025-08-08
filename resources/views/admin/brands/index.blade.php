@@ -37,7 +37,7 @@
                         <thead class="text-gray-300 font-semibold border-b border-gray-100">
                             <tr>
                                 <th class="w-6 py-3 pr-6">
-                                    <input id="select-all" class="w-[18px] h-[18px]" aria-label="Select all brands"
+                                    <input id="select-all" class="w-[18px] h-[18px]" aria-label="Chọn tất cả thương hiệu"
                                         type="checkbox" />
                                 </th>
                                 <th class="py-3 w-[50px]">ID</th>
@@ -52,7 +52,7 @@
                                 <tr>
                                     <td class="py-4 pr-6">
                                         <input class="select-item w-[18px] h-[18px]"
-                                            aria-label="Select {{ $brand->name }}" type="checkbox" />
+                                            aria-label="Chọn {{ $brand->name }}" type="checkbox" />
                                     </td>
                                     <td class="py-4 text-[13px]">#{{ $brand->id }}</td>
                                     <td class="py-4 text-[13px]">{{ $brand->name }}</td>

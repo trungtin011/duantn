@@ -9,7 +9,7 @@
 @section('content')
     <div class="admin-page-header">
         <h1 class="admin-page-title">Quản lý Bình luận</h1>
-        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Bình luận</div>
+        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Trang chủ</a> / Bình luận</div>
     </div>
 
     <section class="bg-white rounded-lg shadow-sm p-6">
@@ -93,7 +93,7 @@
                         <td class="py-4 text-[13px]">
                             <div class="flex flex-col">
                                 <span class="font-medium">{{ $comment->user->fullname ?? 'Khách' }}</span>
-                                <span class="text-[11px] text-gray-500">{{ $comment->user->email ?? 'N/A' }}</span>
+                                <span class="text-[11px] text-gray-500">{{ $comment->user->email ?? 'Không có' }}</span>
                             </div>
                         </td>
                         <td class="py-4 text-[13px]">
