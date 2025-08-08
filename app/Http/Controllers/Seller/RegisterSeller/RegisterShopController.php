@@ -128,6 +128,8 @@ class RegisterShopController extends Controller
      */
     public function step3(Request $request)
     {
+       
+
         
         $request->validate([
             'business_type' => 'required|in:personal,household,company', // sửa lại cho đúng value radio

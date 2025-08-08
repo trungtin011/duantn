@@ -73,9 +73,16 @@
             
             <div class="flex flex-col sm:flex-row gap-4">
                 <!-- Approve as Active -->
-                <form action="{{ route('admin.shops.approve', $shop) }}" method="POST" class="flex-1">
+                <form action="{{ route('admin.shops.approve', $shop) }}" method="POST" class="flex-1" id="approveForm">
                     @csrf
-                    <input type="hidden" name="approval_type" value="active">
+                    <input type="hidden" name="approval_type" value="active" id="approval_type">
+                    
+                    @if ($errors->has('approval_type'))
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                            <strong>Lỗi:</strong> {{ $errors->first('approval_type') }}
+                        </div>
+                    @endif
+                    
                     <button type="submit" 
                             class="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-colors duration-200 flex items-center justify-center gap-2"
                             onclick="return confirm('Bạn có chắc muốn duyệt cửa hàng này để hoạt động?')">
@@ -83,6 +90,14 @@
                         Duyệt để hoạt động
                     </button>
                 </form>
+                
+                <!-- Test Button -->
+                <button type="button" 
+                        onclick="document.getElementById('approveForm').submit()"
+                        class="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-colors duration-200 flex items-center justify-center gap-2">
+                    <i class="fas fa-test"></i>
+                    Test Duyệt
+                </button>
                 
                 <!-- Reject -->
                 <button type="button" 
@@ -306,7 +321,10 @@
             @endif
 
             <!-- Identity Verification Card -->
-            @if($shop->owner && $shop->owner->seller && $shop->owner->seller->identityVerification)
+            @php
+                $identityVerification = \App\Models\IdentityVerification::where('shop_id', $shop->id)->first();
+            @endphp
+            @if($identityVerification)
                 <div class="bg-white rounded-xl p-6 shadow-md">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -318,52 +336,65 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Họ và Tên</label>
-                            <p class="text-gray-800 font-medium">{{ $shop->owner->seller->identityVerification->full_name }}</p>
+                            <p class="text-gray-800 font-medium">{{ $identityVerification->full_name }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Số CMND/CCCD</label>
-                            <p class="text-gray-800 font-mono">{{ $shop->owner->seller->identityVerification->identity_number }}</p>
+                            <p class="text-gray-800 font-mono">{{ $identityVerification->identity_number }}</p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Ngày sinh</label>
-                                <p class="text-gray-800">{{ $shop->owner->seller->identityVerification->birth_date->format('d/m/Y') }}</p>
+                                <p class="text-gray-800">{{ $identityVerification->birth_date->format('d/m/Y') }}</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Quốc tịch</label>
-                                <p class="text-gray-800">{{ $shop->owner->seller->identityVerification->nationality }}</p>
+                                <p class="text-gray-800">{{ $identityVerification->nationality }}</p>
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Quê quán</label>
-                            <p class="text-gray-800">{{ $shop->owner->seller->identityVerification->hometown }}</p>
+                            <p class="text-gray-800">{{ $identityVerification->hometown }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Nơi cư trú</label>
-                            <p class="text-gray-800">{{ $shop->owner->seller->identityVerification->residence }}</p>
+                            <p class="text-gray-800">{{ $identityVerification->residence }}</p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Loại giấy tờ</label>
-                                <p class="text-gray-800">{{ strtoupper($shop->owner->seller->identityVerification->identity_type) }}</p>
+                                <p class="text-gray-800">{{ strtoupper($identityVerification->identity_type) }}</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Ngày cấp</label>
-                                <p class="text-gray-800">{{ $shop->owner->seller->identityVerification->identity_card_date->format('d/m/Y') }}</p>
+                                <p class="text-gray-800">{{ $identityVerification->identity_card_date->format('d/m/Y') }}</p>
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Nơi cấp</label>
-                            <p class="text-gray-800">{{ $shop->owner->seller->identityVerification->identity_card_place }}</p>
+                            <p class="text-gray-800">{{ $identityVerification->identity_card_place }}</p>
                         </div>
                         
-                        @if($shop->owner->seller->identityVerification->identity_card_image)
+                        @if($identityVerification->identity_card_image)
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-2">Ảnh CMND/CCCD</label>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <img src="{{ asset('storage/' . $shop->owner->seller->identityVerification->identity_card_image) }}" 
-                                         alt="Identity Card" 
-                                         class="w-full h-auto object-cover rounded-lg border border-gray-200 shadow-sm">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    @if($identityVerification->identity_card_image)
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <label class="block text-sm font-medium text-gray-600 mb-2">Mặt trước</label>
+                                            <img src="{{ asset('storage/' . $identityVerification->identity_card_image) }}" 
+                                                 alt="Identity Card Front" 
+                                                 class="w-full h-auto object-cover rounded-lg border border-gray-200 shadow-sm">
+                                        </div>
+                                    @endif
+                                    @if($identityVerification->identity_card_holding_image)
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <label class="block text-sm font-medium text-gray-600 mb-2">Mặt sau</label>
+                                            <img src="{{ asset('storage/' . $identityVerification->identity_card_holding_image) }}" 
+                                                 alt="Identity Card Back" 
+                                                 class="w-full h-auto object-cover rounded-lg border border-gray-200 shadow-sm">
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @else

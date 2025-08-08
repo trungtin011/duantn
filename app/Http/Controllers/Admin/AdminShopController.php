@@ -17,6 +17,7 @@ use App\Models\Seller;
 use App\Models\IdentityVerification;
 use Illuminate\Support\Facades\Storage;
 use App\Enums\ShopStatus;
+use App\Enums\UserRole;
 
 class AdminShopController extends Controller
 {
@@ -169,14 +170,62 @@ class AdminShopController extends Controller
      */
     public function approve(Request $request, Shop $shop)
     {
-        $request->validate([
-            'approval_type' => 'required|in:active,suspended'
-        ]);
+        // Debug: Log all request data
+        Log::info('Approve request data:', $request->all());
+        
+        // Tạm thời bỏ validation để test
+        // try {
+        //     $request->validate([
+        //         'approval_type' => 'required|in:active,suspended'
+        //     ]);
+        // } catch (\Illuminate\Validation\ValidationException $e) {
+        //     Log::error('Validation error:', $e->errors());
+        //     return redirect()->back()->withErrors($e->errors())->withInput();
+        // }
 
         DB::beginTransaction();
         try {
-            $approvalType = $request->approval_type;
+            $approvalType = $request->approval_type ?? 'active'; // Default to active if not provided
+            Log::info('Approval type:', ['type' => $approvalType]);
+            
+            // Log shop info before update
+            Log::info('Shop info before approval:', [
+                'shop_id' => $shop->id,
+                'shop_name' => $shop->shop_name,
+                'owner_id' => $shop->ownerID,
+                'current_status' => $shop->shop_status
+            ]);
+            
             $shop->update(['shop_status' => ShopStatus::from($approvalType)]);
+            
+            // Cập nhật quyền user từ customer thành seller khi duyệt cửa hàng
+            if ($shop->ownerID) {
+                $user = User::find($shop->ownerID);
+                Log::info('Checking user role update for shop approval', [
+                    'shop_id' => $shop->id,
+                    'owner_id' => $shop->ownerID,
+                    'user_found' => $user ? true : false,
+                    'current_role' => $user ? $user->role->value : 'user_not_found',
+                    'current_role_type' => $user ? get_class($user->role) : 'user_not_found',
+                    'UserRole::CUSTOMER value' => UserRole::CUSTOMER->value,
+                    'UserRole::CUSTOMER type' => get_class(UserRole::CUSTOMER)
+                ]);
+                
+                if ($user && $user->role->value === UserRole::CUSTOMER->value) {
+                    Log::info('Role comparison successful, updating user role');
+                    $user->update(['role' => UserRole::SELLER]);
+                    Log::info('User role updated from customer to seller', [
+                        'user_id' => $user->id,
+                        'shop_id' => $shop->id,
+                        'new_role' => $user->fresh()->role->value
+                    ]);
+                } else {
+                    Log::info('Role comparison failed or user not found', [
+                        'user_exists' => $user ? true : false,
+                        'role_comparison' => $user ? ($user->role->value === UserRole::CUSTOMER->value) : false
+                    ]);
+                }
+            }
             
             // Determine notification content based on approval type
             if ($approvalType === ShopStatus::ACTIVE || $approvalType === ShopStatus::ACTIVE->value) {
@@ -234,6 +283,14 @@ class AdminShopController extends Controller
         DB::beginTransaction();
         try {
             $shop->update(['shop_status' => ShopStatus::BANNED]);
+            
+            // Cập nhật quyền user từ seller về customer khi từ chối cửa hàng
+            if ($shop->ownerID) {
+                $user = User::find($shop->ownerID);
+                if ($user && $user->role->value === UserRole::SELLER->value) {
+                    $user->update(['role' => UserRole::CUSTOMER]);
+                }
+            }
             
             // Create notification for shop owner
             $notification = Notification::create([
@@ -332,6 +389,14 @@ class AdminShopController extends Controller
             // Cập nhật trạng thái
             $shop->update(['shop_status' => ShopStatus::BANNED]);
             
+            // Cập nhật quyền user từ seller về customer khi cấm cửa hàng
+            if ($shop->ownerID) {
+                $user = User::find($shop->ownerID);
+                if ($user && $user->role->value === UserRole::SELLER->value) {
+                    $user->update(['role' => UserRole::CUSTOMER]);
+                }
+            }
+            
             // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
             if ($shop->ownerID) {
                 try {
@@ -382,6 +447,14 @@ class AdminShopController extends Controller
 
             // Cập nhật trạng thái
             $shop->update(['shop_status' => ShopStatus::ACTIVE]);
+            
+            // Cập nhật quyền user từ customer thành seller khi kích hoạt lại cửa hàng
+            if ($shop->ownerID) {
+                $user = User::find($shop->ownerID);
+                if ($user && $user->role->value === UserRole::CUSTOMER->value) {
+                    $user->update(['role' => UserRole::SELLER]);
+                }
+            }
             
             // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
             if ($shop->ownerID) {
@@ -434,6 +507,14 @@ class AdminShopController extends Controller
             // Cập nhật trạng thái
             $shop->update(['shop_status' => ShopStatus::ACTIVE]);
             
+            // Cập nhật quyền user từ customer thành seller khi kích hoạt cửa hàng
+            if ($shop->ownerID) {
+                $user = User::find($shop->ownerID);
+                if ($user && $user->role->value === UserRole::CUSTOMER->value) {
+                    $user->update(['role' => UserRole::SELLER]);
+                }
+            }
+            
             // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
             if ($shop->ownerID) {
                 try {
@@ -484,6 +565,14 @@ class AdminShopController extends Controller
 
             // Cập nhật trạng thái
             $shop->update(['shop_status' => ShopStatus::ACTIVE]);
+            
+            // Cập nhật quyền user từ customer thành seller khi mở lại cửa hàng
+            if ($shop->ownerID) {
+                $user = User::find($shop->ownerID);
+                if ($user && $user->role->value === UserRole::CUSTOMER->value) {
+                    $user->update(['role' => UserRole::SELLER]);
+                }
+            }
             
             // Tạo thông báo cho chủ cửa hàng (chỉ khi có ownerID)
             if ($shop->ownerID) {
@@ -540,12 +629,62 @@ class AdminShopController extends Controller
     }
 
     /**
+     * Test method to check role update functionality
+     */
+    public function testRoleUpdate(Request $request)
+    {
+        try {
+            $shopId = $request->input('shop_id');
+            $shop = Shop::find($shopId);
+            
+            if (!$shop) {
+                return response()->json(['error' => 'Shop not found'], 404);
+            }
+            
+            $user = User::find($shop->ownerID);
+            
+            if (!$user) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+            
+            $result = [
+                'shop_id' => $shop->id,
+                'shop_name' => $shop->shop_name,
+                'owner_id' => $shop->ownerID,
+                'user_id' => $user->id,
+                'current_role' => $user->role->value,
+                'current_role_type' => get_class($user->role),
+                'UserRole::CUSTOMER value' => UserRole::CUSTOMER->value,
+                'UserRole::SELLER value' => UserRole::SELLER->value,
+                'role_comparison_customer' => $user->role->value === UserRole::CUSTOMER->value,
+                'role_comparison_seller' => $user->role->value === UserRole::SELLER->value
+            ];
+            
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Delete a shop (soft delete).
      */
     public function destroy(Shop $shop)
     {
         DB::beginTransaction();
         try {
+            // Cập nhật quyền user từ seller về customer khi xóa cửa hàng
+            if ($shop->ownerID) {
+                $user = User::find($shop->ownerID);
+                if ($user && $user->role->value === UserRole::SELLER->value) {
+                    $user->update(['role' => UserRole::CUSTOMER]);
+                    Log::info('User role updated from seller to customer after shop deletion', [
+                        'user_id' => $user->id,
+                        'shop_id' => $shop->id
+                    ]);
+                }
+            }
+            
             // Soft delete the shop
             $shop->delete();
             

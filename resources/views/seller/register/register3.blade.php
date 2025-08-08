@@ -66,6 +66,31 @@
                                 </div>
                         </div>
 
+                        <!-- Định danh Chủ Shop đã điền -->
+                        @if(auth()->check() && auth()->user()->fullname)
+                        <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-user-check text-green-500 mt-1"></i>
+                                <div>
+                                    <h3 class="font-semibold text-green-900 mb-2">Định danh Chủ Shop</h3>
+                                    <div class="text-sm text-green-800 space-y-1">
+                                        <p><strong>Họ và tên:</strong> {{ auth()->user()->fullname }}</p>
+                                        <p><strong>Email:</strong> {{ auth()->user()->email }}</p>
+                                        @if(auth()->user()->phone)
+                                            <p><strong>Số điện thoại:</strong> {{ auth()->user()->phone }}</p>
+                                        @endif
+                                        @if(auth()->user()->birthday)
+                                            <p><strong>Ngày sinh:</strong> {{ auth()->user()->birthday->format('d/m/Y') }}</p>
+                                        @endif
+                                        @if(auth()->user()->gender)
+                                            <p><strong>Giới tính:</strong> {{ auth()->user()->gender == 'male' ? 'Nam' : (auth()->user()->gender == 'female' ? 'Nữ' : 'Khác') }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                             <!-- Identity Type -->
                             <div class="space-y-4">
                                 <label class="block text-sm font-semibold text-gray-700">
@@ -183,12 +208,17 @@
                                     </div>
                                 </div>
 
-                                <!-- Scan Button -->
-                                <div class="flex justify-center">
+                                <!-- Scan and Manual Input Buttons -->
+                                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                                     <button type="button" id="scan-cccd-btn" 
-                                            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+                                            class="inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
                                         <i class="fas fa-search mr-3"></i>
                                         Quét và tự động điền thông tin
+                                    </button>
+                                    <button type="button" id="manual-input-btn" 
+                                            class="inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-blue-400 to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+                                        <i class="fas fa-edit mr-3"></i>
+                                        Nhập thủ công
                                     </button>
                                 </div>
                                 
@@ -218,7 +248,7 @@
                             <div id="personal-info-section" class="hidden space-y-6">
                                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                                     <i class="fas fa-user mr-2 text-purple-500"></i>
-                                    Thông tin cá nhân (Tự động điền)
+                                    Thông tin cá nhân
                                 </h3>
                                 
                                 <div class="bg-gray-50 rounded-xl p-6 space-y-6">
@@ -229,7 +259,7 @@
                                             </label>
                                             <input type="text" name="full_name" maxlength="100" required 
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                placeholder="Sẽ được điền tự động" value="{{ old('full_name') }}">
+                                                placeholder="Nhập họ và tên theo CCCD/CMND" value="{{ old('full_name') }}">
                                             <p class="text-xs text-gray-500">Theo CMND/CCCD/Hộ Chiếu</p>
                                             @error('full_name')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
@@ -273,7 +303,7 @@
                                             </label>
                                             <input type="text" name="nationality" maxlength="50" required 
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                placeholder="Sẽ được điền tự động" value="{{ old('nationality') }}">
+                                                placeholder="Ví dụ: Việt Nam" value="{{ old('nationality') }}">
                                             @error('nationality')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
                                             @enderror
@@ -285,7 +315,7 @@
                                             </label>
                                             <input type="text" name="hometown" maxlength="100" required 
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                placeholder="Sẽ được điền tự động" value="{{ old('hometown') }}">
+                                                placeholder="Nhập quê quán theo CCCD/CMND" value="{{ old('hometown') }}">
                                             @error('hometown')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
                                             @enderror
@@ -297,7 +327,7 @@
                                             </label>
                                             <input type="text" name="residence" maxlength="100" required 
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                placeholder="Sẽ được điền tự động" value="{{ old('residence') }}">
+                                                placeholder="Nhập nơi thường trú theo CCCD/CMND" value="{{ old('residence') }}">
                                             @error('residence')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
                                             @enderror
@@ -310,7 +340,7 @@
                             <div id="identity-info-section" class="hidden space-y-6">
                                 <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                                     <i class="fas fa-id-card mr-2 text-purple-500"></i>
-                                    Thông tin CCCD/CMND (Tự động điền)
+                                    Thông tin CCCD/CMND
                                 </h3>
                                 
                                 <div class="bg-gray-50 rounded-xl p-6 space-y-6">
@@ -321,7 +351,7 @@
                                             </label>
                                             <input type="text" name="id_number" maxlength="20" required 
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                placeholder="Sẽ được điền tự động" value="{{ old('id_number') }}">
+                                                placeholder="Nhập số CCCD/CMND" value="{{ old('id_number') }}">
                                             @error('id_number')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
                                             @enderror
@@ -345,7 +375,7 @@
                                             </label>
                                             <input type="text" name="identity_card_place" maxlength="255" required 
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                placeholder="Sẽ được điền tự động" value="{{ old('identity_card_place') }}">
+                                                placeholder="Nhập nơi cấp CCCD/CMND" value="{{ old('identity_card_place') }}">
                                             @error('identity_card_place')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
                                             @enderror
@@ -357,7 +387,7 @@
                                             </label>
                                             <input type="text" name="dac_diem_nhan_dang" maxlength="255" 
                                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                placeholder="Sẽ được điền tự động" value="{{ old('dac_diem_nhan_dang') }}">
+                                                placeholder="Nhập đặc điểm nhận dạng (nếu có)" value="{{ old('dac_diem_nhan_dang') }}">
                                             @error('dac_diem_nhan_dang')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
                                             @enderror
@@ -586,12 +616,13 @@
 
 // CCCD scan integration
         const scanBtn = document.getElementById('scan-cccd-btn');
-const fileInput = document.getElementById('filechoose');
+        const manualBtn = document.getElementById('manual-input-btn');
+        const fileInput = document.getElementById('filechoose');
         const loadingDiv = document.getElementById('scan-cccd-loading');
         const errorDiv = document.getElementById('scan-cccd-error');
-const successDiv = document.getElementById('scan-cccd-success');
-const personalInfoSection = document.getElementById('personal-info-section');
-const identityInfoSection = document.getElementById('identity-info-section');
+        const successDiv = document.getElementById('scan-cccd-success');
+        const personalInfoSection = document.getElementById('personal-info-section');
+        const identityInfoSection = document.getElementById('identity-info-section');
 
         scanBtn.addEventListener('click', function() {
             errorDiv.textContent = '';
@@ -631,7 +662,7 @@ const identityInfoSection = document.getElementById('identity-info-section');
         personalInfoSection.classList.remove('hidden');
         identityInfoSection.classList.remove('hidden');
         
-        successDiv.textContent = 'Quét thành công! Thông tin đã được điền tự động.';
+        successDiv.textContent = 'Quét thành công! Thông tin đã được điền tự động. Bạn có thể chỉnh sửa nếu cần thiết.';
         successDiv.classList.remove('hidden');
         
         // Scroll to the filled sections
@@ -642,6 +673,72 @@ const identityInfoSection = document.getElementById('identity-info-section');
         scanBtn.disabled = false;
         errorDiv.textContent = 'Không thể quét CCCD/CMND. Vui lòng thử lại.';
     });
+});
+
+// Manual input button handler
+manualBtn.addEventListener('click', function() {
+    errorDiv.textContent = '';
+    successDiv.classList.add('hidden');
+    successDiv.textContent = '';
+    
+    // Show the sections for manual input
+    personalInfoSection.classList.remove('hidden');
+    identityInfoSection.classList.remove('hidden');
+    
+    // Clear any existing scanned data
+    const scannedFields = [
+        'scanned_full_name', 'scanned_id_number', 'scanned_birthday', 
+        'scanned_nationality', 'scanned_residence', 'scanned_hometown',
+        'scanned_identity_card_date', 'scanned_identity_card_place', 
+        'scanned_dac_diem_nhan_dang', 'scanned_gender'
+    ];
+    
+    scannedFields.forEach(field => {
+        const hiddenInput = document.querySelector(`input[name="${field}"]`);
+        if (hiddenInput) {
+            hiddenInput.value = '';
+        }
+    });
+    
+    // Clear form fields to allow manual input
+    const formFields = [
+        'full_name', 'id_number', 'birthday', 'nationality', 'residence', 
+        'hometown', 'identity_card_date', 'identity_card_place', 'dac_diem_nhan_dang'
+    ];
+    
+    const placeholders = {
+        'full_name': 'Nhập họ và tên theo CCCD/CMND',
+        'id_number': 'Nhập số CCCD/CMND',
+        'birthday': '',
+        'nationality': 'Ví dụ: Việt Nam',
+        'residence': 'Nhập nơi thường trú theo CCCD/CMND',
+        'hometown': 'Nhập quê quán theo CCCD/CMND',
+        'identity_card_date': '',
+        'identity_card_place': 'Nhập nơi cấp CCCD/CMND',
+        'dac_diem_nhan_dang': 'Nhập đặc điểm nhận dạng (nếu có)'
+    };
+    
+    formFields.forEach(field => {
+        const input = document.querySelector(`input[name="${field}"]`);
+        if (input) {
+            input.value = '';
+            if (placeholders[field]) {
+                input.placeholder = placeholders[field];
+            }
+        }
+    });
+    
+    // Clear gender selection
+    const genderRadios = document.querySelectorAll('input[name="gender"]');
+    genderRadios.forEach(radio => {
+        radio.checked = false;
+    });
+    
+    successDiv.textContent = 'Chế độ nhập thủ công đã được kích hoạt. Vui lòng điền thông tin vào các trường bên dưới.';
+    successDiv.classList.remove('hidden');
+    
+    // Scroll to the sections
+    personalInfoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 // Fill form data from CCCD scan
