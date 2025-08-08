@@ -171,7 +171,15 @@ class HomeController extends Controller
             ->get();
             
         // Lấy sản phẩm quảng cáo từ ads_campaigns
-        $advertisedProductsByShop = AdsCampaignItem::with(['product.defaultImage', 'product.shop', 'adsCampaign.shop'])
+        $advertisedProductsByShop = AdsCampaignItem::with([
+            'product.defaultImage', 
+            'product.shop' => function($query) {
+                $query->withCount('followers')
+                      ->withCount('orderReviews')
+                      ->withAvg('orderReviews', 'rating');
+            }, 
+            'adsCampaign.shop'
+        ])
             ->whereHas('adsCampaign', function ($query) {
                 $query->where('status', 'active')
                       ->where('start_date', '<=', now())
@@ -181,13 +189,23 @@ class HomeController extends Controller
                 $query->where('status', 'active');
             })
             ->inRandomOrder()
-            ->take(12)
+            ->take(24) // Tăng số lượng để có nhiều shop hơn
             ->get()
             ->groupBy('product.shop.id')
             ->map(function ($items, $shopId) {
                 $firstItem = $items->first();
+                $shop = $firstItem->product->shop;
+                
+                // Tính toán thông tin shop từ các bảng riêng biệt
+                $actualRating = $shop->order_reviews_avg_rating ?? 0;
+                $actualFollowers = $shop->followers_count ?? 0;
+                
+                // Gán thông tin thực tế vào shop object
+                $shop->shop_rating = round($actualRating, 1);
+                $shop->total_followers = $actualFollowers;
+                
                 return [
-                    'shop' => $firstItem->product->shop,
+                    'shop' => $shop,
                     'products' => $items->map(function ($item) {
                         $item->product->ads_campaign_name = $item->adsCampaign->name;
                         return $item->product;
@@ -201,7 +219,7 @@ class HomeController extends Controller
                     })
                 ];
             })
-            ->take(1); // Chỉ lấy 1 shop duy nhất
+            ->take(3); // Lấy 3 shop để hiển thị
 
         // Lấy và tính toán xếp hạng shop
         $rankingShops = Shop::where('shop_status', 'active')
