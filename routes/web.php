@@ -63,6 +63,7 @@ use App\Http\Controllers\User\ShippingFeeController;
 use App\Http\Controllers\User\CouponController as UserCouponController;
 use App\Http\Controllers\User\FrontendController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Seller\SellerStatisticsController;
 use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\User\ComboController as UserComboController;
@@ -295,9 +296,8 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
 
 // seller routes
 Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('seller.home');
-    })->name('seller.dashboard');
+    Route::get('/dashboard', [SellerStatisticsController::class, 'index'])->name('seller.home');
+    Route::get('/seller/analytics/{period}', [SellerStatisticsController::class, 'analytics']);
 
     // Ads Campaigns Routes
     Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
