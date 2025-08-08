@@ -328,6 +328,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
+        Route::get('/ajax', [SellerOrderController::class, 'ajaxList'])->name('seller.order.ajax');
         Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
         Route::put('/cancel', [SellerOrderController::class, 'cancelOrder'])->name('seller.order.cancel');
         Route::post('/tracking', [SellerOrderController::class, 'trackingOrder'])->name('seller.order.tracking');

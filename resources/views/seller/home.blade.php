@@ -76,13 +76,15 @@
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg font-semibold">Phân Tích Bán Hàng</h2>
                     <div class="flex flex-col items-end space-y-2">
-                        <form method="GET" action="{{ route('seller.dashboard') }}" id="dateFilterForm">
-                            <div class="flex flex-col sm:flex-row sm:space-x-4">
+                        <form method="GET" action="{{ route('seller.dashboard') }}" id="dateFilterForm"
+                            class="bg-gray-50 p-3 rounded-lg">
+                            <div class="flex flex-col lg:flex-row lg:space-x-4 space-y-2 lg:space-y-0">
                                 <div class="flex-1">
                                     <div class="form-group">
-                                        <label for="filter_type" class="text-xs text-gray-600">Loại bộ lọc:</label>
+                                        <label for="filter_type" class="text-xs text-gray-600 font-medium">Loại bộ
+                                            lọc:</label>
                                         <select name="filter_type" id="filter_type"
-                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                            class="text-xs text-gray-700 border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                             <option value="date" {{ $filterType == 'date' ? 'selected' : '' }}>Theo ngày
                                             </option>
                                             <option value="month" {{ $filterType == 'month' ? 'selected' : '' }}>Theo tháng
@@ -94,9 +96,9 @@
                                 </div>
                                 <div class="flex-1" id="year_group">
                                     <div class="form-group">
-                                        <label for="year" class="text-xs text-gray-600">Năm:</label>
+                                        <label for="year" class="text-xs text-gray-600 font-medium">Năm:</label>
                                         <select name="year" id="year"
-                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                            class="text-xs text-gray-700 border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                             @for ($y = Carbon::today()->year; $y >= Carbon::today()->year - 5; $y--)
                                                 <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>
                                                     {{ $y }}</option>
@@ -106,9 +108,9 @@
                                 </div>
                                 <div class="flex-1" id="month_group">
                                     <div class="form-group">
-                                        <label for="month" class="text-xs text-gray-600">Tháng:</label>
+                                        <label for="month" class="text-xs text-gray-600 font-medium">Tháng:</label>
                                         <select name="month" id="month"
-                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                            class="text-xs text-gray-700 border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                             @for ($m = 1; $m <= ($year == Carbon::today()->year ? Carbon::today()->month : 12); $m++)
                                                 <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
                                                     {{ $m }}</option>
@@ -118,194 +120,298 @@
                                 </div>
                                 <div class="flex-1" id="start_date_group">
                                     <div class="form-group">
-                                        <label for="start_date" class="text-xs text-gray-600">Từ ngày:</label>
+                                        <label for="start_date" class="text-xs text-gray-600 font-medium">Từ ngày:</label>
                                         <input type="date" name="start_date" id="start_date"
                                             value="{{ $filterType == 'date' ? Carbon::parse($startDate)->format('Y-m-d') : '' }}"
                                             max="{{ Carbon::today()->format('Y-m-d') }}"
-                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                            class="text-xs text-gray-700 border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     </div>
                                 </div>
                                 <div class="flex-1" id="end_date_group">
                                     <div class="form-group">
-                                        <label for="end_date" class="text-xs text-gray-600">Đến ngày:</label>
+                                        <label for="end_date" class="text-xs text-gray-600 font-medium">Đến ngày:</label>
                                         <input type="date" name="end_date" id="end_date"
                                             value="{{ $filterType == 'date' ? Carbon::parse($endDate)->format('Y-m-d') : '' }}"
                                             max="{{ Carbon::today()->format('Y-m-d') }}"
-                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                            class="text-xs text-gray-700 border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     </div>
                                 </div>
                                 <div class="flex items-end">
                                     <button type="submit"
-                                        class="text-xs text-white bg-blue-600 rounded px-3 py-1.5 hover:bg-blue-700 transition-colors">Lọc</button>
+                                        class="text-xs text-white bg-blue-600 rounded-md px-4 py-2 hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                        <i class="fas fa-filter mr-1"></i>Lọc
+                                    </button>
                                 </div>
                             </div>
-                            <div id="dateError" class="error-message hidden"></div>
+                            <div id="dateError" class="error-message hidden mt-2"></div>
                         </form>
-                        <div class="text-xs text-gray-400 whitespace-nowrap">
-                            {{ now()->format('d/m/Y H:i') }} GMT+7
-                            <span class="text-gray-300">(Dữ liệu thay đổi so với hôm qua)</span>
+                        <div class="text-xs text-gray-500 whitespace-nowrap">
+                            <i class="fas fa-clock mr-1"></i>{{ now()->format('d/m/Y H:i') }} GMT+7
+                            <span class="text-gray-400 ml-1">(Cập nhật thời gian thực)</span>
                         </div>
                     </div>
                 </div>
-                <div class="mb-4">
-                    <canvas id="salesChart"></canvas>
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700">Biểu đồ doanh thu</h3>
+                        <div class="text-xs text-gray-500">
+                            {{ $filterType == 'year' ? $year : Carbon::parse($startDate)->format('d/m/Y') . ' - ' . Carbon::parse($endDate)->format('d/m/Y') }}
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <canvas id="salesChart" height="500"></canvas>
+                    </div>
                 </div>
                 <div
                     class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center text-gray-600 text-xs font-normal border-t border-b border-gray-200 py-3">
                     <div>
-                        <div class="flex justify-center items-center space-x-1"><span>Doanh thu</span><i
-                                class="fas fa-question-circle text-[10px]"></i></div>
-                        <div class="font-semibold text-base mt-1 sales">
-                            ₫{{ number_format($statistics['total_revenue'], 2) }}</div>
-                        <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['revenue_change'] ?? '-0.00%' }}</div>
+                        <div class="flex justify-center items-center space-x-1">
+                            <span>Doanh thu</span>
+                            <i class="fas fa-chart-line text-[10px] text-green-500"></i>
+                        </div>
+                        <div class="font-semibold text-base mt-1 sales text-green-600">
+                            ₫{{ number_format($statistics['total_revenue'], 2) }}
+                        </div>
+                        <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['revenue_change'] ?? '-0.00%' }}
+                        </div>
                     </div>
                     <div>
-                        <div class="flex justify-center items-center space-x-1"><span>Lợi nhuận</span><i
-                                class="fas fa-question-circle text-[10px]"></i></div>
-                        <div class="font-semibold text-base mt-1 profit">₫{{ number_format($statistics['profit'], 2) }}
+                        <div class="flex justify-center items-center space-x-1">
+                            <span>Lợi nhuận</span>
+                            <i class="fas fa-coins text-[10px] text-blue-500"></i>
+                        </div>
+                        <div class="font-semibold text-base mt-1 profit text-blue-600">
+                            ₫{{ number_format($statistics['profit'], 2) }}
                         </div>
                         <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['profit_change'] ?? '-0.00%' }}</div>
                     </div>
                     <div>
-                        <div class="flex justify-center items-center space-x-1"><span>Lượt theo dõi</span><i
-                                class="fas fa-question-circle text-[10px]"></i></div>
-                        <div class="font-semibold text-base mt-1 visits">{{ $shop->total_followers ?? 0 }}</div>
+                        <div class="flex justify-center items-center space-x-1">
+                            <span>Lượt theo dõi</span>
+                            <i class="fas fa-users text-[10px] text-purple-500"></i>
+                        </div>
+                        <div class="font-semibold text-base mt-1 visits text-purple-600">
+                            {{ $statistics['followers_count'] ?? 0 }}
+                        </div>
                         <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['visits_change'] ?? '-0.00%' }}</div>
                     </div>
                     <div>
-                        <div class="flex justify-center items-center space-x-1"><span>Đơn hàng</span><i
-                                class="fas fa-question-circle text-[10px]"></i></div>
-                        <div class="font-semibold text-base mt-1 orders">
-                            {{ $statistics['order_statistics']['completed'] }}</div>
+                        <div class="flex justify-center items-center space-x-1">
+                            <span>Đơn hàng</span>
+                            <i class="fas fa-shopping-cart text-[10px] text-orange-500"></i>
+                        </div>
+                        <div class="font-semibold text-base mt-1 orders text-orange-600">
+                            {{ $statistics['completed_orders_count'] ?? 0 }}
+                        </div>
                         <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['orders_change'] ?? '-0.00%' }}</div>
                     </div>
                 </div>
             </section>
 
             <!-- Đánh giá khách hàng -->
-            <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-semibold">Đánh giá khách hàng</h2>
-                    <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm
-                        <i class="fas fa-chevron-right text-[10px]"></i></a>
+            <section class="bg-white rounded-lg p-4 shadow-sm space-y-10">
+                <div class="">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="section-title">Đánh giá khách hàng</h2>
+                        <div class="">
+                            <a href="{{ route('seller.reviews.index') }}" class="text-[#f42f46] hover:underline ">
+                                Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div
+                        class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-gray-600 text-xs font-normal border-t border-b border-gray-200 py-3">
+                        <div>
+                            <div class="flex justify-center items-center space-x-1">
+                                <span>Số lượng đánh giá</span>
+                                <i class="fas fa-star text-[10px]"></i>
+                            </div>
+                            <div class="font-semibold text-base mt-1">
+                                {{ $statistics['review_statistics']['total_reviews'] }}
+                            </div>
+                            <div class="text-gray-400 text-[10px] mt-0.5">Tổng cộng</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-center items-center space-x-1">
+                                <span>Điểm trung bình</span>
+                                <i class="fas fa-star text-[10px]"></i>
+                            </div>
+                            <div class="font-semibold text-base mt-1">
+                                {{ number_format($statistics['review_statistics']['average_rating'], 1) }}/5</div>
+                            <div class="text-gray-400 text-[10px] mt-0.5">Đánh giá</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-sm font-semibold text-gray-700">Phân bố đánh giá</h3>
+                            <div class="text-xs text-gray-500">Tồn kho:
+                                {{ $statistics['inventory_statistics']['total_stock'] }} sản phẩm</div>
+                        </div>
+                        <div class="relative">
+                            <canvas id="reviewChart" height="120"></canvas>
+                        </div>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="stat-card">
-                        <div class="stat-value">{{ $statistics['review_statistics']['total_reviews'] }}</div>
-                        <div class="stat-label">Số lượng đánh giá</div>
+                <div class="">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="section-title">Phân tích tồn kho</h2>
+                        <div class="">
+                            <a href="{{ route('seller.products.index') }}" class="text-[#f42f46] hover:underline ">
+                                Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
+                            </a>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value">
-                            {{ number_format($statistics['review_statistics']['average_rating'], 1) }}/5</div>
-                        <div class="stat-label">Điểm đánh giá trung bình</div>
+                    <div
+                        class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center text-gray-600 text-xs font-normal border-t border-b border-gray-200 py-3">
+                        <div>
+                            <div class="flex justify-center space-x-1">
+                                <span>Tổng sản phẩm</span>
+                                <i class="fas fa-boxes text-[10px]"></i>
+                            </div>
+                            <div class="font-semibold text-base mt-1">
+                                {{ $statistics['inventory_statistics']['total_products'] ?? 0 }}</div>
+                            <div class="text-gray-400 text-[10px] mt-0.5">Sản phẩm</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-center items-center space-x-1">
+                                <span>Tổng tồn kho</span>
+                                <i class="fas fa-warehouse text-[10px]"></i>
+                            </div>
+                            <div class="font-semibold text-base mt-1">
+                                {{ $statistics['inventory_statistics']['total_stock'] }}</div>
+                            <div class="text-gray-400 text-[10px] mt-0.5">Đơn vị</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-center items-center space-x-1">
+                                <span>Sắp hết hàng</span>
+                                <i class="fas fa-exclamation-triangle text-[10px]"></i>
+                            </div>
+                            <div class="font-semibold text-base mt-1 text-orange-600">{{ $lowStockCount }}</div>
+                            <div class="text-gray-400 text-[10px] mt-0.5">Sản phẩm</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-center items-center space-x-1">
+                                <span>Hết hàng</span>
+                                <i class="fas fa-times-circle text-[10px]"></i>
+                            </div>
+                            <div class="font-semibold text-base mt-1 text-red-600">
+                                {{ $statistics['inventory_statistics']['out_of_stock'] ?? 0 }}</div>
+                            <div class="text-gray-400 text-[10px] mt-0.5">Sản phẩm</div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value">{{ $statistics['inventory_statistics']['total_stock'] }}</div>
-                        <div class="stat-label">Tổng Tồn Kho</div>
+                    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-sm font-semibold text-gray-700">Tình trạng tồn kho</h3>
+                            <div class="text-xs text-gray-500">Cập nhật: {{ now()->format('d/m/Y H:i') }}</div>
+                        </div>
+                        <div class="relative">
+                            <canvas id="inventoryChart" height="120"></canvas>
+                        </div>
                     </div>
-                </div>
-                <div class="mb-4">
-                    <canvas id="reviewChart" height="100"></canvas>
                 </div>
             </section>
         </div>
 
-        <!-- Quảng cáo ZynoxMall -->
-        <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="section-title">Quảng cáo ZynoxMall</h2>
-                <div class="mt-3">
-                    <a href="{{ route('seller.reviews.index') }}" class="text-[#f42f46] hover:underline ">
-                        Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="border border-gray-200 rounded-md p-3 text-gray-600 text-xs relative"
-                style="background-image: url('https://placehold.co/100x100/feeaea/feeaea?text='); background-repeat: no-repeat; background-position: right bottom; background-size: 100px 100px;">
-                <div class="flex items-center space-x-2 mb-1">
-                    <img src="https://storage.googleapis.com/a1aa/image/edf41f8c-c956-422e-817c-1cfaae696afc.jpg"
-                        alt="Ad icon" class="w-4 h-4">
-                    <span class="font-semibold text-gray-700">Tối đa hóa doanh số bán hàng với Quảng cáo
-                        ZynoxMall!</span>
-                </div>
-                <p class="text-gray-400 leading-tight">Tìm hiểu thêm về Quảng cáo ZynoxMall để tạo quảng cáo hiệu quả
-                    và tối ưu chi phí.</p>
-                <button
-                    class="absolute bottom-3 right-3 text-xs text-[#ff4d4f] border border-[#ff4d4f] rounded px-2 py-0.5 hover:bg-[#ff4d4f] hover:text-white transition-colors">Tìm
-                    hiểu thêm</button>
-            </div>
-        </section>
 
         <!-- Sản Phẩm Bán Chạy -->
         <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
             <div class="flex justify-between items-center">
                 <h2 class="section-title">Sản Phẩm Bán Chạy</h2>
-                <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm
+                <a href="{{ route('seller.products.index') }}" class="text-[#f42f46] hover:underline ">
+                    Xem thêm
                     <i class="fas fa-chevron-right text-[10px]"></i></a>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                @forelse ($statistics['top_selling_products'] as $product)
-                    <div class="border rounded p-3 flex items-center space-x-3">
-                        <img src="{{ $product['image_path'] ?? 'https://placehold.co/50x50' }}" alt="Product image"
-                            class="w-12 h-12 rounded">
-                        <div>
-                            <p class="text-sm font-semibold">{{ $product['name'] }}</p>
-                            <p class="text-xs text-gray-500">Đã bán: {{ $product['total_sold'] }}</p>
-                        </div>
-                    </div>
-                @empty
-                    <div class="text-center text-gray-500">Chưa có sản phẩm bán chạy.</div>
-                @endforelse
-            </div>
-        </section>
-
-        <!-- Tồn kho -->
-        <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="section-title">Tồn kho</h2>
-                <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">
-                    Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
-                </a>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                @forelse($statistics['low_stock_products'] ?? [] as $product)
-                    <div class="border rounded p-3 flex items-center space-x-3">
-                        <img src="{{ $product['image_path'] ?? asset('images/no-image.png') }}" alt="Product image"
-                            class="w-12 h-12 rounded object-cover">
-                        <div>
-                            <p class="text-sm font-semibold">{{ $product['name'] }}</p>
-                            <p class="text-xs text-gray-500">SKU: {{ $product['sku'] }}</p>
-                            <p class="text-xs text-gray-500">Tồn kho: {{ $product['stock_total'] }}</p>
-                            @if ($product['stock_total'] <= 10)
-                                <p class="text-xs text-red-500 font-semibold">Sắp hết hàng!</p>
-                            @endif
-                        </div>
-                    </div>
-                @empty
-                    <div class="text-center text-gray-500 col-span-full">Chưa có sản phẩm tồn kho thấp.</div>
-                @endforelse
-            </div>
-        </section>
-
-        <!-- Nhiệm vụ -->
-        <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="section-title">Nhiệm vụ Người Bán</h2>
-                <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm
-                    <i class="fas fa-chevron-right text-[10px]"></i></a>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                @forelse ($tasks ?? [] as $task)
-                    <div class="border rounded p-3">
-                        <p class="text-sm font-semibold">{{ $task['title'] }}</p>
-                        <p class="text-xs text-gray-500">{{ $task['reward'] }}</p>
-                        <button
-                            class="text-xs text-[#ff4d4f] border border-[#ff4d4f] rounded px-2 py-0.5 mt-2 hover:bg-[#ff4d4f] hover:text-white transition-colors">Bắt
-                            đầu</button>
-                    </div>
-                @empty
-                    <div class="text-center text-gray-500">Chưa có nhiệm vụ nào.</div>
-                @endforelse
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Sản phẩm
+                            </th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                SKU
+                            </th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Đã bán
+                            </th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Doanh thu
+                            </th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Lợi nhuận
+                            </th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tồn kho
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse ($statistics['top_selling_products'] as $product)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <img src="{{ $product['image_path'] ?? 'https://placehold.co/50x50' }}"
+                                            alt="Product image" class="w-10 h-10 rounded object-cover mr-3">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $product['name'] }}</div>
+                                            <div class="text-xs text-gray-500">
+                                                ID: {{ $product['product_id'] }}
+                                                @if ($product['is_variant'] ?? false)
+                                                    <span
+                                                        class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                        <i class="fas fa-tag mr-1"></i>Biến thể
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $product['sku'] }}
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-center">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {{ $product['total_sold'] }}
+                                    </span>
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                                    ₫{{ number_format($product['total_revenue'], 0) }}
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                                    ₫{{ number_format($product['total_profit'], 0) }}
+                                </td>
+                                <td class="px-3 py-3 whitespace-nowrap text-center">
+                                    @if ($product['stock_total'] <= 10)
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            {{ $product['stock_total'] }}
+                                        </span>
+                                    @elseif($product['stock_total'] <= 50)
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            {{ $product['stock_total'] }}
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            {{ $product['stock_total'] }}
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-3 py-4 text-center text-sm text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <i class="fas fa-box-open text-2xl text-gray-300 mb-2"></i>
+                                        Chưa có sản phẩm bán chạy
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </section>
     </div>
@@ -322,49 +428,96 @@
                     datasets: [{
                         label: 'Doanh thu',
                         data: @json($statistics['revenue_data']['values']),
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
                             ticks: {
                                 callback: function(value) {
                                     return '₫' + value.toLocaleString('vi-VN');
-                                }
+                                },
+                                font: {
+                                    size: 11,
+                                    family: 'Inter, sans-serif'
+                                },
+                                color: '#6b7280'
                             },
                             title: {
                                 display: true,
-                                text: 'Doanh thu (VND)'
+                                text: 'Doanh thu (VND)',
+                                font: {
+                                    size: 12,
+                                    family: 'Inter, sans-serif'
+                                },
+                                color: '#374151'
                             }
                         },
                         x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
                             title: {
                                 display: true,
-                                text: '{{ $filterType == 'year' ? 'Tháng' : 'Ngày' }}'
+                                text: '{{ $filterType == 'year' ? 'Tháng' : 'Ngày' }}',
+                                font: {
+                                    size: 12,
+                                    family: 'Inter, sans-serif'
+                                },
+                                color: '#374151'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    family: 'Inter, sans-serif'
+                                },
+                                color: '#6b7280'
                             }
                         }
                     },
                     plugins: {
                         legend: {
-                            position: 'top'
-                        },
-                        title: {
-                            display: true,
-                            text: 'Doanh Thu ({{ $filterType == 'year' ? $year : Carbon::parse($startDate)->format('d/m/Y') . ' - ' . Carbon::parse($endDate)->format('d/m/Y') }})'
+                            display: false
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#ffffff',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
                             callbacks: {
+                                title: function(tooltipItems) {
+                                    return tooltipItems[0].label;
+                                },
                                 label: function(context) {
                                     return `Doanh thu: ₫${context.parsed.y.toLocaleString('vi-VN')}`;
                                 }
                             }
                         }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
                     }
                 }
             });
@@ -383,13 +536,99 @@
                             {{ $statistics['review_statistics']['rating_distribution']['2'] }},
                             {{ $statistics['review_statistics']['rating_distribution']['1'] }}
                         ],
-                        backgroundColor: ['#2ecc71', '#3498db', '#f1c40f', '#e67e22', '#e74c3c']
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
                     plugins: {
                         legend: {
-                            position: 'right'
+                            position: 'right',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    size: 11,
+                                    family: 'Inter, sans-serif'
+                                },
+                                color: '#374151'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#ffffff',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Initialize inventory chart
+            const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+            new Chart(inventoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Còn hàng', 'Sắp hết hàng', 'Hết hàng'],
+                    datasets: [{
+                        data: [
+                            {{ ($statistics['inventory_statistics']['total_products'] ?? 0) - ($lowStockCount + ($statistics['inventory_statistics']['out_of_stock'] ?? 0)) }},
+                            {{ $lowStockCount }},
+                            {{ $statistics['inventory_statistics']['out_of_stock'] ?? 0 }}
+                        ],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    size: 11,
+                                    family: 'Inter, sans-serif'
+                                },
+                                color: '#374151'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#ffffff',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                    return `${context.label}: ${context.parsed} sản phẩm (${percentage}%)`;
+                                }
+                            }
                         }
                     }
                 }
