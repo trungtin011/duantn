@@ -48,6 +48,18 @@ class Product extends Model
         'flash_sale_end_at' => 'datetime',
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope('shopVisible', function ($builder) {
+            // Chỉ áp dụng cho frontend, không áp dụng cho admin
+            if (!app()->runningInConsole() && !request()->is('admin/*')) {
+                $builder->whereHas('shop', function ($q) {
+                    $q->where('shop_status', '!=', 'banned');
+                });
+            }
+        });
+    }
+
     // Relationships
     public function shop()
     {

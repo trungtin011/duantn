@@ -102,30 +102,39 @@ class ProductController extends Controller
             ->when($priceMax, fn($q) => $q->where('sale_price', '<=', $priceMax));
 
         // Lấy các sản phẩm quảng cáo
-        $advertisedProducts = collect();
-        if ($query) {
-            $advertisedCampaigns = AdsCampaign::where('status', 'active')
-                ->whereDate('start_date', '<=', now())
-                ->whereDate('end_date', '>=', now())
-                ->whereHas('adsCampaignItems.product', function ($q) use ($query) {
-                    $q->where('name', 'like', "%$query%");
-                })
-                ->with(['adsCampaignItems.product.images', 'adsCampaignItems.product.shop'])
-                ->get();
+        $advertisedProductsByShop = collect();
+        
+        // Luôn lấy sản phẩm quảng cáo, không chỉ khi có từ khóa tìm kiếm
+        $advertisedCampaigns = AdsCampaign::where('status', 'active')
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->when($query, function ($q) use ($query) {
+                $q->whereHas('adsCampaignItems.product', function ($productQuery) use ($query) {
+                    $productQuery->where('name', 'like', "%$query%");
+                });
+            })
+            ->with(['adsCampaignItems.product.images', 'adsCampaignItems.product.shop'])
+            ->get();
 
-            foreach ($advertisedCampaigns as $campaign) {
-                foreach ($campaign->adsCampaignItems as $item) {
-                    // Chỉ thêm sản phẩm nếu tên của nó chứa từ khóa tìm kiếm
+        // Nhóm sản phẩm quảng cáo theo shop
+        foreach ($advertisedCampaigns as $campaign) {
+            foreach ($campaign->adsCampaignItems as $item) {
+                // Nếu có từ khóa tìm kiếm, chỉ thêm sản phẩm phù hợp
+                if ($query) {
                     if ($item->product && Str::contains(strtolower($item->product->name), strtolower($query))) {
-                        // Gán tên chiến dịch vào thuộc tính mới của sản phẩm
-                        $item->product->ads_campaign_name = $campaign->name;
-                        $advertisedProducts->push($item->product);
+                        $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
+                    }
+                } else {
+                    // Nếu không có từ khóa tìm kiếm, thêm tất cả sản phẩm quảng cáo
+                    if ($item->product) {
+                        $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
                     }
                 }
             }
-            // Lọc các sản phẩm quảng cáo trùng lặp và chỉ lấy tối đa 4 sản phẩm
-            $advertisedProducts = $advertisedProducts->unique('id')->take(4);
         }
+        
+        // Chỉ lấy 1 shop duy nhất
+        $advertisedProductsByShop = $advertisedProductsByShop->values()->take(1);
 
         // Áp dụng sắp xếp cho các sản phẩm không quảng cáo
         $productQuery->when($sort, fn($q) => match ($sort) {
@@ -139,29 +148,71 @@ class ProductController extends Controller
         ->with(['categories', 'brands', 'images']);
 
         // Lấy ID của các sản phẩm quảng cáo để loại trừ khỏi kết quả tìm kiếm thông thường
-        $advertisedProductIds = $advertisedProducts->pluck('id')->toArray();
+        $advertisedProductIds = collect();
+        if ($advertisedProductsByShop->isNotEmpty()) {
+            foreach ($advertisedProductsByShop as $shopAds) {
+                $advertisedProductIds = $advertisedProductIds->merge($shopAds['products']->pluck('id'));
+            }
+        }
+        $advertisedProductIds = $advertisedProductIds->toArray();
 
         // Loại trừ các sản phẩm quảng cáo khỏi truy vấn chính
-        if (!empty($advertisedProductIds)) {
-            $productQuery->whereNotIn('id', $advertisedProductIds);
-        }
+        // Tạm thời tắt để kiểm tra
+        // if (!empty($advertisedProductIds)) {
+        //     $productQuery->whereNotIn('id', $advertisedProductIds);
+        // }
 
         $products = $productQuery->paginate(20);
 
         Log::info('✅ Tổng số sản phẩm khớp:', ['số lượng' => $products->total()]);
+        Log::info('✅ Số sản phẩm trên trang hiện tại:', ['số lượng' => $products->count()]);
         Log::info('✅ Danh mục và thương hiệu đã lấy:', ['danh mục' => $categories->count(), 'thương hiệu' => $brands->count()]);
+        Log::info('✅ Sản phẩm quảng cáo:', ['số lượng' => $advertisedProductsByShop->count()]);
+        Log::info('✅ ID sản phẩm quảng cáo bị loại trừ:', ['ids' => $advertisedProductIds]);
+        Log::info('✅ Query parameters:', [
+            'query' => $query,
+            'categoryIds' => $categoryIds,
+            'brandIds' => $brandIds,
+            'priceMin' => $priceMin,
+            'priceMax' => $priceMax,
+            'sort' => $sort
+        ]);
 
         // Trong phương thức search, phần AJAX
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('partials.product_list', compact('products', 'advertisedProducts'))->render(),
+                'html' => view('partials.product_list', compact('products', 'advertisedProductsByShop'))->render(),
                 'categories_html' => view('partials.category_filters', compact('categories'))->render(),
                 'brands_html' => view('partials.brand_filters', compact('brands'))->render(),
                 // 'advertised_html' => view('partials.advertised_products', compact('advertisedProducts'))->render(), // Không render riêng nữa
             ]);
         }
 
-        return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'advertisedProducts')); // Truyền sản phẩm quảng cáo
+        return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'advertisedProductsByShop')); // Truyền sản phẩm quảng cáo
+    }
+
+    private function addProductToShopAds($advertisedProductsByShop, $item, $campaign)
+    {
+        $shopId = $item->product->shop->id;
+        
+        if (!$advertisedProductsByShop->has($shopId)) {
+            $advertisedProductsByShop->put($shopId, [
+                'shop' => $item->product->shop,
+                'products' => collect(),
+                'campaign_name' => $campaign->name,
+                'all_campaigns' => collect()
+            ]);
+        }
+        
+        // Gán tên chiến dịch vào thuộc tính mới của sản phẩm
+        $item->product->ads_campaign_name = $campaign->name;
+        $advertisedProductsByShop->get($shopId)['products']->push($item->product);
+        
+        // Lưu thông tin chiến dịch
+        $advertisedProductsByShop->get($shopId)['all_campaigns']->push([
+            'campaign' => $campaign,
+            'product' => $item->product
+        ]);
     }
 
     public function show(Request $request, $slug)
@@ -430,6 +481,44 @@ class ProductController extends Controller
         ]);
     }
 
+    public function showShopAds(Request $request, $shopId)
+    {
+        $query = $request->get('query');
+        
+        // Lấy tất cả quảng cáo của shop có liên quan đến từ khóa tìm kiếm
+        $shopAds = AdsCampaignItem::with(['product.defaultImage', 'product.shop', 'adsCampaign.shop'])
+            ->whereHas('adsCampaign', function ($query) {
+                $query->where('status', 'active')
+                      ->where('start_date', '<=', now())
+                      ->where('end_date', '>=', now());
+            })
+            ->whereHas('product', function ($query) use ($shopId) {
+                $query->where('shopID', $shopId)
+                      ->where('status', 'active');
+            })
+            ->when($query, function ($q) use ($query) {
+                $q->whereHas('product', function ($productQuery) use ($query) {
+                    $productQuery->where('name', 'like', "%$query%");
+                });
+            })
+            ->get()
+            ->groupBy('adsCampaign.id')
+            ->map(function ($items, $campaignId) {
+                $firstItem = $items->first();
+                return [
+                    'campaign' => $firstItem->adsCampaign,
+                    'products' => $items->map(function ($item) {
+                        $item->product->ads_campaign_name = $item->adsCampaign->name;
+                        return $item->product;
+                    })
+                ];
+            });
+
+        $shop = \App\Models\Shop::findOrFail($shopId);
+        
+        return view('user.shop.ads', compact('shopAds', 'shop', 'query'));
+    }
+
     protected function getProductReviewStats($product)
     {
         $averageRating = Cache::remember("product_{$product->id}_average_rating", 3600, function () use ($product) {
@@ -639,7 +728,7 @@ class ProductController extends Controller
         return false;
     }
 
-    public function quickView($slug)
+    public function quickView(Request $request)
     {
         try {
             $product = Product::with([
@@ -660,7 +749,7 @@ class ProductController extends Controller
                             }
                         ]);
                 }
-            ])->where('slug', $slug)->firstOrFail();
+            ])->where('slug', $request->slug)->firstOrFail();
 
             // Gán dữ liệu hiển thị theo biến thể
             $attributeImages = [];
@@ -743,7 +832,7 @@ class ProductController extends Controller
                 'variantData' => $variantData
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('QuickView Error: Product not found for slug ' . $slug);
+            Log::error('QuickView Error: Product not found for slug ' . $request->slug);
             return response()->json([
                 'success' => false,
                 'message' => 'Sản phẩm không tồn tại!'

@@ -2,182 +2,267 @@
 
 @section('head')
     @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/admin/coupon.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/admin/product.css') }}">
     @endpush
 @endsection
 
 @section('content')
     <div class="admin-page-header">
-        <h1 class="admin-page-title">Sửa mã giảm giá</h1>
+        <h1 class="admin-page-title">Edit Coupon</h1>
         <div class="admin-breadcrumb">
-            <a href="{{ route('admin.coupon.index') }}" class="admin-breadcrumb-link">Mã giảm giá</a> / Sửa
+            <a href="{{ route('admin.coupon.index') }}" class="admin-breadcrumb-link">Coupons</a> / Edit
         </div>
     </div>
 
-    @include('layouts.notification')
+    <section class="bg-white rounded-lg shadow-sm p-6">
+        <form action="{{ route('admin.coupon.update', $coupon->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column - Main Content -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Coupon Code *</label>
+                            <input type="text" name="code" value="{{ old('code', $coupon->code) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter coupon code" required>
+                            @error('code')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-    <div class="row g-3">
-        <div class="col-md-12">
-            <div class="admin-card">
-                <form action="{{ route('admin.coupon.update', $coupon->id) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    <div class="mb-3">
-                        <label for="code" class="form-label">Mã</label>
-                        <input type="text" class="form-control" id="code" name="code" value="{{ old('code', $coupon->code) }}">
-                        @error('code')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Coupon Name *</label>
+                            <input type="text" name="name" value="{{ old('name', $coupon->name) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter coupon name" required>
+                            @error('name')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Tên</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $coupon->name) }}">
-                        @error('name')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Mô tả</label>
-                        <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $coupon->description) }}</textarea>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea name="description" rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter coupon description">{{ old('description', $coupon->description) }}</textarea>
                         @error('description')
-                            <div class="text-danger text-sm">{{ $message }}</div>
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Ảnh mã giảm giá</label>
-                        <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
-                        @error('image')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                        @if ($coupon->image)
-                            <div class="mt-2">
-                                <label class="form-label">Hình ảnh hiện tại:</label>
-                                <img src="{{ asset('storage/' . $coupon->image) }}" alt="{{ $coupon->name }}"
-                                     style="max-width: 150px; max-height: 150px; object-fit: cover;">
-                            </div>
-                        @endif
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Discount Value *</label>
+                            <input type="number" name="discount_value" value="{{ old('discount_value', $coupon->discount_value) }}" step="0.01"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter discount value" required>
+                            @error('discount_value')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Discount Type *</label>
+                            <select name="discount_type"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="percentage" {{ old('discount_type', $coupon->discount_type) == 'percentage' ? 'selected' : '' }}>Percentage</option>
+                                <option value="fixed" {{ old('discount_type', $coupon->discount_type) == 'fixed' ? 'selected' : '' }}>Fixed Amount</option>
+                            </select>
+                            @error('discount_type')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="discount_value" class="form-label">Giá trị giảm giá</label>
-                        <input type="number" class="form-control" id="discount_value" name="discount_value" value="{{ old('discount_value', $coupon->discount_value) }}" step="0.01">
-                        @error('discount_value')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Max Discount Amount</label>
+                            <input type="number" name="max_discount_amount" value="{{ old('max_discount_amount', $coupon->max_discount_amount) }}" step="0.01"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter max discount amount">
+                            @error('max_discount_amount')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Min Order Amount</label>
+                            <input type="number" name="min_order_amount" value="{{ old('min_order_amount', $coupon->min_order_amount) }}" step="0.01"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter minimum order amount">
+                            @error('min_order_amount')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="discount_type" class="form-label">Loại giảm giá</label>
-                        <select class="form-select form-select-admin" id="discount_type" name="discount_type">
-                            <option value="percentage" {{ old('discount_type', $coupon->discount_type) == 'percentage' ? 'selected' : '' }}>Phần trăm</option>
-                            <option value="fixed" {{ old('discount_type', $coupon->discount_type) == 'fixed' ? 'selected' : '' }}>Cố định</option>
-                        </select>
-                        @error('discount_type')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                            <input type="number" name="quantity" value="{{ old('quantity', $coupon->quantity) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter quantity">
+                            @error('quantity')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Max Uses Per User</label>
+                            <input type="number" name="max_uses_per_user" value="{{ old('max_uses_per_user', $coupon->max_uses_per_user) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter max uses per user">
+                            @error('max_uses_per_user')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="max_discount_amount" class="form-label">Số tiền giảm tối đa</label>
-                        <input type="number" class="form-control" id="max_discount_amount" name="max_discount_amount" value="{{ old('max_discount_amount', $coupon->max_discount_amount) }}" step="0.01">
-                        @error('max_discount_amount')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="min_order_amount" class="form-label">Số tiền đơn hàng tối thiểu</label>
-                        <input type="number" class="form-control" id="min_order_amount" name="min_order_amount" value="{{ old('min_order_amount', $coupon->min_order_amount) }}" step="0.01">
-                        @error('min_order_amount')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">Số lượng</label>
-                        <input type="number" class="form-control" id="quantity" name="quantity" value="{{ old('quantity', $coupon->quantity) }}">
-                        @error('quantity')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="max_uses_per_user" class="form-label">Số lần sử dụng tối đa mỗi người</label>
-                        <input type="number" class="form-control" id="max_uses_per_user" name="max_uses_per_user" value="{{ old('max_uses_per_user', $coupon->max_uses_per_user) }}">
-                        @error('max_uses_per_user')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="max_uses_total" class="form-label">Tổng số lần sử dụng tối đa</label>
-                        <input type="number" class="form-control" id="max_uses_total" name="max_uses_total" value="{{ old('max_uses_total', $coupon->max_uses_total) }}">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Total Uses</label>
+                        <input type="number" name="max_uses_total" value="{{ old('max_uses_total', $coupon->max_uses_total) }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Enter max total uses">
                         @error('max_uses_total')
-                            <div class="text-danger text-sm">{{ $message }}</div>
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label for="start_date" class="form-label">Ngày bắt đầu</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ old('start_date', $coupon->start_date->format('Y-m-d')) }}">
-                        @error('start_date')
-                            <div class="text-danger text-sm">{{ $message }}</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
+                            <input type="date" name="start_date" value="{{ old('start_date', $coupon->start_date->format('Y-m-d')) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   required>
+                            @error('start_date')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">End Date *</label>
+                            <input type="date" name="end_date" value="{{ old('end_date', $coupon->end_date->format('Y-m-d')) }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   required>
+                            @error('end_date')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Sidebar -->
+                <div class="space-y-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-sm font-medium text-gray-700 mb-4">Coupon Settings</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Rank Limit</label>
+                                <select name="rank_limit"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="all" {{ old('rank_limit', $coupon->rank_limit) == 'all' ? 'selected' : '' }}>All Ranks</option>
+                                    <option value="gold" {{ old('rank_limit', $coupon->rank_limit) == 'gold' ? 'selected' : '' }}>Gold</option>
+                                    <option value="silver" {{ old('rank_limit', $coupon->rank_limit) == 'silver' ? 'selected' : '' }}>Silver</option>
+                                    <option value="bronze" {{ old('rank_limit', $coupon->rank_limit) == 'bronze' ? 'selected' : '' }}>Bronze</option>
+                                    <option value="diamond" {{ old('rank_limit', $coupon->rank_limit) == 'diamond' ? 'selected' : '' }}>Diamond</option>
+                                </select>
+                                @error('rank_limit')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', $coupon->is_active) ? 'checked' : '' }}
+                                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <label class="ml-2 text-sm text-gray-700">Active</label>
+                                </div>
+                                @error('is_active')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="is_public" value="1" {{ old('is_public', $coupon->is_public) ? 'checked' : '' }}
+                                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                    <label class="ml-2 text-sm text-gray-700">Public</label>
+                                </div>
+                                @error('is_public')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h3 class="text-sm font-medium text-blue-700 mb-2">Tips</h3>
+                        <ul class="text-xs text-blue-600 space-y-1">
+                            <li>• Use clear and memorable coupon codes</li>
+                            <li>• Set reasonable discount values</li>
+                            <li>• Consider minimum order amounts</li>
+                            <li>• Set appropriate usage limits</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-yellow-50 rounded-lg p-4">
+                        <h3 class="text-sm font-medium text-yellow-700 mb-2">Coupon Image</h3>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                            <div class="space-y-2">
+                                @if ($coupon->image)
+                                    <div class="w-16 h-16 mx-auto bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center overflow-hidden">
+                                        <img src="{{ asset('storage/' . $coupon->image) }}" alt="{{ $coupon->name }}" class="w-full h-full object-cover">
+                                    </div>
+                                    <p class="text-xs text-gray-500">Current image</p>
+                                @else
+                                    <div class="w-16 h-16 mx-auto bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-tag text-white text-xl"></i>
+                                    </div>
+                                @endif
+                                <div>
+                                    <label for="image" class="cursor-pointer">
+                                        <span class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+                                            {{ $coupon->image ? 'Change Image' : 'Choose Image' }}
+                                        </span>
+                                        <input type="file" id="image" name="image" class="hidden" accept="image/*">
+                                    </label>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG up to 2MB</p>
+                            </div>
+                        </div>
+                        @error('image')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label for="end_date" class="form-label">Ngày kết thúc</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ old('end_date', $coupon->end_date->format('Y-m-d')) }}">
-                        @error('end_date')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h3 class="text-sm font-medium text-green-700 mb-2">Coupon Info</h3>
+                        <div class="text-xs text-green-600 space-y-1">
+                            <p><strong>Created:</strong> {{ $coupon->created_at ? $coupon->created_at->format('M d, Y') : 'N/A' }}</p>
+                            <p><strong>Updated:</strong> {{ $coupon->updated_at ? $coupon->updated_at->format('M d, Y') : 'N/A' }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="inline-block {{ $coupon->is_active ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600' }} text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                                    {{ $coupon->is_active ? 'Active' : 'Inactive' }}
+                                </span>
+                            </p>
+                        </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="rank_limit" class="form-label">Hạn chế theo hạng</label>
-                        <select class="form-select form-select-admin" id="rank_limit" name="rank_limit">
-                            <option value="all" {{ old('rank_limit', $coupon->rank_limit) == 'all' ? 'selected' : '' }}>Tất cả</option>
-                            <option value="gold" {{ old('rank_limit', $coupon->rank_limit) == 'gold' ? 'selected' : '' }}>Vàng</option>
-                            <option value="silver" {{ old('rank_limit', $coupon->rank_limit) == 'silver' ? 'selected' : '' }}>Bạc</option>
-                            <option value="bronze" {{ old('rank_limit', $coupon->rank_limit) == 'bronze' ? 'selected' : '' }}>Đồng</option>
-                            <option value="diamond" {{ old('rank_limit', $coupon->rank_limit) == 'diamond' ? 'selected' : '' }}>Kim cương</option>
-                        </select>
-                        @error('rank_limit')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', $coupon->is_active) ? 'checked' : '' }} class="form-checkbox">
-                            <span class="ml-2">Kích hoạt</span>
-                        </label>
-                        @error('is_active')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" name="is_public" value="1" {{ old('is_public', $coupon->is_public) ? 'checked' : '' }} class="form-checkbox">
-                            <span class="ml-2">Công khai</span>
-                        </label>
-                        @error('is_public')
-                            <div class="text-danger text-sm">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="flex justify-end gap-2">
-                        <a href="{{ route('admin.coupon.index') }}"
-                            class="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-md transition-all duration-300">Hủy</a>
-                        <button type="submit"
-                            class="bg-[#28BCF9] hover:bg-[#3DA5F7] text-white py-2 px-4 rounded-md transition-all duration-300">Cập nhật mã giảm giá</button>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
-    </div>
+
+            <div class="flex items-center justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+                <a href="{{ route('admin.coupon.index') }}" 
+                   class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    Update Coupon
+                </button>
+            </div>
+        </form>
+    </section>
 @endsection

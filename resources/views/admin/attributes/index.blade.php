@@ -51,7 +51,7 @@
                         <thead class="text-gray-300 font-semibold border-b border-gray-100">
                             <tr>
                                 <th class="w-6 py-3 pr-6">
-                                    <input id="select-all" class="w-[18px] h-[18px]" aria-label="Select all attributes"
+                                    <input id="select-all" class="w-[18px] h-[18px]" aria-label="Chọn tất cả thuộc tính"
                                         type="checkbox" />
                                 </th>
                                 <th class="py-3 w-[50px]">ID</th>
@@ -65,7 +65,7 @@
                                 <tr>
                                     <td class="py-4 pr-6">
                                         <input class="select-item w-[18px] h-[18px]"
-                                            aria-label="Select {{ $attribute->name }}" type="checkbox" />
+                                            aria-label="Chọn {{ $attribute->name }}" type="checkbox" />
                                     </td>
                                     <td class="py-4 text-[13px]">#{{ $attribute->id }}</td>
                                     <td class="py-4 text-[13px]">

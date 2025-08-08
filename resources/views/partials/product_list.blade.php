@@ -1,5 +1,8 @@
-@if ($advertisedProducts->isNotEmpty())
-    @include('partials.advertised_products', ['advertisedProducts' => $advertisedProducts])
+{{-- Debug: Số lượng sản phẩm --}}
+@if(isset($products))
+    <div class="mb-4 p-2 bg-blue-100 text-blue-800 rounded">
+        Debug: Tổng số sản phẩm: {{ $products->total() }}, Số sản phẩm hiện tại: {{ $products->count() }}
+    </div>
 @endif
 
 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">

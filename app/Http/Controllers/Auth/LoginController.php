@@ -46,6 +46,13 @@ class LoginController extends Controller
         $key = 'login-attempt:' . strtolower($request->login) . ':' . $request->ip();
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+            $user = Auth::user();
+            if ($user && $user->status && $user->status->value === 'banned') {
+                Auth::logout();
+                return back()->withErrors([
+                    'login' => 'Tài khoản của bạn đã bị ban. Vui lòng liên hệ quản trị viên.'
+                ])->withInput($request->only('login', 'remember'));
+            }
             $request->session()->regenerate();
             RateLimiter::clear($key);
 
@@ -144,15 +151,5 @@ class LoginController extends Controller
         return $socialiteProvider
             ->scopes(['email'])
             ->redirect();
-    }
-    public function showQrWaiting($token)
-    {
-        $qrConfirmUrl = route('qr.confirm.login', ['token' => $token]);
-        $qr_svg = \QrCode::format('svg')->size(200)->generate($qrConfirmUrl);
-
-        return view('auth.waiting-qr', [
-            'qr_svg' => $qr_svg,
-            'token' => $token,
-        ]);
     }
 }

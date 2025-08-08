@@ -1,77 +1,91 @@
 <div class="max-w-5xl mx-auto p-4">
-    <div class="flex flex-col sm:flex-row gap-4">
-        @if($advertisedProducts->isNotEmpty())
-            <!-- Left side - Shop Info (Assuming all advertised products are from the same shop or you want to display the first product's shop) -->
-            @php
-                $firstProduct = $advertisedProducts->first();
-                $shop = $firstProduct->shop ?? null;
-            @endphp
+    @if($advertisedProductsByShop->isNotEmpty())
+        @php
+            $shopAds = $advertisedProductsByShop->first();
+            $shop = $shopAds['shop'];
+            $products = $shopAds['products'];
+            $campaignName = $shopAds['campaign_name'];
+            $query = request('query', '');
+        @endphp
 
-            @if($shop)
-                <div class="flex flex-col items-center sm:items-start sm:w-48">
-                    <img alt="{{ $shop->name }} official store logo" class="rounded-full" height="64" src="{{ $shop->logo ? Storage::url($shop->logo) : asset('images/default_shop_logo.png') }}" width="64"/>
-                    <p class="mt-2 text-center sm:text-left text-sm font-normal text-black">
-                        {{ $shop->name }}
-                    </p>
-                    @if(optional($shop)->slogan)
-                        <p class="text-center sm:text-left text-xs text-gray-600 mt-1 line-clamp-2">
-                            {{ $shop->slogan }}
-                        </p>
-                    @elseif(optional($shop)->description)
-                        <p class="text-center sm:text-left text-xs text-gray-600 mt-1 line-clamp-2">
-                            {{ Str::limit(strip_tags($shop->description), 50) }} {{-- Giới hạn 50 ký tự và loại bỏ HTML --}}
-                        </p>
-                    @endif
-                    <p class="text-center sm:text-left text-sm font-normal text-gray-700 mt-1">
-                        {{ $firstProduct->ads_campaign_name ?? 'N/A' }}
-                    </p>
-                    <div class="mt-1 flex items-center space-x-1">
-                        <span class="text-xs font-semibold text-red-600 border border-red-600 rounded px-1.5 py-0.5">
-                            Mall
-                        </span>
-                        <div class="flex items-center space-x-1 text-xs font-semibold text-yellow-400">
-                            <i class="fas fa-star"></i>
-                            <span>{{ number_format($shop->shop_rating, 1) }}</span>
-                        </div>
-                        <span class="text-xs text-gray-400 font-normal">
-                            {{ number_format($shop->total_followers) }} Followers
-                        </span>
-                    </div>
-                    <a href="{{ route('shop.show', $shop->id) }}" class="mt-2 w-full sm:w-auto border border-red-600 text-red-600 text-sm font-normal rounded px-6 py-1 hover:bg-red-50 transition" type="button">
-                        Xem Shop
-                    </a>
-                </div>
-            @endif
-
-            <!-- Right side - product cards -->
-            <div class="flex flex-row space-x-3 overflow-x-auto scrollbar-hide">
-                @foreach($advertisedProducts as $product)
-                    <div class="flex-shrink-0 w-36 text-xs font-normal text-black relative">
-                        <a href="{{ route('product.show', $product->slug) }}">
-                            <img alt="{{ $product->name }} product image" class="mb-1" height="144" src="{{ $product->image_url }}" width="144"/>
-                            <p class="line-clamp-2 leading-tight">
-                                {{ $product->name }}
-                            </p>
-                            <p class="text-red-600 font-semibold mt-0.5">
-                                ₫{{ number_format($product->getCurrentPriceAttribute()) }}
-                            </p>
-                            <p class="text-gray-400">
-                                Đã bán {{ number_format($product->sold_quantity) }}
-                            </p>
-                            @if($product->getDiscountPercentageAttribute() > 0)
-                                <div class="text-red-600 text-[10px] font-semibold absolute top-1 right-1 bg-white px-0.5 rounded">
-                                    -{{ $product->getDiscountPercentageAttribute() }}%
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <!-- Header với Shop Info và nút Chi tiết -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-4">
+                    @if($shop)
+                        <img alt="{{ $shop->name }} official store logo" class="rounded-full w-16 h-16"
+                            src="{{ $shop->logo ? Storage::url($shop->logo) : asset('images/default_shop_logo.png') }}" />
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">{{ $shop->name }}</h3>
+                            <div class="flex items-center space-x-2 text-sm text-gray-600">
+                                <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Mall</span>
+                                <div class="flex items-center space-x-1">
+                                    <i class="fas fa-star text-yellow-400"></i>
+                                    <span>{{ number_format($shop->shop_rating, 1) }}</span>
                                 </div>
-                            @endif
-                        </a>
+                                <span>{{ number_format($shop->total_followers) }} Followers</span>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                
+                <!-- Nút Chi tiết -->
+                <a href="{{ route('shop.ads', ['shopId' => $shop->id, 'query' => $query]) }}" 
+                   class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                    Chi tiết
+                </a>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                @foreach($products->take(5) as $product)
+                    <div class="border border-gray-200 rounded-lg p-3 hover:shadow-lg transition-shadow">
+                        <div class="relative">
+                            <a href="{{ route('product.show', $product->slug) }}">
+                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
+                                     class="w-full h-32 object-cover rounded-lg mb-2">
+                                <div class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 py-0.5 rounded">
+                                    Quảng cáo
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <h4 class="font-medium text-gray-800 text-sm line-clamp-2">
+                                <a href="{{ route('product.show', $product->slug) }}" class="hover:text-red-500">
+                                    {{ $product->name }}
+                                </a>
+                            </h4>
+                            
+                            <div class="flex items-center gap-1">
+                                <span class="text-red-500 font-bold text-sm">
+                                    ₫{{ number_format($product->getCurrentPriceAttribute()) }}
+                                </span>
+                                @if($product->getDiscountPercentageAttribute() > 0)
+                                    <span class="text-gray-400 line-through text-xs">
+                                        ₫{{ number_format($product->price) }}
+                                    </span>
+                                @endif
+                            </div>
+                            
+                            <div class="text-xs text-gray-500">
+                                Đã bán {{ number_format($product->sold_quantity) }}
+                            </div>
+                        </div>
                     </div>
                 @endforeach
             </div>
-        @else
-            {{-- Không có sản phẩm quảng cáo nào để hiển thị --}}
-        @endif
-    </div>
-    <div class="text-gray-400 text-xs text-right mt-1">
-        Ad
-    </div>
-</div> 
+
+            <!-- Footer với thông tin chiến dịch -->
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                <div class="text-sm text-gray-600">
+                    <span>Chiến dịch:</span>
+                    <span class="font-medium">{{ $campaignName ?? 'N/A' }}</span>
+                </div>
+                <div class="text-gray-400 text-xs">Ad</div>
+            </div>
+        </div>
+    @else
+        {{-- Không có sản phẩm quảng cáo nào để hiển thị --}}
+    @endif
+</div>

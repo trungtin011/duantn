@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Log;
+use App\Http\Middleware\CheckUserBanned;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,10 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, // Ensure this is included
+            CheckUserBanned::class,
         ]);
 
         $middleware->alias([
             'CheckRole' => CheckRole::class,
+            'CheckUserBanned' => CheckUserBanned::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

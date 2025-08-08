@@ -3,299 +3,305 @@
 @section('title', 'Dashboard Admin')
 
 @section('content')
-    <div class="dashboard-container">
-        <!-- Header với bộ lọc ngày -->
-        <div class="dashboard-header">
-            <div class="header-content">
-                <h1 class="dashboard-title">
-                    <i class="fas fa-chart-line"></i>
-                    Dashboard Analytics
-                </h1>
-                <div class="date-filter-container">
-                    <div class="date-filter">
-                        <label for="start_date">Từ ngày:</label>
-                        <input type="date" id="start_date" name="start_date" value="{{ $dateRange['start'] ?? '' }}"
-                            class="date-input">
-                    </div>
-                    <div class="date-filter">
-                        <label for="end_date">Đến ngày:</label>
-                        <input type="date" id="end_date" name="end_date" value="{{ $dateRange['end'] ?? '' }}"
-                            class="date-input">
-                    </div>
-                    <button id="apply-filter" class="btn btn-primary">
-                        <i class="fas fa-filter"></i>
-                        Áp dụng
-                    </button>
-                    <button id="reset-filter" class="btn btn-secondary">
-                        <i class="fas fa-undo"></i>
-                        Reset
-                    </button>
+<div class="p-4 sm:p-6 lg:p-8 min-h-screen">
+    <!-- Header với bộ lọc ngày -->
+    <div class="bg-white rounded-xl p-5 mb-6 shadow-md">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-chart-line text-indigo-600"></i>
+                Thống kê
+            </h1>
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex flex-col">
+                    <label for="start_date" class="text-sm text-gray-600 font-medium">Từ ngày:</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ $dateRange['start'] ?? '' }}" class="p-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
-            </div>
-            <div class="date-range-display">
-                <span class="date-range-text">
-                    <i class="fas fa-calendar-alt"></i>
-                    {{ $dateRange['start_formatted'] ?? '01/01/2024' }} - {{ $dateRange['end_formatted'] ?? '31/12/2024' }}
-                </span>
+                <div class="flex flex-col">
+                    <label for="end_date" class="text-sm text-gray-600 font-medium">Đến ngày:</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ $dateRange['end'] ?? '' }}" class="p-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <button id="apply-filter" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75 flex items-center gap-2">
+                    <i class="fas fa-filter"></i>
+                    Áp dụng
+                </button>
+                <button id="reset-filter" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-75 flex items-center gap-2">
+                    <i class="fas fa-undo"></i>
+                    Reset
+                </button>
             </div>
         </div>
-
-        <!-- Loading Spinner -->
-        <div id="loading-spinner" class="loading-spinner" style="display: none;">
-            <div class="spinner"></div>
-            <p>Đang tải dữ liệu...</p>
+        <div class="mt-4 text-center">
+            <span class="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-semibold text-sm">
+                <i class="fas fa-calendar-alt"></i>
+                {{ $dateRange['start_formatted'] ?? '01/01/2024' }} - {{ $dateRange['end_formatted'] ?? '31/12/2024' }}
+            </span>
         </div>
+    </div>
 
-        <!-- KPI Cards -->
-        <div class="kpi-cards-container">
-            <div class="kpi-card revenue-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="card-icon">
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="fixed inset-0 bg-white bg-opacity-90 flex flex-col justify-center items-center z-[9999]" style="display: none;">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600"></div>
+        <p class="mt-3 text-gray-700">Đang tải dữ liệu...</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-6 shadow-md transition-transform duration-300 hover:scale-[1.02] relative overflow-hidden group">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xl">
                     <i class="fas fa-dollar-sign"></i>
                 </div>
-                <div class="card-content">
-                    <h3 class="card-title">Tổng Doanh Thu</h3>
-                    <div class="card-value" id="total-revenue">{{ number_format($totalRevenue, 0, ',', '.') }} VNĐ</div>
-                    <div class="card-growth {{ $revenueGrowth >= 0 ? 'positive' : 'negative' }}">
-                        <i class="fas fa-{{ $revenueGrowth >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                <div>
+                    <h3 class="text-sm text-gray-600 font-semibold mb-1">Tổng Doanh Thu</h3>
+                    <div class="text-3xl font-bold text-gray-900" id="total-revenue">{{ number_format($totalRevenue, 0, ',', '.') }} VNĐ</div>
+                    <div class="flex items-center text-sm font-medium mt-1 {{ $revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                        <i class="fas fa-{{ $revenueGrowth >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i>
                         {{ number_format(abs($revenueGrowth), 1) }}%
-                    </div>
+                </div>
                 </div>
             </div>
+        </div>
 
-            <div class="kpi-card orders-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="card-icon">
+        <div class="bg-white rounded-xl p-6 shadow-md transition-transform duration-300 hover:scale-[1.02] relative overflow-hidden group">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pink-500 to-red-500"></div>
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center text-white text-xl">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
-                <div class="card-content">
-                    <h3 class="card-title">Tổng Đơn Hàng</h3>
-                    <div class="card-value" id="total-orders">{{ number_format($totalOrders, 0, ',', '.') }}</div>
-                    <div class="card-growth {{ $orderGrowth >= 0 ? 'positive' : 'negative' }}">
-                        <i class="fas fa-{{ $orderGrowth >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                <div>
+                    <h3 class="text-sm text-gray-600 font-semibold mb-1">Tổng Đơn Hàng</h3>
+                    <div class="text-3xl font-bold text-gray-900" id="total-orders">{{ number_format($totalOrders, 0, ',', '.') }}</div>
+                    <div class="flex items-center text-sm font-medium mt-1 {{ $orderGrowth >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                        <i class="fas fa-{{ $orderGrowth >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i>
                         {{ number_format(abs($orderGrowth), 1) }}%
-                    </div>
+                </div>
                 </div>
             </div>
+        </div>
 
-            <div class="kpi-card products-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="card-icon">
+        <div class="bg-white rounded-xl p-6 shadow-md transition-transform duration-300 hover:scale-[1.02] relative overflow-hidden group">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-400 to-cyan-400"></div>
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xl">
                     <i class="fas fa-box"></i>
                 </div>
-                <div class="card-content">
-                    <h3 class="card-title">Sản Phẩm Đang Bán</h3>
-                    <div class="card-value" id="total-products">{{ number_format($totalProducts, 0, ',', '.') }}</div>
-                    <div class="card-growth {{ $productGrowth >= 0 ? 'positive' : 'negative' }}">
-                        <i class="fas fa-{{ $productGrowth >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                <div>
+                    <h3 class="text-sm text-gray-600 font-semibold mb-1">Sản Phẩm Đang Bán</h3>
+                    <div class="text-3xl font-bold text-gray-900" id="total-products">{{ number_format($totalProducts, 0, ',', '.') }}</div>
+                    <div class="flex items-center text-sm font-medium mt-1 {{ $productGrowth >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                        <i class="fas fa-{{ $productGrowth >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i>
                         {{ number_format(abs($productGrowth), 1) }}%
-                    </div>
+                </div>
                 </div>
             </div>
+        </div>
 
-            <div class="kpi-card users-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="card-icon">
+        <div class="bg-white rounded-xl p-6 shadow-md transition-transform duration-300 hover:scale-[1.02] relative overflow-hidden group">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-green-400 to-teal-400"></div>
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-teal-400 flex items-center justify-center text-white text-xl">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="card-content">
-                    <h3 class="card-title">Tổng Người Dùng</h3>
-                    <div class="card-value" id="total-users">{{ number_format($totalUsers, 0, ',', '.') }}</div>
-                    <div class="card-growth {{ $userGrowth >= 0 ? 'positive' : 'negative' }}">
-                        <i class="fas fa-{{ $userGrowth >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                <div>
+                    <h3 class="text-sm text-gray-600 font-semibold mb-1">Tổng Người Dùng</h3>
+                    <div class="text-3xl font-bold text-gray-900" id="total-users">{{ number_format($totalUsers, 0, ',', '.') }}</div>
+                    <div class="flex items-center text-sm font-medium mt-1 {{ $userGrowth >= 0 ? 'text-green-500' : 'text-red-500' }}">
+                        <i class="fas fa-{{ $userGrowth >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i>
                         {{ number_format(abs($userGrowth), 1) }}%
-                    </div>
+                </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Charts Section -->
-        <div class="charts-section">
-            <div class="chart-container" data-aos="fade-up" data-aos-delay="500">
-                <div class="chart-header">
-                    <h3><i class="fas fa-chart-line"></i> Biểu Đồ Doanh Thu Theo Tháng</h3>
-                    <div class="chart-controls">
-                        <button class="btn btn-sm btn-outline-primary" onclick="downloadChart('revenueChart')">
-                            <i class="fas fa-download"></i> Tải xuống
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="printChart('revenueChart')">
-                            <i class="fas fa-print"></i> In
-                        </button>
-                    </div>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="revenueChart" width="400" height="200"></canvas>
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-6 shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2"><i class="fas fa-chart-line"></i> Biểu Đồ Doanh Thu Theo Tháng</h3>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1.5 text-sm border border-indigo-500 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors duration-200" onclick="downloadChart('revenueChart')">
+                        <i class="fas fa-download mr-1"></i> Tải xuống
+                    </button>
+                    <button class="px-3 py-1.5 text-sm border border-gray-400 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200" onclick="printChart('revenueChart')">
+                        <i class="fas fa-print mr-1"></i> In
+                    </button>
                 </div>
             </div>
-
-            <div class="chart-container" data-aos="fade-up" data-aos-delay="600">
-                <div class="chart-header">
-                    <h3><i class="fas fa-chart-pie"></i> Phân Bố Trạng Thái Đơn Hàng</h3>
-                    <div class="chart-controls">
-                        <button class="btn btn-sm btn-outline-primary" onclick="downloadChart('orderStatusChart')">
-                            <i class="fas fa-download"></i> Tải xuống
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="printChart('orderStatusChart')">
-                            <i class="fas fa-print"></i> In
-                        </button>
-                    </div>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="orderStatusChart" width="400" height="200"></canvas>
-                </div>
+            <div class="relative h-72">
+                <canvas id="revenueChart"></canvas>
             </div>
         </div>
 
-        <!-- Data Tables Section -->
-        <div class="data-tables-section">
-            <div class="table-container" data-aos="fade-up" data-aos-delay="700">
-                <div class="table-header">
-                    <h3><i class="fas fa-star"></i> Sản Phẩm Bán Chạy Nhất</h3>
-                    <div class="table-controls">
-                        <button class="btn btn-sm btn-outline-primary" onclick="exportTable('top-products-table')">
-                            <i class="fas fa-file-excel"></i> Export
-                        </button>
-                    </div>
+        <div class="bg-white rounded-xl p-6 shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2"><i class="fas fa-chart-pie"></i> Phân Bố Trạng Thái Đơn Hàng</h3>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1.5 text-sm border border-indigo-500 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors duration-200" onclick="downloadChart('orderStatusChart')">
+                        <i class="fas fa-download mr-1"></i> Tải xuống
+                    </button>
+                    <button class="px-3 py-1.5 text-sm border border-gray-400 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200" onclick="printChart('orderStatusChart')">
+                        <i class="fas fa-print mr-1"></i> In
+                    </button>
+        </div>
+    </div>
+            <div class="relative h-72">
+                <canvas id="orderStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Tables Section -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-6 shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2"><i class="fas fa-star"></i> Sản Phẩm Bán Chạy Nhất</h3>
+                <button class="px-3 py-1.5 text-sm border border-indigo-500 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors duration-200" onclick="exportTable('top-products-table')">
+                    <i class="fas fa-file-excel mr-1"></i> Export
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200" id="top-products-table">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Đã bán</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Doanh thu</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tồn kho</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($topSellingProducts as $product)
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <img class="h-10 w-10 rounded-md object-cover" src="{{ $product['image_url'] }}" alt="{{ $product['name'] }}">
+                            </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ Str::limit($product['name'], 30) }}</div>
+                                        <div class="text-sm text-gray-500">{{ number_format($product['price'], 0, ',', '.') }} VNĐ</div>
+                            </div>
+                        </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{ number_format($product['sold_quantity']) }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                                {{ number_format($product['revenue'], 0, ',', '.') }} VNĐ
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product['stock_total'] > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $product['stock_total'] }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product['stock_total'] > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $product['stock_total'] > 0 ? 'Còn hàng' : 'Hết hàng' }}
+                                </span>
+                            </td>
+                        </tr>
+                @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2"><i class="fas fa-clock"></i> Đơn Hàng Gần Đây</h3>
+                <button class="px-3 py-1.5 text-sm border border-indigo-500 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors duration-200" onclick="exportTable('recent-orders-table')">
+                    <i class="fas fa-file-excel mr-1"></i> Export
+                </button>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover" id="top-products-table">
-                        <thead>
-                            <tr>
-                                <th>Sản phẩm</th>
-                                <th>Đã bán</th>
-                                <th>Doanh thu</th>
-                                <th>Tồn kho</th>
-                                <th>Trạng thái</th>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200" id="recent-orders-table">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã đơn</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($recentOrders as $order)
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ $order['order_code'] }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user mr-2 text-gray-400"></i>
+                                    {{ $order['customer_name'] }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                                {{ number_format($order['total_price'], 0, ',', '.') }} VNĐ
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    @if($order['order_status_badge'] == 'success') bg-green-100 text-green-800
+                                    @elseif($order['order_status_badge'] == 'danger') bg-red-100 text-red-800
+                                    @elseif($order['order_status_badge'] == 'warning') bg-yellow-100 text-yellow-800
+                                    @elseif($order['order_status_badge'] == 'info') bg-blue-100 text-blue-800
+                                    @else bg-gray-100 text-gray-800
+                                    @endif">
+                                    {{ $order['order_status_label'] }}
+                                </span>
+                                </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                {{ $order['created_at'] }}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($topSellingProducts as $product)
-                                <tr class="table-row-animate">
-                                    <td>
-                                        <div class="product-info">
-                                            <img src="{{ $product['image_url'] }}" alt="{{ $product['name'] }}"
-                                                class="product-image">
-                                            <div class="product-details">
-                                                <div class="product-name">{{ Str::limit($product['name'], 30) }}</div>
-                                                <div class="product-price">
-                                                    {{ number_format($product['price'], 0, ',', '.') }} VNĐ</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <span
-                                            class="badge badge-info">{{ number_format($product['sold_quantity']) }}</span>
-                                    </td>
-                                    <td class="text-right">
-                                        <span class="revenue-amount">{{ number_format($product['revenue'], 0, ',', '.') }}
-                                            VNĐ</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span
-                                            class="badge badge-{{ $product['stock_total'] > 0 ? 'success' : 'danger' }}">
-                                            {{ $product['stock_total'] }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span
-                                            class="badge badge-{{ $product['stock_total'] > 0 ? 'success' : 'danger' }}">
-                                            {{ $product['stock_total'] > 0 ? 'Còn hàng' : 'Hết hàng' }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="table-container" data-aos="fade-up" data-aos-delay="800">
-                <div class="table-header">
-                    <h3><i class="fas fa-clock"></i> Đơn Hàng Gần Đây</h3>
-                    <div class="table-controls">
-                        <button class="btn btn-sm btn-outline-primary" onclick="exportTable('recent-orders-table')">
-                            <i class="fas fa-file-excel"></i> Export
-                        </button>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover" id="recent-orders-table">
-                        <thead>
-                            <tr>
-                                <th>Mã đơn</th>
-                                <th>Khách hàng</th>
-                                <th>Tổng tiền</th>
-                                <th>Trạng thái</th>
-                                <th>Ngày tạo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($recentOrders as $order)
-                                <tr class="table-row-animate">
-                                    <td>
-                                        <span class="order-code">{{ $order['order_code'] }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="customer-info">
-                                            <i class="fas fa-user"></i>
-                                            {{ $order['customer_name'] }}
-                                        </div>
-                                    </td>
-                                    <td class="text-right">
-                                        <span class="order-amount">{{ number_format($order['total_price'], 0, ',', '.') }}
-                                            VNĐ</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge badge-{{ $order['order_status_badge'] }}">
-                                            {{ $order['order_status_label'] }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="order-date">{{ $order['created_at'] }}</span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
+                    </div>
 
-        <!-- Quick Stats Section -->
-        <div class="quick-stats-section" data-aos="fade-up" data-aos-delay="900">
-            <h3><i class="fas fa-tachometer-alt"></i> Thống Kê Nhanh</h3>
-            <div class="quick-stats-grid">
-                <div class="quick-stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Doanh thu trong kỳ</div>
-                        <div class="stat-value">{{ number_format($quickStats['period_revenue'], 0, ',', '.') }} VNĐ</div>
-                    </div>
+    <!-- Quick Stats Section -->
+    <div class="bg-white rounded-xl p-6 shadow-md">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-tachometer-alt"></i> Thống Kê Nhanh</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-blue-400 flex items-center justify-center text-white text-lg">
+                    <i class="fas fa-money-bill-wave"></i>
                 </div>
-                <div class="quick-stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Đơn hàng trong kỳ</div>
-                        <div class="stat-value">{{ number_format($quickStats['period_orders'], 0, ',', '.') }}</div>
-                    </div>
+                <div>
+                    <div class="text-sm text-gray-600">Doanh thu trong kỳ</div>
+                    <div class="text-xl font-bold text-gray-900">{{ number_format($quickStats['period_revenue'], 0, ',', '.') }} VNĐ</div>
                 </div>
-                <div class="quick-stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-plus"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Người dùng mới</div>
-                        <div class="stat-value">{{ number_format($quickStats['period_users'], 0, ',', '.') }}</div>
-                    </div>
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-red-400 flex items-center justify-center text-white text-lg">
+                    <i class="fas fa-shopping-bag"></i>
                 </div>
-                <div class="quick-stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Giá trị đơn hàng TB</div>
-                        <div class="stat-value">{{ number_format($quickStats['avg_order_value'], 0, ',', '.') }} VNĐ</div>
-                    </div>
+                <div>
+                    <div class="text-sm text-gray-600">Đơn hàng trong kỳ</div>
+                    <div class="text-xl font-bold text-gray-900">{{ number_format($quickStats['period_orders'], 0, ',', '.') }}</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-400 flex items-center justify-center text-white text-lg">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600">Người dùng mới</div>
+                    <div class="text-xl font-bold text-gray-900">{{ number_format($quickStats['period_users'], 0, ',', '.') }}</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center text-white text-lg">
+                    <i class="fas fa-chart-bar"></i>
+                                        </div>
+                <div>
+                    <div class="text-sm text-gray-600">Giá trị đơn hàng TB</div>
+                    <div class="text-xl font-bold text-gray-900">{{ number_format($quickStats['avg_order_value'], 0, ',', '.') }} VNĐ</div>
                 </div>
             </div>
         </div>
@@ -307,582 +313,13 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <style>
-        /* Dashboard Styles */
-        .dashboard-container {
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-
-        .dashboard-header {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .dashboard-title {
-            color: #2c3e50;
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .dashboard-title i {
-            color: #667eea;
-        }
-
-        .date-filter-container {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .date-filter {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .date-filter label {
-            font-size: 0.9rem;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .date-input {
-            padding: 8px 12px;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .date-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        .date-range-display {
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .date-range-text {
-            background: rgba(102, 126, 234, 0.1);
-            color: #667eea;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Loading Spinner */
-        .loading-spinner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* KPI Cards */
-        .kpi-cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .kpi-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .kpi-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-        }
-
-        .kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        .revenue-card .card-icon {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        .orders-card .card-icon {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-        }
-
-        .products-card .card-icon {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-        }
-
-        .users-card .card-icon {
-            background: linear-gradient(135deg, #43e97b, #38f9d7);
-        }
-
-        .card-title {
-            font-size: 0.9rem;
-            color: #666;
-            margin: 0 0 10px 0;
-            font-weight: 600;
-        }
-
-        .card-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .card-growth {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .card-growth.positive {
-            color: #28a745;
-        }
-
-        .card-growth.negative {
-            color: #dc3545;
-        }
-
-        /* Charts Section */
-        .charts-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .chart-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .chart-header h3 {
-            color: #2c3e50;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .chart-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-        }
-
-        .btn-outline-primary {
-            border: 2px solid #667eea;
-            color: #667eea;
-            background: transparent;
-        }
-
-        .btn-outline-primary:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-outline-secondary {
-            border: 2px solid #6c757d;
-            color: #6c757d;
-            background: transparent;
-        }
-
-        .btn-outline-secondary:hover {
-            background: #6c757d;
-            color: white;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
-        }
-
-        /* Data Tables Section */
-        .data-tables-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .table-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .table-header h3 {
-            color: #2c3e50;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .table-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .table th {
-            background: #f8f9fa;
-            color: #495057;
-            font-weight: 600;
-            padding: 12px;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        .table td {
-            padding: 12px;
-            border-bottom: 1px solid #dee2e6;
-            vertical-align: middle;
-        }
-
-        .table tbody tr {
-            transition: all 0.3s ease;
-        }
-
-        .table tbody tr:hover {
-            background: rgba(102, 126, 234, 0.05);
-            transform: scale(1.01);
-        }
-
-        .product-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .product-image {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-
-        .product-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .product-name {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .product-price {
-            font-size: 0.8rem;
-            color: #666;
-        }
-
-        .customer-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #2c3e50;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .badge-info {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .badge-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .badge-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .badge-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .badge-primary {
-            background: #007bff;
-            color: white;
-        }
-
-        .badge-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        /* Quick Stats Section */
-        .quick-stats-section {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .quick-stats-section h3 {
-            color: #2c3e50;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 0 0 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .quick-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .quick-stat-card {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .quick-stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .stat-content {
-            flex: 1;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #2c3e50;
-        }
-
-        /* Animations */
-        .table-row-animate {
-            animation: slideInFromLeft 0.5s ease-out;
-        }
-
-        @keyframes slideInFromLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .dashboard-container {
-                padding: 10px;
-            }
-
-            .header-content {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .date-filter-container {
-                justify-content: center;
-            }
-
-            .kpi-cards-container {
-                grid-template-columns: 1fr;
-            }
-
-            .charts-section {
-                grid-template-columns: 1fr;
-            }
-
-            .data-tables-section {
-                grid-template-columns: 1fr;
-            }
-
-            .quick-stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .dashboard-title {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+    <script type="application/json" id="monthly-revenue-data">
+        {!! json_encode($monthlyRevenueData) !!}
+    </script>
+
+    <script type="application/json" id="order-status-data">
+        {!! json_encode($orderStatusData) !!}
+    </script>
 
     <script>
         // Initialize AOS
@@ -893,16 +330,19 @@
         });
 
         // Chart data
+        const monthlyRevenueData = JSON.parse(document.getElementById('monthly-revenue-data').textContent);
+        const orderStatusData = JSON.parse(document.getElementById('order-status-data').textContent);
+
         const chartData = {
             revenue: {
-                labels: @json($monthlyRevenueData['labels']),
-                revenues: @json($monthlyRevenueData['revenues']),
-                orderCounts: @json($monthlyRevenueData['order_counts'])
+                labels: monthlyRevenueData.labels,
+                revenues: monthlyRevenueData.revenues,
+                orderCounts: monthlyRevenueData.order_counts
             },
             orderStatus: {
-                labels: @json($orderStatusData['labels']),
-                values: @json($orderStatusData['values']),
-                colors: @json($orderStatusData['colors'])
+                labels: orderStatusData.labels,
+                values: orderStatusData.values,
+                colors: orderStatusData.colors
             }
         };
 
@@ -919,46 +359,46 @@
             // Revenue Chart
             const revenueCtx = document.getElementById('revenueChart').getContext('2d');
             revenueChart = new Chart(revenueCtx, {
-                type: 'line',
-                data: {
+            type: 'line',
+            data: {
                     labels: chartData.revenue.labels,
-                    datasets: [{
+                datasets: [{
                         label: 'Doanh thu (VNĐ)',
                         data: chartData.revenue.revenues,
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderColor: '#6366f1', // indigo-500
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)', // indigo-500 with opacity
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4
                     }, {
                         label: 'Số đơn hàng',
                         data: chartData.revenue.orderCounts,
-                        borderColor: '#f093fb',
-                        backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                        borderColor: '#ec4899', // pink-500
+                        backgroundColor: 'rgba(236, 72, 153, 0.1)', // pink-500 with opacity
                         borderWidth: 3,
                         fill: false,
                         tension: 0.4,
                         yAxisID: 'y1'
                     }]
-                },
-                options: {
-                    responsive: true,
+            },
+            options: {
+                responsive: true,
                     maintainAspectRatio: false,
                     interaction: {
                         mode: 'index',
                         intersect: false,
                     },
-                    plugins: {
-                        legend: {
+                plugins: {
+                    legend: {
                             position: 'top',
                         },
                         title: {
                             display: true,
                             text: 'Thống kê doanh thu và đơn hàng'
-                        }
-                    },
-                    scales: {
-                        y: {
+                    }
+                },
+                scales: {
+                    y: {
                             type: 'linear',
                             display: true,
                             position: 'left',
@@ -979,28 +419,28 @@
                                 drawOnChartArea: false,
                             },
                         }
-                    }
                 }
-            });
+            }
+        });
 
             // Order Status Chart
             const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
             orderStatusChart = new Chart(orderStatusCtx, {
                 type: 'doughnut',
-                data: {
+            data: {
                     labels: chartData.orderStatus.labels,
-                    datasets: [{
+                datasets: [{
                         data: chartData.orderStatus.values,
                         backgroundColor: chartData.orderStatus.colors,
                         borderWidth: 2,
                         borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
+                }]
+            },
+            options: {
+                responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
+                plugins: {
+                    legend: {
                             position: 'bottom',
                         },
                         title: {
@@ -1047,11 +487,11 @@
             }
 
             showLoading();
-
+            
             const url = new URL(window.location);
             url.searchParams.set('start_date', startDate);
             url.searchParams.set('end_date', endDate);
-
+            
             window.location.href = url.toString();
         }
 
@@ -1059,7 +499,7 @@
             const url = new URL(window.location);
             url.searchParams.delete('start_date');
             url.searchParams.delete('end_date');
-
+            
             window.location.href = url.toString();
         }
 
@@ -1069,11 +509,11 @@
 
         function animateNumbers() {
             const numberElements = document.querySelectorAll('.card-value');
-
+            
             numberElements.forEach(element => {
                 const finalValue = element.textContent;
                 const numericValue = parseFloat(finalValue.replace(/[^\d.-]/g, ''));
-
+                
                 if (!isNaN(numericValue)) {
                     animateNumber(element, 0, numericValue, 2000, finalValue);
                 }
@@ -1082,26 +522,26 @@
 
         function animateNumber(element, start, end, duration, finalText) {
             const startTime = performance.now();
-
+            
             function updateNumber(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-
+                
                 const current = start + (end - start) * easeOutQuart(progress);
-
+                
                 if (finalText.includes('VNĐ')) {
                     element.textContent = numberWithCommas(Math.floor(current)) + ' VNĐ';
                 } else {
                     element.textContent = numberWithCommas(Math.floor(current));
                 }
-
+                
                 if (progress < 1) {
                     requestAnimationFrame(updateNumber);
                 } else {
                     element.textContent = finalText;
                 }
             }
-
+            
             requestAnimationFrame(updateNumber);
         }
 
@@ -1134,7 +574,7 @@
         function exportTable(tableId) {
             const table = document.getElementById(tableId);
             const rows = Array.from(table.querySelectorAll('tr'));
-
+            
             let csv = [];
             rows.forEach(row => {
                 const cols = Array.from(row.querySelectorAll('td, th'));
@@ -1149,11 +589,9 @@
                 });
                 csv.push(rowData.join(','));
             });
-
+            
             const csvContent = csv.join('\n');
-            const blob = new Blob([csvContent], {
-                type: 'text/csv;charset=utf-8;'
-            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
