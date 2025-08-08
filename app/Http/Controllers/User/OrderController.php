@@ -471,7 +471,7 @@ class OrderController extends Controller
                     $item->product->increment('sold_quantity', $item->quantity);
                 }
             }
-
+            
             $order = $shopOrder->order;
             if ($order && $order->userID) {
                 $customer = Customer::where('userID', $order->userID)->first();

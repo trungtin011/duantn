@@ -197,7 +197,7 @@ class CheckoutController extends Controller
     }
 
     public function store(Request $request)
-    {               
+    {                       
         try {
             $validate = $this->validateOrderData($request);
             if (!empty($validate)) {
@@ -309,6 +309,7 @@ class CheckoutController extends Controller
     private function createOrder($shopItems, $user_address, $request, $coupons_code)
     {
         return DB::transaction(function () use ($shopItems, $user_address, $request, $coupons_code) {
+
             $total_price = $request->total_amount;
             $shop_notes = $request->shop_notes ?? [];
             $used_points = $request->used_points ?? 0;
@@ -324,6 +325,63 @@ class CheckoutController extends Controller
                 'payment_method' => $request->payment_method,
                 'payment_status' => 'pending',
             ]);
+
+            $shopTotalMap = [];
+            foreach ($shopItems as $shop_id => $items) {
+                $shop_total = 0;
+                foreach ($items as $item) {
+                    $product = $item['product'];
+                    $quantity = (int) $item['quantity'];
+                    $unit_price = $product->sale_price ?? $product->price ?? 0;
+                    if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
+                        $unit_price = $item['combo_info']['price_in_combo'];
+                    } elseif ($product->is_variant ?? false) {
+                        $variant = $product->variants->where('id', $item['variant_id'])->first();
+                        $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
+                    }
+                    $shop_total += $unit_price * $quantity;
+                }
+                $shopTotalMap[$shop_id] = $shop_total;
+            }
+
+            $grandTotal = array_sum($shopTotalMap);
+            $platform_discount_amount = $request->discount_amount ?? 0;
+
+            $platformDiscountMap = [];
+            $accumulated = 0;
+            $lastShopId = null;
+            foreach ($shopTotalMap as $shop_id => $shop_total) {
+                $lastShopId = $shop_id;
+                if ($grandTotal > 0) {
+                    $discount = round($shop_total / $grandTotal * $platform_discount_amount);
+                } else {
+                    $discount = 0;
+                }
+                $platformDiscountMap[$shop_id] = $discount;
+                $accumulated += $discount;
+            }
+            if ($platform_discount_amount > 0 && $accumulated != $platform_discount_amount && $lastShopId !== null) {
+                $platformDiscountMap[$lastShopId] += ($platform_discount_amount - $accumulated);
+            }
+
+            // Allocate used points to each shop proportionally to their subtotal (same ratio logic as platform discount)
+            $points_amount = (int) ($used_points ?? 0);
+            $pointsDiscountMap = [];
+            $pointsAccumulated = 0;
+            $lastShopIdPoints = null;
+            foreach ($shopTotalMap as $shop_id => $shop_total) {
+                $lastShopIdPoints = $shop_id;
+                if ($grandTotal > 0) {
+                    $pointsDiscount = round($shop_total / $grandTotal * $points_amount);
+                } else {
+                    $pointsDiscount = 0;
+                }
+                $pointsDiscountMap[$shop_id] = $pointsDiscount;
+                $pointsAccumulated += $pointsDiscount;
+            }
+            if ($points_amount > 0 && $pointsAccumulated != $points_amount && $lastShopIdPoints !== null) {
+                $pointsDiscountMap[$lastShopIdPoints] += ($points_amount - $pointsAccumulated);
+            }
 
             $couponDiscountMap = [];
             $coupons_code = array_filter($coupons_code, function($coupon) {
@@ -346,13 +404,15 @@ class CheckoutController extends Controller
 
             foreach ($shopItems as $shop_id => $items) {
                 $discount_shop_amount = $couponDiscountMap[$shop_id] ?? 0;
+                $platform_discount = $platformDiscountMap[$shop_id] ?? 0;
+                    $points_discount = $pointsDiscountMap[$shop_id] ?? 0;
                 $shipping_shop_fee = $shippingFeeMap[$shop_id] ?? 0;
 
                 $shop_order = ShopOrder::firstOrCreate([
                     'shopID' => $shop_id,
                     'orderID' => $order->id,
                     'shipping_shop_fee' => $shipping_shop_fee,
-                    'discount_shop_amount' => $discount_shop_amount,
+                    'discount_shop_amount' => $discount_shop_amount + $platform_discount + $points_discount,
                     'status' => 'pending',
                 ], [
                     'code' => 'DHS-' . strtoupper(substr(md5(uniqid()), 0, 5)) . '-' . substr(time(), -3),
