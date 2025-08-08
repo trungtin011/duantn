@@ -139,71 +139,105 @@ class SellerStatisticsController extends Controller
 
         // Inventory statistics
         $inventoryStats = Cache::remember('seller_inventory_' . $shop->id, now()->addMinutes(60), function () use ($shop) {
-            $products = Product::where('shopID', $shop->id)
-                ->select('status', DB::raw('sum(stock_total) as total_stock'))
-                ->groupBy('status')
-                ->get()
-                ->pluck('total_stock', 'status')
-                ->toArray();
+            // Count total products (only products, not variants)
+            $totalProducts = Product::where('shopID', $shop->id)->count();
+            $totalItems = $totalProducts;
 
-            $variants = ProductVariant::whereIn('productID', function ($query) use ($shop) {
+            // Calculate total stock from both products and variants
+            $productsStock = Product::where('shopID', $shop->id)->sum('stock_total');
+            $variantsStock = ProductVariant::whereIn('productID', function ($query) use ($shop) {
                 $query->select('id')->from('products')->where('shopID', $shop->id);
-            })
-                ->select('status', DB::raw('sum(stock) as total_stock'))
-                ->groupBy('status')
-                ->get()
-                ->pluck('total_stock', 'status')
-                ->toArray();
+            })->sum('stock');
+            $totalStock = $productsStock + $variantsStock;
 
-            $productsWithoutVariantsStock = Product::where('shopID', $shop->id)
-                ->whereDoesntHave('variants')
-                ->sum('stock_total');
-
-            $totalStock = array_sum($products) + array_sum($variants) + $productsWithoutVariantsStock;
+            // Count out of stock items (only products)
+            $outOfStockProducts = Product::where('shopID', $shop->id)
+                ->where('status', 'out_of_stock')
+                ->count();
+            $totalOutOfStock = $outOfStockProducts;
 
             return [
+                'total_products' => $totalItems,
                 'total_stock' => $totalStock,
-                'active_stock' => ($products['active'] ?? 0) + ($variants['active'] ?? 0),
-                'out_of_stock' => ($products['out_of_stock'] ?? 0) + ($variants['out_of_stock'] ?? 0),
+                'active_stock' => $totalItems - $totalOutOfStock,
+                'out_of_stock' => $totalOutOfStock,
             ];
         });
 
         // Top 5 selling products with profit
         $topProducts = Cache::remember('seller_top_products_' . $shop->id . '_' . ($startDate ?? 'all') . '_' . ($endDate ?? 'all'), now()->addMinutes(60), function () use ($shop, $startDate, $endDate) {
-            $query = Product::where('products.shopID', $shop->id)
+            // Get products with variants
+            $productsWithVariants = Product::where('products.shopID', $shop->id)
                 ->join('items_order', 'products.id', '=', 'items_order.productID')
                 ->join('orders', 'items_order.orderID', '=', 'orders.id')
                 ->leftJoin('product_variants', 'items_order.variantID', '=', 'product_variants.id')
                 ->whereIn('orders.order_status', ['completed', 'processing'])
+                ->whereNotNull('items_order.variantID')
+                ->where('product_variants.stock', '>', 0)
                 ->select(
-                    'products.id',
-                    'products.name',
-                    'products.sku',
-                    'products.stock_total',
+                    'products.id as product_id',
+                    'products.name as product_name',
+                    'products.sku as product_sku',
+                    'product_variants.id as variant_id',
+                    'product_variants.sku as variant_sku',
+                    'product_variants.stock as variant_stock',
                     DB::raw('SUM(items_order.quantity) as total_sold'),
                     DB::raw('SUM(items_order.total_price) as total_revenue'),
-                    DB::raw('SUM(items_order.total_price - (items_order.quantity * COALESCE(product_variants.purchase_price, products.purchase_price, 0))) as total_profit')
+                    DB::raw('SUM(items_order.total_price - (items_order.quantity * COALESCE(product_variants.purchase_price, 0))) as total_profit')
                 )
-                ->groupBy('products.id', 'products.name', 'products.sku', 'products.stock_total')
-                ->orderByDesc('total_sold')
-                ->take(5);
+                ->groupBy('products.id', 'products.name', 'products.sku', 'product_variants.id', 'product_variants.sku', 'product_variants.stock');
 
+            // Date filter for variants query
             if ($startDate && $endDate) {
-                $query->whereBetween('orders.created_at', [$startDate, $endDate]);
+                $productsWithVariants->whereBetween('orders.created_at', [$startDate, $endDate]);
             }
 
-            $results = $query->get();
+            // Get products without variants
+            $productsWithoutVariants = Product::where('products.shopID', $shop->id)
+                ->join('items_order', 'products.id', '=', 'items_order.productID')
+                ->join('orders', 'items_order.orderID', '=', 'orders.id')
+                ->whereIn('orders.order_status', ['completed', 'processing'])
+                ->whereNull('items_order.variantID')
+                ->where('products.stock_total', '>', 0)
+                ->select(
+                    'products.id as product_id',
+                    'products.name as product_name',
+                    'products.sku as product_sku',
+                    DB::raw('NULL as variant_id'),
+                    DB::raw('NULL as variant_sku'),
+                    'products.stock_total as variant_stock',
+                    DB::raw('SUM(items_order.quantity) as total_sold'),
+                    DB::raw('SUM(items_order.total_price) as total_revenue'),
+                    DB::raw('SUM(items_order.total_price - (items_order.quantity * COALESCE(products.purchase_price, 0))) as total_profit')
+                )
+                ->groupBy('products.id', 'products.name', 'products.sku', 'products.stock_total');
 
-            return $results->map(fn($product) => [
-                'product_id' => $product->id,
-                'name' => $product->name,
-                'sku' => $product->sku,
-                'stock_total' => $product->stock_total ?? 0,
-                'total_sold' => (int) $product->total_sold,
-                'total_revenue' => round($product->total_revenue ?? 0, 2),
-                'total_profit' => round($product->total_profit ?? 0, 2),
-                'image_path' => $product->defaultImage ? Storage::url($product->defaultImage->image_path) : 'https://placehold.co/50x50',
-            ])->toArray();
+            // Date filter for non-variants query
+            if ($startDate && $endDate) {
+                $productsWithoutVariants->whereBetween('orders.created_at', [$startDate, $endDate]);
+            }
+
+            // Combine two queries
+            $combinedQuery = $productsWithVariants->union($productsWithoutVariants);
+
+            $results = $combinedQuery->orderByDesc('total_sold')->take(5)->get();
+
+            return $results->map(function($item) {
+                $product = Product::with('defaultImage')->find($item->product_id);
+                
+                return [
+                    'product_id' => $item->product_id,
+                    'name' => $item->product_name,
+                    'sku' => $item->variant_id ? $item->variant_sku : $item->product_sku,
+                    'stock_total' => $item->variant_stock ?? 0,
+                    'total_sold' => (int) $item->total_sold,
+                    'total_revenue' => round($item->total_revenue ?? 0, 2),
+                    'total_profit' => round($item->total_profit ?? 0, 2),
+                    'image_path' => $product->defaultImage ? Storage::url($product->defaultImage->image_path) : 'https://placehold.co/50x50',
+                    'is_variant' => !is_null($item->variant_id),
+                    'variant_id' => $item->variant_id,
+                ];
+            })->toArray();
         });
 
         // Profit calculation
@@ -308,22 +342,21 @@ class SellerStatisticsController extends Controller
 
         // Low stock products
         $lowStockProducts = Cache::remember('seller_low_stock_' . $shop->id, now()->addMinutes(60), function () use ($shop) {
-            return Product::with(['variants', 'defaultImage'])
+            $lowStockItems = [];
+
+            // Check products with low stock
+            $products = Product::with(['variants', 'defaultImage'])
                 ->where('shopID', $shop->id)
                 ->where('status', '!=', 'out_of_stock')
-                ->get()
-                ->filter(function ($product) {
-                    $totalStock = ($product->variants && $product->variants->count() > 0)
-                        ? $product->variants->sum('stock')
-                        : $product->stock_total;
-                    return $totalStock <= 10;
-                })
-                ->map(function ($product) {
-                    $totalStock = ($product->variants && $product->variants->count() > 0)
-                        ? $product->variants->sum('stock')
-                        : $product->stock_total;
+                ->get();
 
-                    return [
+            foreach ($products as $product) {
+                $totalStock = ($product->variants && $product->variants->count() > 0)
+                    ? $product->variants->sum('stock')
+                    : $product->stock_total;
+                
+                if ($totalStock <= 10) {
+                    $lowStockItems[] = [
                         'id' => $product->id,
                         'name' => $product->name,
                         'sku' => $product->sku,
@@ -332,12 +365,34 @@ class SellerStatisticsController extends Controller
                             ? Storage::url($product->defaultImage->image_path)
                             : 'https://placehold.co/50x50',
                     ];
-                })
-                ->values()
-                ->toArray();
+                }
+            }
+
+            return $lowStockItems;
         });
 
         $lowStockCount = count($lowStockProducts);
+
+        // Get followers count from shop_followers table
+        $followersCount = Cache::remember('seller_followers_' . $shop->id, now()->addMinutes(60), function () use ($shop) {
+            return DB::table('shop_followers')
+                ->where('shopID', $shop->id)
+                ->count();
+        });
+
+        // Get completed orders count from shop_order table
+        $completedOrdersCount = Cache::remember('seller_completed_orders_' . $shop->id . '_' . ($startDate ?? 'all') . '_' . ($endDate ?? 'all'), now()->addMinutes(60), function () use ($shop, $startDate, $endDate) {
+            $query = DB::table('shop_order')
+                ->join('orders', 'shop_order.orderID', '=', 'orders.id')
+                ->where('shop_order.shopID', $shop->id)
+                ->where('orders.order_status', 'completed');
+
+            if ($startDate && $endDate) {
+                $query->whereBetween('orders.created_at', [$startDate, $endDate]);
+            }
+
+            return $query->count();
+        });
 
         // Combine all statistics
         $statistics = [
@@ -350,6 +405,8 @@ class SellerStatisticsController extends Controller
             'total_revenue' => $profitStats['total_revenue'],
             'low_stock_products' => $lowStockProducts,
             'revenue_data' => $revenueData,
+            'followers_count' => $followersCount,
+            'completed_orders_count' => $completedOrdersCount,
         ];
 
         // Pass current month and day for month filter

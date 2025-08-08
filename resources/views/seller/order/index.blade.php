@@ -2,95 +2,168 @@
 
 @section('title', 'Quản lý đơn hàng')
 
-
 @section('content')
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <div class="admin-page-header mb-5">
+        <h1 class="admin-page-title text-2xl">Đơn hàng</h1>
+        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Danh sách đơn hàng</div>
+    </div>
 
-    <div class="container mx-auto py-5">
-        <h1 class="text-2xl font-bold mb-6">Danh sách đơn hàng</h1>
+    @include('layouts.notification')
+
+    <section class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4 h-[72px]">
+            <form class="w-full md:w-[223px] relative" method="GET" action="{{ route('seller.order.index') }}">
+                <input name="search"
+                    class="w-full h-[42px] border border-[#F2F2F6] rounded-md py-2 pl-10 pr-4 text-xs placeholder:text-gray-400 focus:outline-none"
+                    placeholder="Tìm kiếm đơn hàng" type="text" value="{{ request('search') }}" />
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                    <i class="fas fa-search text-[#55585b]"></i>
+                </span>
+            </form>
+
+            <div class="flex gap-4 items-center h-full">
+                <div class="flex gap-4">
+                    <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
+                        <span>Trạng thái:</span>
+                        <select name="status" id="statusFilter"
+                            class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="">Tất cả</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ xác nhận</option>
+                            <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Đã xác nhận</option>
+                            <option value="ready_to_pick" {{ request('status') == 'ready_to_pick' ? 'selected' : '' }}>Sẵn sàng lấy hàng</option>
+                            <option value="picked" {{ request('status') == 'picked' ? 'selected' : '' }}>Đã lấy hàng</option>
+                            <option value="shipping" {{ request('status') == 'shipping' ? 'selected' : '' }}>Đang giao hàng</option>
+                            <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Đã giao hàng</option>
+                            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Đã hủy</option>
+                            <option value="shipping_failed" {{ request('status') == 'shipping_failed' ? 'selected' : '' }}>Giao hàng thất bại</option>
+                            <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Đã trả hàng</option>
+                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Hoàn thành</option>
+                            <option value="damage" {{ request('status') == 'damage' ? 'selected' : '' }}>Hư hỏng</option>
+                            <option value="lost" {{ request('status') == 'lost' ? 'selected' : '' }}>Thất lạc</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
+                        <span>Ngày:</span>
+                        <input type="date" name="filter_date" id="filterDate" value="{{ request('filter_date') }}"
+                            class="border rounded px-3 py-2 text-xs">
+                    </div>
+                </div>
+                <button id="resetFilterBtn" type="button"
+                    class="border border-gray-300 text-xs text-white bg-red-500 px-3 py-2 rounded-md hover:bg-red-600 hover:text-white transition-colors"
+                    style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </button>
+            </div>
+        </div>
 
         @if ($orders->isEmpty())
-            <p class="p-4 text-gray-600">Không có đơn hàng nào.</p>
+            <div class="text-center text-gray-400 py-8">
+                <i class="fas fa-box-open text-4xl mb-4"></i>
+                <p>
+                    @if (request('search') || request('status') || request('filter_date'))
+                        Không tìm thấy đơn hàng nào phù hợp với bộ lọc hiện tại
+                    @else
+                        Không có đơn hàng nào.
+                    @endif
+                </p>
+            </div>
         @else
-            <table class="w-full table-auto border-collapse border border-gray-200">
-                <thead class="bg-gray-50">
+            <table class="w-full text-xs text-left text-gray-400 border-t border-gray-100">
+                <thead class="text-gray-300 font-semibold border-b border-gray-100">
                     <tr>
-                        <th class="border border-gray-300 py-2 px-4">Mã đơn hàng</th>
-                        <th class="border border-gray-300 py-2 px-4">Khách hàng</th>
-                        <th class="border border-gray-300 py-2 px-4">Tổng tiền</th>
-                        <th class="border border-gray-300 py-2 px-4">Địa chỉ nhận hàng</th>
-                        <th class="border border-gray-300 py-2 px-4">Trạng thái hiện tại</th>
-                        <th class="border border-gray-300 py-2 px-4">Sản phẩm</th>
-                        <th class="border border-gray-300 py-2 px-4">Ngày đặt</th>
-                        <th class="border border-gray-300 py-2 px-4">Hành động</th>
+                        <th class="py-3">Mã đơn hàng</th>
+                        <th class="py-3">Khách hàng</th>
+                        <th class="py-3">Tổng tiền</th>
+                        <th class="py-3">Sản phẩm</th>
+                        <th class="py-3">Trạng thái</th>
+                        <th class="py-3">Ngày đặt</th>
+                        <th class="py-3 pr-6 text-right">Hành động</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach ($orders as $order)
-                        @php
-                            $statusClasses = [
-                                'pending' => 'bg-yellow-200 text-yellow-800',
-                                'confirmed' => 'bg-blue-200 text-blue-800',
-                                'ready_to_pick' => 'bg-purple-200 text-purple-800',
-                                'picked' => 'bg-green-200 text-green-800',
-                                'shipping' => 'bg-green-200 text-green-800',
-                                'delivered' => 'bg-red-200 text-red-800',
-                                'cancelled' => 'bg-red-200 text-red-800',
-                                'shipping_failed' => 'bg-red-200 text-red-800',
-                                'returned' => 'bg-red-200 text-red-800',
-                                'completed' => 'bg-green-200 text-green-800',
-                            ];
-                            $currentStatusClass = $statusClasses[$order->status] ?? 'bg-gray-200 text-gray-800';
-                        @endphp
-                        <tr class="border border-gray-300">
-                            <td class="py-2 px-4">{{ $order->code }}</td>
-                            <td class="py-2 px-4">{{ $order->order->address->receiver_name ?? 'Khách vãng lai' }}</td>
-                            <td class="py-2 px-4">{{ number_format($order->items->sum('unit_price'), 0, ',', '.') }}đ</td>
-                            <td class="py-2 px-4">
-                                @if ($order->order->address)
-                                    {{ $order->order->address->receiver_name }}<br>
-                                    {{ $order->order->address->address }}, {{ $order->order->address->ward }},
-                                    {{ $order->order->address->district }}, {{ $order->order->address->province }}<br>
-                                    Điện thoại: {{ $order->order->address->receiver_phone }}
-                                @else
-                                    Chưa có địa chỉ
-                                @endif
-                            </td>
-                            <td class="py-2 px-4">
-                                <span class="inline-block px-2 py-1 rounded {{ $currentStatusClass }}">
-                                    {{ ucfirst($order->status) }}
-                                </span>
-                            </td>
-                            <td class="py-2 px-4">
-                                <ul>
-                                    @foreach ($order->items as $item)
-                                        <li>
-                                            <div class="flex items-center space-x-2">
-                                                <img src="{{ $item->product_image }}" alt="{{ $item->product_name }}"
-                                                    class="w-10 h-10 object-cover rounded">
-                                                <div>
-                                                    <p class="font-semibold">{{ $item->product_name }}</p>
-                                                    <p>Số lượng: {{ $item->quantity }} x
-                                                        {{ number_format($item->unit_price, 0, ',', '.') }}đ</p>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </td>
-                            <td class="py-2 px-4">{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="py-2 px-4">
-                                <a href="{{ route('seller.order.show', $order->order->order_code) }}"
-                                    class="text-blue-600 hover:underline">Xem chi tiết</a>
-                            </td>
-                        </tr>
-                    @endforeach
+                <tbody class="divide-y divide-gray-100 text-gray-900 font-normal">
+                    @include('seller.order._table_body', ['orders' => $orders])
                 </tbody>
             </table>
 
-            <div class="mt-4">
+            <div class="mt-6 flex items-center justify-between text-[11px] text-gray-500 select-none">
+                <div>
+                    Hiển thị {{ $orders->count() }} đơn hàng trên {{ $orders->total() }} đơn hàng
+                </div>
                 {{ $orders->links('pagination::bootstrap-5') }}
             </div>
         @endif
-    </div>
+    </section>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusFilter = document.getElementById('statusFilter');
+            const searchInput = document.querySelector('input[name="search"]');
+            const filterDate = document.getElementById('filterDate');
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+            const tbody = document.querySelector('table tbody');
+
+            function checkShowResetBtn() {
+                const hasFilter =
+                    (searchInput && searchInput.value) ||
+                    (statusFilter && statusFilter.value) ||
+                    (filterDate && filterDate.value);
+
+                if (resetFilterBtn) {
+                    resetFilterBtn.style.display = hasFilter ? 'inline-flex' : 'none';
+                }
+            }
+
+            function submitFilters() {
+                const params = new URLSearchParams();
+                if (searchInput && searchInput.value) params.append('search', searchInput.value);
+                if (statusFilter && statusFilter.value) params.append('status', statusFilter.value);
+                if (filterDate && filterDate.value) params.append('filter_date', filterDate.value);
+
+                fetch("{{ route('seller.order.ajax') }}?" + params.toString(), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(res => res.text())
+                    .then(html => {
+                        if (tbody) tbody.innerHTML = html;
+                        // Update URL without full reload for UX
+                        const currentUrl = new URL(window.location);
+                        ['search','status','filter_date'].forEach(key => currentUrl.searchParams.delete(key));
+                        params.forEach((value, key) => currentUrl.searchParams.set(key, value));
+                        window.history.replaceState({}, '', currentUrl.toString());
+                    });
+            }
+
+            if (statusFilter) statusFilter.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
+            });
+            if (filterDate) filterDate.addEventListener('change', function() {
+                submitFilters();
+                checkShowResetBtn();
+            });
+            if (searchInput) searchInput.addEventListener('input', function() {
+                clearTimeout(this._timer);
+                this._timer = setTimeout(function() {
+                    submitFilters();
+                    checkShowResetBtn();
+                }, 400);
+            });
+            if (resetFilterBtn) {
+                resetFilterBtn.addEventListener('click', function() {
+                    if (searchInput) searchInput.value = '';
+                    if (statusFilter) statusFilter.value = '';
+                    if (filterDate) filterDate.value = '';
+                    submitFilters();
+                    checkShowResetBtn();
+                });
+                checkShowResetBtn();
+            }
+        });
+    </script>
 @endsection
