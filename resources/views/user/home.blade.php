@@ -555,38 +555,83 @@
         <div class="banner">
             <div class="container">
                 <div class="slider-container has-scrollbar">
-                    <div class="slider-item">
-                        <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="women's latest fashion sale"
-                            class="banner-img">
-                        <div class="banner-content">
-                            <p class="banner-subtitle">Sản phẩm thịnh hành</p>
-                            <h2 class="banner-title">Thời trang nữ mới nhất</h2>
-                            <p class="banner-text">bắt đầu từ <b>20</b>.000₫</p>
-                            <a href="#" class="banner-btn">Mua ngay</a>
+                    @if($banners->count() > 0)
+                        @foreach($banners as $banner)
+                            <div class="slider-item">
+                                <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="banner-img">
+                                <div class="banner-content" 
+                                     style="
+                                        @if($banner->content_position == 'center') 
+                                            display: flex; align-items: center; justify-content: center;
+                                        @elseif($banner->content_position == 'left')
+                                            display: flex; align-items: center; justify-content: flex-start;
+                                        @elseif($banner->content_position == 'right')
+                                            display: flex; align-items: center; justify-content: flex-end;
+                                        @elseif($banner->content_position == 'top-left')
+                                            display: flex; align-items: flex-start; justify-content: flex-start;
+                                        @elseif($banner->content_position == 'top-right')
+                                            display: flex; align-items: flex-start; justify-content: flex-end;
+                                        @elseif($banner->content_position == 'bottom-left')
+                                            display: flex; align-items: flex-end; justify-content: flex-start;
+                                        @elseif($banner->content_position == 'bottom-right')
+                                            display: flex; align-items: flex-end; justify-content: flex-end;
+                                        @endif
+                                     ">
+                                    <div style="
+                                        text-align: {{ $banner->text_align ?? 'center' }};
+                                        @if($banner->title_color) color: {{ $banner->title_color }}; @endif
+                                    ">
+                                        @if($banner->description)
+                                            <p class="banner-subtitle" style="@if($banner->subtitle_color) color: {{ $banner->subtitle_color }}; @endif @if($banner->subtitle_font_size) font-size: {{ $banner->subtitle_font_size }}; @endif">
+                                                {{ $banner->description }}
+                                            </p>
+                                        @endif
+                                        <h2 class="banner-title" style="@if($banner->title_color) color: {{ $banner->title_color }}; @endif @if($banner->title_font_size) font-size: {{ $banner->title_font_size }}; @endif">
+                                            {{ $banner->title }}
+                                        </h2>
+                                        @if($banner->link_url)
+                                            <a href="{{ $banner->link_url }}" class="banner-btn">Xem chi tiết</a>
+                                        @else
+                                            <a href="#" class="banner-btn">Xem chi tiết</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <!-- Fallback banners nếu không có banner nào từ database -->
+                        <div class="slider-item">
+                            <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="women's latest fashion sale"
+                                class="banner-img">
+                            <div class="banner-content">
+                                <p class="banner-subtitle">Sản phẩm thịnh hành</p>
+                                <h2 class="banner-title">Thời trang nữ mới nhất</h2>
+                                <p class="banner-text">bắt đầu từ <b>20</b>.000₫</p>
+                                <a href="#" class="banner-btn">Mua ngay</a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="slider-item">
-                        <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses" class="banner-img">
-                        <div class="banner-content">
-                            <p class="banner-subtitle">Phụ kiện thịnh hành</p>
-                            <h2 class="banner-title">Kính mát hiện đại</h2>
-                            <p class="banner-text">bắt đầu từ <b>15</b>.000₫</p>
-                            <a href="#" class="banner-btn">Mua ngay</a>
+                        <div class="slider-item">
+                            <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses" class="banner-img">
+                            <div class="banner-content">
+                                <p class="banner-subtitle">Phụ kiện thịnh hành</p>
+                                <h2 class="banner-title">Kính mát hiện đại</h2>
+                                <p class="banner-text">bắt đầu từ <b>15</b>.000₫</p>
+                                <a href="#" class="banner-btn">Mua ngay</a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="slider-item">
-                        <img src="{{ asset('assets/images/banner-3.jpg') }}" alt="new fashion summer sale"
-                            class="banner-img">
-                        <div class="banner-content">
-                            <p class="banner-subtitle">Ưu đãi giảm giá</p>
-                            <h2 class="banner-title">Thời trang hè mới</h2>
-                            <p class="banner-text">bắt đầu từ <b>29</b>.990₫</p>
-                            <a href="#" class="banner-btn">Mua ngay</a>
+                        <div class="slider-item">
+                            <img src="{{ asset('assets/images/banner-3.jpg') }}" alt="new fashion summer sale"
+                                class="banner-img">
+                            <div class="banner-content">
+                                <p class="banner-subtitle">Ưu đãi giảm giá</p>
+                                <h2 class="banner-title">Thời trang hè mới</h2>
+                                <p class="banner-text">bắt đầu từ <b>29</b>.990₫</p>
+                                <a href="#" class="banner-btn">Mua ngay</a>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
-        </div>
         </div>
 
         <div class="category">
@@ -628,14 +673,14 @@
         <div class="product-container">
             <div class="container">
                 <div class="sidebar has-scrollbar relative" data-mobile-menu>
-                    <button class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-2.5"
+                    <button
+                        class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-2.5"
                         data-mobile-menu-close-btn>
                         <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
                     </button>
                     <div class="shop-container-bg rounded-xl border border-orange-200 p-6 mb-8 mt-10 lg:mt-0">
                         <div class="flex items-center justify-between mb-4">
-                            <h2
-                                class="text-lg font-bold flex items-center justify-between gap-2 w-full shop-title">
+                            <h2 class="text-lg font-bold flex items-center justify-between gap-2 w-full shop-title">
                                 Shop Bán Chạy
                                 <ion-icon name="flame"
                                     class="text-orange-500 text-xl bg-white rounded-full p-2"></ion-icon>
@@ -1286,7 +1331,9 @@
 
                 <div class="cta-container">
                     @if ($advertisedProductsByShop->isNotEmpty())
-                        @include('partials.advertised_products', ['advertisedProductsByShop' => $advertisedProductsByShop])
+                        @include('partials.advertised_products', [
+                            'advertisedProductsByShop' => $advertisedProductsByShop,
+                        ])
                     @else
                         <!-- Fallback banner nếu không có quảng cáo -->
                         <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection"
@@ -1617,7 +1664,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }
