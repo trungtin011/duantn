@@ -293,6 +293,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::post('/{shop}/activate', [AdminShopController::class, 'activate'])->name('admin.shops.activate');
         Route::put('/{shop}', [AdminShopController::class, 'update'])->name('admin.shops.update');
         Route::delete('/{shop}', [AdminShopController::class, 'destroy'])->name('admin.shops.destroy');
+        Route::post('/test-role-update', [AdminShopController::class, 'testRoleUpdate'])->name('admin.shops.test-role-update');
     });
 });
 
