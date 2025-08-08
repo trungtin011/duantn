@@ -186,11 +186,8 @@
             <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg font-semibold">Đánh giá khách hàng</h2>
-                    <div class="">
-                        <a href="{{ route('seller.reviews.index') }}" class="text-[#f42f46] hover:underline ">
-                            Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
-                        </a>
-                    </div>
+                    <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm
+                        <i class="fas fa-chevron-right text-[10px]"></i></a>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="stat-card">
