@@ -11,6 +11,14 @@ class Banner extends Model
         'title',
         'description',
         'image_path',
+        'image_width',
+        'image_height',
+        'image_size',
+        'image_position',
+        'image_object_fit',
+        'image_object_position',
+        'image_parallax',
+        'image_scale',
         'link_url',
         'content_position',
         'text_align',
@@ -22,11 +30,13 @@ class Banner extends Model
         'sort_order',
         'start_date',
         'end_date',
+        'responsive_settings',
     ];
 
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'responsive_settings' => 'array',
     ];
 
     // Scope để lấy banner active
@@ -53,6 +63,20 @@ class Banner extends Model
     public function getImageUrlAttribute()
     {
         return Storage::url($this->image_path);
+    }
+
+    // Lấy thông tin kích thước hình ảnh
+    public function getImageDimensionsAttribute()
+    {
+        if ($this->image_width && $this->image_height) {
+            return [
+                'width' => $this->image_width,
+                'height' => $this->image_height,
+                'size' => $this->image_size,
+                'aspect_ratio' => round($this->image_width / $this->image_height, 2)
+            ];
+        }
+        return null;
     }
 
     // Kiểm tra banner có đang hoạt động không

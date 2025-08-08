@@ -30,9 +30,16 @@
                          alt="{{ $banner->title }}" 
                          class="w-full h-auto rounded-lg border border-gray-200">
                 </div>
-                <div class="text-sm text-gray-500">
+                <div class="text-sm text-gray-500 space-y-1">
                     <p><strong>Đường dẫn:</strong> {{ $banner->image_path }}</p>
                     <p><strong>Định dạng:</strong> {{ pathinfo($banner->image_path, PATHINFO_EXTENSION) }}</p>
+                    @if($banner->image_width && $banner->image_height)
+                        <p><strong>Kích thước:</strong> {{ $banner->image_width }} x {{ $banner->image_height }} px</p>
+                        <p><strong>Tỷ lệ khung hình:</strong> {{ round($banner->image_width / $banner->image_height, 2) }}</p>
+                    @endif
+                    @if($banner->image_size)
+                        <p><strong>Dung lượng:</strong> {{ $banner->image_size }}</p>
+                    @endif
                 </div>
             </div>
 
@@ -102,6 +109,78 @@
                 </div>
             </div>
         </div>
+
+        <!-- Responsive Settings -->
+        @if($banner->responsive_settings)
+        <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Cài đặt Responsive</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Desktop -->
+                @if(isset($banner->responsive_settings['desktop']))
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-blue-900 mb-3">Desktop</h3>
+                    <div class="space-y-2 text-sm">
+                        <div><strong>Font size tiêu đề:</strong> {{ $banner->responsive_settings['desktop']['title_font_size'] ?? '2rem' }}</div>
+                        <div><strong>Font size phụ đề:</strong> {{ $banner->responsive_settings['desktop']['subtitle_font_size'] ?? '1rem' }}</div>
+                        <div><strong>Vị trí nội dung:</strong> {{ $banner->responsive_settings['desktop']['content_position'] ?? 'center' }}</div>
+                        <div><strong>Căn chỉnh text:</strong> {{ $banner->responsive_settings['desktop']['text_align'] ?? 'center' }}</div>
+                        <div><strong>Màu tiêu đề:</strong> 
+                            <span class="inline-block w-4 h-4 rounded border" style="background-color: {{ $banner->responsive_settings['desktop']['title_color'] ?? '#ffffff' }}"></span>
+                            {{ $banner->responsive_settings['desktop']['title_color'] ?? '#ffffff' }}
+                        </div>
+                        <div><strong>Màu phụ đề:</strong> 
+                            <span class="inline-block w-4 h-4 rounded border" style="background-color: {{ $banner->responsive_settings['desktop']['subtitle_color'] ?? '#f3f4f6' }}"></span>
+                            {{ $banner->responsive_settings['desktop']['subtitle_color'] ?? '#f3f4f6' }}
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Tablet -->
+                @if(isset($banner->responsive_settings['tablet']))
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-green-900 mb-3">Tablet</h3>
+                    <div class="space-y-2 text-sm">
+                        <div><strong>Font size tiêu đề:</strong> {{ $banner->responsive_settings['tablet']['title_font_size'] ?? '1.5rem' }}</div>
+                        <div><strong>Font size phụ đề:</strong> {{ $banner->responsive_settings['tablet']['subtitle_font_size'] ?? '0.875rem' }}</div>
+                        <div><strong>Vị trí nội dung:</strong> {{ $banner->responsive_settings['tablet']['content_position'] ?? 'center' }}</div>
+                        <div><strong>Căn chỉnh text:</strong> {{ $banner->responsive_settings['tablet']['text_align'] ?? 'center' }}</div>
+                        <div><strong>Màu tiêu đề:</strong> 
+                            <span class="inline-block w-4 h-4 rounded border" style="background-color: {{ $banner->responsive_settings['tablet']['title_color'] ?? '#ffffff' }}"></span>
+                            {{ $banner->responsive_settings['tablet']['title_color'] ?? '#ffffff' }}
+                        </div>
+                        <div><strong>Màu phụ đề:</strong> 
+                            <span class="inline-block w-4 h-4 rounded border" style="background-color: {{ $banner->responsive_settings['tablet']['subtitle_color'] ?? '#f3f4f6' }}"></span>
+                            {{ $banner->responsive_settings['tablet']['subtitle_color'] ?? '#f3f4f6' }}
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Mobile -->
+                @if(isset($banner->responsive_settings['mobile']))
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-purple-900 mb-3">Mobile</h3>
+                    <div class="space-y-2 text-sm">
+                        <div><strong>Font size tiêu đề:</strong> {{ $banner->responsive_settings['mobile']['title_font_size'] ?? '1.25rem' }}</div>
+                        <div><strong>Font size phụ đề:</strong> {{ $banner->responsive_settings['mobile']['subtitle_font_size'] ?? '0.75rem' }}</div>
+                        <div><strong>Vị trí nội dung:</strong> {{ $banner->responsive_settings['mobile']['content_position'] ?? 'center' }}</div>
+                        <div><strong>Căn chỉnh text:</strong> {{ $banner->responsive_settings['mobile']['text_align'] ?? 'center' }}</div>
+                        <div><strong>Màu tiêu đề:</strong> 
+                            <span class="inline-block w-4 h-4 rounded border" style="background-color: {{ $banner->responsive_settings['mobile']['title_color'] ?? '#ffffff' }}"></span>
+                            {{ $banner->responsive_settings['mobile']['title_color'] ?? '#ffffff' }}
+                        </div>
+                        <div><strong>Màu phụ đề:</strong> 
+                            <span class="inline-block w-4 h-4 rounded border" style="background-color: {{ $banner->responsive_settings['mobile']['subtitle_color'] ?? '#f3f4f6' }}"></span>
+                            {{ $banner->responsive_settings['mobile']['subtitle_color'] ?? '#f3f4f6' }}
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
 
         <!-- Thống kê -->
         <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
