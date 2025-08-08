@@ -163,7 +163,8 @@
                             <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" 
                                  class="h-24 w-auto rounded-lg border border-gray-200">
                             <div class="text-sm text-gray-500">
-                                <p>Kích thước: {{ $banner->image_path ? 'Đã tải lên' : 'Chưa có' }}</p>
+                                <p>Kích thước: {{ $banner->image_width && $banner->image_height ? $banner->image_width . ' x ' . $banner->image_height . ' px' : 'Chưa có thông tin' }}</p>
+                                <p>Dung lượng: {{ $banner->image_size ?? 'Chưa có thông tin' }}</p>
                                 <p>Định dạng: {{ pathinfo($banner->image_path, PATHINFO_EXTENSION) ?? 'N/A' }}</p>
                             </div>
                         </div>
@@ -178,6 +179,10 @@
                             <div class="space-y-1 text-center">
                                 <div id="image-preview" class="hidden mb-4">
                                     <img id="preview-img" src="" alt="Preview" class="mx-auto h-32 w-auto rounded-lg">
+                                    <div id="image-info" class="mt-2 text-sm text-gray-500 hidden">
+                                        <p>Kích thước: <span id="image-dimensions"></span></p>
+                                        <p>Dung lượng: <span id="image-file-size"></span></p>
+                                    </div>
                                 </div>
                                 <div id="upload-icon" class="flex flex-col items-center">
                                     <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
@@ -195,6 +200,49 @@
                         @error('image')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- Thông tin kích thước hình ảnh -->
+                    <div id="image-size-section" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Thông tin kích thước hình ảnh
+                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Chiều rộng (px)</label>
+                                <input type="number" id="image-width" name="image_width" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Chiều cao (px)</label>
+                                <input type="number" id="image-height" name="image_height" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Tỷ lệ khung hình</label>
+                                <input type="text" id="aspect-ratio" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+                            </div>
+                        </div>
+                        
+                        <!-- Thông tin bổ sung -->
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-medium text-blue-900 mb-2">Thông tin file</h4>
+                                <div class="text-xs text-blue-700 space-y-1">
+                                    <p><strong>Dung lượng:</strong> <span id="file-size-display">-</span></p>
+                                    <p><strong>Định dạng:</strong> <span id="file-format-display">-</span></p>
+                                </div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-medium text-green-900 mb-2">Khuyến nghị</h4>
+                                <div class="text-xs text-green-700 space-y-1">
+                                    <p>• Kích thước tối ưu: 1920x1080px</p>
+                                    <p>• Dung lượng tối đa: 2MB</p>
+                                    <p>• Định dạng: JPG, PNG, WEBP</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Link URL -->
@@ -218,6 +266,43 @@
                     <input type="hidden" name="subtitle_color" id="subtitle_color" value="{{ old('subtitle_color', $banner->subtitle_color) ?? '#f3f4f6' }}">
                     <input type="hidden" name="title_font_size" id="title_font_size" value="{{ old('title_font_size', $banner->title_font_size) ?? '2rem' }}">
                     <input type="hidden" name="subtitle_font_size" id="subtitle_font_size" value="{{ old('subtitle_font_size', $banner->subtitle_font_size) ?? '1rem' }}">
+                    
+                    <!-- Hidden image position settings -->
+                    <input type="hidden" name="image_position" id="image_position" value="{{ old('image_position', $banner->image_position) ?? 'center' }}">
+                    <input type="hidden" name="image_object_fit" id="image_object_fit" value="{{ old('image_object_fit', $banner->image_object_fit) ?? 'cover' }}">
+                    <input type="hidden" name="image_object_position" id="image_object_position" value="{{ old('image_object_position', $banner->image_object_position) ?? 'center' }}">
+                    <input type="hidden" name="image_parallax" id="image_parallax" value="{{ old('image_parallax', $banner->image_parallax) ?? '0' }}">
+                    <input type="hidden" name="image_scale" id="image_scale" value="{{ old('image_scale', $banner->image_scale) ?? '1.00' }}">
+                    
+                    <!-- Hidden responsive settings -->
+                    <input type="hidden" name="responsive_settings[desktop][title_font_size]" id="responsive_desktop_title_font_size" value="{{ old('responsive_settings.desktop.title_font_size', $banner->responsive_settings['desktop']['title_font_size'] ?? '2rem') }}">
+                    <input type="hidden" name="responsive_settings[desktop][subtitle_font_size]" id="responsive_desktop_subtitle_font_size" value="{{ old('responsive_settings.desktop.subtitle_font_size', $banner->responsive_settings['desktop']['subtitle_font_size'] ?? '1rem') }}">
+                    <input type="hidden" name="responsive_settings[desktop][content_position]" id="responsive_desktop_content_position" value="{{ old('responsive_settings.desktop.content_position', $banner->responsive_settings['desktop']['content_position'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[desktop][text_align]" id="responsive_desktop_text_align" value="{{ old('responsive_settings.desktop.text_align', $banner->responsive_settings['desktop']['text_align'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[desktop][title_color]" id="responsive_desktop_title_color" value="{{ old('responsive_settings.desktop.title_color', $banner->responsive_settings['desktop']['title_color'] ?? '#ffffff') }}">
+                    <input type="hidden" name="responsive_settings[desktop][subtitle_color]" id="responsive_desktop_subtitle_color" value="{{ old('responsive_settings.desktop.subtitle_color', $banner->responsive_settings['desktop']['subtitle_color'] ?? '#f3f4f6') }}">
+                    <input type="hidden" name="responsive_settings[desktop][image_position]" id="responsive_desktop_image_position" value="{{ old('responsive_settings.desktop.image_position', $banner->responsive_settings['desktop']['image_position'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[desktop][image_object_fit]" id="responsive_desktop_image_object_fit" value="{{ old('responsive_settings.desktop.image_object_fit', $banner->responsive_settings['desktop']['image_object_fit'] ?? 'cover') }}">
+                    
+                    <input type="hidden" name="responsive_settings[tablet][title_font_size]" id="responsive_tablet_title_font_size" value="{{ old('responsive_settings.tablet.title_font_size', $banner->responsive_settings['tablet']['title_font_size'] ?? '1.5rem') }}">
+                    <input type="hidden" name="responsive_settings[tablet][subtitle_font_size]" id="responsive_tablet_subtitle_font_size" value="{{ old('responsive_settings.tablet.subtitle_font_size', $banner->responsive_settings['tablet']['subtitle_font_size'] ?? '0.875rem') }}">
+                    <input type="hidden" name="responsive_settings[tablet][content_position]" id="responsive_tablet_content_position" value="{{ old('responsive_settings.tablet.content_position', $banner->responsive_settings['tablet']['content_position'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[tablet][text_align]" id="responsive_tablet_text_align" value="{{ old('responsive_settings.tablet.text_align', $banner->responsive_settings['tablet']['text_align'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[tablet][title_color]" id="responsive_tablet_title_color" value="{{ old('responsive_settings.tablet.title_color', $banner->responsive_settings['tablet']['title_color'] ?? '#ffffff') }}">
+                    <input type="hidden" name="responsive_settings[tablet][subtitle_color]" id="responsive_tablet_subtitle_color" value="{{ old('responsive_settings.tablet.subtitle_color', $banner->responsive_settings['tablet']['subtitle_color'] ?? '#f3f4f6') }}">
+                    <input type="hidden" name="responsive_settings[tablet][image_position]" id="responsive_tablet_image_position" value="{{ old('responsive_settings.tablet.image_position', $banner->responsive_settings['tablet']['image_position'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[tablet][image_object_fit]" id="responsive_tablet_image_object_fit" value="{{ old('responsive_settings.tablet.image_object_fit', $banner->responsive_settings['tablet']['image_object_fit'] ?? 'cover') }}">
+                    
+                    <input type="hidden" name="responsive_settings[mobile][title_font_size]" id="responsive_mobile_title_font_size" value="{{ old('responsive_settings.mobile.title_font_size', $banner->responsive_settings['mobile']['title_font_size'] ?? '1.25rem') }}">
+                    <input type="hidden" name="responsive_settings[mobile][subtitle_font_size]" id="responsive_mobile_subtitle_font_size" value="{{ old('responsive_settings.mobile.subtitle_font_size', $banner->responsive_settings['mobile']['subtitle_font_size'] ?? '0.75rem') }}">
+                    <input type="hidden" name="responsive_settings[mobile][content_position]" id="responsive_mobile_content_position" value="{{ old('responsive_settings.mobile.content_position', $banner->responsive_settings['mobile']['content_position'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[mobile][text_align]" id="responsive_mobile_text_align" value="{{ old('responsive_settings.mobile.text_align', $banner->responsive_settings['mobile']['text_align'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[mobile][title_color]" id="responsive_mobile_title_color" value="{{ old('responsive_settings.mobile.title_color', $banner->responsive_settings['mobile']['title_color'] ?? '#ffffff') }}">
+                    <input type="hidden" name="responsive_settings[mobile][subtitle_color]" id="responsive_mobile_subtitle_color" value="{{ old('responsive_settings.mobile.subtitle_color', $banner->responsive_settings['mobile']['subtitle_color'] ?? '#f3f4f6') }}">
+                    <input type="hidden" name="responsive_settings[mobile][image_position]" id="responsive_mobile_image_position" value="{{ old('responsive_settings.mobile.image_position', $banner->responsive_settings['mobile']['image_position'] ?? 'center') }}">
+                    <input type="hidden" name="responsive_settings[mobile][image_object_fit]" id="responsive_mobile_image_object_fit" value="{{ old('responsive_settings.mobile.image_object_fit', $banner->responsive_settings['mobile']['image_object_fit'] ?? 'cover') }}">
+
+
 
                     <!-- Trạng thái -->
                     <div>
@@ -373,6 +458,258 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Image Position Settings -->
+                <div class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Vị trí Hình ảnh</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="preview-image-position" class="block text-sm text-gray-600 mb-1">Vị trí hình ảnh</label>
+                            <select id="preview-image-position" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="center" {{ ($banner->image_position ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                <option value="left" {{ ($banner->image_position ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                <option value="right" {{ ($banner->image_position ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                <option value="top-left" {{ ($banner->image_position ?? 'center') == 'top-left' ? 'selected' : '' }}>Góc trên trái</option>
+                                <option value="top-right" {{ ($banner->image_position ?? 'center') == 'top-right' ? 'selected' : '' }}>Góc trên phải</option>
+                                <option value="bottom-left" {{ ($banner->image_position ?? 'center') == 'bottom-left' ? 'selected' : '' }}>Góc dưới trái</option>
+                                <option value="bottom-right" {{ ($banner->image_position ?? 'center') == 'bottom-right' ? 'selected' : '' }}>Góc dưới phải</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="preview-image-object-fit" class="block text-sm text-gray-600 mb-1">Cách hiển thị</label>
+                            <select id="preview-image-object-fit" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="cover" {{ ($banner->image_object_fit ?? 'cover') == 'cover' ? 'selected' : '' }}>Cover (Che phủ)</option>
+                                <option value="contain" {{ ($banner->image_object_fit ?? 'cover') == 'contain' ? 'selected' : '' }}>Contain (Chứa đủ)</option>
+                                <option value="fill" {{ ($banner->image_object_fit ?? 'cover') == 'fill' ? 'selected' : '' }}>Fill (Lấp đầy)</option>
+                                <option value="none" {{ ($banner->image_object_fit ?? 'cover') == 'none' ? 'selected' : '' }}>None (Không thay đổi)</option>
+                                <option value="scale-down" {{ ($banner->image_object_fit ?? 'cover') == 'scale-down' ? 'selected' : '' }}>Scale Down (Thu nhỏ)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="preview-image-object-position" class="block text-sm text-gray-600 mb-1">Điểm neo</label>
+                            <select id="preview-image-object-position" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="center" {{ ($banner->image_object_position ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                <option value="left" {{ ($banner->image_object_position ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                <option value="right" {{ ($banner->image_object_position ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                <option value="top" {{ ($banner->image_object_position ?? 'center') == 'top' ? 'selected' : '' }}>Trên</option>
+                                <option value="bottom" {{ ($banner->image_object_position ?? 'center') == 'bottom' ? 'selected' : '' }}>Dưới</option>
+                                <option value="top-left" {{ ($banner->image_object_position ?? 'center') == 'top-left' ? 'selected' : '' }}>Trên trái</option>
+                                <option value="top-right" {{ ($banner->image_object_position ?? 'center') == 'top-right' ? 'selected' : '' }}>Trên phải</option>
+                                <option value="bottom-left" {{ ($banner->image_object_position ?? 'center') == 'bottom-left' ? 'selected' : '' }}>Dưới trái</option>
+                                <option value="bottom-right" {{ ($banner->image_object_position ?? 'center') == 'bottom-right' ? 'selected' : '' }}>Dưới phải</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="preview-image-scale" class="block text-sm text-gray-600 mb-1">Tỷ lệ thu phóng</label>
+                            <input type="range" id="preview-image-scale" min="0.1" max="3.0" step="0.1" value="{{ $banner->image_scale ?? '1.0' }}" 
+                                   class="w-full">
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span id="scale-value">{{ $banner->image_scale ?? '1.0' }}x</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="preview-image-parallax" {{ ($banner->image_parallax ?? false) ? 'checked' : '' }} class="mr-2">
+                            <span class="text-sm text-gray-600">Hiệu ứng Parallax</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Responsive Settings -->
+                <div class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Cài đặt Responsive</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Desktop -->
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <h5 class="text-xs font-medium text-blue-900 mb-2">Desktop</h5>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-xs text-blue-700 mb-1">Font size tiêu đề</label>
+                                    <input type="text" id="responsive-desktop-title-size" 
+                                           value="{{ $banner->responsive_settings['desktop']['title_font_size'] ?? '2rem' }}" 
+                                           class="w-full px-2 py-1 border border-blue-200 rounded text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-blue-700 mb-1">Font size phụ đề</label>
+                                    <input type="text" id="responsive-desktop-subtitle-size" 
+                                           value="{{ $banner->responsive_settings['desktop']['subtitle_font_size'] ?? '1rem' }}" 
+                                           class="w-full px-2 py-1 border border-blue-200 rounded text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-blue-700 mb-1">Vị trí nội dung</label>
+                                    <select id="responsive-desktop-position" class="w-full px-2 py-1 border border-blue-200 rounded text-xs">
+                                        <option value="center" {{ ($banner->responsive_settings['desktop']['content_position'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                        <option value="left" {{ ($banner->responsive_settings['desktop']['content_position'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                        <option value="right" {{ ($banner->responsive_settings['desktop']['content_position'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-blue-700 mb-1">Căn chỉnh text</label>
+                                    <select id="responsive-desktop-align" class="w-full px-2 py-1 border border-blue-200 rounded text-xs">
+                                        <option value="center" {{ ($banner->responsive_settings['desktop']['text_align'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                        <option value="left" {{ ($banner->responsive_settings['desktop']['text_align'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                        <option value="right" {{ ($banner->responsive_settings['desktop']['text_align'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-blue-700 mb-1">Màu tiêu đề</label>
+                                    <input type="color" id="responsive-desktop-title-color" 
+                                           value="{{ $banner->responsive_settings['desktop']['title_color'] ?? '#ffffff' }}" 
+                                           class="w-full h-8 border border-blue-200 rounded">
+                                </div>
+                                                                    <div>
+                                        <label class="block text-xs text-blue-700 mb-1">Màu phụ đề</label>
+                                        <input type="color" id="responsive-desktop-subtitle-color" 
+                                               value="{{ $banner->responsive_settings['desktop']['subtitle_color'] ?? '#f3f4f6' }}" 
+                                               class="w-full h-8 border border-blue-200 rounded">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-blue-700 mb-1">Vị trí hình ảnh</label>
+                                        <select id="responsive-desktop-image-position" class="w-full px-2 py-1 border border-blue-200 rounded text-xs">
+                                            <option value="center" {{ ($banner->responsive_settings['desktop']['image_position'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                            <option value="left" {{ ($banner->responsive_settings['desktop']['image_position'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                            <option value="right" {{ ($banner->responsive_settings['desktop']['image_position'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-blue-700 mb-1">Cách hiển thị</label>
+                                        <select id="responsive-desktop-image-object-fit" class="w-full px-2 py-1 border border-blue-200 rounded text-xs">
+                                            <option value="cover" {{ ($banner->responsive_settings['desktop']['image_object_fit'] ?? 'cover') == 'cover' ? 'selected' : '' }}>Cover</option>
+                                            <option value="contain" {{ ($banner->responsive_settings['desktop']['image_object_fit'] ?? 'cover') == 'contain' ? 'selected' : '' }}>Contain</option>
+                                            <option value="fill" {{ ($banner->responsive_settings['desktop']['image_object_fit'] ?? 'cover') == 'fill' ? 'selected' : '' }}>Fill</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Tablet -->
+                        <div class="bg-green-50 p-3 rounded-lg">
+                            <h5 class="text-xs font-medium text-green-900 mb-2">Tablet</h5>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-xs text-green-700 mb-1">Font size tiêu đề</label>
+                                    <input type="text" id="responsive-tablet-title-size" 
+                                           value="{{ $banner->responsive_settings['tablet']['title_font_size'] ?? '1.5rem' }}" 
+                                           class="w-full px-2 py-1 border border-green-200 rounded text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-green-700 mb-1">Font size phụ đề</label>
+                                    <input type="text" id="responsive-tablet-subtitle-size" 
+                                           value="{{ $banner->responsive_settings['tablet']['subtitle_font_size'] ?? '0.875rem' }}" 
+                                           class="w-full px-2 py-1 border border-green-200 rounded text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-green-700 mb-1">Vị trí nội dung</label>
+                                    <select id="responsive-tablet-position" class="w-full px-2 py-1 border border-green-200 rounded text-xs">
+                                        <option value="center" {{ ($banner->responsive_settings['tablet']['content_position'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                        <option value="left" {{ ($banner->responsive_settings['tablet']['content_position'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                        <option value="right" {{ ($banner->responsive_settings['tablet']['content_position'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-green-700 mb-1">Căn chỉnh text</label>
+                                    <select id="responsive-tablet-align" class="w-full px-2 py-1 border border-green-200 rounded text-xs">
+                                        <option value="center" {{ ($banner->responsive_settings['tablet']['text_align'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                        <option value="left" {{ ($banner->responsive_settings['tablet']['text_align'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                        <option value="right" {{ ($banner->responsive_settings['tablet']['text_align'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-green-700 mb-1">Màu tiêu đề</label>
+                                    <input type="color" id="responsive-tablet-title-color" 
+                                           value="{{ $banner->responsive_settings['tablet']['title_color'] ?? '#ffffff' }}" 
+                                           class="w-full h-8 border border-green-200 rounded">
+                                </div>
+                                                                    <div>
+                                        <label class="block text-xs text-green-700 mb-1">Màu phụ đề</label>
+                                        <input type="color" id="responsive-tablet-subtitle-color" 
+                                               value="{{ $banner->responsive_settings['tablet']['subtitle_color'] ?? '#f3f4f6' }}" 
+                                               class="w-full h-8 border border-green-200 rounded">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-green-700 mb-1">Vị trí hình ảnh</label>
+                                        <select id="responsive-tablet-image-position" class="w-full px-2 py-1 border border-green-200 rounded text-xs">
+                                            <option value="center" {{ ($banner->responsive_settings['tablet']['image_position'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                            <option value="left" {{ ($banner->responsive_settings['tablet']['image_position'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                            <option value="right" {{ ($banner->responsive_settings['tablet']['image_position'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-green-700 mb-1">Cách hiển thị</label>
+                                        <select id="responsive-tablet-image-object-fit" class="w-full px-2 py-1 border border-green-200 rounded text-xs">
+                                            <option value="cover" {{ ($banner->responsive_settings['tablet']['image_object_fit'] ?? 'cover') == 'cover' ? 'selected' : '' }}>Cover</option>
+                                            <option value="contain" {{ ($banner->responsive_settings['tablet']['image_object_fit'] ?? 'cover') == 'contain' ? 'selected' : '' }}>Contain</option>
+                                            <option value="fill" {{ ($banner->responsive_settings['tablet']['image_object_fit'] ?? 'cover') == 'fill' ? 'selected' : '' }}>Fill</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Mobile -->
+                        <div class="bg-purple-50 p-3 rounded-lg">
+                            <h5 class="text-xs font-medium text-purple-900 mb-2">Mobile</h5>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-xs text-purple-700 mb-1">Font size tiêu đề</label>
+                                    <input type="text" id="responsive-mobile-title-size" 
+                                           value="{{ $banner->responsive_settings['mobile']['title_font_size'] ?? '1.25rem' }}" 
+                                           class="w-full px-2 py-1 border border-purple-200 rounded text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-purple-700 mb-1">Font size phụ đề</label>
+                                    <input type="text" id="responsive-mobile-subtitle-size" 
+                                           value="{{ $banner->responsive_settings['mobile']['subtitle_font_size'] ?? '0.75rem' }}" 
+                                           class="w-full px-2 py-1 border border-purple-200 rounded text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-purple-700 mb-1">Vị trí nội dung</label>
+                                    <select id="responsive-mobile-position" class="w-full px-2 py-1 border border-purple-200 rounded text-xs">
+                                        <option value="center" {{ ($banner->responsive_settings['mobile']['content_position'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                        <option value="left" {{ ($banner->responsive_settings['mobile']['content_position'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                        <option value="right" {{ ($banner->responsive_settings['mobile']['content_position'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-purple-700 mb-1">Căn chỉnh text</label>
+                                    <select id="responsive-mobile-align" class="w-full px-2 py-1 border border-purple-200 rounded text-xs">
+                                        <option value="center" {{ ($banner->responsive_settings['mobile']['text_align'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                        <option value="left" {{ ($banner->responsive_settings['mobile']['text_align'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                        <option value="right" {{ ($banner->responsive_settings['mobile']['text_align'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-purple-700 mb-1">Màu tiêu đề</label>
+                                    <input type="color" id="responsive-mobile-title-color" 
+                                           value="{{ $banner->responsive_settings['mobile']['title_color'] ?? '#ffffff' }}" 
+                                           class="w-full h-8 border border-purple-200 rounded">
+                                </div>
+                                                                    <div>
+                                        <label class="block text-xs text-purple-700 mb-1">Màu phụ đề</label>
+                                        <input type="color" id="responsive-mobile-subtitle-color" 
+                                               value="{{ $banner->responsive_settings['mobile']['subtitle_color'] ?? '#f3f4f6' }}" 
+                                               class="w-full h-8 border border-purple-200 rounded">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-purple-700 mb-1">Vị trí hình ảnh</label>
+                                        <select id="responsive-mobile-image-position" class="w-full px-2 py-1 border border-purple-200 rounded text-xs">
+                                            <option value="center" {{ ($banner->responsive_settings['mobile']['image_position'] ?? 'center') == 'center' ? 'selected' : '' }}>Giữa</option>
+                                            <option value="left" {{ ($banner->responsive_settings['mobile']['image_position'] ?? 'center') == 'left' ? 'selected' : '' }}>Trái</option>
+                                            <option value="right" {{ ($banner->responsive_settings['mobile']['image_position'] ?? 'center') == 'right' ? 'selected' : '' }}>Phải</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-purple-700 mb-1">Cách hiển thị</label>
+                                        <select id="responsive-mobile-image-object-fit" class="w-full px-2 py-1 border border-purple-200 rounded text-xs">
+                                            <option value="cover" {{ ($banner->responsive_settings['mobile']['image_object_fit'] ?? 'cover') == 'cover' ? 'selected' : '' }}>Cover</option>
+                                            <option value="contain" {{ ($banner->responsive_settings['mobile']['image_object_fit'] ?? 'cover') == 'contain' ? 'selected' : '' }}>Contain</option>
+                                            <option value="fill" {{ ($banner->responsive_settings['mobile']['image_object_fit'] ?? 'cover') == 'fill' ? 'selected' : '' }}>Fill</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
                 
                 <div id="banner-preview" class="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
                     <img id="preview-banner-img" src="{{ $banner->image_url }}" alt="Banner Preview" class="w-full h-full object-cover">
@@ -403,6 +740,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const imagePreview = document.getElementById('image-preview');
     const previewImg = document.getElementById('preview-img');
     const uploadIcon = document.getElementById('upload-icon');
+    const imageInfo = document.getElementById('image-info');
+    const imageDimensions = document.getElementById('image-dimensions');
+    const imageFileSize = document.getElementById('image-file-size');
+    const imageWidthInput = document.getElementById('image-width');
+    const imageHeightInput = document.getElementById('image-height');
+    const aspectRatioInput = document.getElementById('aspect-ratio');
+    const imageSizeSection = document.getElementById('image-size-section');
 
     if (imageInput) {
         imageInput.addEventListener('change', function(e) {
@@ -413,6 +757,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     previewImg.src = e.target.result;
                     imagePreview.classList.remove('hidden');
                     uploadIcon.classList.add('hidden');
+                    updateImageInfo(file);
+                    imageSizeSection.classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
             }
@@ -617,7 +963,12 @@ document.addEventListener('DOMContentLoaded', function() {
             'preview-title-color': 'title_color',
             'preview-subtitle-color': 'subtitle_color',
             'preview-title-font-size': 'title_font_size',
-            'preview-subtitle-font-size': 'subtitle_font_size'
+            'preview-subtitle-font-size': 'subtitle_font_size',
+            'preview-image-position': 'image_position',
+            'preview-image-object-fit': 'image_object_fit',
+            'preview-image-object-position': 'image_object_position',
+            'preview-image-parallax': 'image_parallax',
+            'preview-image-scale': 'image_scale'
         };
 
         Object.keys(modalInputs).forEach(modalId => {
@@ -625,12 +976,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const formInput = document.getElementById(modalInputs[modalId]);
             
             if (modalInput && formInput) {
-                modalInput.addEventListener('input', function() {
-                    formInput.value = this.value;
-                    updatePreviewStyles();
-                });
+                if (modalInput.type === 'checkbox') {
+                    modalInput.addEventListener('change', function() {
+                        formInput.value = this.checked ? '1' : '0';
+                        updatePreviewStyles();
+                    });
+                } else {
+                    modalInput.addEventListener('input', function() {
+                        formInput.value = this.value;
+                        updatePreviewStyles();
+                    });
+                }
             }
         });
+
+        // Handle scale range input
+        const scaleInput = document.getElementById('preview-image-scale');
+        const scaleValue = document.getElementById('scale-value');
+        if (scaleInput && scaleValue) {
+            scaleInput.addEventListener('input', function() {
+                scaleValue.textContent = this.value + 'x';
+            });
+        }
     }
 
     // Update preview styles based on current values
@@ -709,6 +1076,94 @@ document.addEventListener('DOMContentLoaded', function() {
             updatePreviewPosition();
         });
     }
+
+    // Function to update image info in preview modal
+    function updateImageInfo(file) {
+        if (file) {
+            const fileSizeDisplay = document.getElementById('file-size-display');
+            const fileFormatDisplay = document.getElementById('file-format-display');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    imageDimensions.textContent = `${img.width} x ${img.height} px`;
+                    imageFileSize.textContent = formatFileSize(file.size);
+                    if (aspectRatioInput) aspectRatioInput.value = (img.width / img.height).toFixed(2);
+                    if (imageWidthInput) imageWidthInput.value = img.width;
+                    if (imageHeightInput) imageHeightInput.value = img.height;
+                    
+                    // Cập nhật thông tin file
+                    if (fileSizeDisplay) fileSizeDisplay.textContent = formatFileSize(file.size);
+                    if (fileFormatDisplay) fileFormatDisplay.textContent = file.name.split('.').pop().toUpperCase();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes >= 1073741824) {
+            return (bytes / 1073741824).toFixed(2) + ' GB';
+        } else if (bytes >= 1048576) {
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        } else if (bytes >= 1024) {
+            return (bytes / 1024).toFixed(2) + ' KB';
+        } else {
+            return bytes + ' bytes';
+        }
+    }
+
+    // Responsive Settings Synchronization
+    function syncResponsiveSettings() {
+        const responsiveInputs = {
+            // Desktop
+            'responsive-desktop-title-size': 'responsive_desktop_title_font_size',
+            'responsive-desktop-subtitle-size': 'responsive_desktop_subtitle_font_size',
+            'responsive-desktop-position': 'responsive_desktop_content_position',
+            'responsive-desktop-align': 'responsive_desktop_text_align',
+            'responsive-desktop-title-color': 'responsive_desktop_title_color',
+            'responsive-desktop-subtitle-color': 'responsive_desktop_subtitle_color',
+            'responsive-desktop-image-position': 'responsive_desktop_image_position',
+            'responsive-desktop-image-object-fit': 'responsive_desktop_image_object_fit',
+            
+            // Tablet
+            'responsive-tablet-title-size': 'responsive_tablet_title_font_size',
+            'responsive-tablet-subtitle-size': 'responsive_tablet_subtitle_font_size',
+            'responsive-tablet-position': 'responsive_tablet_content_position',
+            'responsive-tablet-align': 'responsive_tablet_text_align',
+            'responsive-tablet-title-color': 'responsive_tablet_title_color',
+            'responsive-tablet-subtitle-color': 'responsive_tablet_subtitle_color',
+            'responsive-tablet-image-position': 'responsive_tablet_image_position',
+            'responsive-tablet-image-object-fit': 'responsive_tablet_image_object_fit',
+            
+            // Mobile
+            'responsive-mobile-title-size': 'responsive_mobile_title_font_size',
+            'responsive-mobile-subtitle-size': 'responsive_mobile_subtitle_font_size',
+            'responsive-mobile-position': 'responsive_mobile_content_position',
+            'responsive-mobile-align': 'responsive_mobile_text_align',
+            'responsive-mobile-title-color': 'responsive_mobile_title_color',
+            'responsive-mobile-subtitle-color': 'responsive_mobile_subtitle_color',
+            'responsive-mobile-image-position': 'responsive_mobile_image_position',
+            'responsive-mobile-image-object-fit': 'responsive_mobile_image_object_fit'
+        };
+
+        Object.keys(responsiveInputs).forEach(modalId => {
+            const modalInput = document.getElementById(modalId);
+            const formInput = document.getElementById(responsiveInputs[modalId]);
+            
+            if (modalInput && formInput) {
+                modalInput.addEventListener('input', function() {
+                    formInput.value = this.value;
+                });
+            }
+        });
+    }
+
+    // Initialize responsive settings synchronization
+    syncResponsiveSettings();
 });
 </script>
 @endpush
