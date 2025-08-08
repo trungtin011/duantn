@@ -339,6 +339,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerSeller::class, 'index'])->name('seller.products.index');
+        Route::get('/ajax', [ProductControllerSeller::class, 'ajaxList'])->name('seller.products.ajax');
         Route::get('/create', [ProductControllerSeller::class, 'create'])->name('seller.products.create');
         Route::post('/', [ProductControllerSeller::class, 'store'])->name('seller.products.store');
         Route::get('/{id}/edit', [ProductControllerSeller::class, 'edit'])->name('seller.products.edit');

@@ -10,7 +10,7 @@
 
     <section class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4 h-[72px]">
-            <form class="w-full md:w-[223px] relative" method="GET" action="{{ route('seller.products.index') }}">
+            <form class="w-full md:w-[223px] relative" id="searchForm">
                 <input name="search"
                     class="w-full h-[42px] border border-[#F2F2F6] rounded-md py-2 pl-10 pr-4 text-xs placeholder:text-gray-400 focus:outline-none"
                     placeholder="Tìm kiếm sản phẩm" type="text" value="{{ request('search') }}" />
@@ -20,21 +20,31 @@
             </form>
 
             <div class="flex gap-4 items-center h-full">
-                <form method="GET" action="{{ route('seller.products.index') }}">
-                    <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
-                        <span>Trạng thái:</span>
-                        <select name="status" id="statusFilter" onchange="this.form.submit()"
-                            class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
-                            <option value="">Tất cả</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
-                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Không hoạt động</option>
-                            <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Số lượng thấp</option>
-                            <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Hết hàng</option>
-                            <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Lên lịch</option>
-                        </select>
-                    </div>
-                </form>
+                <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
+                    <span>Trạng thái:</span>
+                    <select name="status" id="statusFilter"
+                        class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">Tất cả</option>
+                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Hoạt động</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
+                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Không hoạt động
+                        </option>
+                        <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Số lượng thấp
+                        </option>
+                        <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Hết hàng
+                        </option>
+                        <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Lên lịch</option>
+                    </select>
+                </div>
+                <button id="resetFilter" type="button"
+                    class="border border-gray-300 text-xs text-white bg-red-500 px-3 py-2 rounded-md hover:bg-red-600 hover:text-white transition-colors"
+                    style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </button>
                 <button id="delete-selected"
                     class="hidden bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600">
                     Xóa đã chọn
@@ -61,98 +71,7 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 text-gray-900 font-normal">
-                @foreach ($products as $product)
-                    <tr data-product-id="{{ $product->id }}">
-                        <td class="py-4 pr-6">
-                            <input class="select-item w-[18px] h-[18px]" type="checkbox" />
-                        </td>
-                        <td class="py-4 flex items-center gap-4">
-                            <img alt="{{ $product->name }} product image" class="w-10 h-10 rounded-md object-cover"
-                                height="40" src="{{ $product->image_url }}" width="40" />
-                            <span class="font-semibold text-[13px]">
-                                {{ $product->name }}
-                            </span>
-                        </td>
-                        <td class="py-4 text-[13px]">
-                            {{ $product->sku }}
-                        </td>
-                        <td class="py-4 text-[13px]">
-                            @php
-                                $displayStock = $product->stock_total ?? 0;
-                                if ($product->is_variant && (!$displayStock || $displayStock == 0)) {
-                                    $variantStock = $product->variants->sum('stock') ?? 0;
-                                    $displayStock = $variantStock > 0 ? $variantStock : 0;
-                                }
-                            @endphp
-                            {{ $displayStock }}
-                            @if ($displayStock <= 5 && $displayStock > 0)
-                                <span
-                                    class="inline-block bg-orange-100 text-orange-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                    Sản phẩm sắp hết hàng
-                                </span>
-                            @elseif ($displayStock == 0)
-                                <span
-                                    class="inline-block bg-red-100 text-red-600 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                    Sản phẩm hết hàng
-                                </span>
-                            @endif
-                        </td>
-                        <td class="py-4 text-[13px]">
-                            @php
-                                $displayPrice = $product->sale_price ?? 0;
-                                if ($product->is_variant && (!$displayPrice || $displayPrice == 0)) {
-                                    $variantPrice = $product->variants->min('sale_price') ?? 0;
-                                    $displayPrice = $variantPrice > 0 ? $variantPrice : 0;
-                                }
-                            @endphp
-                            {{ number_format($displayPrice) }}
-                        </td>
-                        <td class="py-4">
-                            <span
-                                class="inline-block 
-                                {{ $product->status == 'active'
-                                    ? 'bg-green-100 text-green-600'
-                                    : ($product->status == 'pending'
-                                        ? 'bg-yellow-100 text-yellow-600'
-                                        : ($product->status == 'inactive'
-                                            ? 'bg-red-100 text-red-600'
-                                            : ($product->status == 'scheduled'
-                                                ? 'bg-blue-100 text-blue-600'
-                                                : 'bg-gray-200 text-gray-500'))) }} 
-                                text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
-                                {{ $product->status == 'active'
-                                    ? 'Hoạt động'
-                                    : ($product->status == 'pending'
-                                        ? 'Chờ duyệt'
-                                        : ($product->status == 'inactive'
-                                            ? 'Không hoạt động'
-                                            : ($product->status == 'scheduled'
-                                                ? 'Lên lịch'
-                                                : 'Không xác định'))) }}
-                            </span>
-                        </td>
-                        <td class="py-4 pr-6 text-right flex items-center gap-2 justify-end">
-                            <a href="{{ route('seller.products.edit', $product->id) }}"
-                                class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-md focus:outline-none">
-                                <i class="fas fa-pencil-alt text-xs"></i>
-                            </a>
-                            <form action="{{ route('seller.products.destroy', $product->id) }}" method="POST"
-                                onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" aria-label="Delete {{ $product->name }}"
-                                    class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md focus:outline-none">
-                                    <i class="fas fa-trash-alt text-xs"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-                @if ($products->isEmpty())
-                    <tr>
-                        <td colspan="7" class="text-center text-gray-400 py-4">No products found</td>
-                    </tr>
-                @endif
+                @include('seller.products._table_body', ['products' => $products])
             </tbody>
         </table>
         <div class="mt-6 flex items-center justify-between text-[11px] text-gray-500 select-none">
@@ -169,6 +88,19 @@
             const selectAllCheckbox = document.getElementById('select-all');
             const itemCheckboxes = document.querySelectorAll('.select-item');
             const deleteSelectedButton = document.getElementById('delete-selected');
+            const searchInput = document.querySelector('input[name="search"]');
+            const statusFilter = document.getElementById('statusFilter');
+            const searchForm = document.getElementById('searchForm');
+            const tbody = document.querySelector('table tbody');
+            const resetFilterButton = document.getElementById('resetFilter');
+
+            // ✅ Prevent form submission
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitFilters();
+                });
+            }
 
             // ✅ Hiện/ẩn nút Xóa
             function toggleDeleteButton() {
@@ -187,6 +119,76 @@
                     toggleDeleteButton();
                 });
             });
+
+            // ✅ AJAX Filtering
+            function submitFilters() {
+                const params = new URLSearchParams();
+                if (searchInput && searchInput.value) params.append('search', searchInput.value);
+                if (statusFilter && statusFilter.value) params.append('status', statusFilter.value);
+
+                // Show/hide reset button
+                const hasFilters = (searchInput && searchInput.value) || (statusFilter && statusFilter.value);
+                if (hasFilters) {
+                    resetFilterButton.style.display = 'flex';
+                } else {
+                    resetFilterButton.style.display = 'none';
+                }
+
+                fetch("{{ route('seller.products.ajax') }}?" + params.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.text())
+                    .then(html => {
+                        if (tbody) tbody.innerHTML = html;
+                        // Update URL without full reload for UX
+                        const currentUrl = new URL(window.location);
+                        ['search', 'status'].forEach(key => currentUrl.searchParams.delete(key));
+                        params.forEach((value, key) => currentUrl.searchParams.set(key, value));
+                        window.history.replaceState({}, '', currentUrl.toString());
+                    });
+            }
+
+            // Auto-submit on filter change
+            if (statusFilter) {
+                statusFilter.addEventListener('change', submitFilters);
+            }
+
+            // Debounced search
+            let searchTimeout;
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(submitFilters, 500);
+                });
+            }
+
+            // ✅ Reset Filter
+            resetFilterButton.addEventListener('click', function() {
+                // Clear filters
+                if (searchInput) searchInput.value = '';
+                if (statusFilter) statusFilter.value = '';
+
+                // Clear URL params
+                const currentUrl = new URL(window.location);
+                ['search', 'status'].forEach(key => currentUrl.searchParams.delete(key));
+                window.history.replaceState({}, '', currentUrl.toString());
+
+                // Hide reset button
+                resetFilterButton.style.display = 'none';
+
+                // Submit filters to refresh data
+                submitFilters();
+            });
+
+            // Initial check for reset button visibility
+            const hasInitialFilters = (searchInput && searchInput.value) || (statusFilter && statusFilter.value);
+            if (hasInitialFilters) {
+                resetFilterButton.style.display = 'flex';
+            } else {
+                resetFilterButton.style.display = 'none';
+            }
 
             // ✅ Xóa hàng loạt bằng AJAX + SweetAlert
             deleteSelectedButton.addEventListener('click', function() {

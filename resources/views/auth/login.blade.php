@@ -47,24 +47,7 @@
                                 alt="Google icon">
                             Google
                         </a>
-                        <a href="{{ route('auth.facebook.login') }}"
-                            class="w-full flex items-center justify-center border border-blue-300 hover:bg-gray-100 py-2 text-sm md:text-base rounded">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/600px-2023_Facebook_icon.svg.png"
-                                class="h-4 w-4 mr-2" alt="Facebook icon">
-                            Facebook
-                        </a>
                     </div>
-                    <div class="mt-4">
-    <a href="{{ route('login.qr.generate') }}"
-        class="w-full flex items-center justify-center border border-gray-400 hover:bg-gray-100 py-2 text-sm md:text-base rounded bg-white text-black">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 4h4v4H4V4zM16 4h4v4h-4V4zM4 16h4v4H4v-4zM16 16h4v4h-4v-4zM9 11h6M12 8v6" />
-        </svg>
-        Đăng nhập bằng mã QR
-    </a>
-</div>
                     @if (session('error'))
                         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                             {{ session('error') }}

@@ -193,18 +193,18 @@
 
                         <!-- Nút hành động -->
                         <div class="flex gap-3 mt-10">
-                        <form action="{{ route('cart.add') }}" method="POST" class="inline">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            <input type="hidden" name="variant_id" value="{{ $variant->id ?? '' }}">
-                            <input type="hidden" name="quantity" value="1">
+                            <form action="{{ route('cart.add') }}" method="POST" class="inline">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <input type="hidden" name="variant_id" value="{{ $variant->id ?? '' }}">
+                                <input type="hidden" name="quantity" value="1">
 
-                            <button type="submit"
-                                class="bg-red-100 text-red-600 px-6 py-3 rounded hover:bg-red-200 flex items-center gap-2">
-                                <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
-                            </button>
-                            <button id="instant_buy_btn"
-                                class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
+                                <button type="submit"
+                                    class="bg-red-100 text-red-600 px-6 py-3 rounded hover:bg-red-200 flex items-center gap-2">
+                                    <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                                </button>
+                                <button id="instant_buy_btn"
+                                    class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
                         </div>
                     </div>
                 </div>
@@ -1015,7 +1015,7 @@
                         const button = likeBtn;
                         const reviewId = button.getAttribute('data-review-id');
                         const isLiked = button.getAttribute('data-liked') === 'true';
-                        
+
                         console.log('Like button clicked:', {
                             reviewId: reviewId,
                             isLiked: isLiked,
@@ -1024,78 +1024,78 @@
 
                         console.log('Sending request to:', `/customer/review/${reviewId}/like`);
                         console.log('CSRF Token:', token);
-                        
+
                         // Thêm hiệu ứng loading
                         const icon = button.querySelector('i');
                         const originalIcon = icon.className;
                         icon.className = 'fas fa-spinner fa-spin';
                         button.disabled = true;
-                        
+
                         fetch(`/customer/review/${reviewId}/like`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': token,
-                                'Accept': 'application/json',
-                            },
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                if (response.status === 401) {
-                                    return response.json().then(data => {
-                                        throw new Error(data.message);
-                                    });
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'Accept': 'application/json',
+                                },
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    if (response.status === 401) {
+                                        return response.json().then(data => {
+                                            throw new Error(data.message);
+                                        });
+                                    }
+                                    throw new Error(`HTTP error! Status: ${response.status}`);
                                 }
-                                throw new Error(`HTTP error! Status: ${response.status}`);
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log('Like response:', data);
-                            if (data.success) {
-                                // Cập nhật trạng thái like
-                                button.setAttribute('data-liked', data.liked);
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log('Like response:', data);
+                                if (data.success) {
+                                    // Cập nhật trạng thái like
+                                    button.setAttribute('data-liked', data.liked);
+                                    const icon = button.querySelector('i');
+                                    const countSpan = button.querySelector('.like-count');
+
+                                    if (data.liked) {
+                                        icon.className = 'fas fa-heart';
+                                        button.classList.add('text-red-500');
+                                    } else {
+                                        icon.className = 'far fa-heart';
+                                        button.classList.remove('text-red-500');
+                                    }
+
+                                    if (countSpan) {
+                                        countSpan.textContent = data.like_count;
+                                    }
+                                }
+                                // Khôi phục button
+                                button.disabled = false;
+                            })
+                            .catch(error => {
+                                console.error('Like error:', error);
+                                console.error('Error details:', {
+                                    message: error.message,
+                                    stack: error.stack
+                                });
+
+                                // Khôi phục button và icon
+                                button.disabled = false;
                                 const icon = button.querySelector('i');
-                                const countSpan = button.querySelector('.like-count');
-                                
-                                if (data.liked) {
-                                    icon.className = 'fas fa-heart';
-                                    button.classList.add('text-red-500');
-                                } else {
-                                    icon.className = 'far fa-heart';
-                                    button.classList.remove('text-red-500');
-                                }
-                                
-                                if (countSpan) {
-                                    countSpan.textContent = data.like_count;
-                                }
-                            }
-                            // Khôi phục button
-                            button.disabled = false;
-                        })
-                        .catch(error => {
-                            console.error('Like error:', error);
-                            console.error('Error details:', {
-                                message: error.message,
-                                stack: error.stack
+                                const isLiked = button.getAttribute('data-liked') === 'true';
+                                icon.className = isLiked ? 'fas fa-heart' : 'far fa-heart';
+
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: error.message || 'Không thể thích đánh giá!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
                             });
-                            
-                            // Khôi phục button và icon
-                            button.disabled = false;
-                            const icon = button.querySelector('i');
-                            const isLiked = button.getAttribute('data-liked') === 'true';
-                            icon.className = isLiked ? 'fas fa-heart' : 'far fa-heart';
-                            
-                            Swal.fire({
-                                position: 'top-end',
-                                toast: true,
-                                icon: 'error',
-                                title: 'Lỗi',
-                                text: error.message || 'Không thể thích đánh giá!',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        });
                     }
                 });
 
@@ -1105,7 +1105,7 @@
                         e.preventDefault();
                         const button = e.target;
                         const filter = button.getAttribute('data-filter');
-                        
+
                         // Thêm hiệu ứng loading
                         const reviewList = document.getElementById('reviewList');
                         if (reviewList) {
@@ -1116,7 +1116,7 @@
                                 </div>
                             `;
                         }
-                        
+
                         // Cập nhật trạng thái active cho các nút filter
                         document.querySelectorAll('.filter-btn').forEach(btn => {
                             btn.classList.remove('text-[#e94e1b]', 'border-[#e94e1b]');
@@ -1128,42 +1128,42 @@
                         // Gọi AJAX để lọc đánh giá
                         const url = new URL(window.location);
                         url.searchParams.set('filter', filter);
-                        
+
                         fetch(url.toString(), {
-                            method: 'GET',
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'text/html',
-                            },
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! Status: ${response.status}`);
-                            }
-                            return response.text();
-                        })
-                        .then(html => {
-                            // Cập nhật danh sách đánh giá
-                            const reviewList = document.getElementById('reviewList');
-                            if (reviewList) {
-                                reviewList.innerHTML = html;
-                            }
-                            
-                            // Cập nhật URL mà không reload trang
-                            window.history.pushState({}, '', url.toString());
-                        })
-                        .catch(error => {
-                            console.error('Error loading reviews:', error);
-                            Swal.fire({
-                                position: 'top-end',
-                                toast: true,
-                                icon: 'error',
-                                title: 'Lỗi',
-                                text: 'Không thể tải đánh giá!',
-                                timer: 1500,
-                                showConfirmButton: false
+                                method: 'GET',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'text/html',
+                                },
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! Status: ${response.status}`);
+                                }
+                                return response.text();
+                            })
+                            .then(html => {
+                                // Cập nhật danh sách đánh giá
+                                const reviewList = document.getElementById('reviewList');
+                                if (reviewList) {
+                                    reviewList.innerHTML = html;
+                                }
+
+                                // Cập nhật URL mà không reload trang
+                                window.history.pushState({}, '', url.toString());
+                            })
+                            .catch(error => {
+                                console.error('Error loading reviews:', error);
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể tải đánh giá!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
                             });
-                        });
                     }
                 });
             });
@@ -1190,7 +1190,8 @@
                                 chatModalContent.dataset.loaded = '1';
                                 // Đợi DOM render xong mới click
                                 setTimeout(function() {
-                                    const btn = chatModalContent.querySelector('.shop-btn[data-shop-id="' + shopId + '"]');
+                                    const btn = chatModalContent.querySelector(
+                                        '.shop-btn[data-shop-id="' + shopId + '"]');
                                     if (btn) btn.click();
                                 }, 200);
                             });
