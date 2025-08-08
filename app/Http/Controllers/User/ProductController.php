@@ -95,7 +95,8 @@ class ProductController extends Controller
 
         // Truy vấn sản phẩm
         $productQuery = Product::query()
-            ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
+            // Tạm thời bỏ logic tìm kiếm để kiểm tra
+            // ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
             ->when($categoryIds, fn($q) => $q->whereHas('categories', fn($q2) => $q2->whereIn('categories.id', $categoryIds)))
             ->when($brandIds, fn($q) => $q->whereHas('brands', fn($q2) => $q2->whereIn('brands.id', $brandIds)))
             ->when($priceMin, fn($q) => $q->where('sale_price', '>=', $priceMin))
@@ -162,7 +163,7 @@ class ProductController extends Controller
         //     $productQuery->whereNotIn('id', $advertisedProductIds);
         // }
 
-        $products = $productQuery->paginate(20);
+        $products = $productQuery->paginate(50); // Tăng số lượng sản phẩm trên mỗi trang
 
         Log::info('✅ Tổng số sản phẩm khớp:', ['số lượng' => $products->total()]);
         Log::info('✅ Số sản phẩm trên trang hiện tại:', ['số lượng' => $products->count()]);
@@ -233,7 +234,7 @@ class ProductController extends Controller
             'orderReviews.likes',
             'categories',
             'brands'
-        ])->where('slug', $slug)->firstOrFail();
+        ])->where('slug', $slug)->where('status', 'active')->firstOrFail();
         
         $averageRating = Cache::remember("product_{$product->id}_average_rating", 3600, function () use ($product) {
             return $product->orderReviews()->avg('rating') ?? 0;
@@ -749,7 +750,7 @@ class ProductController extends Controller
                             }
                         ]);
                 }
-            ])->where('slug', $request->slug)->firstOrFail();
+            ])->where('slug', $request->slug)->where('status', 'active')->firstOrFail();
 
             // Gán dữ liệu hiển thị theo biến thể
             $attributeImages = [];
@@ -1105,7 +1106,7 @@ class ProductController extends Controller
             'shop_id' => 'required|exists:shops,id'
         ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $product = Product::where('status', 'active')->findOrFail($request->product_id);
 
         // Check if variant exists and belongs to product
         $variant = null;
