@@ -4,72 +4,102 @@
 @extends('layouts.seller_home')
 @push('css')
     <style>
-        .section-title { font-size: 1.25rem; font-weight: 600; }
-        .stat-card { @apply border rounded p-3 text-center; }
-        .stat-value { @apply text-blue-600 font-semibold text-xl; }
-        .stat-label { @apply text-gray-600 text-xs; }
-        .form-group { @apply mb-2; }
-        .error-message { @apply text-red-500 text-xs mt-2; }
+        .stat-card {
+            @apply border rounded p-3 text-center;
+        }
+
+        .stat-value {
+            @apply text-blue-600 font-semibold text-xl;
+        }
+
+        .stat-label {
+            @apply text-gray-600 text-xs;
+        }
+
+        .form-group {
+            @apply mb-2;
+        }
+
+        .error-message {
+            @apply text-red-500 text-xs mt-2;
+        }
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 @endpush
 @section('title', 'Trang chủ Seller')
 @section('content')
-    <div class="flex min-h-[calc(100vh-40px)]">
-        <main class="flex-1 p-4 space-y-6 overflow-y-auto">
-            <!-- Error Messages -->
-            @if (session('error') || $error)
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                    <span class="block sm:inline">{{ session('error') ?? $error }}</span>
-                </div>
-            @endif
+    <div class="flex-1 space-y-6 overflow-y-auto">
+        <!-- Error Messages -->
+        @if (session('error') || $error)
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline">{{ session('error') ?? $error }}</span>
+            </div>
+        @endif
 
-            <!-- Danh sách cần làm -->
-            <section class="bg-white rounded-lg p-4 shadow-sm flex flex-col sm:flex-row justify-between text-center sm:text-left space-y-4 sm:space-y-0 sm:space-x-10">
-                <h2 class="section-title w-full sm:w-auto sm:flex-shrink-0 sm:self-center">Danh sách cần làm</h2>
-                <div class="flex justify-around sm:justify-start flex-1 space-x-10 text-gray-600 text-xs">
-                    <div>
-                        <div class="stat-value">{{ $statistics['order_statistics']['pending'] }}</div>
-                        <div class="stat-label">Chờ Xác Nhận</div>
-                    </div>
-                    <div>
-                        <div class="stat-value">{{ $statistics['order_statistics']['completed'] }}</div>
-                        <div class="stat-label">Đã Hoàn Thành</div>
-                    </div>
-                    <div>
-                        <div class="stat-value">{{ $statistics['order_statistics']['cancelled'] + $statistics['order_statistics']['returned'] }}</div>
-                        <div class="stat-label">Đơn Trả Hàng/Hủy</div>
-                    </div>
-                    <div>
-                        <div class="stat-value">{{ $lowStockCount }}</div>
-                        <div class="stat-label">Sản Phẩm Sắp Hết Hàng</div>
-                    </div>
+        <!-- Danh sách cần làm -->
+        <section
+            class="bg-white rounded-lg px-4 shadow-sm flex flex-col sm:flex-row justify-between text-center sm:text-left space-y-4 sm:space-y-0 sm:space-x-10">
+            <h2
+                class="text-lg font-semibold w-full h-[88px] flex items-center sm:w-auto sm:flex-shrink-0 sm:self-center border-r pr-5 border-gray-400 border-dashed">
+                Thống kê đơn hàng
+            </h2>
+            <div class="flex justify-around sm:justify-start flex-1 space-x-10 text-gray-600 text-xs my-4">
+                <div>
+                    <div class="stat-value text-sm">{{ $statistics['order_statistics']['pending'] }}</div>
+                    <div class="stat-label text-sm">Chờ Xác Nhận</div>
                 </div>
-            </section>
+                <div>
+                    <div class="stat-value text-sm">{{ $statistics['order_statistics']['completed'] }}</div>
+                    <div class="stat-label text-sm">Đã Hoàn Thành</div>
+                </div>
+                <div>
+                    <div class="stat-value text-sm">
+                        {{ $statistics['order_statistics']['cancelled'] + $statistics['order_statistics']['returned'] }}
+                    </div>
+                    <div class="stat-label text-sm">Đơn Trả Hàng/Hủy</div>
+                </div>
+                <div>
+                    <div class="stat-value text-sm">{{ $lowStockCount }}</div>
+                    <div class="stat-label text-sm">Sản Phẩm Sắp Hết Hàng</div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <a href="{{ route('seller.order.index') }}" class="text-[#f42f46] hover:underline ">
+                    Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
+                </a>
+            </div>
+        </section>
 
+        <div class="flex gap-[24px]">
             <!-- Phân Tích Bán Hàng -->
             <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
-                    <h2 class="section-title">Phân Tích Bán Hàng</h2>
+                    <h2 class="text-lg font-semibold">Phân Tích Bán Hàng</h2>
                     <div class="flex flex-col items-end space-y-2">
-                        <form method="GET" action="{{ route('seller.home') }}" id="dateFilterForm">
+                        <form method="GET" action="{{ route('seller.dashboard') }}" id="dateFilterForm">
                             <div class="flex flex-col sm:flex-row sm:space-x-4">
                                 <div class="flex-1">
                                     <div class="form-group">
                                         <label for="filter_type" class="text-xs text-gray-600">Loại bộ lọc:</label>
-                                        <select name="filter_type" id="filter_type" class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
-                                            <option value="date" {{ $filterType == 'date' ? 'selected' : '' }}>Theo ngày</option>
-                                            <option value="month" {{ $filterType == 'month' ? 'selected' : '' }}>Theo tháng</option>
-                                            <option value="year" {{ $filterType == 'year' ? 'selected' : '' }}>Theo năm</option>
+                                        <select name="filter_type" id="filter_type"
+                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                            <option value="date" {{ $filterType == 'date' ? 'selected' : '' }}>Theo ngày
+                                            </option>
+                                            <option value="month" {{ $filterType == 'month' ? 'selected' : '' }}>Theo tháng
+                                            </option>
+                                            <option value="year" {{ $filterType == 'year' ? 'selected' : '' }}>Theo năm
+                                            </option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="flex-1" id="year_group">
                                     <div class="form-group">
                                         <label for="year" class="text-xs text-gray-600">Năm:</label>
-                                        <select name="year" id="year" class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                        <select name="year" id="year"
+                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
                                             @for ($y = Carbon::today()->year; $y >= Carbon::today()->year - 5; $y--)
-                                                <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                                <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>
+                                                    {{ $y }}</option>
                                             @endfor
                                         </select>
                                     </div>
@@ -77,9 +107,11 @@
                                 <div class="flex-1" id="month_group">
                                     <div class="form-group">
                                         <label for="month" class="text-xs text-gray-600">Tháng:</label>
-                                        <select name="month" id="month" class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                        <select name="month" id="month"
+                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
                                             @for ($m = 1; $m <= ($year == Carbon::today()->year ? Carbon::today()->month : 12); $m++)
-                                                <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>{{ $m }}</option>
+                                                <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
+                                                    {{ $m }}</option>
                                             @endfor
                                         </select>
                                     </div>
@@ -87,17 +119,24 @@
                                 <div class="flex-1" id="start_date_group">
                                     <div class="form-group">
                                         <label for="start_date" class="text-xs text-gray-600">Từ ngày:</label>
-                                        <input type="date" name="start_date" id="start_date" value="{{ $filterType == 'date' ? Carbon::parse($startDate)->format('Y-m-d') : '' }}" max="{{ Carbon::today()->format('Y-m-d') }}" class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                        <input type="date" name="start_date" id="start_date"
+                                            value="{{ $filterType == 'date' ? Carbon::parse($startDate)->format('Y-m-d') : '' }}"
+                                            max="{{ Carbon::today()->format('Y-m-d') }}"
+                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
                                     </div>
                                 </div>
                                 <div class="flex-1" id="end_date_group">
                                     <div class="form-group">
                                         <label for="end_date" class="text-xs text-gray-600">Đến ngày:</label>
-                                        <input type="date" name="end_date" id="end_date" value="{{ $filterType == 'date' ? Carbon::parse($endDate)->format('Y-m-d') : '' }}" max="{{ Carbon::today()->format('Y-m-d') }}" class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
+                                        <input type="date" name="end_date" id="end_date"
+                                            value="{{ $filterType == 'date' ? Carbon::parse($endDate)->format('Y-m-d') : '' }}"
+                                            max="{{ Carbon::today()->format('Y-m-d') }}"
+                                            class="text-xs text-gray-600 border rounded px-2 py-1 w-full">
                                     </div>
                                 </div>
                                 <div class="flex items-end">
-                                    <button type="submit" class="text-xs text-white bg-blue-600 rounded px-3 py-1.5 hover:bg-blue-700 transition-colors">Lọc</button>
+                                    <button type="submit"
+                                        class="text-xs text-white bg-blue-600 rounded px-3 py-1.5 hover:bg-blue-700 transition-colors">Lọc</button>
                                 </div>
                             </div>
                             <div id="dateError" class="error-message hidden"></div>
@@ -109,27 +148,35 @@
                     </div>
                 </div>
                 <div class="mb-4">
-                    <canvas id="salesChart" height="200"></canvas>
+                    <canvas id="salesChart"></canvas>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center text-gray-600 text-xs font-normal border-t border-b border-gray-200 py-3">
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center text-gray-600 text-xs font-normal border-t border-b border-gray-200 py-3">
                     <div>
-                        <div class="flex justify-center items-center space-x-1"><span>Doanh thu</span><i class="fas fa-question-circle text-[10px]"></i></div>
-                        <div class="font-semibold text-base mt-1 sales">₫{{ number_format($statistics['total_revenue'], 2) }}</div>
+                        <div class="flex justify-center items-center space-x-1"><span>Doanh thu</span><i
+                                class="fas fa-question-circle text-[10px]"></i></div>
+                        <div class="font-semibold text-base mt-1 sales">
+                            ₫{{ number_format($statistics['total_revenue'], 2) }}</div>
                         <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['revenue_change'] ?? '-0.00%' }}</div>
                     </div>
                     <div>
-                        <div class="flex justify-center items-center space-x-1"><span>Lợi nhuận</span><i class="fas fa-question-circle text-[10px]"></i></div>
-                        <div class="font-semibold text-base mt-1 profit">₫{{ number_format($statistics['profit'], 2) }}</div>
+                        <div class="flex justify-center items-center space-x-1"><span>Lợi nhuận</span><i
+                                class="fas fa-question-circle text-[10px]"></i></div>
+                        <div class="font-semibold text-base mt-1 profit">₫{{ number_format($statistics['profit'], 2) }}
+                        </div>
                         <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['profit_change'] ?? '-0.00%' }}</div>
                     </div>
                     <div>
-                        <div class="flex justify-center items-center space-x-1"><span>Lượt theo dõi</span><i class="fas fa-question-circle text-[10px]"></i></div>
+                        <div class="flex justify-center items-center space-x-1"><span>Lượt theo dõi</span><i
+                                class="fas fa-question-circle text-[10px]"></i></div>
                         <div class="font-semibold text-base mt-1 visits">{{ $shop->total_followers ?? 0 }}</div>
                         <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['visits_change'] ?? '-0.00%' }}</div>
                     </div>
                     <div>
-                        <div class="flex justify-center items-center space-x-1"><span>Đơn hàng</span><i class="fas fa-question-circle text-[10px]"></i></div>
-                        <div class="font-semibold text-base mt-1 orders">{{ $statistics['order_statistics']['completed'] }}</div>
+                        <div class="flex justify-center items-center space-x-1"><span>Đơn hàng</span><i
+                                class="fas fa-question-circle text-[10px]"></i></div>
+                        <div class="font-semibold text-base mt-1 orders">
+                            {{ $statistics['order_statistics']['completed'] }}</div>
                         <div class="text-gray-400 text-[10px] mt-0.5">{{ $statistics['orders_change'] ?? '-0.00%' }}</div>
                     </div>
                 </div>
@@ -138,8 +185,12 @@
             <!-- Đánh giá khách hàng -->
             <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
-                    <h2 class="section-title">Đánh giá khách hàng</h2>
-                    <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm <i class="fas fa-chevron-right text-[10px]"></i></a>
+                    <h2 class="text-lg font-semibold">Đánh giá khách hàng</h2>
+                    <div class="">
+                        <a href="{{ route('seller.reviews.index') }}" class="text-[#f42f46] hover:underline ">
+                            Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
+                        </a>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="stat-card">
@@ -147,7 +198,8 @@
                         <div class="stat-label">Số lượng đánh giá</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">{{ number_format($statistics['review_statistics']['average_rating'], 1) }}/5</div>
+                        <div class="stat-value">
+                            {{ number_format($statistics['review_statistics']['average_rating'], 1) }}/5</div>
                         <div class="stat-label">Điểm đánh giá trung bình</div>
                     </div>
                     <div class="stat-card">
@@ -159,90 +211,106 @@
                     <canvas id="reviewChart" height="100"></canvas>
                 </div>
             </section>
+        </div>
 
-            <!-- Quảng cáo ZynoxMall -->
-            <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="section-title">Quảng cáo ZynoxMall</h2>
-                    <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm <i class="fas fa-chevron-right text-[10px]"></i></a>
-                </div>
-                <div class="border border-gray-200 rounded-md p-3 text-gray-600 text-xs relative" style="background-image: url('https://placehold.co/100x100/feeaea/feeaea?text='); background-repeat: no-repeat; background-position: right bottom; background-size: 100px 100px;">
-                    <div class="flex items-center space-x-2 mb-1">
-                        <img src="https://storage.googleapis.com/a1aa/image/edf41f8c-c956-422e-817c-1cfaae696afc.jpg" alt="Ad icon" class="w-4 h-4">
-                        <span class="font-semibold text-gray-700">Tối đa hóa doanh số bán hàng với Quảng cáo ZynoxMall!</span>
-                    </div>
-                    <p class="text-gray-400 leading-tight">Tìm hiểu thêm về Quảng cáo ZynoxMall để tạo quảng cáo hiệu quả và tối ưu chi phí.</p>
-                    <button class="absolute bottom-3 right-3 text-xs text-[#ff4d4f] border border-[#ff4d4f] rounded px-2 py-0.5 hover:bg-[#ff4d4f] hover:text-white transition-colors">Tìm hiểu thêm</button>
-                </div>
-            </section>
-
-            <!-- Sản Phẩm Bán Chạy -->
-            <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="section-title">Sản Phẩm Bán Chạy</h2>
-                    <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm <i class="fas fa-chevron-right text-[10px]"></i></a>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    @forelse ($statistics['top_selling_products'] as $product)
-                        <div class="border rounded p-3 flex items-center space-x-3">
-                            <img src="{{ $product['image_path'] ?? 'https://placehold.co/50x50' }}" alt="Product image" class="w-12 h-12 rounded">
-                            <div>
-                                <p class="text-sm font-semibold">{{ $product['name'] }}</p>
-                                <p class="text-xs text-gray-500">Đã bán: {{ $product['total_sold'] }}</p>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center text-gray-500">Chưa có sản phẩm bán chạy.</div>
-                    @endforelse
-                </div>
-            </section>
-
-            <!-- Tồn kho -->
-            <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="section-title">Tồn kho</h2>
-                    <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">
+        <!-- Quảng cáo ZynoxMall -->
+        <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
+            <div class="flex justify-between items-center">
+                <h2 class="section-title">Quảng cáo ZynoxMall</h2>
+                <div class="mt-3">
+                    <a href="{{ route('seller.reviews.index') }}" class="text-[#f42f46] hover:underline ">
                         Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
                     </a>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    @forelse($statistics['low_stock_products'] ?? [] as $product)
-                        <div class="border rounded p-3 flex items-center space-x-3">
-                            <img src="{{ $product['image_path'] ?? asset('images/no-image.png') }}" alt="Product image" class="w-12 h-12 rounded object-cover">
-                            <div>
-                                <p class="text-sm font-semibold">{{ $product['name'] }}</p>
-                                <p class="text-xs text-gray-500">SKU: {{ $product['sku'] }}</p>
-                                <p class="text-xs text-gray-500">Tồn kho: {{ $product['stock_total'] }}</p>
-                                @if($product['stock_total'] <= 10)
-                                    <p class="text-xs text-red-500 font-semibold">Sắp hết hàng!</p>
-                                @endif
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center text-gray-500 col-span-full">Chưa có sản phẩm tồn kho thấp.</div>
-                    @endforelse
+            </div>
+            <div class="border border-gray-200 rounded-md p-3 text-gray-600 text-xs relative"
+                style="background-image: url('https://placehold.co/100x100/feeaea/feeaea?text='); background-repeat: no-repeat; background-position: right bottom; background-size: 100px 100px;">
+                <div class="flex items-center space-x-2 mb-1">
+                    <img src="https://storage.googleapis.com/a1aa/image/edf41f8c-c956-422e-817c-1cfaae696afc.jpg"
+                        alt="Ad icon" class="w-4 h-4">
+                    <span class="font-semibold text-gray-700">Tối đa hóa doanh số bán hàng với Quảng cáo
+                        ZynoxMall!</span>
                 </div>
-            </section>
+                <p class="text-gray-400 leading-tight">Tìm hiểu thêm về Quảng cáo ZynoxMall để tạo quảng cáo hiệu quả
+                    và tối ưu chi phí.</p>
+                <button
+                    class="absolute bottom-3 right-3 text-xs text-[#ff4d4f] border border-[#ff4d4f] rounded px-2 py-0.5 hover:bg-[#ff4d4f] hover:text-white transition-colors">Tìm
+                    hiểu thêm</button>
+            </div>
+        </section>
 
-            <!-- Nhiệm vụ -->
-            <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="section-title">Nhiệm vụ Người Bán</h2>
-                    <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm <i class="fas fa-chevron-right text-[10px]"></i></a>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    @forelse ($tasks ?? [] as $task)
-                        <div class="border rounded p-3">
-                            <p class="text-sm font-semibold">{{ $task['title'] }}</p>
-                            <p class="text-xs text-gray-500">{{ $task['reward'] }}</p>
-                            <button class="text-xs text-[#ff4d4f] border border-[#ff4d4f] rounded px-2 py-0.5 mt-2 hover:bg-[#ff4d4f] hover:text-white transition-colors">Bắt đầu</button>
+        <!-- Sản Phẩm Bán Chạy -->
+        <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
+            <div class="flex justify-between items-center">
+                <h2 class="section-title">Sản Phẩm Bán Chạy</h2>
+                <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm
+                    <i class="fas fa-chevron-right text-[10px]"></i></a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                @forelse ($statistics['top_selling_products'] as $product)
+                    <div class="border rounded p-3 flex items-center space-x-3">
+                        <img src="{{ $product['image_path'] ?? 'https://placehold.co/50x50' }}" alt="Product image"
+                            class="w-12 h-12 rounded">
+                        <div>
+                            <p class="text-sm font-semibold">{{ $product['name'] }}</p>
+                            <p class="text-xs text-gray-500">Đã bán: {{ $product['total_sold'] }}</p>
                         </div>
-                    @empty
-                        <div class="text-center text-gray-500">Chưa có nhiệm vụ nào.</div>
-                    @endforelse
-                </div>
-            </section>
-        </main>
+                    </div>
+                @empty
+                    <div class="text-center text-gray-500">Chưa có sản phẩm bán chạy.</div>
+                @endforelse
+            </div>
+        </section>
+
+        <!-- Tồn kho -->
+        <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
+            <div class="flex justify-between items-center">
+                <h2 class="section-title">Tồn kho</h2>
+                <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">
+                    Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
+                </a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                @forelse($statistics['low_stock_products'] ?? [] as $product)
+                    <div class="border rounded p-3 flex items-center space-x-3">
+                        <img src="{{ $product['image_path'] ?? asset('images/no-image.png') }}" alt="Product image"
+                            class="w-12 h-12 rounded object-cover">
+                        <div>
+                            <p class="text-sm font-semibold">{{ $product['name'] }}</p>
+                            <p class="text-xs text-gray-500">SKU: {{ $product['sku'] }}</p>
+                            <p class="text-xs text-gray-500">Tồn kho: {{ $product['stock_total'] }}</p>
+                            @if ($product['stock_total'] <= 10)
+                                <p class="text-xs text-red-500 font-semibold">Sắp hết hàng!</p>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center text-gray-500 col-span-full">Chưa có sản phẩm tồn kho thấp.</div>
+                @endforelse
+            </div>
+        </section>
+
+        <!-- Nhiệm vụ -->
+        <section class="bg-white rounded-lg p-4 shadow-sm space-y-3">
+            <div class="flex justify-between items-center">
+                <h2 class="section-title">Nhiệm vụ Người Bán</h2>
+                <a href="#" class="text-blue-600 text-xs font-normal hover:underline whitespace-nowrap">Xem thêm
+                    <i class="fas fa-chevron-right text-[10px]"></i></a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                @forelse ($tasks ?? [] as $task)
+                    <div class="border rounded p-3">
+                        <p class="text-sm font-semibold">{{ $task['title'] }}</p>
+                        <p class="text-xs text-gray-500">{{ $task['reward'] }}</p>
+                        <button
+                            class="text-xs text-[#ff4d4f] border border-[#ff4d4f] rounded px-2 py-0.5 mt-2 hover:bg-[#ff4d4f] hover:text-white transition-colors">Bắt
+                            đầu</button>
+                    </div>
+                @empty
+                    <div class="text-center text-gray-500">Chưa có nhiệm vụ nào.</div>
+                @endforelse
+            </div>
+        </section>
     </div>
 
     @push('scripts')
@@ -269,7 +337,9 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) { return '₫' + value.toLocaleString('vi-VN'); }
+                                callback: function(value) {
+                                    return '₫' + value.toLocaleString('vi-VN');
+                                }
                             },
                             title: {
                                 display: true,
@@ -279,7 +349,7 @@
                         x: {
                             title: {
                                 display: true,
-                                text: '{{ $filterType == "year" ? "Tháng" : "Ngày" }}'
+                                text: '{{ $filterType == 'year' ? 'Tháng' : 'Ngày' }}'
                             }
                         }
                     },
@@ -289,7 +359,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Doanh Thu ({{ $filterType == "year" ? $year : Carbon::parse($startDate)->format('d/m/Y') . " - " . Carbon::parse($endDate)->format('d/m/Y') }})'
+                            text: 'Doanh Thu ({{ $filterType == 'year' ? $year : Carbon::parse($startDate)->format('d/m/Y') . ' - ' . Carbon::parse($endDate)->format('d/m/Y') }})'
                         },
                         tooltip: {
                             callbacks: {
@@ -320,7 +390,11 @@
                     }]
                 },
                 options: {
-                    plugins: { legend: { position: 'right' } }
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
                 }
             });
 

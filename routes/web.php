@@ -45,6 +45,8 @@ use App\Http\Controllers\Seller\ReviewController;
 use App\Http\Controllers\Seller\AdsCampaignController; // Thêm dòng này
 use App\Http\Controllers\Seller\WalletController;
 use App\Http\Controllers\Seller\WithdrawController;
+use App\Http\Controllers\Seller\SellerStatisticsController;
+
 
 //user
 use App\Http\Controllers\User\CheckoutController;
@@ -63,7 +65,6 @@ use App\Http\Controllers\User\ShippingFeeController;
 use App\Http\Controllers\User\CouponController as UserCouponController;
 use App\Http\Controllers\User\FrontendController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\Seller\SellerStatisticsController;
 use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\User\ComboController as UserComboController;
@@ -296,7 +297,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
 
 // seller routes
 Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
-    Route::get('/dashboard', [SellerStatisticsController::class, 'index'])->name('seller.home');
+    Route::get('/dashboard', [SellerStatisticsController::class, 'index'])->name('seller.dashboard');
     Route::get('/seller/analytics/{period}', [SellerStatisticsController::class, 'analytics']);
 
     // Ads Campaigns Routes
@@ -324,9 +325,6 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::post('linked-banks', [WalletController::class, 'storeLinkedBank'])->name('seller.linked-banks.store');
     Route::delete('linked-banks/{id}', [WalletController::class, 'deleteLinkedBank'])->name('seller.linked-banks.destroy');
     Route::post('/wallet/reverse-revenue', [WalletController::class, 'reverseTransferredRevenue'])->name('wallet.reverse.revenue');
-
-
-
 
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
@@ -379,15 +377,6 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::delete('/{id}', [CouponControllerSeller::class, 'destroy'])->name('seller.coupon.destroy');
     });
 
-    Route::prefix('combo')->group(function () {
-        Route::get('/', [ComboController::class, 'index'])->name('seller.combo.index');
-        Route::get('/create', [ComboController::class, 'create'])->name('seller.combo.create');
-        Route::post('/', [ComboController::class, 'store'])->name('seller.combo.store');
-        Route::get('/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
-        Route::patch('/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
-        Route::delete('/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
-    });
-
     Route::get('/orders', function () {
         return view('seller.orders');
     })->name('seller.orders');
@@ -398,6 +387,56 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/combos/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
     Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
     Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
+
+    Route::name('seller.')->group(function () {
+        // Ads Campaigns Routes (Added as a separate group to avoid conflicts)
+        Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Seller\AdsCampaignController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'store'])->name('store');
+            Route::get('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'addProducts'])->name('add_products');
+            Route::post('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'storeProducts'])->name('store_products');
+            Route::get('/{id}/edit', [App\Http\Controllers\Seller\AdsCampaignController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'update'])->name('update');
+            Route::delete('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+        });
+    });
+
+    // seller chat routes
+    Route::get('/chatautomatically', function () {
+        return view('seller.chat.chatautomatically');
+    })->name('seller.chat.chatautomatically');
+    Route::get('/QA', function () {
+        return view('seller.chat.QA');
+    })->name('seller.chat.QA');
+    Route::get('/A', function () {
+        return view('seller.chat.A');
+    })->name('seller.chat.A');
+
+    // seller chat settings (auto reply)
+    Route::post('/auto-reply-toggle', [ChatSettingsController::class, 'toggleAutoReply'])
+        ->middleware('CheckRole:seller')
+        ->name('seller.chat.auto_reply_toggle');
+});
+
+// seller registration routes
+Route::prefix('seller')->middleware('auth')->group(function () {
+    Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
+    Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
+    Route::get('/register1', [RegisterShopController::class, 'showStep2'])->name('seller.register.step2');
+    Route::post('/register1', [RegisterShopController::class, 'step2'])->name('seller.register.step2.post');
+    Route::get('/register2', [RegisterShopController::class, 'showStep3'])->name('seller.register.step3');
+    Route::post('/register2', [RegisterShopController::class, 'step3'])->name('seller.register.step3.post');
+    Route::get('/register3', [RegisterShopController::class, 'showStep4'])->name('seller.register.step4');
+    Route::post('/register3', [RegisterShopController::class, 'step4'])->name('seller.register.step4.post');
+    Route::get('/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
+    Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
+    Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
+    Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
+    Route::get('/profile', function () {
+        return view('seller.profile');
+    })->name('seller.profile');
 });
 
 Route::prefix('customer')->group(function () {
@@ -546,50 +585,12 @@ Route::get('/help/article/{slug}', [FrontendController::class, 'helpDetail'])->n
 Route::get('/help/ajax/category/{slug}', [FrontendController::class, 'ajaxHelpByCategory'])->name('help.category.ajax');
 Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
 
-// seller registration routes
-Route::prefix('seller')->middleware('auth')->group(function () {
-    Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
-    Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
-    Route::get('/register1', [RegisterShopController::class, 'showStep2'])->name('seller.register.step2');
-    Route::post('/register1', [RegisterShopController::class, 'step2'])->name('seller.register.step2.post');
-    Route::get('/register2', [RegisterShopController::class, 'showStep3'])->name('seller.register.step3');
-    Route::post('/register2', [RegisterShopController::class, 'step3'])->name('seller.register.step3.post');
-    Route::get('/register3', [RegisterShopController::class, 'showStep4'])->name('seller.register.step4');
-    Route::post('/register3', [RegisterShopController::class, 'step4'])->name('seller.register.step4.post');
-    Route::get('/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
-    Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
-    Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
-    Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
-    Route::get('/profile', function () {
-        return view('seller.profile');
-    })->name('seller.profile');
-});
-
-// seller chat routes
-Route::prefix('seller/chat')->middleware('CheckRole:seller')->group(function () {
-    Route::get('/chatautomatically', function () {
-        return view('seller.chat.chatautomatically');
-    })->name('seller.chat.chatautomatically');
-    Route::get('/QA', function () {
-        return view('seller.chat.QA');
-    })->name('seller.chat.QA');
-    Route::get('/A', function () {
-        return view('seller.chat.A');
-    })->name('seller.chat.A');
-
-    // seller chat settings (auto reply)
-    Route::post('/auto-reply-toggle', [ChatSettingsController::class, 'toggleAutoReply'])
-        ->middleware('CheckRole:seller')
-        ->name('seller.chat.auto_reply_toggle');
-});
-
 Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);
 Route::get('/api/chat/messages/{shopId}', [ChatController::class, 'getMessagesByShopId']);
 Route::post('/api/chat/send-message', [ChatController::class, 'sendMessage']);
 
-// API OCR CCCD cho frontend JS
 
-Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
+// Route::get('/orders', [UserOrderController::class, 'index'])->name('user.orders');
 
 
 Route::post('/update-session', [App\Http\Controllers\SessionController::class, 'updateSession'])->name('update-session');
@@ -600,7 +601,6 @@ Route::get('/api/ghn/provinces', [App\Http\Controllers\Service\DeliveryProvider\
 Route::get('/api/ghn/districts', [App\Http\Controllers\Service\DeliveryProvider\GHNController::class, 'getDistricts'])->name('api.ghn.districts');
 Route::get('/api/ghn/wards', [App\Http\Controllers\Service\DeliveryProvider\GHNController::class, 'getWards'])->name('api.ghn.wards');
 
-// API - VNPAY
 
 
 Route::resource('wishlist', WishlistController::class)->only(['store', 'destroy']);
@@ -610,44 +610,7 @@ Route::get('/orders/{id}', [UserOrderController::class, 'show'])->name('user.ord
 Route::post('/customer/cart/add-multi', [CartController::class, 'addMultiToCart'])->name('cart.addMulti');
 Route::post('/customer/apply-app-discount', [UserCouponController::class, 'applyAppDiscount'])->name('customer.apply-app-discount');
 
-Route::middleware(['auth'])->group(function () {
-    Route::post('/order-review/store', [UserOrderController::class, 'storeReview'])->name('order.reviews.store');
-    // Ads Campaigns Routes
-    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
-        Route::get('/', [AdsCampaignController::class, 'index'])->name('index');
-        Route::get('/create', [AdsCampaignController::class, 'create'])->name('create');
-        Route::post('/', [AdsCampaignController::class, 'store'])->name('store');
-        Route::get('/{campaign_id}/add-products', [AdsCampaignController::class, 'addProducts'])->name('add_products');
-        Route::post('/{campaign_id}/add-products', [AdsCampaignController::class, 'storeProducts'])->name('store_products');
-        Route::get('/{id}/edit', [AdsCampaignController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [AdsCampaignController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdsCampaignController::class, 'destroy'])->name('destroy');
-        Route::post('/{id}/toggle-status', [AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
-    });
-});
-
-Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
-Route::get('/login/qr/generate', [QrLoginController::class, 'generate']);
-Route::get('/qr-confirm', function () {
-    return view('auth.qr-confirm');
-})->name('qr.confirm.form');
-
-Route::post('/qr-confirm', [QrLoginController::class, 'confirm'])->name('qr.confirm.submit');
-Route::get('/login/qr/waiting/{token}', [LoginController::class, 'showQrWaiting'])->name('login.qr.waiting');
-Route::get('/login/qr/confirm', function (Request $request) {
-    $token = $request->input('token');
-    $userId = Cache::pull("qr_login_confirm_{$token}");
-
-    if ($userId) {
-        Auth::loginUsingId($userId);
-        return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
-    }
-
-    return redirect()->route('login')->with('error', 'Xác thực QR thất bại hoặc đã hết hạn.');
-})->name('qr.confirm.login');
-
-
-
+// forgot password routes
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showEmailForm'])->name('password.email.form');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('password.code.send');
 
@@ -704,19 +667,3 @@ Route::middleware(['auth'])->group(function () {
 
 // Route chi tiết shop
 Route::get('/shop/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
-
-
-Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.')->group(function () {
-    // Ads Campaigns Routes (Added as a separate group to avoid conflicts)
-    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\Seller\AdsCampaignController::class, 'create'])->name('create');
-        Route::post('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'store'])->name('store');
-        Route::get('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'addProducts'])->name('add_products');
-        Route::post('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'storeProducts'])->name('store_products');
-        Route::get('/{id}/edit', [App\Http\Controllers\Seller\AdsCampaignController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'update'])->name('update');
-        Route::delete('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'destroy'])->name('destroy');
-        Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
-    });
-});
