@@ -22,8 +22,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <!-- Summernote CSS -->
@@ -40,7 +40,7 @@
     @vite('resources/css/admin/product.css')
 </head>
 
-<body class="bg-gray-50 h-screen">
+<body class="bg-gray-50 h-screen font-[Inter]">
     <div x-data="{ sidebarOpen: true, mobileSidebarOpen: false, mobileCollapsed: false }" class="flex bg-gray-50 h-screen">
         <!-- Mobile sidebar overlay -->
         <div x-show="mobileSidebarOpen" x-transition:enter="transition-opacity duration-300"
@@ -105,7 +105,7 @@
                 <nav class="px-4 py-6 space-y-2">
                     <!-- Dashboard -->
                     <a href="{{ route('admin.dashboard') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}"
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}"
                         :title="mobileCollapsed ? 'Bảng điều khiển' : ''">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -122,7 +122,7 @@
 
                     <!-- Notifications -->
                     <a href="{{ route('admin.notifications.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.notifications.index') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.notifications.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z">
                             </path>
@@ -177,7 +177,7 @@
 
                     <!-- Categories -->
                     <a href="{{ route('admin.categories.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.categories.index') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.categories.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
@@ -187,9 +187,12 @@
                             x-transition>Danh mục</span>
                     </a>
 
+
+
+
                     <!-- Orders -->
                     <a href="{{ route('admin.orders.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.orders.index') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.orders.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
@@ -201,7 +204,7 @@
 
                     <!-- Reviews -->
                     <a href="{{ route('admin.reviews.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.reviews.index') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.reviews.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11.049 2.927c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
@@ -213,7 +216,7 @@
 
                     <!-- Reports -->
                     <a href="{{ route('admin.reports.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.reports.index') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.reports.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
@@ -225,7 +228,7 @@
 
                     <!-- Coupons -->
                     <a href="{{ route('admin.coupon.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.coupon.index') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.coupon.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z">
@@ -237,29 +240,67 @@
 
                     <!-- Users -->
                     <a href="{{ route('admin.users.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.users.index') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24"
-                            fill="none">
-                            <path
-                                d="M3 19H1V18C1 16.1362 2.27477 14.5701 4 14.126M6 10.8293C4.83481 10.4175 4 9.30621 4 7.99999C4 6.69378 4.83481 5.58254 6 5.1707M21 19H23V18C23 16.1362 21.7252 14.5701 20 14.126M18 5.1707C19.1652 5.58254 20 6.69378 20 7.99999C20 9.30621 19.1652 10.4175 18 10.8293M10 14H14C16.2091 14 18 15.7909 18 18V19H6V18C6 15.7909 7.79086 14 10 14ZM15 8C15 9.65685 13.6569 11 12 11C10.3431 11 9 9.65685 9 8C9 6.34315 10.3431 5 12 5C13.6569 5 15 6.34315 15 8Z"
-                                stroke="#000000" stroke-width="1.5" stroke-linecap="round"
-                                stroke-linejoin="round" />
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.users.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                         </svg>
+
                         <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
                             x-transition>Người dùng</span>
                     </a>
 
-                    <!-- Shop Approval -->
-                    <a href="{{ route('admin.shops.pending') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.shops.pending') ? 'bg-orange-50 text-orange-700 border-r-2 border-orange-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                            </path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Duyệt cửa hàng</span>
-                    </a>
+                    <!-- Shop Management -->
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                    </path>
+                                </svg>
+                                <span
+                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                    x-transition>Quản lý Shop</span>
+                            </div>
+                            <svg x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
+                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="open" x-transition:enter="transition duration-200"
+                            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                            x-transition:leave="transition duration-200" x-transition:leave-start="opacity-100"
+                            x-transition:leave-end="opacity-0" class="ml-8 mt-1 space-y-1">
+                            <a href="{{ route('admin.shops.index') }}"
+                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <i class="fas fa-list mr-2"></i>Tất cả cửa hàng
+                            </a>
+                            <a href="{{ route('admin.shops.pending') }}"
+                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <i class="fas fa-clock mr-2"></i>Chờ duyệt
+                            </a>
+                            <a href="{{ route('admin.shops.suspended') }}"
+                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <i class="fas fa-pause mr-2"></i>Tạm ngưng
+                            </a>
+                            <a href="{{ route('admin.shops.banned') }}"
+                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <i class="fas fa-ban mr-2"></i>Đã bị cấm
+                            </a>
+                            <a href="{{ route('admin.shops.analytics') }}"
+                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <i class="fas fa-chart-bar mr-2"></i>Thống kê
+                            </a>
+                        </div>
+                    </div>
 
                     <!-- Content Management -->
                     <div x-data="{ open: false }" class="relative">
@@ -298,56 +339,48 @@
                             <a href="{{ route('post-tags.index') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thẻ
                                 bài viết</a>
-                            <a href="#"
+                            <a href="{{ route('admin.comments.index') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Bình
                                 luận</a>
-                        </div>
-                    </div>
-
-                    <!-- Divider -->
-                    <div class="border-t border-gray-200 my-4"></div>
-
-
-                    <!-- Settings -->
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open"
-                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                                    </path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                <span
-                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                                    x-transition>Cài đặt</span>
-                            </div>
-                            <svg x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                                x-transition class="w-4 h-4 transition-transform duration-200"
-                                :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div x-show="open" x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95" class="ml-8 mt-1 space-y-1">
-                            <a href="{{ route('admin.settings.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Cài
-                                đặt cửa hàng</a>
-                            <a href="{{ route('help-category.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Chính
-                                sách</a>
                             <a href="{{ route('help-article.index') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Chính
                                 sách bài viết</a>
                         </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="border-t border-gray-200 mt-4"></div>
+
+                    <!-- Chính sách -->
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-center">
+                                <span
+                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                    x-transition><a href="{{ route('help-category.index') }}"
+                                        class="block text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Chính
+                                        sách
+                                    </a>
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Cài đặt cửa hàng -->
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-center">
+                                <span
+                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                    x-transition><a href="{{ route('admin.settings.index') }}"
+                                        class="block text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Cài
+                                        đặt cửa hàng
+                                    </a>
+                                </span>
+                            </div>
+                        </button>
                     </div>
                 </nav>
             </div>
@@ -367,7 +400,7 @@
                         </svg>
                     </button>
 
-                    <div class="flex items-center w-[600px] space-x-2 lg:space-x-4">
+                    <div class="flex items-center w-full space-x-2 lg:space-x-4">
                         <!-- Desktop sidebar toggle -->
                         <button @click="sidebarOpen = !sidebarOpen"
                             class="hidden lg:block p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors duration-200">
@@ -382,8 +415,8 @@
                         <!-- Search -->
                         <div class="flex-1 mx-4">
                             <div class="relative">
-                                <svg class="absolute left-3 top-2 w-5 h-5" viewBox="-2.4 -2.4 28.80 28.80" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
+                                <svg class="absolute left-3 top-2 w-5 h-5" viewBox="-2.4 -2.4 28.80 28.80"
+                                    fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"
                                         stroke="#060505" stroke-width="4.8">
@@ -403,58 +436,59 @@
                                 </svg>
                                 <div class="absolute left-5 top-2 w-5 h-5 border-r border-gray-300"></div>
                                 <input type="text" placeholder="Tìm kiếm..."
-                                    class="w-full pl-[45px] pr-4 py-1 border border-gray-300 rounded-lg focus:outline-none">
+                                    class="w-[600px] pl-[45px] pr-4 py-1 border border-gray-300 rounded-lg focus:outline-none">
                             </div>
                         </div>
-                    </div>
 
 
-                    <!-- Right side -->
-                    <div class="flex items-center space-x-6">
-                        <!-- Nút thông báo -->
-                        <div class="relative dropdown-notification cursor-pointer">
-                            <div class="flex items-center gap-1 hover:text-[#EF3248] cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                                </svg>
-                                <span class="capitalize text-sm">Thông báo</span>
-                                @auth
-                                    @php
-                                        $unreadCount = 0;
-                                        if (isset($groupedNotifications)) {
-                                            foreach ($groupedNotifications as $type => $notifications) {
-                                                $unreadCount += $notifications->where('status', 'unread')->count();
+                        <!-- Right side -->
+                        <div class="flex items-center space-x-6">
+                            <!-- Nút thông báo -->
+                            <div class="relative dropdown-notification cursor-pointer">
+                                <div class="flex items-center gap-1 hover:text-[#EF3248] cursor-pointer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="size-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                    </svg>
+                                    <span class="capitalize text-sm">Thông báo</span>
+                                    @auth
+                                        @php
+                                            $unreadCount = 0;
+                                            if (isset($groupedNotifications)) {
+                                                foreach ($groupedNotifications as $type => $notifications) {
+                                                    $unreadCount += $notifications->where('status', 'unread')->count();
+                                                }
                                             }
-                                        }
-                                    @endphp
-                                    @if ($unreadCount > 0)
-                                        <span
-                                            class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                                            {{ $unreadCount > 99 ? '99+' : $unreadCount }}
-                                        </span>
-                                    @endif
-                                @endauth
-                            </div>
-                            <div
-                                class="absolute dropdown-notification-content z-10 mt-[22px] right-0 bg-white w-[400px] max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden">
+                                        @endphp
+                                        @if ($unreadCount > 0)
+                                            <span
+                                                class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                                                {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                                            </span>
+                                        @endif
+                                    @endauth
+                                </div>
+                                <div
+                                    class="absolute dropdown-notification-content z-10 mt-[22px] right-0 bg-white w-[400px] max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden">
 
-                                @auth
-                                    @if (isset($groupedNotifications) && $groupedNotifications->count() > 0)
-                                        <div class="p-4">
-                                            <div class="flex items-center justify-between mb-4">
-                                                <span class="text-sm font-semibold text-gray-700">Thông báo mới</span>
-                                                <a href="{{ route('admin.notifications.index') }}"
-                                                    class="text-xs text-blue-600 hover:text-blue-800">Xem tất cả</a>
-                                            </div>
+                                    @auth
+                                        @if (isset($groupedNotifications) && $groupedNotifications->count() > 0)
+                                            <div class="p-4">
+                                                <div class="flex items-center justify-between mb-4">
+                                                    <span class="text-sm font-semibold text-gray-700">Thông báo
+                                                        mới</span>
+                                                    <a href="{{ route('admin.notifications.index') }}"
+                                                        class="text-xs text-blue-600 hover:text-blue-800">Xem tất
+                                                        cả</a>
+                                                </div>
 
-                                            @foreach ($groupedNotifications as $type => $notifications)
-                                                <!-- Notification Type Header -->
-                                                <div class="mb-3">
-                                                    <div class="flex items-center gap-2 mb-2">
-                                                        <div
-                                                            class="w-2 h-2 rounded-full 
+                                                @foreach ($groupedNotifications as $type => $notifications)
+                                                    <!-- Notification Type Header -->
+                                                    <div class="mb-3">
+                                                        <div class="flex items-center gap-2 mb-2">
+                                                            <div
+                                                                class="w-2 h-2 rounded-full 
                                                         @switch($type)
                                                             @case('order')
                                                                 bg-blue-500
@@ -471,178 +505,180 @@
                                                             @default
                                                                 bg-gray-500
                                                         @endswitch">
-                                                        </div>
-                                                        <h4 class="text-xs font-medium text-gray-500 uppercase">
-                                                            @switch($type)
-                                                                @case('order')
-                                                                    Đơn hàng
-                                                                @break
-
-                                                                @case('promotion')
-                                                                    Khuyến mãi
-                                                                @break
-
-                                                                @case('system')
-                                                                    Hệ thống
-                                                                @break
-
-                                                                @case('security')
-                                                                    Bảo mật
-                                                                @break
-
-                                                                @default
-                                                                    {{ ucfirst($type) }}
-                                                            @endswitch
-                                                        </h4>
-                                                        <span
-                                                            class="text-xs text-gray-400">({{ $notifications->count() }})</span>
-                                                    </div>
-
-                                                    @foreach ($notifications->sortByDesc('created_at')->take(3) as $notification)
-                                                        <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ $notification->status === 'unread' ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
-                                                            data-notification-id="{{ $notification->id }}"
-                                                            data-notification-type="{{ $notification->type }}">
-                                                            <div class="flex-shrink-0">
-                                                                @if ($notification->image_path)
-                                                                    <div
-                                                                        class="w-10 h-10 rounded-full flex items-center justify-center">
-                                                                        <img src="{{ asset('images/notifications/' . $notification->image_path) }}"
-                                                                            alt="Notification Image"
-                                                                            class="w-full h-full rounded-full">
-                                                                    </div>
-                                                                @else
-                                                                    <div
-                                                                        class="w-10 h-10 rounded-full flex items-center justify-center">
-                                                                        <img src="{{ asset('images/logo.jpg') }}"
-                                                                            alt="Notification Image"
-                                                                            class="w-full h-full rounded-full">
-                                                                    </div>
-                                                                @endif
-
                                                             </div>
-                                                            <div class="flex-1 min-w-0">
-                                                                <div class="flex items-center justify-between">
-                                                                    <p class="text-sm font-medium text-gray-900 truncate">
-                                                                        {{ $notification->title }}
-                                                                    </p>
-                                                                    @if ($notification->priority === 'high')
-                                                                        <span
-                                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                                            Quan trọng
-                                                                        </span>
-                                                                    @endif
-                                                                </div>
-                                                                <p class="text-xs text-gray-500 mt-1 line-clamp-2">
-                                                                    {{ $notification->content }}
-                                                                </p>
-                                                                <div class="flex items-center justify-between mt-2">
-                                                                    <p class="text-xs text-gray-400">
-                                                                        {{ $notification->created_at->diffForHumans() }}
-                                                                    </p>
-                                                                    @php
-                                                                        $isRead = false;
-                                                                        if (
-                                                                            $notification->receiver &&
-                                                                            $notification->receiver->count() > 0
-                                                                        ) {
-                                                                            foreach (
-                                                                                $notification->receiver
-                                                                                as $receiver
-                                                                            ) {
-                                                                                if (
-                                                                                    $receiver->receiver_id ==
-                                                                                    auth()->id()
-                                                                                ) {
-                                                                                    $isRead = $receiver->is_read;
-                                                                                    break;
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    @endphp
-                                                                    @if ($isRead === false)
-                                                                        <div class="w-2 h-2 bg-blue-500 rounded-full unread-dot"
-                                                                            data-notification-id="{{ $notification->id }}">
+                                                            <h4 class="text-xs font-medium text-gray-500 uppercase">
+                                                                @switch($type)
+                                                                    @case('order')
+                                                                        Đơn hàng
+                                                                    @break
+
+                                                                    @case('promotion')
+                                                                        Khuyến mãi
+                                                                    @break
+
+                                                                    @case('system')
+                                                                        Hệ thống
+                                                                    @break
+
+                                                                    @case('security')
+                                                                        Bảo mật
+                                                                    @break
+
+                                                                    @default
+                                                                        {{ ucfirst($type) }}
+                                                                @endswitch
+                                                            </h4>
+                                                            <span
+                                                                class="text-xs text-gray-400">({{ $notifications->count() }})</span>
+                                                        </div>
+
+                                                        @foreach ($notifications->sortByDesc('created_at')->take(3) as $notification)
+                                                            <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ $notification->status === 'unread' ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
+                                                                data-notification-id="{{ $notification->id }}"
+                                                                data-notification-type="{{ $notification->type }}">
+                                                                <div class="flex-shrink-0">
+                                                                    @if ($notification->image_path)
+                                                                        <div
+                                                                            class="w-10 h-10 rounded-full flex items-center justify-center">
+                                                                            <img src="{{ asset('images/notifications/' . $notification->image_path) }}"
+                                                                                alt="Notification Image"
+                                                                                class="w-full h-full rounded-full">
+                                                                        </div>
+                                                                    @else
+                                                                        <div
+                                                                            class="w-10 h-10 rounded-full flex items-center justify-center">
+                                                                            <img src="{{ asset('images/logo.jpg') }}"
+                                                                                alt="Notification Image"
+                                                                                class="w-full h-full rounded-full">
                                                                         </div>
                                                                     @endif
+
+                                                                </div>
+                                                                <div class="flex-1 min-w-0">
+                                                                    <div class="flex items-center justify-between">
+                                                                        <p
+                                                                            class="text-sm font-medium text-gray-900 truncate">
+                                                                            {{ $notification->title }}
+                                                                        </p>
+                                                                        @if ($notification->priority === 'high')
+                                                                            <span
+                                                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                                Quan trọng
+                                                                            </span>
+                                                                        @endif
+                                                                    </div>
+                                                                    <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                                        {{ $notification->content }}
+                                                                    </p>
+                                                                    <div class="flex items-center justify-between mt-2">
+                                                                        <p class="text-xs text-gray-400">
+                                                                            {{ $notification->created_at->diffForHumans() }}
+                                                                        </p>
+                                                                        @php
+                                                                            $isRead = false;
+                                                                            if (
+                                                                                $notification->receiver &&
+                                                                                $notification->receiver->count() > 0
+                                                                            ) {
+                                                                                foreach (
+                                                                                    $notification->receiver
+                                                                                    as $receiver
+                                                                                ) {
+                                                                                    if (
+                                                                                        $receiver->receiver_id ==
+                                                                                        auth()->id()
+                                                                                    ) {
+                                                                                        $isRead = $receiver->is_read;
+                                                                                        break;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        @endphp
+                                                                        @if ($isRead === false)
+                                                                            <div class="w-2 h-2 bg-blue-500 rounded-full unread-dot"
+                                                                                data-notification-id="{{ $notification->id }}">
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    @endforeach
+                                                        @endforeach
 
-                                                    @if ($notifications->count() > 3)
-                                                        <div class="text-center py-2">
-                                                            <a href="{{ route('admin.notifications.index', ['type' => $type]) }}"
-                                                                class="text-xs text-blue-600 hover:text-blue-800">
-                                                                Xem thêm {{ $notifications->count() - 3 }} thông báo
-                                                                {{ strtolower($type) }}
-                                                            </a>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <div class="p-8 text-center">
-                                            <div
-                                                class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-8 h-8 text-gray-400">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                                                </svg>
+                                                        @if ($notifications->count() > 3)
+                                                            <div class="text-center py-2">
+                                                                <a href="{{ route('admin.notifications.index', ['type' => $type]) }}"
+                                                                    class="text-xs text-blue-600 hover:text-blue-800">
+                                                                    Xem thêm {{ $notifications->count() - 3 }} thông
+                                                                    báo
+                                                                    {{ strtolower($type) }}
+                                                                </a>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
                                             </div>
-                                            <p class="text-sm text-gray-500">Không có thông báo mới</p>
+                                        @else
+                                            <div class="p-8 text-center">
+                                                <div
+                                                    class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                        class="w-8 h-8 text-gray-400">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-sm text-gray-500">Không có thông báo mới</p>
+                                            </div>
+                                        @endif
+                                    @endauth
+                                    @guest
+                                        <div class="p-6 text-center">
+                                            <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
+                                            <a href="{{ route('login') }}"
+                                                class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng
+                                                nhập</a>
                                         </div>
-                                    @endif
-                                @endauth
-                                @guest
-                                    <div class="p-6 text-center">
-                                        <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
-                                        <a href="{{ route('login') }}"
-                                            class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng
-                                            nhập</a>
-                                    </div>
-                                @endguest
+                                    @endguest
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- User menu -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open"
-                                class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                <img src="{{ asset('images/avatar.png') }}" alt="Avatar"
-                                    class="w-8 h-8 rounded-full">
-                                <span
-                                    class="hidden md:block text-sm font-medium text-gray-700">{{ Auth::user()->fullname }}</span>
-                                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
-                                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
+                            <!-- User menu -->
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open"
+                                    class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                    <img src="{{ asset('images/avatar.png') }}" alt="Avatar"
+                                        class="w-8 h-8 rounded-full">
+                                    <span
+                                        class="hidden md:block text-sm font-medium text-gray-700">{{ \Auth::user()->fullname }}</span>
+                                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                                        :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
 
-                            <div x-show="open" @click.away="open = false"
-                                x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
-                                x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
-                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                                <a href="#"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Cài
-                                    đặt</a>
-                                <a href="{{ route('logout') }}"
-                                    onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Đăng
-                                    xuất</a>
-                                <form id="logout-form-header" action="{{ route('logout') }}" method="POST"
-                                    class="hidden">
-                                    @csrf
-                                </form>
+                                <div x-show="open" @click.away="open = false"
+                                    x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
+                                    x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
+                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                    class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                                    <a href="#"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Cài
+                                        đặt</a>
+                                    <a href="{{ route('logout') }}"
+                                        onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Đăng
+                                        xuất</a>
+                                    <form id="logout-form-header" action="{{ route('logout') }}" method="POST"
+                                        class="hidden">
+                                        @csrf
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
             </header>
 
             <!-- Main content area -->

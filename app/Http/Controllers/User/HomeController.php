@@ -171,7 +171,7 @@ class HomeController extends Controller
             ->get();
             
         // Lấy sản phẩm quảng cáo từ ads_campaigns
-        $advertisedProducts = AdsCampaignItem::with(['product.defaultImage', 'product.shop', 'adsCampaign.shop'])
+        $advertisedProductsByShop = AdsCampaignItem::with(['product.defaultImage', 'product.shop', 'adsCampaign.shop'])
             ->whereHas('adsCampaign', function ($query) {
                 $query->where('status', 'active')
                       ->where('start_date', '<=', now())
@@ -181,8 +181,28 @@ class HomeController extends Controller
                 $query->where('status', 'active');
             })
             ->inRandomOrder()
-            ->take(6)
-            ->get();
+            ->take(12)
+            ->get()
+            ->groupBy('product.shop.id')
+            ->map(function ($items, $shopId) {
+                $firstItem = $items->first();
+                return [
+                    'shop' => $firstItem->product->shop,
+                    'products' => $items->map(function ($item) {
+                        $item->product->ads_campaign_name = $item->adsCampaign->name;
+                        return $item->product;
+                    })->take(6), // Giới hạn 6 sản phẩm mỗi shop
+                    'campaign_name' => $firstItem->adsCampaign->name,
+                    'all_campaigns' => $items->map(function ($item) {
+                        return [
+                            'campaign' => $item->adsCampaign,
+                            'product' => $item->product
+                        ];
+                    })
+                ];
+            })
+            ->take(1); // Chỉ lấy 1 shop duy nhất
+
         // Lấy và tính toán xếp hạng shop
         $rankingShops = Shop::where('shop_status', 'active')
             ->where(function ($query) {
@@ -261,7 +281,7 @@ class HomeController extends Controller
             'blogs',
             'user',
             'comboProducts',
-            'advertisedProducts'
+            'advertisedProductsByShop'
         ));
     }
 }

@@ -11,6 +11,7 @@ class IdentityVerification extends Model
 
     protected $fillable = [
         'userID',
+        'shop_id',
         'full_name',
         'identity_number',
         'birth_date',

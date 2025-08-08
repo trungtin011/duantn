@@ -921,7 +921,7 @@
                         <div class="product-showcase">
                             <h2 class="title">Sản phẩm nổi bật</h2>
                             @if ($featuredProducts->isEmpty())
-                                <p>Hiện chưa có sản phẩm nổi bật nào.</p>
+                                <p>Không có sản phẩm nào.</p>
                             @else
                                 @php
                                     $featuredProducts = $featuredProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
@@ -1079,7 +1079,7 @@
                         <div class="product-showcase">
                             <h2 class="title">Đánh giá cao</h2>
                             @if ($topRatedProducts->isEmpty())
-                                <p>Chưa có sản phẩm nào được đánh giá.</p>
+                                <p>Không có sản phẩm nào.</p>
                             @else
                                 @php
                                     $topRatedProducts = $topRatedProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
@@ -1285,65 +1285,8 @@
                 </div>
 
                 <div class="cta-container">
-                    @if ($advertisedProducts->isNotEmpty())
-                        <div class="advertised-products-container">
-                            <h3 class="advertised-title">Sản phẩm quảng cáo</h3>
-
-                            <!-- Slides Container -->
-                            <div class="advertised-slides-container">
-                                @php
-                                    $productsPerSlide = 2;
-                                    $totalSlides = ceil($advertisedProducts->count() / $productsPerSlide);
-                                @endphp
-
-                                @for ($slideIndex = 0; $slideIndex < $totalSlides; $slideIndex++)
-                                    <div class="advertised-slide {{ $slideIndex === 0 ? 'active' : '' }}"
-                                        data-slide="{{ $slideIndex }}">
-                                        <div class="advertised-grid">
-                                            @foreach ($advertisedProducts->slice($slideIndex * $productsPerSlide, $productsPerSlide) as $adItem)
-                                                <div class="advertised-item">
-                                                    <div class="ad-badge">Quảng cáo</div>
-                                                    <a href="{{ route('product.show', $adItem->product->slug) }}"
-                                                        class="ad-product-link">
-                                                        <img src="{{ $adItem->product->image_url }}"
-                                                            alt="{{ $adItem->product->name }}" class="ad-product-img">
-                                                        <div class="ad-product-info">
-                                                            <h4 class="ad-product-name">
-                                                                {{ Str::limit($adItem->product->name, 30) }}</h4>
-                                                            <div class="ad-product-price">
-                                                                @if (
-                                                                    $adItem->product->display_original_price &&
-                                                                        $adItem->product->display_price < $adItem->product->display_original_price)
-                                                                    <span
-                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
-                                                                    <span
-                                                                        class="ad-price-old">{{ number_format($adItem->product->display_original_price) }}₫</span>
-                                                                @else
-                                                                    <span
-                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
-                                                                @endif
-                                                            </div>
-                                                        </div>
-                                                    </a>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endfor
-                            </div>
-
-                            <!-- Dots Navigation -->
-                            @if ($totalSlides > 1)
-                                <div class="advertised-dots">
-                                    @for ($dotIndex = 0; $dotIndex < $totalSlides; $dotIndex++)
-                                        <button class="advertised-dot {{ $dotIndex === 0 ? 'active' : '' }}"
-                                            data-slide="{{ $dotIndex }}"
-                                            aria-label="Go to slide {{ $dotIndex + 1 }}">
-                                        </button>
-                                    @endfor
-                                </div>
-                            @endif
-                        </div>
+                    @if ($advertisedProductsByShop->isNotEmpty())
+                        @include('partials.advertised_products', ['advertisedProductsByShop' => $advertisedProductsByShop])
                     @else
                         <!-- Fallback banner nếu không có quảng cáo -->
                         <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection"
@@ -1846,96 +1789,8 @@
                 initQuickViewScripts();
             }
 
-            // Advertised Products Slider
-            function initAdvertisedSlider() {
-                const dots = document.querySelectorAll('.advertised-dot');
-                const slides = document.querySelectorAll('.advertised-slide');
-
-                if (dots.length === 0 || slides.length === 0) return;
-
-                let currentSlide = 0;
-                let isTransitioning = false;
-                let autoSlideInterval = null;
-
-                function goToSlide(slideIndex) {
-                    if (isTransitioning) return; // Prevent multiple transitions
-
-                    isTransitioning = true;
-
-                    // Remove active class from all slides and dots
-                    slides.forEach(slide => {
-                        slide.classList.remove('active', 'prev');
-                    });
-                    dots.forEach(dot => dot.classList.remove('active'));
-
-                    // Add active class to current slide and dot
-                    slides[slideIndex].classList.add('active');
-                    dots[slideIndex].classList.add('active');
-
-                    // Add prev class to previous slide for smooth transition
-                    if (slideIndex > 0) {
-                        slides[slideIndex - 1].classList.add('prev');
-                    }
-
-                    // Wait for transition to complete before allowing next transition
-                    setTimeout(() => {
-                        isTransitioning = false;
-                    }, 600); // Slightly longer than CSS transition (500ms)
-                }
-
-                function startAutoSlide() {
-                    if (autoSlideInterval) {
-                        clearInterval(autoSlideInterval);
-                    }
-
-                    autoSlideInterval = setInterval(() => {
-                        if (!isTransitioning) {
-                            currentSlide = (currentSlide + 1) % slides.length;
-                            goToSlide(currentSlide);
-                        }
-                    }, 4000); // 4 seconds between slides
-                }
-
-                function stopAutoSlide() {
-                    if (autoSlideInterval) {
-                        clearInterval(autoSlideInterval);
-                        autoSlideInterval = null;
-                    }
-                }
-
-                // Add click event to dots
-                dots.forEach((dot, index) => {
-                    dot.addEventListener('click', () => {
-                        if (!isTransitioning) {
-                            currentSlide = index;
-                            goToSlide(currentSlide);
-
-                            // Restart auto slide after manual click
-                            stopAutoSlide();
-                            startAutoSlide();
-                        }
-                    });
-                });
-
-                // Start auto slide
-                startAutoSlide();
-
-                // Pause auto slide on hover
-                const container = document.querySelector('.advertised-products-container');
-                if (container) {
-                    container.addEventListener('mouseenter', () => {
-                        stopAutoSlide();
-                    });
-
-                    container.addEventListener('mouseleave', () => {
-                        startAutoSlide();
-                    });
-                }
-            }
-
-            // Initialize advertised slider when DOM is loaded
+            // Initialize price handling when DOM is loaded
             document.addEventListener('DOMContentLoaded', function() {
-                initAdvertisedSlider();
                 initPriceHandling();
             });
 
@@ -1962,6 +1817,11 @@
                     }
                 });
             }
+
+            // Initialize price handling when DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                initPriceHandling();
+            });
         </script>
     @endpush
 @endsection

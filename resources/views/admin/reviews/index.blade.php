@@ -9,8 +9,8 @@
 @section('content')
 <pre>@php dump($reviews) @endphp</pre>
 <div class="admin-page-header">
-    <h1 class="admin-page-title">Reviews</h1>
-    <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Reviews List</div>
+    <h1 class="admin-page-title">Đánh giá</h1>
+    <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Trang chủ</a> / Danh sách đánh giá</div>
 </div>
 
 {{-- Form lọc --}}
@@ -50,11 +50,11 @@
             <thead class="admin-table-thead">
                 <tr>
                     <th style="width: 40px; padding-left: 16px;"><input type="checkbox"></th>
-                    <th>PRODUCT</th>
-                    <th>CUSTOMER</th>
-                    <th>RATING</th>
-                    <th>DATE</th>
-                    <th>ACTION</th>
+                    <th>SẢN PHẨM</th>
+                    <th>KHÁCH HÀNG</th>
+                    <th>ĐÁNH GIÁ</th>
+                    <th>NGÀY</th>
+                    <th>HÀNH ĐỘNG</th>
                 </tr>
             </thead>
             <tbody>

@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
+use App\Http\Controllers\Admin\CommentController;
 
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
@@ -227,6 +228,14 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         return view('admin.reviews.index');
     })->name('admin.reviews.index');
 
+    // comments
+    Route::prefix('comments')->group(function () {
+        Route::get('/', [CommentController::class, 'index'])->name('admin.comments.index');
+        Route::get('/{comment}', [CommentController::class, 'show'])->name('admin.comments.show');
+        Route::put('/{comment}', [CommentController::class, 'update'])->name('admin.comments.update');
+        Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('admin.comments.destroy');
+    });
+
     // settings
     Route::prefix('settings')->group(function () {
         Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
@@ -286,12 +295,25 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::resource('help-article', HelpArticleController::class);
     Route::resource('logo', LogoController::class);
 
-    // Shop Approval (Admin)
+    // Shop Management (Admin)
     Route::prefix('shops')->group(function () {
+        Route::get('/', [AdminShopController::class, 'index'])->name('admin.shops.index');
         Route::get('/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
+        Route::get('/active', [AdminShopController::class, 'active'])->name('admin.shops.active');
+        Route::get('/banned', [AdminShopController::class, 'banned'])->name('admin.shops.banned');
+        Route::get('/suspended', [AdminShopController::class, 'suspended'])->name('admin.shops.suspended');
+        Route::get('/analytics', [AdminShopController::class, 'analytics'])->name('admin.shops.analytics');
         Route::get('/{shop}', [AdminShopController::class, 'show'])->name('admin.shops.show');
         Route::post('/{shop}/approve', [AdminShopController::class, 'approve'])->name('admin.shops.approve');
         Route::post('/{shop}/reject', [AdminShopController::class, 'reject'])->name('admin.shops.reject');
+        Route::post('/{shop}/deactivate', [AdminShopController::class, 'deactivate'])->name('admin.shops.deactivate');
+        Route::post('/{shop}/ban', [AdminShopController::class, 'ban'])->name('admin.shops.ban');
+        Route::post('/{shop}/unban', [AdminShopController::class, 'unban'])->name('admin.shops.unban');
+        Route::post('/{shop}/reactivate', [AdminShopController::class, 'reactivate'])->name('admin.shops.reactivate');
+        Route::post('/{shop}/activate', [AdminShopController::class, 'activate'])->name('admin.shops.activate');
+        Route::put('/{shop}', [AdminShopController::class, 'update'])->name('admin.shops.update');
+        Route::delete('/{shop}', [AdminShopController::class, 'destroy'])->name('admin.shops.destroy');
+        Route::post('/test-role-update', [AdminShopController::class, 'testRoleUpdate'])->name('admin.shops.test-role-update');
     });
 });
 
@@ -299,6 +321,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
 Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::get('/dashboard', [SellerStatisticsController::class, 'index'])->name('seller.dashboard');
     Route::get('/seller/analytics/{period}', [SellerStatisticsController::class, 'analytics']);
+
 
     // Ads Campaigns Routes
     Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
@@ -448,6 +471,8 @@ Route::prefix('customer')->group(function () {
     Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
     // Route tìm kiếm sản phẩm
     Route::get('/search', [ProductController::class, 'search'])->name('search');
+    // Route hiển thị tất cả quảng cáo của shop
+    Route::get('/shop/{shopId}/ads', [ProductController::class, 'showShopAds'])->name('shop.ads');
     // Route Hồ sơ shop
     Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.profile');
     // Route follow shop
@@ -587,6 +612,24 @@ Route::get('/help/article/{slug}', [FrontendController::class, 'helpDetail'])->n
 Route::get('/help/ajax/category/{slug}', [FrontendController::class, 'ajaxHelpByCategory'])->name('help.category.ajax');
 Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
 
+// seller registration routes
+Route::prefix('seller')->middleware('auth')->group(function () {
+    Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
+    Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
+    // Route register1 đã bị xóa vì bỏ bước vận chuyển
+    Route::get('/register2', [RegisterShopController::class, 'showStep3'])->name('seller.register.step3');
+    Route::post('/register2', [RegisterShopController::class, 'step3'])->name('seller.register.step3.post');
+    Route::get('/register3', [RegisterShopController::class, 'showStep4'])->name('seller.register.step4');
+    Route::post('/register3', [RegisterShopController::class, 'step4'])->name('seller.register.step4.post');
+    Route::get('/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
+    Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
+    Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
+    Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
+    Route::get('/profile', function () {
+        return view('seller.profile');
+    })->name('seller.profile');
+});
+
 Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);
 Route::get('/api/chat/messages/{shopId}', [ChatController::class, 'getMessagesByShopId']);
 Route::post('/api/chat/send-message', [ChatController::class, 'sendMessage']);
@@ -669,3 +712,50 @@ Route::middleware(['auth'])->group(function () {
 
 // Route chi tiết shop
 Route::get('/shop/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
+
+
+Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.')->group(function () {
+    // Ads Campaigns Routes (Added as a separate group to avoid conflicts)
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Seller\AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [App\Http\Controllers\Seller\AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
+});
+
+// Route upload ảnh CCCD tạm thời
+Route::post('/api/upload-cccd-temp', function(Request $request) {
+    if ($request->hasFile('file')) {
+        $file = $request->file('file');
+        $type = $request->input('type', 'cccd_front');
+        
+        // Validate file
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg|max:5120', // 5MB
+        ]);
+        
+        // Tạo tên file unique
+        $fileName = time() . '_' . $type . '.' . $file->getClientOriginalExtension();
+        
+        // Lưu vào thư mục tạm
+        $path = $file->storeAs('temp/cccd', $fileName, 'public');
+        
+        return response()->json([
+            'success' => true,
+            'path' => 'storage/' . $path,
+            'url' => asset('storage/' . $path),
+            'filename' => $fileName
+        ]);
+    }
+    
+    return response()->json([
+        'success' => false,
+        'message' => 'Không có file được upload'
+    ]);
+})->middleware('web');

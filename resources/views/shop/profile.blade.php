@@ -213,6 +213,29 @@
         </div>
     </div>
 
+    @if(($shop->shop_status instanceof \App\Enums\ShopStatus ? $shop->shop_status->value : $shop->shop_status) === 'suspended')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Shop đang tạm ngưng bán',
+                    text: 'Cửa hàng này đang tạm ngưng hoạt động. Bạn không thể mua sản phẩm này vào lúc này.',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                    backdrop: true,
+                    didOpen: () => {
+                        document.querySelectorAll('button, a, input, select, textarea').forEach(el => {
+                            el.disabled = true;
+                            el.style.pointerEvents = 'none';
+                        });
+                    }
+                });
+            });
+        </script>
+    @endif
 </body>
 
 </html>
