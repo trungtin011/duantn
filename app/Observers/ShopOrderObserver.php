@@ -26,7 +26,7 @@ class ShopOrderObserver
             'status' => $shopOrder->status,
             'isDirty' => $shopOrder->isDirty('status')
         ]);
-        if ($shopOrder->isDirty('status') && in_array($shopOrder->status, ['confirmed', 'completed'])) {
+        if ($shopOrder->isDirty('status') && in_array($shopOrder->status, ['completed'])) {
             Log::info('Triggering updateStatus for status: ' . $shopOrder->status, ['shop_order_id' => $shopOrder->id]);
             $shopOrder->updateStatus($shopOrder->status);
         }

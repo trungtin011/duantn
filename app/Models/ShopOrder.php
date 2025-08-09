@@ -49,7 +49,7 @@ class ShopOrder extends Model
 public function updateStatus($status)
     {
         // Kiểm tra nếu trạng thái mới là confirmed hoặc completed
-        if (in_array($status, ['confirmed', 'completed'])) {
+        if (in_array($status, [ 'completed'])) {
             // Kiểm tra xem total_spent đã được cập nhật cho đơn hàng này chưa
             $hasUpdatedTotalSpent = ShopOrderHistory::where('shop_order_id', $this->id)
                 ->where('description', 'like', '%Cập nhật total_spent%')
@@ -99,7 +99,7 @@ public function updateStatus($status)
             ShopOrderHistory::create([
                 'shop_order_id' => $this->id,
                 'status' => $status,
-                'description' => $status === 'confirmed' ? 'Người bán xác nhận đơn hàng' : 'Người bán xác nhận hoàn thành đơn hàng',
+                'description' => $status === 'completed' ? 'Người bán xác nhận đơn hàng' : 'Người bán xác nhận hoàn thành đơn hàng',
             ]);
         } else {
             Log::info('No action taken, status: ' . $this->status . ', new status: ' . $status);
