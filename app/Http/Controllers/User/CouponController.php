@@ -25,6 +25,16 @@ class CouponController extends Controller
 
         $saved = $query->paginate(12);
 
+        // AJAX response: return rendered partial HTML
+        if ($request->ajax()) {
+            $html = view('user.account.coupons.partials.list', [
+                'saved' => $saved,
+                'status' => $status,
+            ])->render();
+
+            return response()->json(['html' => $html]);
+        }
+
         return view('user.account.coupons.index', [
             'saved' => $saved,
             'status' => $status,
