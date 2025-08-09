@@ -167,6 +167,52 @@ class CheckoutController extends Controller
         return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_coupon', 'user_points', 'public_coupons', 'subtotal'));
     }
 
+    /**
+     * Xử lý mua ngay trực tiếp từ trang sản phẩm
+     */
+    public function directCheckout(Request $request)
+    {
+        $product_id = $request->get('product_id');
+        $variant_id = $request->get('variant_id');
+        $quantity = $request->get('quantity', 1);
+
+        if (!$product_id) {
+            return redirect()->back()->with('error', 'Không tìm thấy sản phẩm');
+        }
+
+        $product = Product::find($product_id);
+        if (!$product) {
+            return redirect()->back()->with('error', 'Sản phẩm không tồn tại');
+        }
+
+        // Kiểm tra tồn kho
+        if ($variant_id) {
+            $variant = $product->variants()->where('id', $variant_id)->first();
+            if (!$variant || $variant->stock < $quantity) {
+                return redirect()->back()->with('error', 'Sản phẩm không đủ tồn kho');
+            }
+        } else {
+            if ($product->stock_total < $quantity) {
+                return redirect()->back()->with('error', 'Sản phẩm không đủ tồn kho');
+            }
+        }
+
+        // Tạo session cho sản phẩm mua ngay
+        $selected_products = [
+            [
+                'product_id' => $product_id,
+                'variant_id' => $variant_id,
+                'quantity' => $quantity,
+                'is_direct_purchase' => true
+            ]
+        ];
+
+        session(['selected_products' => $selected_products]);
+
+        // Chuyển hướng đến trang checkout
+        return redirect()->route('checkout');
+    }
+
     protected function getAvailableCoupons($customer)
     {
         $userRank = $customer->ranking ?? 'bronze';
