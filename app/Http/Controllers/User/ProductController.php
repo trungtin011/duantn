@@ -18,6 +18,7 @@ use App\Models\ProductCategory;
 use App\Models\ProductVariant as Variant;
 use App\Models\AdsCampaign;
 use App\Models\AdsCampaignItem;
+use App\Services\ProductViewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -28,6 +29,13 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
+    protected $productViewService;
+
+    public function __construct(ProductViewService $productViewService)
+    {
+        $this->productViewService = $productViewService;
+    }
+
     public function search(Request $request)
     {
         $query = $request->input('query');
@@ -392,6 +400,9 @@ class ProductController extends Controller
 
         // Số lượng mặc định dựa trên biến thể hoặc sản phẩm đơn
         $defaultStock = $selectedVariant ? $selectedVariant->stock : ($product->variants->isEmpty() ? $product->stock_total : 0);
+
+        // Ghi lại lượt xem sản phẩm
+        $this->productViewService->recordView($product, $request);
 
         $viewed = session()->get('viewed_products', []);
         $viewed = array_unique(array_merge([$product->id], $viewed));
@@ -786,6 +797,9 @@ class ProductController extends Controller
                         ]);
                 }
             ])->where('slug', $request->slug)->where('status', 'active')->firstOrFail();
+
+            // Ghi lại lượt xem sản phẩm
+            $this->productViewService->recordView($product, $request);
 
             // Gán dữ liệu hiển thị theo biến thể
             $attributeImages = [];

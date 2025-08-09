@@ -107,13 +107,7 @@ class HomeController extends Controller
             ->get();
 
         // Sản phẩm được xem nhiều nhất
-        $trendingProducts = Product::with(['defaultImage', 'categories', 'variants'])
-            ->whereHas('viewHistory')
-            ->withCount('viewHistory')
-            ->orderByDesc('view_history_count')
-            ->where('status', 'active')
-            ->take(10)
-            ->get();
+        $trendingProducts = app(\App\Services\ProductViewService::class)->getMostViewedProducts(10, 'all');
 
         // Sản phẩm đánh giá cao nhất
         $topRatedProducts = Product::with(['defaultImage', 'orderReviews', 'categories', 'variants'])

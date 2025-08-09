@@ -1066,27 +1066,44 @@
                                             <div class="showcase">
                                                 <a href="{{ route('product.show', $product->slug) }}"
                                                     class="showcase-img-box">
-                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                        class="showcase-img" width="70">
+                                                    <img src="{{ $product->defaultImage ? asset('storage/' . $product->defaultImage->image_path) : asset('storage/product_images/default.jpg') }}" 
+                                                         alt="{{ $product->name }}"
+                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
                                                     <a href="{{ route('product.show', $product->slug) }}"
                                                         class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                    <a href="{{ route('search', ['category' => [$product->categories->first()->id ?? 1]]) }}"
                                                         class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
-                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
-                                                            <p class="price">
-                                                                {{ number_format($product->display_price) }}₫
-                                                            </p>
-                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
+                                                        @if ($product->variants->isNotEmpty())
+                                                            @php
+                                                                $minPrice = $product->variants->min('sale_price') ?: $product->variants->min('price');
+                                                                $minOriginalPrice = $product->variants->min('price');
+                                                            @endphp
+                                                            @if ($minOriginalPrice > 0 && $minPrice < $minOriginalPrice)
+                                                                <p class="price">
+                                                                    {{ number_format($minPrice) }}₫
+                                                                </p>
+                                                                <del>{{ number_format($minOriginalPrice) }}₫</del>
+                                                            @else
+                                                                <p class="price">
+                                                                    {{ number_format($minPrice) }}₫</p>
+                                                            @endif
                                                         @else
-                                                            <p class="price">
-                                                                {{ number_format($product->display_price) }}₫</p>
+                                                            @if ($product->price > 0 && $product->sale_price < $product->price)
+                                                                <p class="price">
+                                                                    {{ number_format($product->sale_price) }}₫
+                                                                </p>
+                                                                <del>{{ number_format($product->price) }}₫</del>
+                                                            @else
+                                                                <p class="price">
+                                                                    {{ number_format($product->sale_price) }}₫</p>
+                                                            @endif
                                                         @endif
                                                     </div>
                                                 </div>
@@ -1098,27 +1115,44 @@
                                             <div class="showcase">
                                                 <a href="{{ route('product.show', $product->slug) }}"
                                                     class="showcase-img-box">
-                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                        class="showcase-img" width="70">
+                                                    <img src="{{ $product->defaultImage ? asset('storage/' . $product->defaultImage->image_path) : asset('storage/product_images/default.jpg') }}" 
+                                                         alt="{{ $product->name }}"
+                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
                                                     <a href="{{ route('product.show', $product->slug) }}"
                                                         class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                    <a href="{{ route('search', ['category' => [$product->categories->first()->id ?? 1]]) }}"
                                                         class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
-                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
-                                                            <p class="price">
-                                                                {{ number_format($product->display_price) }}₫
-                                                            </p>
-                                                            <del>{{ number_format($product->display_original_price) }}₫</del>
+                                                        @if ($product->variants->isNotEmpty())
+                                                            @php
+                                                                $minPrice = $product->variants->min('sale_price') ?: $product->variants->min('price');
+                                                                $minOriginalPrice = $product->variants->min('price');
+                                                            @endphp
+                                                            @if ($minOriginalPrice > 0 && $minPrice < $minOriginalPrice)
+                                                                <p class="price">
+                                                                    {{ number_format($minPrice) }}₫
+                                                                </p>
+                                                                <del>{{ number_format($minOriginalPrice) }}₫</del>
+                                                            @else
+                                                                <p class="price">
+                                                                    {{ number_format($minPrice) }}₫</p>
+                                                            @endif
                                                         @else
-                                                            <p class="price">
-                                                                {{ number_format($product->display_price) }}₫</p>
+                                                            @if ($product->price > 0 && $product->sale_price < $product->price)
+                                                                <p class="price">
+                                                                    {{ number_format($product->sale_price) }}₫
+                                                                </p>
+                                                                <del>{{ number_format($product->price) }}₫</del>
+                                                            @else
+                                                                <p class="price">
+                                                                    {{ number_format($product->sale_price) }}₫</p>
+                                                            @endif
                                                         @endif
                                                     </div>
                                                 </div>

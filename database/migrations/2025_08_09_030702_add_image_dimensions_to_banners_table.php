@@ -13,20 +13,23 @@ return new class extends Migration
     {
         Schema::table('banners', function (Blueprint $table) {
             // Thêm các trường cho kích thước hình ảnh
-            $table->integer('image_width')->nullable();
-            $table->integer('image_height')->nullable();
-            $table->string('image_size')->nullable(); // Kích thước file (KB, MB)
+            if (!Schema::hasColumn('banners', 'image_width')) {
+                $table->integer('image_width')->nullable();
+            }
+            if (!Schema::hasColumn('banners', 'image_height')) {
+                $table->integer('image_height')->nullable();
+            }
+            if (!Schema::hasColumn('banners', 'image_size')) {
+                $table->string('image_size')->nullable(); // Kích thước file (KB, MB)
+            }
             
-            // Thêm các trường cho tùy chỉnh hiển thị
-            $table->string('content_position')->default('center');
-            $table->string('text_align')->default('center');
-            $table->string('title_color')->default('#ffffff');
-            $table->string('subtitle_color')->default('#f3f4f6');
-            $table->string('title_font_size')->default('2rem');
-            $table->string('subtitle_font_size')->default('1rem');
-            
+            // Các trường font-size đã được thêm ở migration 2025_08_09_022946_add_font_size_fields_to_banners_table
+            // Không thêm lại tại đây để tránh trùng cột
+
             // Thêm trường cho responsive
-            $table->json('responsive_settings')->nullable();
+            if (!Schema::hasColumn('banners', 'responsive_settings')) {
+                $table->json('responsive_settings')->nullable();
+            }
         });
     }
 
@@ -36,18 +39,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('banners', function (Blueprint $table) {
-            $table->dropColumn([
-                'image_width',
-                'image_height', 
-                'image_size',
-                'content_position',
-                'text_align',
-                'title_color',
-                'subtitle_color',
-                'title_font_size',
-                'subtitle_font_size',
-                'responsive_settings'
-            ]);
+            $columnsToDrop = [];
+            foreach (['image_width','image_height','image_size','responsive_settings'] as $col) {
+                if (Schema::hasColumn('banners', $col)) {
+                    $columnsToDrop[] = $col;
+                }
+            }
+            if (!empty($columnsToDrop)) {
+                $table->dropColumn($columnsToDrop);
+            }
         });
     }
 };

@@ -238,6 +238,13 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         return view('admin.reviews.index');
     })->name('admin.reviews.index');
 
+    // Product View Statistics
+    Route::prefix('product-view-stats')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\ProductViewStatsController::class, 'index'])->name('admin.product-view-stats.index');
+        Route::get('/{product}', [App\Http\Controllers\Admin\ProductViewStatsController::class, 'show'])->name('admin.product-view-stats.show');
+        Route::get('/export', [App\Http\Controllers\Admin\ProductViewStatsController::class, 'export'])->name('admin.product-view-stats.export');
+    });
+
     // comments
     Route::prefix('comments')->group(function () {
         Route::get('/', [CommentController::class, 'index'])->name('admin.comments.index');

@@ -16,7 +16,7 @@
             <span class="text-gray-800 font-semibold whitespace-nowrap">{{ \Illuminate\Support\Str::limit($product->name, 30, '...') }}</span>
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 product-grid">
+        <div class="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6">
             <!-- Cột chính (Hình ảnh + Thông tin sản phẩm) -->
             <div class="xl:col-span-3">
                 <!-- Hình ảnh và thông tin sản phẩm -->
@@ -68,6 +68,7 @@
                                 <span class="text-xs sm:text-sm text-gray-600">
                                     ({{ $product->orderReviews->count() }} đánh giá) | Đã bán:
                                     {{ $product->sold_quantity >= 1000 ? number_format($product->sold_quantity / 1000, 1) . 'k' : $product->sold_quantity }}
+                                    | Lượt xem: {{ $product->view_count ?? 0 }}
                                 </span>
                             </div>
                             <div class="relative">
@@ -295,6 +296,50 @@
                         </div>
                         
                     @endif
+                </div>
+
+                <!-- Sản phẩm được xem nhiều -->
+                <div class="bg-white rounded-lg p-3 sm:p-6 mt-4 sm:mt-6 shadow">
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-gray-800">Sản phẩm được xem nhiều</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                        @php
+                            $mostViewedProducts = app(\App\Services\ProductViewService::class)->getMostViewedProducts(8, 'all');
+                        @endphp
+                        
+                        @forelse($mostViewedProducts as $viewedProduct)
+                            <div class="group cursor-pointer" onclick="window.location.href='{{ route('product.detail', $viewedProduct->slug) }}'">
+                                <div class="relative overflow-hidden rounded-lg bg-gray-100">
+                                    <img src="{{ $viewedProduct->images->where('is_default', 1)->first() ? asset('storage/' . $viewedProduct->images->where('is_default', 1)->first()->image_path) : ($viewedProduct->images->first() ? asset('storage/' . $viewedProduct->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
+                                        alt="{{ $viewedProduct->name }}"
+                                        class="w-full h-24 sm:h-28 object-cover group-hover:scale-105 transition-transform duration-300"
+                                        loading="lazy">
+                                    @if($viewedProduct->sale_price < $viewedProduct->price)
+                                        <div class="absolute top-1 left-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded">
+                                            -{{ round((($viewedProduct->price - $viewedProduct->sale_price) / $viewedProduct->price) * 100) }}%
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="mt-2">
+                                    <h4 class="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors" title="{{ $viewedProduct->name }}">
+                                        {{ \Illuminate\Support\Str::limit($viewedProduct->name, 30, '...') }}
+                                    </h4>
+                                    <div class="flex items-center justify-between mt-1">
+                                        <span class="text-red-600 text-xs sm:text-sm font-semibold">
+                                            {{ number_format($viewedProduct->sale_price, 0, ',', '.') }}đ
+                                        </span>
+                                        <span class="text-gray-500 text-xs">
+                                            <i class="fas fa-eye mr-1"></i>{{ $viewedProduct->view_count ?? 0 }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-span-full text-center py-8 text-gray-500">
+                                <i class="fas fa-eye text-3xl mb-2"></i>
+                                <p>Chưa có dữ liệu lượt xem</p>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
 
             </div>

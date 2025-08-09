@@ -272,6 +272,46 @@ class Product extends Model
         return $this->hasMany(AdClick::class, 'product_id');
     }
 
+    /**
+     * Mối quan hệ với ProductView để theo dõi lượt xem
+     */
+    public function productViews()
+    {
+        return $this->hasMany(ProductView::class);
+    }
+
+    /**
+     * Lấy số lượt xem của sản phẩm
+     */
+    public function getViewCountAttribute(): int
+    {
+        return $this->productViews()->count();
+    }
+
+    /**
+     * Lấy số lượt xem hôm nay
+     */
+    public function getTodayViewCountAttribute(): int
+    {
+        return $this->productViews()->today()->count();
+    }
+
+    /**
+     * Lấy số lượt xem trong tuần này
+     */
+    public function getWeekViewCountAttribute(): int
+    {
+        return $this->productViews()->thisWeek()->count();
+    }
+
+    /**
+     * Lấy số lượt xem trong tháng này
+     */
+    public function getMonthViewCountAttribute(): int
+    {
+        return $this->productViews()->thisMonth()->count();
+    }
+
     public function getDisplayPriceAttribute()
     {
         if ($this->is_variant && $this->variants->isNotEmpty()) {

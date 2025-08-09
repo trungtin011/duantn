@@ -20,11 +20,16 @@
 
     <div id="laravel-bootstrap" data-csrf="{{ csrf_token() }}" data-user='@json($laravelUserData)'></div>
     <script>
-        (function(){
+        (function() {
             var el = document.getElementById('laravel-bootstrap');
             var user = null;
-            try { user = JSON.parse(el.getAttribute('data-user') || 'null'); } catch(e) {}
-            window.Laravel = { csrfToken: el.getAttribute('data-csrf'), user: user };
+            try {
+                user = JSON.parse(el.getAttribute('data-user') || 'null');
+            } catch (e) {}
+            window.Laravel = {
+                csrfToken: el.getAttribute('data-csrf'),
+                user: user
+            };
         })();
     </script>
 
@@ -209,14 +214,19 @@
     @auth
         <div id="session-beacon" data-user-id="{{ Auth::id() }}"></div>
         <script>
-            (function(){
+            (function() {
                 var el = document.getElementById('session-beacon');
                 var uid = el ? el.getAttribute('data-user-id') : null;
                 if (!uid) return;
                 window.addEventListener('beforeunload', function() {
-                    try { navigator.sendBeacon('/update-session', JSON.stringify({ user_id: uid })); } catch(e) {}
+                    try {
+                        navigator.sendBeacon('/update-session', JSON.stringify({
+                            user_id: uid
+                        }));
+                    } catch (e) {}
                 });
-            })();
+            })
+            ();
         </script>
     @endauth
     @include('partials.repay_popup')
@@ -225,7 +235,7 @@
 <body class="font-[Inter]">
     <!-- Ad Click Notifications -->
     @include('partials.ad_click_notifications')
-    
+
     <!-- Loader Fullscreen -->
     <div id="global-loader"
         style="position:fixed;z-index:99999;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;">
@@ -1157,7 +1167,7 @@
                 <span class="text-md font-bold" id="cart-total-price">0 ₫</span>
             </div>
             <a href="{{ route('cart') }}"
-                class="block w-full text-center border border-transparent bg-transparent text-black py-2 mt-4 hover:border-[#EF3248] hover:text-[#EF3248] transition duration-300">
+                class="block w-full text-center border border-transparent bg-transparent text-black py-2 mt-4 border hover:border-[#EF3248] hover:text-[#EF3248] transition duration-300">
                 Xem giỏ hàng
             </a>
             <a href="{{ route('checkout') }}"
@@ -1169,6 +1179,9 @@
 
     <!-- Overlay for sidebar -->
     <div id="cart-sidebar-overlay" class="fixed inset-0 bg-black opacity-50 hidden z-[999]"></div>
+
+    @stack('script')
+    @yield('script')
     <script>
         function showGlobalPopup($order_code) {
             window.repay_order_code = $order_code;
@@ -1198,9 +1211,6 @@
             }
         }
     </script>
-
-
-
     <script>
         // Ẩn loader khi toàn bộ trang đã load (bao gồm ảnh, css, js...) với hiệu ứng mờ dần
         window.addEventListener('load', function() {
@@ -1213,10 +1223,7 @@
             }
         });
     </script>
-    
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        
-        
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 
 </html>
