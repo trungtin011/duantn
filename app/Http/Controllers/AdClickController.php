@@ -186,7 +186,6 @@ class AdClickController extends Controller
             'data' => [
                 'campaign_name' => $campaign->name,
                 'bid_amount' => $campaign->bid_amount,
-                'big_amount' => $campaign->big_amount,
                 'status' => $campaign->status,
                 'total_spent' => $campaign->total_spent,
                 'clicks' => $campaign->clicks

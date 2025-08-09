@@ -140,9 +140,12 @@ class ProductController extends Controller
                 }
             }
         }
-        
-        // Lấy 3 shop để hiển thị
-        $advertisedProductsByShop = $advertisedProductsByShop->values()->take(3);
+        // Sắp xếp shop quảng cáo theo giá thầu cao nhất (bid_amount) giảm dần
+        $advertisedProductsByShop = $advertisedProductsByShop
+            ->sortByDesc(function ($entry) {
+                return $entry['max_bid_amount'] ?? 0;
+            })
+            ->values();
 
         // Áp dụng sắp xếp cho các sản phẩm không quảng cáo
         $productQuery->when($sort, fn($q) => match ($sort) {
@@ -218,7 +221,10 @@ class ProductController extends Controller
                 'shop' => $shop,
                 'products' => collect(),
                 'campaign_name' => $campaign->name,
-                'all_campaigns' => collect()
+                'all_campaigns' => collect(),
+                'max_bid_amount' => (float) ($campaign->bid_amount ?? 0),
+                'bid_amount' => (float) ($campaign->bid_amount ?? 0),
+                'top_campaign_id' => $campaign->id,
             ]);
         }
         
@@ -231,6 +237,18 @@ class ProductController extends Controller
             'campaign' => $campaign,
             'product' => $item->product
         ]);
+
+        // Cập nhật bid cao nhất và chiến dịch top nếu có chiến dịch bid cao hơn
+        $entry = $advertisedProductsByShop->get($shopId);
+        $currentMax = (float) ($entry['max_bid_amount'] ?? 0);
+        $campaignBid = (float) ($campaign->bid_amount ?? 0);
+        if ($campaignBid > $currentMax) {
+            $entry['max_bid_amount'] = $campaignBid;
+            $entry['bid_amount'] = $campaignBid;
+            $entry['campaign_name'] = $campaign->name;
+            $entry['top_campaign_id'] = $campaign->id;
+            $advertisedProductsByShop->put($shopId, $entry);
+        }
     }
 
     public function show(Request $request, $slug)
