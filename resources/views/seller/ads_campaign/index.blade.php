@@ -57,6 +57,8 @@
                     <th class="py-3">Tên chiến dịch</th>
                     <th class="py-3">Ngày bắt đầu</th>
                     <th class="py-3">Ngày kết thúc</th>
+                    <th class="py-3">Giá thầu</th>
+                    <th class="py-3">Số tiền lớn</th>
                     <th class="py-3">Trạng thái</th>
                     <th class="py-3 pr-6 text-right">Hành động</th>
                 </tr>
@@ -77,6 +79,12 @@
                         </td>
                         <td class="py-4 text-[13px]">
                             {{ $campaign->end_date ? \Carbon\Carbon::parse($campaign->end_date)->format('d/m/Y H:i') : 'N/A' }}
+                        </td>
+                        <td class="py-4 text-[13px]">
+                            {{ number_format($campaign->bid_amount ?? 0, 0) }} VNĐ
+                        </td>
+                        <td class="py-4 text-[13px]">
+                            {{ number_format($campaign->big_amount ?? 0, 0) }} VNĐ
                         </td>
                         <td class="py-4">
                             <span
@@ -127,7 +135,7 @@
                 @endforeach
                 @if ($campaigns->isEmpty())
                     <tr>
-                        <td colspan="7" class="text-center text-gray-400 py-4">Không tìm thấy chiến dịch nào</td>
+                        <td colspan="9" class="text-center text-gray-400 py-4">Không tìm thấy chiến dịch nào</td>
                     </tr>
                 @endif
             </tbody>

@@ -267,6 +267,11 @@ class Product extends Model
         return $this->hasMany(ViewHistory::class, 'productID');
     }
 
+    public function adClicks()
+    {
+        return $this->hasMany(AdClick::class, 'product_id');
+    }
+
     public function getDisplayPriceAttribute()
     {
         if ($this->is_variant && $this->variants->isNotEmpty()) {

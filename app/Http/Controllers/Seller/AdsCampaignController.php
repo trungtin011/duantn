@@ -29,6 +29,8 @@ class AdsCampaignController extends Controller
             'name' => 'required|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'bid_amount' => 'required|numeric|min:0',
+            'big_amount' => 'required|numeric|min:0',
         ]);
 
         $campaign = AdsCampaign::create([
@@ -36,6 +38,8 @@ class AdsCampaignController extends Controller
             'name' => $request->name,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
+            'bid_amount' => $request->bid_amount,
+            'big_amount' => $request->big_amount,
             'status' => 'pending', // Default status
         ]);
 
@@ -100,6 +104,8 @@ class AdsCampaignController extends Controller
             'name' => 'required|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'bid_amount' => 'required|numeric|min:0',
+            'big_amount' => 'required|numeric|min:0',
             'status' => 'required|string|in:pending,active,ended,cancelled',
         ]);
 
@@ -107,6 +113,8 @@ class AdsCampaignController extends Controller
             'name' => $request->name,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
+            'bid_amount' => $request->bid_amount,
+            'big_amount' => $request->big_amount,
             'status' => $request->status,
         ]);
 
