@@ -170,56 +170,40 @@ class HomeController extends Controller
             ->take(8)
             ->get();
             
-        // Lấy sản phẩm quảng cáo từ ads_campaigns
-        $advertisedProductsByShop = AdsCampaignItem::with([
-            'product.defaultImage', 
-            'product.shop' => function($query) {
-                $query->withCount('followers')
-                      ->withCount('orderReviews')
-                      ->withAvg('orderReviews', 'rating');
-            }, 
-            'adsCampaign.shop'
-        ])
-            ->whereHas('adsCampaign', function ($query) {
-                $query->where('status', 'active')
-                      ->where('start_date', '<=', now())
-                      ->where('end_date', '>=', now());
-            })
-            ->whereHas('product', function ($query) {
-                $query->where('status', 'active');
-            })
-            ->inRandomOrder()
-            ->take(24) // Tăng số lượng để có nhiều shop hơn
-            ->get()
-            ->groupBy('product.shop.id')
-            ->map(function ($items, $shopId) {
-                $firstItem = $items->first();
-                $shop = $firstItem->product->shop;
-                
-                // Tính toán thông tin shop từ các bảng riêng biệt
-                $actualRating = $shop->order_reviews_avg_rating ?? 0;
-                $actualFollowers = $shop->followers_count ?? 0;
-                
-                // Gán thông tin thực tế vào shop object
-                $shop->shop_rating = round($actualRating, 1);
-                $shop->total_followers = $actualFollowers;
-                
-                return [
-                    'shop' => $shop,
-                    'products' => $items->map(function ($item) {
-                        $item->product->ads_campaign_name = $item->adsCampaign->name;
-                        return $item->product;
-                    })->take(6), // Giới hạn 6 sản phẩm mỗi shop
-                    'campaign_name' => $firstItem->adsCampaign->name,
-                    'all_campaigns' => $items->map(function ($item) {
-                        return [
-                            'campaign' => $item->adsCampaign,
-                            'product' => $item->product
-                        ];
-                    })
-                ];
-            })
-            ->take(3); // Lấy 3 shop để hiển thị
+        // Lấy sản phẩm quảng cáo theo đấu giá
+        $rankedAds = \App\Services\AdBiddingService::getRankedAds(null, 3);
+        
+        $advertisedProductsByShop = collect();
+        
+        foreach ($rankedAds as $campaign) {
+            $shop = $campaign->shop;
+            
+            // Tính toán thông tin shop từ các bảng riêng biệt
+            $actualRating = $shop->order_reviews_avg_rating ?? 0;
+            $actualFollowers = $shop->followers_count ?? 0;
+            
+            // Gán thông tin thực tế vào shop object
+            $shop->shop_rating = round($actualRating, 1);
+            $shop->total_followers = $actualFollowers;
+            
+            $products = $campaign->adsCampaignItems->map(function ($item) {
+                $item->product->ads_campaign_name = $item->adsCampaign->name;
+                return $item->product;
+            })->take(6);
+            
+            $advertisedProductsByShop->push([
+                'shop' => $shop,
+                'products' => $products,
+                'campaign_name' => $campaign->name,
+                'bid_amount' => $campaign->bid_amount,
+                'all_campaigns' => $campaign->adsCampaignItems->map(function ($item) {
+                    return [
+                        'campaign' => $item->adsCampaign,
+                        'product' => $item->product
+                    ];
+                })
+            ]);
+        }
 
         // Lấy và tính toán xếp hạng shop
         $rankingShops = Shop::where('shop_status', 'active')
