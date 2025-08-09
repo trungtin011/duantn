@@ -573,11 +573,14 @@ Route::prefix('customer')->group(function () {
         });
 
         //checkout
-        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-        Route::post('/checkout/submit', [CheckoutController::class, 'store'])->name('checkout.store');
-        Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
-        Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
-        Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('failed_payment');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::post('/checkout/submit', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
+Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('failed_payment');
+
+// Mua ngay trực tiếp
+Route::get('/direct-checkout', [CheckoutController::class, 'directCheckout'])->name('customer.direct.checkout');
 
         Route::get('/checkout/momo/return', [MomoPaymentController::class, 'momoReturn'])->name('payment.momo.return');
         Route::post('/checkout/momo/ipn', [MomoPaymentController::class, 'momoIpn'])->name('payment.momo.ipn');

@@ -30,7 +30,7 @@
                 </div>
             @endif
 
-            <p class="text-sm text-gray-700 mb-2">{{ $review->comment }}</p>
+            <p class="text-sm text-gray-700 mb-2 break-words whitespace-pre-wrap">{{ $review->comment }}</p>
             <div class="flex items-center gap-2">
                 @if ($review->images && $review->images->count())
                     <div class="flex gap-2 mb-2">

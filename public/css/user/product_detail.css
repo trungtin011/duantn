@@ -23,3 +23,544 @@
 .sub-image.active {
     border-color: #0d6efd; /* Màu xanh Bootstrap */
 }
+
+/* Product Detail Responsive Styles */
+
+/* Extra large screens (w-1905 and above) */
+@media (min-width: 1905px) {
+    .container {
+        max-width: 1800px;
+    }
+    
+    /* Grid layout for large screens */
+    .product-grid {
+        grid-template-columns: 1fr 400px;
+        gap: 2rem;
+    }
+    
+    /* Product image sizing */
+    .product-main-image {
+        height: 600px;
+    }
+    
+    .product-thumbnails {
+        gap: 1rem;
+    }
+    
+    .product-thumbnail {
+        width: 120px;
+        height: 120px;
+    }
+    
+    /* Typography scaling */
+    .product-title {
+        font-size: 2.5rem;
+        line-height: 1.2;
+    }
+    
+    .product-price {
+        font-size: 2.25rem;
+    }
+    
+    .product-description {
+        font-size: 1.125rem;
+        line-height: 1.7;
+    }
+    
+    /* Button sizing */
+    .action-buttons button {
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+    }
+    
+    /* Shop info section */
+    .shop-info {
+        padding: 2rem;
+    }
+    
+    .shop-logo {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .shop-name {
+        font-size: 1.5rem;
+    }
+    
+    /* Voucher section */
+    .voucher-item {
+        padding: 1.5rem;
+        font-size: 1rem;
+    }
+    
+    /* Review section */
+    .review-filters {
+        padding: 2rem 2.5rem;
+    }
+    
+    .filter-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Large screens (lg: 1024px - 1904px) */
+@media (min-width: 1024px) and (max-width: 1904px) {
+    .container {
+        max-width: 1200px;
+    }
+    
+    .product-grid {
+        grid-template-columns: 1fr 350px;
+        gap: 1.5rem;
+    }
+    
+    .product-main-image {
+        height: 500px;
+    }
+    
+    .product-thumbnail {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* Medium screens (md: 768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .product-main-image {
+        height: 400px;
+    }
+    
+    .product-thumbnail {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .shop-info {
+        position: static;
+        margin-top: 1rem;
+    }
+}
+
+/* Small screens (sm: 640px - 767px) */
+@media (min-width: 640px) and (max-width: 767px) {
+    .product-main-image {
+        height: 350px;
+    }
+    
+    .product-thumbnail {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons button {
+        width: 100%;
+    }
+}
+
+/* Extra small screens (below 640px) */
+@media (max-width: 639px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .product-main-image {
+        height: 300px;
+    }
+    
+    .product-thumbnail {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .product-title {
+        font-size: 1.5rem;
+    }
+    
+    .product-price {
+        font-size: 1.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons button {
+        width: 100%;
+        padding: 0.75rem 1rem;
+    }
+    
+    .shop-info {
+        position: static;
+        margin-top: 1rem;
+    }
+    
+    .voucher-item {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .voucher-item button {
+        width: 100%;
+    }
+}
+
+/* Common responsive utilities */
+.product-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.product-main-image {
+    width: 100%;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.product-main-image:hover {
+    transform: scale(1.02);
+}
+
+.product-thumbnails {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.product-thumbnail {
+    object-fit: cover;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.product-thumbnail:hover {
+    opacity: 0.8;
+}
+
+.product-thumbnail.active {
+    border: 2px solid #ef4444;
+}
+
+/* Attribute buttons responsive */
+.attribute-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.attribute-option {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.attribute-option:hover {
+    background-color: #f3f4f6;
+}
+
+.attribute-option.selected {
+    background-color: #e5e7eb;
+    border-color: #6b7280;
+}
+
+/* Quantity controls responsive */
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantity-input {
+    text-align: center;
+    min-width: 60px;
+}
+
+/* Action buttons responsive */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Shop section responsive */
+.shop-info {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.shop-logo {
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+}
+
+/* Voucher section responsive */
+.voucher-item {
+    border: 1px dashed #d1d5db;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.voucher-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.voucher-discount {
+    color: #dc2626;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.voucher-min-order {
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.voucher-expiry {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 0.875rem;
+}
+
+/* Review filters responsive */
+.review-filters {
+    background: rgba(254, 226, 226, 0.5);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.review-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.review-rating {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.review-stars {
+    display: flex;
+    gap: 1px;
+    margin-top: 0.25rem;
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.filter-btn {
+    border: 1px solid;
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    transform: translateY(-1px);
+}
+
+.filter-btn.active {
+    color: #e94e1b;
+    border-color: #e94e1b;
+}
+
+/* Modal responsive */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(75, 85, 99, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 50;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 28rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Form elements responsive */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    ring: 2px;
+    ring-color: #dbeafe;
+}
+
+/* Button styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    padding: 0.5rem 1rem;
+}
+
+.btn-primary {
+    background-color: #dc2626;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #b91c1c;
+}
+
+.btn-secondary {
+    background-color: #1f2937;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #111827;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.btn-outline:hover {
+    background-color: #f9fafb;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1rem;
+    height: 1rem;
+    margin: -0.5rem 0 0 -0.5rem;
+    border: 2px solid #f3f4f6;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Accessibility improvements */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus styles for keyboard navigation */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .btn {
+        border: 2px solid currentColor;
+    }
+    
+    .attribute-option {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
