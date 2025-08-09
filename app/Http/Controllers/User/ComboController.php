@@ -57,7 +57,12 @@ class ComboController extends Controller
      */
     public function show($id)
     {
-        $combo = Combo::with(['products.product.images', 'products.product.variants', 'shop'])
+        $combo = Combo::with([
+            'products' => function ($query) {
+                $query->with(['product.images']); // Truy vấn qua combo_products -> product -> product_images
+            },
+            'shop'
+        ])
             ->where('status', 'active')
             ->whereNotNull('shopID')
             ->has('shop')
