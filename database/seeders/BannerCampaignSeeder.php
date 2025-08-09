@@ -20,7 +20,6 @@ class BannerCampaignSeeder extends Seeder
                 'end_date' => now()->addYear(),
                 'status' => 'active',
                 'bid_amount' => 0.50, // 0.50 VNĐ cho banner
-                'big_amount' => 0.00,
                 'impressions' => 0,
                 'clicks' => 0,
                 'total_spent' => 0.00,

@@ -40,9 +40,9 @@
                 @enderror
             </div>
             <div class="mb-4">
-                <label for="big_amount" class="block text-gray-700 text-sm font-bold mb-2">Giá thầu (VNĐ):</label>
-                <input type="number" step="0.01" min="0" class="form-input w-full border border-gray-300 rounded-md p-2" id="big_amount" name="big_amount" value="{{ old('big_amount', $campaign->big_amount ?? 0.00) }}" required>
-                @error('big_amount')
+                <label for="bid_amount" class="block text-gray-700 text-sm font-bold mb-2">Giá thầu (VNĐ):</label>
+                <input type="number" step="0.01" min="0" class="form-input w-full border border-gray-300 rounded-md p-2" id="bid_amount" name="bid_amount" value="{{ old('bid_amount', $campaign->bid_amount ?? 0.00) }}" required>
+                @error('bid_amount')
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
             </div>

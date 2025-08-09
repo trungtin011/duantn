@@ -37,9 +37,11 @@
                     </div>
                 </div>
                 
-                <a href="{{ route('shop.show', $firstShop->id) }}" 
-                   data-shop-ad="{{ $firstShopAds['all_campaigns']->first()['campaign']->id }}"
-                   data-shop-id="{{ $firstShop->id }}"
+                <a href="{{ route('simple.ad.click', [
+                        'ad_click_type' => 'shop_detail',
+                        'shop_id' => $firstShop->id,
+                        'campaign_id' => $firstShopAds['top_campaign_id'] ?? $firstShopAds['all_campaigns']->first()['campaign']->id,
+                    ]) }}"
                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium cursor-pointer">
                     Chi tiết
                 </a>
@@ -50,10 +52,12 @@
                 @foreach($firstProducts->take(5) as $product)
                     <div class="border border-gray-200 rounded-lg p-3 hover:shadow-lg transition-shadow">
                         <div class="relative">
-                            <a href="{{ route('product.show', $product->slug) }}" 
-                               data-ad-campaign="{{ $firstShopAds['all_campaigns']->first()['campaign']->id }}"
-                               data-shop-id="{{ $firstShop->id }}"
-                               data-product-id="{{ $product->id }}">
+                            <a href="{{ route('simple.ad.click', [
+                                    'ad_click_type' => 'product_detail',
+                                    'shop_id' => $firstShop->id,
+                                    'campaign_id' => $firstShopAds['top_campaign_id'] ?? $firstShopAds['all_campaigns']->first()['campaign']->id,
+                                    'product_id' => $product->id,
+                                ]) }}">
                                 <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
                                      class="w-full h-32 object-cover rounded-lg mb-2">
                                 <div class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 py-0.5 rounded">
@@ -64,11 +68,12 @@
                         
                         <div class="space-y-1">
                             <h4 class="font-medium text-gray-800 text-sm line-clamp-2">
-                                <a href="{{ route('product.show', $product->slug) }}" 
-                                   data-ad-campaign="{{ $firstShopAds['all_campaigns']->first()['campaign']->id }}"
-                                   data-shop-id="{{ $firstShop->id }}"
-                                   data-product-id="{{ $product->id }}"
-                                   class="hover:text-red-500">
+                                <a href="{{ route('simple.ad.click', [
+                                        'ad_click_type' => 'product_detail',
+                                        'shop_id' => $firstShop->id,
+                                        'campaign_id' => $firstShopAds['top_campaign_id'] ?? $firstShopAds['all_campaigns']->first()['campaign']->id,
+                                        'product_id' => $product->id,
+                                    ]) }}" class="hover:text-red-500">
                                     {{ $product->name }}
                                 </a>
                             </h4>
@@ -154,9 +159,11 @@
                                             </div>
                                         </div>
                                         
-                                        <a href="{{ route('shop.show', $shop->id) }}" 
-                                           data-shop-ad="{{ $shopAds['all_campaigns']->first()['campaign']->id }}"
-                                           data-shop-id="{{ $shop->id }}"
+                                        <a href="{{ route('simple.ad.click', [
+                                                'ad_click_type' => 'shop_detail',
+                                                'shop_id' => $shop->id,
+                                                'campaign_id' => $shopAds['top_campaign_id'] ?? $shopAds['all_campaigns']->first()['campaign']->id,
+                                            ]) }}"
                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm cursor-pointer">
                                             Chi tiết
                                         </a>
@@ -166,10 +173,12 @@
                                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                         @foreach($products->take(4) as $product)
                                             <div class="border border-gray-200 rounded p-2">
-                                                                                            <a href="{{ route('product.show', $product->slug) }}" 
-                                               data-ad-campaign="{{ $shopAds['all_campaigns']->first()['campaign']->id }}"
-                                               data-shop-id="{{ $shop->id }}"
-                                               data-product-id="{{ $product->id }}">
+                                                <a href="{{ route('simple.ad.click', [
+                                                    'ad_click_type' => 'product_detail',
+                                                    'shop_id' => $shop->id,
+                                                    'campaign_id' => $shopAds['top_campaign_id'] ?? $shopAds['all_campaigns']->first()['campaign']->id,
+                                                    'product_id' => $product->id,
+                                                ]) }}">
                                                 <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
                                                      class="w-full h-20 object-cover rounded mb-1">
                                                 <div class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 py-0.5 rounded">
@@ -178,11 +187,12 @@
                                             </a>
                                                 
                                                 <h4 class="font-medium text-gray-800 text-xs line-clamp-2">
-                                                    <a href="{{ route('product.show', $product->slug) }}" 
-                                                       data-ad-campaign="{{ $shopAds['all_campaigns']->first()['campaign']->id }}"
-                                                       data-shop-id="{{ $shop->id }}"
-                                                       data-product-id="{{ $product->id }}"
-                                                       class="hover:text-red-500">
+                                                    <a href="{{ route('simple.ad.click', [
+                                                            'ad_click_type' => 'product_detail',
+                                                            'shop_id' => $shop->id,
+                                                            'campaign_id' => $shopAds['top_campaign_id'] ?? $shopAds['all_campaigns']->first()['campaign']->id,
+                                                            'product_id' => $product->id,
+                                                        ]) }}" class="hover:text-red-500">
                                                         {{ $product->name }}
                                                     </a>
                                                 </h4>

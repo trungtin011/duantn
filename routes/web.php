@@ -844,10 +844,6 @@ Route::prefix('ad')->name('ad.')->group(function () {
     });
 });
 
-// Test route cho ad click system
-Route::get('/test-ad-click', function() {
-    return view('test_ad_click');
-})->name('test.ad.click');
 
 // Simple Ad Click Routes (PHP thuần)
 Route::prefix('simple-ad')->name('simple.ad.')->group(function () {
@@ -859,7 +855,3 @@ Route::prefix('simple-ad')->name('simple.ad.')->group(function () {
     Route::get('/debug', [App\Http\Controllers\SimpleAdClickController::class, 'debugClicks'])->name('debug');
 });
 
-// Test page cho simple ad click
-Route::get('/simple-ad-test', function() {
-    return view('simple_ad_test');
-})->name('simple.ad.test');

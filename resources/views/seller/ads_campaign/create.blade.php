@@ -45,13 +45,6 @@
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
             </div>
-            <div class="mb-4">
-                <label for="big_amount" class="block text-gray-700 text-sm font-bold mb-2">Số tiền lớn (VNĐ):</label>
-                <input type="number" step="0.01" min="0" class="form-input w-full border border-gray-300 rounded-md p-2" id="big_amount" name="big_amount" value="{{ old('big_amount', 0.00) }}" required>
-                @error('big_amount')
-                    <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                @enderror
-            </div>
             <div class="flex items-center justify-end mt-6">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Lưu chiến dịch

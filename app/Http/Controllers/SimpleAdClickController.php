@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\AdClick;
+use App\Models\AdsCampaign;
 use App\Models\ShopWallet;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\DB;
@@ -35,16 +36,49 @@ class SimpleAdClickController extends Controller
         try {
             DB::beginTransaction();
 
+            // 0. Kiểm tra campaign tồn tại
+            $campaign = AdsCampaign::find($campaignId);
+            if (!$campaign) {
+                // Im lặng chuyển hướng đến trang đích
+                if ($clickType === 'shop_detail') {
+                    return redirect("/customer/shop/{$shopId}");
+                } elseif ($clickType === 'product_detail' && $productId) {
+                    $product = \App\Models\Product::find($productId);
+                    if ($product) {
+                        return redirect(route('product.show', $product->slug));
+                    }
+                }
+                return redirect()->back();
+            }
+
             // 1. Kiểm tra ví shop
             $shopWallet = ShopWallet::where('shop_id', $shopId)->first();
             if (!$shopWallet) {
-                return redirect()->back()->with('ad_click_error', 'Ví shop không tồn tại!');
+                // Im lặng chuyển hướng đến trang đích
+                if ($clickType === 'shop_detail') {
+                    return redirect("/customer/shop/{$shopId}");
+                } elseif ($clickType === 'product_detail' && $productId) {
+                    $product = \App\Models\Product::find($productId);
+                    if ($product) {
+                        return redirect(route('product.show', $product->slug));
+                    }
+                }
+                return redirect()->back();
             }
 
-            // 2. Kiểm tra số dư
-            $costPerClick = 1000; // 1000 VND per click
+            // 2. Kiểm tra số dư (lấy theo giá thầu bid_amount của campaign)
+            $costPerClick = max(1.00, (float) ($campaign->bid_amount ?? 1.00));
             if ($shopWallet->balance < $costPerClick) {
-                return redirect()->back()->with('ad_click_error', 'Số dư ví không đủ để trả phí quảng cáo!');
+                // Không đủ tiền: im lặng chuyển hướng, không trừ, không thông báo
+                if ($clickType === 'shop_detail') {
+                    return redirect("/customer/shop/{$shopId}");
+                } elseif ($clickType === 'product_detail' && $productId) {
+                    $product = \App\Models\Product::find($productId);
+                    if ($product) {
+                        return redirect(route('product.show', $product->slug));
+                    }
+                }
+                return redirect()->back();
             }
 
             // 3. Kiểm tra xem đã click chưa (chỉ cho phép click 1 lần) - Sử dụng FOR UPDATE để tránh race condition
@@ -91,7 +125,7 @@ class SimpleAdClickController extends Controller
                 'amount' => $costPerClick,
                 'direction' => 'out',
                 'type' => 'advertising',
-                'description' => "Phí click quảng cáo - {$clickType}",
+                'description' => "Phí click quảng cáo - {$clickType} (Giá thầu: {$costPerClick}đ)",
                 'status' => 'completed',
             ]);
 
@@ -103,22 +137,23 @@ class SimpleAdClickController extends Controller
 
             DB::commit();
 
-            // 8. Chuyển hướng dựa vào loại click (chỉ hiển thị thông báo cho lần click đầu tiên)
+            // 8. Chuyển hướng dựa vào loại click (im lặng)
             if ($clickType === 'shop_detail') {
-                return redirect("/customer/shop/{$shopId}")->with('ad_click_success', 'Click quảng cáo đã được ghi nhận và trừ 1000đ từ ví shop!');
+                return redirect("/customer/shop/{$shopId}");
             } elseif ($clickType === 'product_detail' && $productId) {
                 $product = \App\Models\Product::find($productId);
                 if ($product) {
-                    return redirect(route('product.show', $product->slug))->with('ad_click_success', 'Click quảng cáo đã được ghi nhận và trừ 1000đ từ ví shop!');
+                    return redirect(route('product.show', $product->slug));
                 }
             }
 
-            return redirect()->back()->with('ad_click_success', 'Click quảng cáo đã được ghi nhận và trừ 1000đ từ ví shop!');
+            return redirect()->back();
 
         } catch (\Exception $e) {
             DB::rollBack();
             \Illuminate\Support\Facades\Log::error('Lỗi ad click: ' . $e->getMessage());
-            return redirect()->back()->with('ad_click_error', 'Có lỗi xảy ra khi ghi nhận click quảng cáo!');
+            // Im lặng quay lại
+            return redirect()->back();
         }
     }
 
@@ -134,14 +169,25 @@ class SimpleAdClickController extends Controller
         try {
             DB::beginTransaction();
 
-            // Kiểm tra ví shop
+            // Kiểm tra campaign tồn tại để tránh lỗi FK
+            $campaign = \App\Models\AdsCampaign::find($campaignId);
+            if (!$campaign) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Bỏ qua: campaign không tồn tại',
+                    'charged' => false
+                ]);
+            }
+
+;            // Kiểm tra ví shop
             $shopWallet = ShopWallet::where('shop_id', $shopId)->first();
             if (!$shopWallet) {
                 return response()->json(['error' => 'Ví shop không tồn tại'], 400);
             }
 
-            // Kiểm tra số dư
-            $costPerClick = 1000;
+            // Kiểm tra số dư theo bid_amount
+            $costPerClick = max(1.00, (float) ($campaign->bid_amount ?? 1.00));
             if ($shopWallet->balance < $costPerClick) {
                 return response()->json(['error' => 'Số dư ví không đủ'], 400);
             }
@@ -195,7 +241,7 @@ class SimpleAdClickController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Click thành công và trừ 1000đ',
+                'message' => 'Click thành công',
                 'remaining_balance' => $shopWallet->balance,
                 'charged' => true
             ]);

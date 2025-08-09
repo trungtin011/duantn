@@ -15,7 +15,6 @@ class AdsCampaign extends Model
         'end_date',
         'status',
         'bid_amount',
-        'big_amount',
         'impressions',
         'clicks',
         'total_spent',
@@ -23,7 +22,6 @@ class AdsCampaign extends Model
 
     protected $casts = [
         'bid_amount' => 'decimal:2',
-        'big_amount' => 'decimal:2',
         'total_spent' => 'decimal:2',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
