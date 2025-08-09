@@ -25,6 +25,7 @@ use App\Models\Combo;
 use App\Models\Shop;
 use App\Models\AdsCampaign;
 use App\Models\AdsCampaignItem;
+use App\Models\Banner;
 
 class HomeController extends Controller
 {
@@ -36,27 +37,37 @@ class HomeController extends Controller
         $parentCategory = Category::where('name', 'Điện tử')->first();
 
         // Toàn bộ danh mục con
-        $subCategories = $parentCategory ? $parentCategory->subCategories()->with('products')->get() : collect();
+        $subCategories = $parentCategory ? $parentCategory->subCategories()->with(['products' => function ($query) {
+            $query->where('status', 'active');
+        }])->get() : collect();
 
         // Danh mục con cần lọc riêng (chỉ hiển thị 5 mục đặc biệt)
         $filteredSubCategories = $parentCategory
             ? $parentCategory->subCategories()
             ->whereIn('name', ['Smart Watch', 'Smart TV', 'Keyboard', 'Mouse', 'Microphone'])
-            ->with('products')
+            ->with(['products' => function ($query) {
+                $query->where('status', 'active');
+            }])
             ->get()
             : collect();
 
         // Danh mục "Thời trang" và các danh mục con
         $fashion = Category::where('name', 'Thời trang')->first();
-        $fashionSub = $fashion ? $fashion->subCategories()->with('subCategories.products')->get() : collect();
+        $fashionSub = $fashion ? $fashion->subCategories()->with(['subCategories.products' => function ($query) {
+            $query->where('status', 'active');
+        }])->get() : collect();
 
         // Danh mục "Trang sức" và các danh mục con
         $jewelry = Category::where('name', 'Trang sức')->first();
-        $jewelrySub = $jewelry ? $jewelry->subCategories()->with('products')->get() : collect();
+        $jewelrySub = $jewelry ? $jewelry->subCategories()->with(['products' => function ($query) {
+            $query->where('status', 'active');
+        }])->get() : collect();
 
         // Danh mục "Nước hoa" và các danh mục con
         $perfume = Category::where('name', 'Nước hoa')->first();
-        $perfumeSub = $perfume ? $perfume->subCategories()->with('products')->get() : collect();
+        $perfumeSub = $perfume ? $perfume->subCategories()->with(['products' => function ($query) {
+            $query->where('status', 'active');
+        }])->get() : collect();
 
         // Hiển thị 8 danh mục cha
         $homeCategories = Category::whereNull('parent_id')
@@ -75,6 +86,7 @@ class HomeController extends Controller
 
         // Lấy 5 sản phẩm đã mua của khách hàng
         $purchasedProducts = Product::whereHas('orders')
+            ->where('status', 'active')
             ->with('defaultImage')
             ->orderByDesc('created_at')
             ->take(1)
@@ -283,7 +295,8 @@ class HomeController extends Controller
             'blogs',
             'user',
             'comboProducts',
-            'advertisedProductsByShop'
+            'advertisedProducts',
+            'banners'
         ));
     }
 }

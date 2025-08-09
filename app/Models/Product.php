@@ -58,6 +58,14 @@ class Product extends Model
                 });
             }
         });
+
+        // Thêm global scope để chỉ hiển thị sản phẩm active ở frontend
+        static::addGlobalScope('frontendActive', function ($builder) {
+            // Chỉ áp dụng cho frontend, không áp dụng cho admin và seller
+            if (!app()->runningInConsole() && !request()->is('admin/*') && !request()->is('seller/*')) {
+                $builder->where('status', 'active');
+            }
+        });
     }
 
     // Relationships

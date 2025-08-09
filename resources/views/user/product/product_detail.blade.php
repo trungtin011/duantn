@@ -2,7 +2,6 @@
 @section('title', 'Chi tiết sản phẩm')
 @section('content')
     <div class="container mx-auto px-4 py-8">
-       
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 mb-6 text-sm font-medium">
             <a href="{{ route('home') }}" class="text-blue-600 hover:text-blue-800">Trang chủ</a>
@@ -13,8 +12,11 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Cột chính (Hình ảnh + Thông tin sản phẩm) -->
             <div class="lg:col-span-3">
+                <!-- Hình ảnh và thông tin sản phẩm -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white rounded-lg p-6 shadow">
+                    <!-- Hình ảnh sản phẩm -->
                     <div class="relative">
                         <img id="main-image"
                             src="{{ $product->images->where('is_default', 1)->first() ? asset('storage/' . $product->images->where('is_default', 1)->first()->image_path) : ($product->images->first() ? asset('storage/' . $product->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
@@ -193,19 +195,14 @@
                         </div>
 
                         <!-- Nút hành động -->
-                        <div class="flex gap-3 mt-10">
-                            <form action="{{ route('cart.add') }}" method="POST" class="inline">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="variant_id" value="{{ $variant->id ?? '' }}">
-                                <input type="hidden" name="quantity" value="1">
-
-                                <button type="submit"
-                                    class="bg-red-100 text-red-600 px-6 py-3 rounded hover:bg-red-200 flex items-center gap-2">
-                                    <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
-                                </button>
-                                <button id="instant_buy_btn"
-                                    class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
+                        <div class="flex gap-4 mt-6">
+                            <button
+                                class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 flex items-center gap-2 add-to-cart"
+                                data-product-id="{{ $product->id }}">
+                                <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                            </button>
+                            <button id="instant_buy_btn"
+                                class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-700">Mua ngay</button>
                         </div>
                     </div>
                 </div>
@@ -238,36 +235,8 @@
                 <div class="bg-white rounded-lg p-6 mt-6 shadow">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Đánh giá sản phẩm</h3>
 
-                    @if (auth()->check() && $hasPurchased && !$hasReviewed)
-                        <form id="reviewForm" action="{{ route('product.review', $product->id) }}" method="POST"
-                            enctype="multipart/form-data" class="mb-6">
-                            @csrf
-                            <label class="block mb-2 text-sm font-medium text-gray-700">Đánh giá sao:</label>
-                            <div class="flex gap-1 mb-4">
-                                @for ($i = 1; $i <= 5; $i++)
-                                    <svg data-value="{{ $i }}"
-                                        class="star w-6 h-6 cursor-pointer text-gray-300 hover:text-yellow-400 transition-colors"
-                                        fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 0 0 .95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 0 0-.364 1.118l1.286 3.966c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 0 0-1.176 0l-3.385 2.46c-.784.57-1.838-.197-1.54-1.118l1.286-3.966a1 1 0 0 0-.364-1.118L2.045 9.393c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 0 0 .95-.69l1.286-3.966z" />
-                                    </svg>
-                                @endfor
-                                <input type="hidden" name="rating" id="ratingInput" required>
-                            </div>
-                            <textarea name="comment" rows="4"
-                                class="w-full border p-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Viết nhận xét..."></textarea>
-                            <input type="file" name="images[]" multiple accept="image/*"
-                                class="mt-4 block w-full text-sm">
-                            <input type="file" name="video" accept="video/*" class="mt-2 block w-full text-sm">
-                            <button type="submit"
-                                class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-sm">Gửi đánh
-                                giá</button>
-                        </form>
-                    @endif
-
                     @if ($filteredReviews->isEmpty())
-                        <p class="text-gray-600">Chưa có đánh giá nào cho sản phẩm này.</p>
+                        <p class="text-gray-600 text-center">Chưa có đánh giá nào cho sản phẩm này.</p>
                     @else
                         <div class="flex bg-red-100/50 p-4 py-10 rounded-lg gap-10">
                             <div class="flex flex-wrap items-center justify-center gap-3 w-[200px]">
@@ -308,6 +277,11 @@
                                     data-filter="images">
                                     Có Hình Ảnh / Video ({{ number_format($mediaCount, 0, ',', '.') }})
                                 </button>
+                                <button
+                                    class="filter-btn {{ $filter == 'most-liked' ? 'text-[#e94e1b] border-[#e94e1b]' : 'text-[#333] border-[#ddd]' }} border rounded px-3 py-1 text-[13px] leading-none font-normal"
+                                    data-filter="most-liked">
+                                    Được thích nhiều nhất ({{ number_format($mostLikedCount, 0, ',', '.') }})
+                                </button>
                             </div>
                         </div>
                         <div id="reviewList" class="mt-5">
@@ -325,14 +299,14 @@
                     <div class="bg-white rounded-lg p-6 shadow">
                         <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800">Cửa hàng</h2>
                         <div class="flex items-center gap-4 mb-4">
-                            @if(isset($product) && $product && $product->shop)
-                                <img src="{{ $product->shop->shop_logo ? Storage::url($product->shop->shop_logo) : Storage::url('shop_logos/default_shop_logo.png') }}"
-                                    alt="Logo Shop" class="w-16 h-16 rounded-full object-cover border" loading="lazy">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">
-                                        {{ $product->shop->shop_name }}
-                                    </h3>
-                                    <p class="text-sm text-gray-600">
+                            <img src="{{ $product->shop ? ($product->shop->shop_logo ? Storage::url($product->shop->shop_logo) : Storage::url('shop_logos/default_shop_logo.png')) : Storage::url('shop_logos/default_shop_logo.png') }}"
+                                alt="Logo Shop" class="w-16 h-16 rounded-full object-cover border" loading="lazy">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">
+                                    {{ $product->shop ? $product->shop->shop_name : 'Tên Shop Không Xác Định' }}
+                                </h3>
+                                <p class="text-sm text-gray-600">
+                                    @if ($product->shop)
                                         @php
                                             $lastActivity = DB::table('sessions')
                                                 ->where('user_id', $product->shop->ownerID)
@@ -344,22 +318,21 @@
                                                 : 'Không xác định';
                                         @endphp
                                         {{ $lastActivity ? "Online $lastOnline" : 'Hoạt động từ: ' . \Carbon\Carbon::parse($product->shop->created_at)->locale('vi')->diffForHumans() }}
-                                    </p>
-                                </div>
-                            @endif
+                                    @else
+                                        Chưa có thông tin
+                                    @endif
+                                </p>
+                            </div>
                         </div>
                         <div class="flex justify-center gap-3">
-                            @if(isset($product) && $product && $product->shop)
-                                <button
-                                    class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
-                                    onclick="window.location.href='/chat?shop_id={{ $product->shop->id }}&product_id={{ $product->id }}'">
-                                    <i class="fa-solid fa-comment"></i> Nhắn tin
-                                </button>
-                                <a href="{{ route('shop.profile', $product->shop->id) }}"
-                                    class="border border-gray-300 px-5 py-2 rounded-lg hover:bg-gray-100">Xem
-                                    cửa hàng
-                                </a>
-                            @endif
+                            <button
+                                class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2">
+                                <i class="fa-solid fa-comment"></i> Nhắn tin
+                            </button>
+                            <a href="{{ route('shop.profile', $product->shop->id) }}"
+                                class="border border-gray-300 px-5 py-2 rounded-lg hover:bg-gray-100">Xem
+                                cửa hàng
+                            </a>
                         </div>
                     </div>
 
@@ -456,30 +429,6 @@
         </div>
     </div>
 
-    @if(isset($product) && $product && ($product->shop->shop_status instanceof \App\Enums\ShopStatus ? $product->shop->shop_status->value : $product->shop->shop_status) === 'suspended')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Shop đang tạm ngưng bán',
-                    text: 'Cửa hàng này đang tạm ngưng hoạt động. Bạn không thể mua sản phẩm này vào lúc này.',
-                    showConfirmButton: false,
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    allowEnterKey: false,
-                    backdrop: true,
-                    didOpen: () => {
-                        document.querySelectorAll('button, a, input, select, textarea').forEach(el => {
-                            el.disabled = true;
-                            el.style.pointerEvents = 'none';
-                        });
-                    }
-                });
-            });
-        </script>
-    @endif
-    
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
@@ -1032,194 +981,191 @@
                     });
                 });
 
-                // Xử lý like đánh giá
-                document.addEventListener('click', function(e) {
-                    const likeBtn = e.target.closest('.like-review-btn');
-                    if (likeBtn) {
-                        e.preventDefault();
-                        const button = likeBtn;
-                        const reviewId = button.getAttribute('data-review-id');
-                        const isLiked = button.getAttribute('data-liked') === 'true';
+                // Gắn sự kiện cho nút like ban đầu
+                attachLikeReviewEvents();
 
-                        console.log('Like button clicked:', {
-                            reviewId: reviewId,
-                            isLiked: isLiked,
-                            button: button
+                // Xử lý bộ lọc đánh giá
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+
+                        // Bỏ active tất cả button
+                        document.querySelectorAll('.filter-btn').forEach(b => {
+                            b.classList.remove('text-[#e94e1b]', 'border-[#e94e1b]');
+                            b.classList.add('text-[#333]', 'border-[#ddd]');
                         });
 
-                        console.log('Sending request to:', `/customer/review/${reviewId}/like`);
-                        console.log('CSRF Token:', token);
+                        // Active button được click
+                        this.classList.remove('text-[#333]', 'border-[#ddd]');
+                        this.classList.add('text-[#e94e1b]', 'border-[#e94e1b]');
 
-                        // Thêm hiệu ứng loading
-                        const icon = button.querySelector('i');
-                        const originalIcon = icon.className;
-                        icon.className = 'fas fa-spinner fa-spin';
-                        button.disabled = true;
+                        const filter = this.getAttribute('data-filter');
 
-                        fetch(`/customer/review/${reviewId}/like`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': token,
-                                    'Accept': 'application/json',
-                                },
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    if (response.status === 401) {
-                                        return response.json().then(data => {
-                                            throw new Error(data.message);
-                                        });
-                                    }
-                                    throw new Error(`HTTP error! Status: ${response.status}`);
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                console.log('Like response:', data);
-                                if (data.success) {
-                                    // Cập nhật trạng thái like
-                                    button.setAttribute('data-liked', data.liked);
-                                    const icon = button.querySelector('i');
-                                    const countSpan = button.querySelector('.like-count');
-
-                                    if (data.liked) {
-                                        icon.className = 'fas fa-heart';
-                                        button.classList.add('text-red-500');
-                                    } else {
-                                        icon.className = 'far fa-heart';
-                                        button.classList.remove('text-red-500');
-                                    }
-
-                                    if (countSpan) {
-                                        countSpan.textContent = data.like_count;
-                                    }
-                                }
-                                // Khôi phục button
-                                button.disabled = false;
-                            })
-                            .catch(error => {
-                                console.error('Like error:', error);
-                                console.error('Error details:', {
-                                    message: error.message,
-                                    stack: error.stack
-                                });
-
-                                // Khôi phục button và icon
-                                button.disabled = false;
-                                const icon = button.querySelector('i');
-                                const isLiked = button.getAttribute('data-liked') === 'true';
-                                icon.className = isLiked ? 'fas fa-heart' : 'far fa-heart';
-
-                                Swal.fire({
-                                    position: 'top-end',
-                                    toast: true,
-                                    icon: 'error',
-                                    title: 'Lỗi',
-                                    text: error.message || 'Không thể thích đánh giá!',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                            });
-                    }
-                });
-
-                // Xử lý lọc đánh giá
-                document.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('filter-btn')) {
-                        e.preventDefault();
-                        const button = e.target;
-                        const filter = button.getAttribute('data-filter');
-
-                        // Thêm hiệu ứng loading
+                        // Hiển thị loading
                         const reviewList = document.getElementById('reviewList');
-                        if (reviewList) {
-                            reviewList.innerHTML = `
-                                <div class="flex justify-center items-center py-8">
-                                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-                                    <span class="ml-2 text-gray-600">Đang tải đánh giá...</span>
-                                </div>
-                            `;
-                        }
+                        reviewList.innerHTML =
+                            '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="mt-2 text-gray-500">Đang tải...</p></div>';
 
-                        // Cập nhật trạng thái active cho các nút filter
-                        document.querySelectorAll('.filter-btn').forEach(btn => {
-                            btn.classList.remove('text-[#e94e1b]', 'border-[#e94e1b]');
-                            btn.classList.add('text-[#333]', 'border-[#ddd]');
-                        });
-                        button.classList.remove('text-[#333]', 'border-[#ddd]');
-                        button.classList.add('text-[#e94e1b]', 'border-[#e94e1b]');
+                        // Gọi AJAX để lấy danh sách review mới
+                        const currentUrl = new URL(window.location);
+                        currentUrl.searchParams.set('filter', filter);
 
-                        // Gọi AJAX để lọc đánh giá
-                        const url = new URL(window.location);
-                        url.searchParams.set('filter', filter);
-
-                        fetch(url.toString(), {
-                                method: 'GET',
+                        fetch(currentUrl.toString(), {
                                 headers: {
                                     'X-Requested-With': 'XMLHttpRequest',
-                                    'Accept': 'text/html',
-                                },
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! Status: ${response.status}`);
+                                    'Accept': 'text/html'
                                 }
-                                return response.text();
                             })
+                            .then(res => res.text())
                             .then(html => {
-                                // Cập nhật danh sách đánh giá
-                                const reviewList = document.getElementById('reviewList');
-                                if (reviewList) {
-                                    reviewList.innerHTML = html;
-                                }
+                                reviewList.innerHTML = html;
 
-                                // Cập nhật URL mà không reload trang
-                                window.history.pushState({}, '', url.toString());
+                                // Gắn lại sự kiện cho nút like mới
+                                attachLikeReviewEvents();
                             })
                             .catch(error => {
                                 console.error('Error loading reviews:', error);
-                                Swal.fire({
-                                    position: 'top-end',
-                                    toast: true,
-                                    icon: 'error',
-                                    title: 'Lỗi',
-                                    text: 'Không thể tải đánh giá!',
-                                    timer: 1500,
-                                    showConfirmButton: false
+                                reviewList.innerHTML =
+                                    '<div class="text-center py-8 text-red-500">Có lỗi xảy ra khi tải đánh giá</div>';
+                            });
+                    });
+                });
+
+                // Xử lý phân trang đánh giá
+                document.addEventListener('click', function(e) {
+                    if (e.target.matches('.pagination a')) {
+                        e.preventDefault();
+
+                        const pageUrl = e.target.href;
+
+                        // Hiển thị loading
+                        const reviewList = document.getElementById('reviewList');
+                        reviewList.innerHTML =
+                            '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="mt-2 text-gray-500">Đang tải...</p></div>';
+
+                        // Gọi AJAX để lấy trang mới
+                        fetch(pageUrl, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'text/html'
+                                }
+                            })
+                            .then(res => res.text())
+                            .then(html => {
+                                reviewList.innerHTML = html;
+
+                                // Gắn lại sự kiện cho nút like mới
+                                attachLikeReviewEvents();
+
+                                // Scroll to top of review section
+                                reviewList.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
                                 });
+                            })
+                            .catch(error => {
+                                console.error('Error loading reviews:', error);
+                                reviewList.innerHTML =
+                                    '<div class="text-center py-8 text-red-500">Có lỗi xảy ra khi tải đánh giá</div>';
                             });
                     }
                 });
-            });
-        </script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const chatBtn = document.getElementById('open-chat-with-shop');
-                if (chatBtn) {
-                    chatBtn.addEventListener('click', function() {
-                        // Mở modal chat
-                        let chatModal = document.getElementById('chat-modal');
-                        let chatModalContent = document.getElementById('chat-modal-content');
-                        if (!chatModal || !chatModalContent) {
-                            alert('Không tìm thấy khung chat. Vui lòng tải lại trang hoặc liên hệ admin.');
-                            return;
-                        }
-                        chatModal.style.display = 'block';
-                        // Luôn reload popup để đảm bảo shop mới nhất
-                        const shopId = chatBtn.getAttribute('data-shop-id');
-                        fetch('/chat/popup?shop_id=' + shopId)
-                            .then(res => res.text())
-                            .then(html => {
-                                chatModalContent.innerHTML = html;
-                                chatModalContent.dataset.loaded = '1';
-                                // Đợi DOM render xong mới click
-                                setTimeout(function() {
-                                    const btn = chatModalContent.querySelector(
-                                        '.shop-btn[data-shop-id="' + shopId + '"]');
-                                    if (btn) btn.click();
-                                }, 200);
-                            });
+
+                // Hàm gắn lại sự kiện cho nút like
+                function attachLikeReviewEvents() {
+                    document.querySelectorAll('.like-review-btn').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+
+                            // Disable button và thêm loading
+                            this.disabled = true;
+                            const originalHTML = this.innerHTML;
+
+                            // Chỉ thay đổi icon, không thay đổi toàn bộ innerHTML
+                            const icon = this.querySelector('i');
+                            if (icon) {
+                                icon.className = 'fas fa-spinner fa-spin';
+                            }
+
+                            const reviewId = this.getAttribute('data-review-id');
+
+                            fetch(`/customer/review/${reviewId}/like`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': token,
+                                        'Accept': 'application/json',
+                                    },
+                                })
+                                .then(res => {
+                                    return res.json();
+                                })
+                                .then(data => {
+
+                                    if (data.success) {
+
+                                        // Cập nhật trạng thái like
+                                        this.setAttribute('data-liked', data.liked ? 'true' :
+                                            'false');
+
+                                        // Tìm lại button sau khi cập nhật
+                                        const button = this;
+
+                                        // Cập nhật icon - tìm trong button
+                                        const icon = button.querySelector('i');
+                                        if (icon) {
+                                            const newIconClass = data.liked ? 'fas fa-heart' :
+                                                'far fa-heart';
+                                            icon.className = newIconClass;
+                                        }
+
+                                        // Cập nhật số lượng like - tìm trong button
+                                        const likeCount = button.querySelector('.like-count');
+                                        if (likeCount) {
+                                            likeCount.textContent = data.like_count;
+                                        }
+
+                                        // Bỏ thông báo SweetAlert
+                                        // Swal.fire({
+                                        //     position: 'top-end',
+                                        //     toast: true,
+                                        //     icon: 'success',
+                                        //     title: data.message || (data.liked ? 'Đã thích đánh giá!' : 'Đã bỏ thích đánh giá!'),
+                                        //     timer: 1500,
+                                        //     showConfirmButton: false
+                                        // });
+                                    } else {
+                                        console.log('Server returned error:', data.message);
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Lỗi',
+                                            text: data.message || 'Không thể like!',
+                                            timer: 1500,
+                                            showConfirmButton: false
+                                        });
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.error('Fetch error:', error);
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Lỗi',
+                                        text: 'Không thể kết nối server!',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                })
+                                .finally(() => {
+                                    // Enable button và khôi phục text
+                                    this.disabled = false;
+                                    // Khôi phục icon nếu có lỗi
+                                    const icon = this.querySelector('i');
+                                    if (icon && icon.classList.contains('fa-spinner')) {
+                                        const isLiked = this.getAttribute('data-liked') === 'true';
+                                        icon.className = isLiked ? 'fas fa-heart' : 'far fa-heart';
+                                    }
+                                });
+                        });
                     });
                 }
             });

@@ -30,7 +30,6 @@
                 <div class="flex gap-4">
                     <div class="flex items-center gap-2 text-xs text-gray-500 select-none">
                         <span>Trạng thái:</span>
-                        <span>Trạng thái:</span>
                         <select name="status" id="statusFilter"
                             class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="">Tất cả</option>
@@ -83,7 +82,6 @@
                 <a href="{{ route('admin.products.select-shop') }}"
                     class="h-[44px] text-[15px] bg-blue-600 text-white px-4 py-2 flex items-center justify-center rounded-md hover:bg-blue-700 focus:outline-none">
                     Thêm sản phẩm
-                    Thêm sản phẩm
                 </a>
             </div>
         </div>
@@ -108,9 +106,7 @@
                 @foreach ($products as $product)
                     <tr data-product-id="{{ $product->id }}">
                         <td class="py-4 pr-6">
-                            <input class="select-item w-[18px] h-[18px]" aria-label="Chọn {{ $product->name }}"
-                            <input class="select-item w-[18px] h-[18px]" aria-label="Chọn {{ $product->name }}"
-                                type="checkbox" />
+                            <input class="select-item w-[18px] h-[18px]" aria-label="Chọn {{ $product->name }}" type="checkbox" />
                         </td>
                         <td class="py-4 flex items-center gap-4">
                             <img alt="{{ $product->name }} product image" class="w-10 h-10 rounded-md object-cover"

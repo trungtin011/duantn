@@ -14,6 +14,9 @@ class ShopController extends Controller
     public function show($id)
     {
         $shop = Shop::with([
+            'products' => function ($query) {
+                $query->where('status', 'active');
+            },
             'products.images', 
             'products.orderReviews',
             'combos.products.product.images',
@@ -56,12 +59,16 @@ class ShopController extends Controller
         $query = $request->input('query');
 
         $products = $shop->products()
+            ->where('status', 'active')
             ->where('name', 'like', '%' . $query . '%')
             ->with(['images', 'orderReviews'])
             ->get();
 
         // Load all necessary relationships for the shop
         $shop->load([
+            'products' => function ($query) {
+                $query->where('status', 'active');
+            },
             'products.images', 
             'products.orderReviews',
             'combos.products.product.images',
@@ -78,6 +85,9 @@ class ShopController extends Controller
     public function productsByCategory($shopId, $categoryId)
     {
         $shop = Shop::with([
+            'products' => function ($query) {
+                $query->where('status', 'active');
+            },
             'products.images', 
             'products.orderReviews',
             'combos.products.product.images',
@@ -98,6 +108,7 @@ class ShopController extends Controller
         // Lấy sản phẩm thuộc danh mục này trong shop
         $products = $category->products()
             ->where('shopID', $shop->id)
+            ->where('status', 'active')
             ->with(['images', 'orderReviews'])
             ->get();
 

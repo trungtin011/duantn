@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
 use App\Http\Controllers\Admin\CommentController;
+use App\Http\Controllers\Admin\BannerController;
 
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
@@ -246,6 +247,19 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::delete('/favicon', [AdminSettingsController::class, 'destroyFavicon'])->name('admin.settings.destroyFavicon');
         Route::get('/emails', [AdminSettingsController::class, 'editEmails'])->name('admin.settings.emails');
         Route::post('/emails', [AdminSettingsController::class, 'updateEmails'])->name('admin.settings.emails.update');
+    });
+
+    // banners
+    Route::prefix('banners')->group(function () {
+        Route::get('/', [BannerController::class, 'index'])->name('admin.banners.index');
+        Route::get('/create', [BannerController::class, 'create'])->name('admin.banners.create');
+        Route::post('/', [BannerController::class, 'store'])->name('admin.banners.store');
+        Route::get('/{banner}', [BannerController::class, 'show'])->name('admin.banners.show');
+        Route::get('/{banner}/edit', [BannerController::class, 'edit'])->name('admin.banners.edit');
+        Route::put('/{banner}', [BannerController::class, 'update'])->name('admin.banners.update');
+        Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('admin.banners.destroy');
+        Route::post('/{banner}/toggle-status', [BannerController::class, 'toggleStatus'])->name('admin.banners.toggle-status');
+        Route::post('/update-order', [BannerController::class, 'updateOrder'])->name('admin.banners.update-order');
     });
 
     // users
