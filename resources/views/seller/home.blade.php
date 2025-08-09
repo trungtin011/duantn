@@ -67,6 +67,13 @@
                 <a href="{{ route('seller.order.index') }}" class="text-[#f42f46] hover:underline ">
                     Xem thêm <i class="fas fa-chevron-right text-[10px]"></i>
                 </a>
+                <div class="mt-2">
+                    <a href="{{ route('seller.ad_click_stats.index') }}"
+                       class="inline-flex items-center text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md">
+                        <i class="fas fa-bullhorn mr-2"></i>
+                        Thống kê click quảng cáo
+                    </a>
+                </div>
             </div>
         </section>
 

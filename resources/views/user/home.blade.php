@@ -591,9 +591,15 @@
                                             {{ $banner->title }}
                                         </h2>
                                         @if ($banner->link_url)
-                                            <a href="{{ $banner->link_url }}" class="banner-btn">Xem chi tiết</a>
+                                            <a href="{{ $banner->link_url }}" 
+                                               data-banner-ad="{{ $banner->id }}"
+                                               data-shop-id="0"
+                                               class="banner-btn">Xem chi tiết</a>
                                         @else
-                                            <a href="#" class="banner-btn">Xem chi tiết</a>
+                                            <a href="#" 
+                                               data-banner-ad="{{ $banner->id }}"
+                                               data-shop-id="0"
+                                               class="banner-btn">Xem chi tiết</a>
                                         @endif
                                     </div>
                                 </div>
@@ -1720,7 +1726,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }

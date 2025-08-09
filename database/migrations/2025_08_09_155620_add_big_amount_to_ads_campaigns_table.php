@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
-            $table->id();
-            $table->string('key');
-            $table->string('value');
-            $table->timestamps();
+        Schema::table('ads_campaigns', function (Blueprint $table) {
+            //
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('settings');
+        Schema::table('ads_campaigns', function (Blueprint $table) {
+            //
+        });
     }
 };

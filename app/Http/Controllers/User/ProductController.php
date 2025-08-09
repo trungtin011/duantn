@@ -114,7 +114,14 @@ class ProductController extends Controller
                     $productQuery->where('name', 'like', "%$query%");
                 });
             })
-            ->with(['adsCampaignItems.product.images', 'adsCampaignItems.product.shop'])
+            ->with([
+                'adsCampaignItems.product.images', 
+                'adsCampaignItems.product.shop' => function($query) {
+                    $query->withCount('followers')
+                          ->withCount('orderReviews')
+                          ->withAvg('orderReviews', 'rating');
+                }
+            ])
             ->get();
 
         // Nhóm sản phẩm quảng cáo theo shop
@@ -134,8 +141,8 @@ class ProductController extends Controller
             }
         }
         
-        // Chỉ lấy 1 shop duy nhất
-        $advertisedProductsByShop = $advertisedProductsByShop->values()->take(1);
+        // Lấy 3 shop để hiển thị
+        $advertisedProductsByShop = $advertisedProductsByShop->values()->take(3);
 
         // Áp dụng sắp xếp cho các sản phẩm không quảng cáo
         $productQuery->when($sort, fn($q) => match ($sort) {
@@ -197,8 +204,18 @@ class ProductController extends Controller
         $shopId = $item->product->shop->id;
         
         if (!$advertisedProductsByShop->has($shopId)) {
+            $shop = $item->product->shop;
+            
+            // Tính toán thông tin shop từ các bảng riêng biệt
+            $actualRating = $shop->order_reviews_avg_rating ?? 0;
+            $actualFollowers = $shop->followers_count ?? 0;
+            
+            // Gán thông tin thực tế vào shop object
+            $shop->shop_rating = round($actualRating, 1);
+            $shop->total_followers = $actualFollowers;
+            
             $advertisedProductsByShop->put($shopId, [
-                'shop' => $item->product->shop,
+                'shop' => $shop,
                 'products' => collect(),
                 'campaign_name' => $campaign->name,
                 'all_campaigns' => collect()

@@ -464,8 +464,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
 Route::prefix('seller')->middleware('auth')->group(function () {
     Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
     Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
-    Route::get('/register1', [RegisterShopController::class, 'showStep2'])->name('seller.register.step2');
-    Route::post('/register1', [RegisterShopController::class, 'step2'])->name('seller.register.step2.post');
+    // Route register1 đã bị xóa vì bỏ bước vận chuyển
     Route::get('/register2', [RegisterShopController::class, 'showStep3'])->name('seller.register.step3');
     Route::post('/register2', [RegisterShopController::class, 'step3'])->name('seller.register.step3.post');
     Route::get('/register3', [RegisterShopController::class, 'showStep4'])->name('seller.register.step4');
@@ -742,6 +741,22 @@ Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.
         Route::delete('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
     });
+
+    // Ad Click Stats Routes (PHP thuần, không AJAX)
+    Route::prefix('ad-click-stats')->name('ad_click_stats.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Seller\AdClickStatsController::class, 'index'])->name('index');
+        Route::get('/export', [App\Http\Controllers\Seller\AdClickStatsController::class, 'export'])->name('export');
+        Route::post('/settle', [App\Http\Controllers\Seller\AdClickStatsController::class, 'settle'])->name('settle');
+    });
+
+    // Ad Bidding Routes (Quản lý đấu giá quảng cáo)
+    Route::prefix('ad-bidding')->name('ad_bidding.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Seller\AdBiddingController::class, 'index'])->name('index');
+        Route::get('/{id}/edit', [App\Http\Controllers\Seller\AdBiddingController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\Seller\AdBiddingController::class, 'update'])->name('update');
+        Route::get('/stats', [App\Http\Controllers\Seller\AdBiddingController::class, 'stats'])->name('stats');
+        Route::post('/update-bid', [App\Http\Controllers\Seller\AdBiddingController::class, 'updateBid'])->name('update_bid');
+    });
 });
 
 // Route upload ảnh CCCD tạm thời
@@ -774,6 +789,7 @@ Route::post('/api/upload-cccd-temp', function(Request $request) {
         'message' => 'Không có file được upload'
     ]);
 })->middleware('web');
+
 Route::get('/admin/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
 Route::get('/admin/reviews/ajax', [AdminReviewController::class, 'ajax'])->name('admin.reviews.ajax');
 
@@ -783,3 +799,64 @@ Route::post('/admin/reviews/{user}/ban', [AdminReviewController::class, 'banCust
 
 Route::delete('/admin/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('admin.reviews.destroy');
 Route::post('/admin/reviews/{shop}/ban', [AdminReviewController::class, 'banSeller'])->name('admin.reviews.banSeller');
+
+// Test route để kiểm tra thông tin shop
+Route::get('/test-shop-info/{shopId}', function($shopId) {
+    $shop = \App\Models\Shop::withCount('followers')
+        ->withCount('orderReviews')
+        ->withAvg('orderReviews', 'rating')
+        ->findOrFail($shopId);
+    
+    $actualRating = $shop->order_reviews_avg_rating ?? 0;
+    $actualFollowers = $shop->followers_count ?? 0;
+    
+    $shop->shop_rating = round($actualRating, 1);
+    $shop->total_followers = $actualFollowers;
+    
+    return response()->json([
+        'shop' => [
+            'id' => $shop->id,
+            'shop_name' => $shop->shop_name,
+            'shop_logo' => $shop->shop_logo,
+            'shop_rating' => $shop->shop_rating,
+            'total_followers' => $shop->total_followers,
+            'order_reviews_avg_rating' => $shop->order_reviews_avg_rating,
+            'followers_count' => $shop->followers_count,
+            'order_reviews_count' => $shop->order_reviews_count,
+        ]
+    ]);
+});
+
+// Ad Click Tracking Routes
+Route::prefix('ad')->name('ad.')->group(function () {
+    Route::post('/click', [App\Http\Controllers\AdClickController::class, 'trackClick'])->name('click');
+    Route::get('/cost', [App\Http\Controllers\AdClickController::class, 'getAdCost'])->name('cost');
+    Route::get('/status', [App\Http\Controllers\AdClickController::class, 'checkStatus'])->name('status');
+    Route::post('/reset', [App\Http\Controllers\AdClickController::class, 'resetStatus'])->name('reset')->middleware('auth');
+    
+    // API cho seller để xem thống kê
+    Route::prefix('api')->name('api.')->middleware(['auth', 'CheckRole:seller'])->group(function () {
+        Route::get('/stats', [App\Http\Controllers\AdClickController::class, 'getShopStats'])->name('stats');
+        Route::get('/history', [App\Http\Controllers\AdClickController::class, 'getShopHistory'])->name('history');
+    });
+});
+
+// Test route cho ad click system
+Route::get('/test-ad-click', function() {
+    return view('test_ad_click');
+})->name('test.ad.click');
+
+// Simple Ad Click Routes (PHP thuần)
+Route::prefix('simple-ad')->name('simple.ad.')->group(function () {
+    Route::get('/click', [App\Http\Controllers\SimpleAdClickController::class, 'handleClick'])->name('click');
+    Route::get('/test', [App\Http\Controllers\SimpleAdClickController::class, 'testClick'])->name('test');
+    Route::get('/stats', [App\Http\Controllers\SimpleAdClickController::class, 'showStats'])->name('stats');
+    Route::get('/api/stats', [App\Http\Controllers\SimpleAdClickController::class, 'getStatsApi'])->name('api.stats');
+    Route::get('/reset', [App\Http\Controllers\SimpleAdClickController::class, 'resetTestData'])->name('reset');
+    Route::get('/debug', [App\Http\Controllers\SimpleAdClickController::class, 'debugClicks'])->name('debug');
+});
+
+// Test page cho simple ad click
+Route::get('/simple-ad-test', function() {
+    return view('simple_ad_test');
+})->name('simple.ad.test');
