@@ -11,7 +11,7 @@ cp .env.example .env
 ```
 ``` bash
 php artisan key:generate --ansi  
-```
+```     
 ``` bash
 php artisan migrate
 ```

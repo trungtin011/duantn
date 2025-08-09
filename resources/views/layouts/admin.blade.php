@@ -303,23 +303,27 @@
                             x-transition:leave-end="opacity-0" class="ml-8 mt-1 space-y-1">
                             <a href="{{ route('admin.shops.index') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                <i class="fas fa-list mr-2"></i>Tất cả cửa hàng
+                                Tất cả cửa hàng
                             </a>
                             <a href="{{ route('admin.shops.pending') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                <i class="fas fa-clock mr-2"></i>Chờ duyệt
+                                Chờ duyệt
                             </a>
                             <a href="{{ route('admin.shops.suspended') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                <i class="fas fa-pause mr-2"></i>Tạm ngưng
+                                Tạm ngưng
                             </a>
                             <a href="{{ route('admin.shops.banned') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                <i class="fas fa-ban mr-2"></i>Đã bị cấm
+                                Đã bị cấm
                             </a>
                             <a href="{{ route('admin.shops.analytics') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                <i class="fas fa-chart-bar mr-2"></i>Thống kê
+                                Thống kê
+                            </a>
+                            <a href="{{ route('admin.ads_campaigns.index') }}"
+                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                Chiến dịch quảng cáo
                             </a>
                         </div>
                     </div>

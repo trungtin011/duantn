@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\AdsCampaignAdminController;
 
 // seller
 use App\Http\Controllers\Admin\AdminReviewController;
@@ -143,6 +144,13 @@ Route::post('notifications/{id}/mark-read', [AdminNotificationsControllers::clas
 Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+    // Ads Campaign Approval
+    Route::prefix('ads-campaigns')->group(function () {
+        Route::get('/', [AdsCampaignAdminController::class, 'index'])->name('admin.ads_campaigns.index');
+        Route::get('/ajax', [AdsCampaignAdminController::class, 'ajaxList'])->name('admin.ads_campaigns.ajax');
+        Route::post('/{id}/approve', [AdsCampaignAdminController::class, 'approve'])->name('admin.ads_campaigns.approve');
+        Route::post('/{id}/reject', [AdsCampaignAdminController::class, 'reject'])->name('admin.ads_campaigns.reject');
+    });
     //quản lý user
     Route::get('/user', [UserController::class, 'index'])->name('admin.users.index');
     Route::get('/user/create', [UserController::class, 'create'])->name('admin.users.create');
@@ -538,6 +546,9 @@ Route::prefix('customer')->group(function () {
 
             Route::get('/password', [UserController::class, 'changePasswordForm'])->name('account.password');
             Route::post('/password', [UserController::class, 'updatePassword'])->name('account.password.update');
+
+            // Saved Coupons
+            Route::get('/coupons', [UserCouponController::class, 'index'])->name('account.coupons');
         });
         Route::post('/apply-shop-discount', [CheckoutController::class, 'applyShopDiscount'])->name('customer.apply-shop-discount');
         // Trang địa chỉ người dùng

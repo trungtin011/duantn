@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mx-auto py-10 flex gap-8">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-0 py-6 md:py-10 flex flex-col md:flex-row gap-6 md:gap-8">
         <!-- Left Sidebar -->
-        <div class="w-1/4">
+        <div class="w-full md:w-1/4">
             <div class="bg-white p-6 rounded-lg shadow-sm border">
                 <!-- User Profile Section -->
                 <div class="flex items-center gap-4 border-b border-gray-200 pb-6 mb-6">
@@ -104,6 +104,7 @@
                                 <a href="{{ route('account.profile') }}" class="block px-3 py-2 text-sm rounded hover:bg-gray-50 transition-colors" id="profile-link">Hồ sơ</a>
                                 <a href="{{ route('account.addresses') }}" class="block px-3 py-2 text-sm rounded hover:bg-gray-50 transition-colors" id="address-link">Địa chỉ</a>
                                 <a href="{{ route('account.password') }}" class="block px-3 py-2 text-sm rounded hover:bg-gray-50 transition-colors" id="password-link">Đổi mật khẩu</a>
+                                <a href="{{ route('account.coupons') }}" class="block px-3 py-2 text-sm rounded hover:bg-gray-50 transition-colors" id="coupons-link">Mã giảm giá đã lưu</a>
                             </div>
                         </div>
                     </li>
@@ -151,12 +152,14 @@
             const profileLink = document.getElementById('profile-link');
             const addressLink = document.getElementById('address-link');
             const passwordLink = document.getElementById('password-link');
+            const couponsLink = document.getElementById('coupons-link');
             const dropdown = document.getElementById('accountDropdown');
             const arrow = document.getElementById('dropdownArrow');
             
             const dashboardUrl = "{{ route('account.profile') }}";
             const addressesUrl = "{{ route('account.addresses') }}";
             const passwordUrl = "{{ route('account.password') }}";
+            const couponsUrl = "{{ route('account.coupons') }}";
 
             // Show dropdown and highlight active link
             if (window.location.href === dashboardUrl) {
@@ -171,6 +174,10 @@
                 if (dropdown) dropdown.classList.remove('hidden');
                 if (arrow) arrow.classList.add('rotate-180');
                 if (passwordLink) passwordLink.classList.add('text-red-600', 'font-semibold');
+            } else if (window.location.href === couponsUrl || window.location.href.startsWith(couponsUrl)) {
+                if (dropdown) dropdown.classList.remove('hidden');
+                if (arrow) arrow.classList.add('rotate-180');
+                if (couponsLink) couponsLink.classList.add('text-red-600', 'font-semibold');
             }
         });
     </script>

@@ -22,15 +22,15 @@
         @endif
 
         <!-- Form -->
-        <form method="POST" action="{{ route('account.profile.update') }}" enctype="multipart/form-data" class="p-6">
+        <form method="POST" action="{{ route('account.profile.update') }}" enctype="multipart/form-data" class="p-4 sm:p-6">
             @csrf
-            <div class="flex gap-8">
+            <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
                 <!-- Left Column - Form Fields -->
                 <div class="flex-1">
                     <div class="space-y-6">
                         <!-- Username -->
-                        <div class="flex items-center">
-                            <label class="w-32 text-sm font-medium text-gray-700">Tên đăng nhập</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label class="sm:w-40 md:w-48 text-sm font-medium text-gray-700">Tên đăng nhập</label>
                             <div class="flex-1">
                                 <input type="text" name="username" value="{{ old('username', auth()->user()->username) }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
@@ -41,8 +41,8 @@
                         </div>
 
                         <!-- Full Name -->
-                        <div class="flex items-center">
-                            <label class="w-32 text-sm font-medium text-gray-700">Họ tên</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label class="sm:w-40 md:w-48 text-sm font-medium text-gray-700">Họ tên</label>
                             <div class="flex-1">
                                 <input type="text" name="fullname" value="{{ old('fullname', $user->fullname) }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
@@ -53,8 +53,8 @@
                         </div>
 
                         <!-- Phone -->
-                        <div class="flex items-center">
-                            <label class="w-32 text-sm font-medium text-gray-700">Số điện thoại</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label class="sm:w-40 md:w-48 text-sm font-medium text-gray-700">Số điện thoại</label>
                             <div class="flex-1">
                                 <input type="text" name="phone" value="{{ old('phone', $user->phone) }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
@@ -65,8 +65,8 @@
                         </div>
 
                         <!-- Email -->
-                        <div class="flex items-center">
-                            <label class="w-32 text-sm font-medium text-gray-700">Email</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label class="sm:w-40 md:w-48 text-sm font-medium text-gray-700">Email</label>
                             <div class="flex-1">
                                 <input type="email" name="email" value="{{ old('email', $user->email) }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
@@ -77,10 +77,10 @@
                         </div>
 
                         <!-- Date of Birth -->
-                        <div class="flex items-center">
-                            <label class="w-32 text-sm font-medium text-gray-700">Ngày sinh</label>
-                            <div class="flex-1 flex gap-2">
-                                <select name="day" id="day" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label class="sm:w-40 md:w-48 text-sm font-medium text-gray-700">Ngày sinh</label>
+                            <div class="flex-1 grid grid-cols-3 gap-2">
+                                <select name="day" id="day" class="col-span-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
                                     <option value="">Ngày</option>
                                     @for ($i = 1; $i <= 31; $i++)
                                         <option value="{{ $i }}" {{ old('day', optional($user->birthday)->format('d') == $i ? 'selected' : '') }}>
@@ -88,7 +88,7 @@
                                         </option>
                                     @endfor
                                 </select>
-                                <select name="month" id="month" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" onchange="updateDays()">
+                                <select name="month" id="month" class="col-span-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" onchange="updateDays()">
                                     <option value="">Tháng</option>
                                     @for ($i = 1; $i <= 12; $i++)
                                         <option value="{{ $i }}" {{ old('month', optional($user->birthday)->format('m') == sprintf('%02d', $i) ? 'selected' : '') }}>
@@ -96,7 +96,7 @@
                                         </option>
                                     @endfor
                                 </select>
-                                <select name="year" id="year" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" onchange="updateDays()">
+                                <select name="year" id="year" class="col-span-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" onchange="updateDays()">
                                     <option value="">Năm</option>
                                     @php $currentYear = date('Y'); @endphp
                                     @for ($i = $currentYear; $i >= 1900; $i--)
@@ -107,13 +107,13 @@
                                 </select>
                             </div>
                         </div>
-                        @error('day')<p class="text-red-600 text-sm ml-32">{{ $message }}</p>@enderror
-                        @error('month')<p class="text-red-600 text-sm ml-32">{{ $message }}</p>@enderror
-                        @error('year')<p class="text-red-600 text-sm ml-32">{{ $message }}</p>@enderror
+                        @error('day')<p class="text-red-600 text-sm sm:ml-40 md:ml-48">{{ $message }}</p>@enderror
+                        @error('month')<p class="text-red-600 text-sm sm:ml-40 md:ml-48">{{ $message }}</p>@enderror
+                        @error('year')<p class="text-red-600 text-sm sm:ml-40 md:ml-48">{{ $message }}</p>@enderror
 
                         <!-- Gender -->
-                        <div class="flex items-center">
-                            <label class="w-32 text-sm font-medium text-gray-700">Giới tính</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <label class="sm:w-40 md:w-48 text-sm font-medium text-gray-700">Giới tính</label>
                             <div class="flex-1">
                                 <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
                                     <option value="">-- Chọn --</option>
@@ -129,7 +129,7 @@
                     </div>
 
                     <!-- Save Button -->
-                    <div class="mt-8">
+                    <div class="mt-6 sm:mt-8">
                         <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
                             Lưu
                         </button>
@@ -137,18 +137,18 @@
                 </div>
 
                 <!-- Right Column - Avatar Upload -->
-                <div class="w-80 border-l border-gray-200 pl-8">
-                    <div class="flex flex-col items-center">
+                <div class="w-full lg:w-80 lg:border-l border-gray-200 lg:pl-8">
+                    <div class="flex flex-col items-center sm:flex-row lg:flex-col gap-4">
                         <!-- Current Avatar -->
-                        <div class="mb-4">
-                            <div id="avatarPreview" class="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                        <div class="mb-2 lg:mb-4">
+                            <div id="avatarPreview" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                                 @include('partials.user-avatar', ['user' => $user, 'size' => '2xl'])
                             </div>
                         </div>
 
                         <!-- Upload Button -->
-                        <div class="text-center">
-                            <label for="avatar" class="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">
+                        <div class="text-center sm:text-left lg:text-center">
+                            <label for="avatar" class="inline-block cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">
                                 Chọn ảnh
                             </label>
                             <input type="file" name="avatar" id="avatar" accept="image/jpeg,image/png" class="hidden" onchange="previewImage()">
