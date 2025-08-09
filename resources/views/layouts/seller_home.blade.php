@@ -276,13 +276,33 @@
                                 <li class="text-sm text-[#64748b]">
                                     <a href="{{ route('seller.combo.index') }}" class="link_admin">Combo</a>
                                 </li>
-                                <li class="text-sm text-[#64748b]">
-                                    <a href="{{ route('seller.ads_campaigns.index') }}" class="link_admin">
-                                        Quản Lý Quảng Cáo
-                                    </a>
-                                </li>
                             </ul>
                         </div>
+
+                         <div x-data="{ open: false }" class="">
+                             <div @click="open = !open"
+                                 class="dropdown_admin px-[24px] py-[12px] flex items-center justify-between cursor-pointer">
+                                 <div class="flex items-center gap-2">
+                                     <svg class="me-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                         width="16" height="16">
+                                         <path fill="currentColor"
+                                             d="M3 11V4a1 1 0 0 1 1-1h4l2-2h2l2 2h4a1 1 0 0 1 1 1v7a5 5 0 1 1-9.9 1H8l-2 2H4a1 1 0 0 1-1-1v-2l2-2H3Zm16 6a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z"/>
+                                     </svg>
+                                     Quảng Cáo
+                                 </div>
+                                 <i class="fa-solid fa-chevron-right text-[#64748b] transition-all duration-200"
+                                     :class="open ? 'rotate-90' : ''"></i>
+                             </div>
+                             <ul x-show="open" x-transition
+                                 class="dropdown_products_content flex flex-col gap-2 py-[10px]">
+                                 <li class="text-sm text-[#64748b]">
+                                     <a href="{{ route('seller.ads_campaigns.index') }}" class="link_admin">Quản Lý Quảng Cáo</a>
+                                 </li>
+                                 <li class="text-sm text-[#64748b]">
+                                     <a href="{{ route('seller.ad_click_stats.index') }}" class="link_admin">Quản Lý Click</a>
+                                 </li>
+                             </ul>
+                         </div>
 
                         <div x-data="{ open: false }" class="">
                             <div @click="open = !open"
@@ -516,11 +536,16 @@
             }
         });
     </script>
+    <div id="laravel-data" data-user='@json(Auth::user())' data-shop='@json(optional(Auth::user()->shop)->id)'></div>
     <script>
-        window.Laravel = {
-            user: @json(Auth::user()),
-            shop: @json(Auth::user()->shop->id),
-        };
+        (function () {
+            var el = document.getElementById('laravel-data');
+            var user = null;
+            var shop = null;
+            try { user = el ? JSON.parse(el.getAttribute('data-user') || 'null') : null; } catch (e) {}
+            try { shop = el ? JSON.parse(el.getAttribute('data-shop') || 'null') : null; } catch (e) {}
+            window.Laravel = { user: user, shop: shop };
+        })();
     </script>
     @vite('resources/js/echo.js')
 </body>
