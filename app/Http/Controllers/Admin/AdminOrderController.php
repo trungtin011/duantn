@@ -12,7 +12,7 @@ class AdminOrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'shop', 'address', 'items']);
+        $query = Order::with(['user', 'shopOrders.shop', 'address', 'items']);
 
         if ($request->search) {
             $query->where('order_code', 'like', "%{$request->search}%")
@@ -22,16 +22,33 @@ class AdminOrderController extends Controller
                 });
         }
 
+        // Lọc trạng thái theo shopOrders.status
         if ($request->status) {
-            $query->{$request->status}();
+            $query->whereHas('shopOrders', function ($q) use ($request) {
+                $q->where('status', $request->status);
+            });
+        }
+
+        // Lọc theo shopID trong shopOrders
+        if ($request->shop_id) {
+            $query->whereHas('shopOrders', function ($q) use ($request) {
+                $q->where('shopID', $request->shop_id);
+            });
         }
 
         if ($request->date_from && $request->date_to) {
             $query->whereBetween('created_at', [$request->date_from, $request->date_to]);
         }
 
+        // Filter by a specific date
+        if ($request->filter_date) {
+            $query->whereDate('created_at', $request->filter_date);
+        }
+
         $orders = $query->paginate(10);
-        return view('admin.orders.index', compact('orders'));
+        $shops = \App\Models\Shop::where('shop_status', 'active')->get();
+
+        return view('admin.orders.index', compact('orders', 'shops'));
     }
 
     public function show($id)
@@ -102,5 +119,36 @@ class AdminOrderController extends Controller
             ->get();
 
         return view('admin.orders.report', compact('stats'));
+    }
+
+    public function ajaxList(Request $request)
+    {
+        $query = Order::with(['user', 'shopOrders.shop', 'address', 'items']);
+
+        if ($request->search) {
+            $query->where('order_code', 'like', "%{$request->search}%")
+                ->orWhere(function ($q) use ($request) {
+                    $q->whereHas('user', fn($subQ) => $subQ->where('fullname', 'like', "%{$request->search}%"))
+                        ->orWhereNull('userID');
+                });
+        }
+        if ($request->status) {
+            $query->whereHas('shopOrders', function ($q) use ($request) {
+                $q->where('status', $request->status);
+            });
+        }
+        if ($request->shop_id) {
+            $query->whereHas('shopOrders', function ($q) use ($request) {
+                $q->where('shopID', $request->shop_id);
+            });
+        }
+        // Thêm lọc ngày
+        if ($request->filter_date) {
+            $query->whereDate('created_at', $request->filter_date);
+        }
+
+        $orders = $query->paginate(10);
+
+        return view('admin.orders._table_body', compact('orders'))->render();
     }
 }

@@ -95,11 +95,6 @@ class Product extends Model
         return $this->hasMany(ProductDimension::class, 'productID');
     }
 
-    public function reviews(): HasMany
-    {
-        return $this->hasMany(Review::class, 'product_id');
-    }
-
     public function brands()
     {
         return $this->belongsToMany(Brand::class, 'product_brands', 'product_id', 'brand_id')->withTimestamps();;
@@ -245,6 +240,11 @@ class Product extends Model
     public function orderReviews()
     {
         return $this->hasMany(OrderReview::class, 'product_id');
+    }
+
+    public function viewHistory()
+    {
+        return $this->hasMany(ViewHistory::class, 'productID');
     }
 
     public function getDisplayPriceAttribute()

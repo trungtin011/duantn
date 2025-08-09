@@ -11,6 +11,7 @@ class CheckRole
     public function handle($request, Closure $next, $role)
     {
         if (!Auth::check()) {
+            Log::info('CheckRole: User not authenticated');
             return redirect()->route('403');
         }
         $user = Auth::user();

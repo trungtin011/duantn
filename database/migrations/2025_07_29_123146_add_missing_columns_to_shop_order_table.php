@@ -12,11 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('shop_order', function (Blueprint $table) {
-            $table->decimal('shipping_shop_fee', 12, 2)->nullable()->after('total_order_amount');
+            $table->decimal('shipping_shop_fee', 12, 2)->nullable()->after('shipping_fee');
             $table->decimal('discount_shop_amount', 12, 2)->nullable()->after('shipping_shop_fee');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('shop_order', function (Blueprint $table) {

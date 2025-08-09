@@ -90,21 +90,6 @@ main {
     position: relative;
 }
 
-.dropdown-notification-content {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 8px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
-    z-index: 1000;
-    min-width: 400px;
-    max-height: 500px;
-    overflow-y: auto;
-}
-
 .clip-triangle {
     clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }

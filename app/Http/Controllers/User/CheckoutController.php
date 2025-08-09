@@ -199,15 +199,76 @@ class CheckoutController extends Controller
     public function store(Request $request)
     {                       
         try {
+            // Kiểm tra reCAPTCHA v3
+            $recaptchaToken = $request->input('recaptcha_token');
+            if (!$recaptchaToken) {
+                Log::warning('Missing reCAPTCHA token', ['ip' => $request->ip()]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Thiếu token reCAPTCHA, vui lòng thử lại.'
+                ], 422);
+            }
+
+            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => config('services.recaptcha.secret_key'),
+                'response' => $recaptchaToken,
+                'remoteip' => $request->ip(),
+            ]);
+
+            $result = $response->json();
+
+            if (!$result['success'] || $result['score'] < config('services.recaptcha.threshold') || $result['action'] !== 'submit_order') {
+                Log::warning('reCAPTCHA verification failed', [
+                    'ip' => $request->ip(),
+                    'score' => $result['score'] ?? null,
+                    'action' => $result['action'] ?? 'unknown',
+                    'errors' => $result['error-codes'] ?? []
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Xác minh thất bại, có khả năng là bot. Vui lòng thử lại.'
+                ], 422);
+            }
+
+            Log::info('reCAPTCHA verification success', [
+                'ip' => $request->ip(),
+                'score' => $result['score'],
+                'action' => $result['action']
+            ]);
+
+            // Validate dữ liệu đơn hàng
             $validate = $this->validateOrderData($request);
             if (!empty($validate)) {
+                Log::warning('Order validation failed', ['errors' => $validate]);
                 return response()->json(['success' => false, 'message' => $validate], 422);
             }
-            if(Order::isOrderSpam(Auth::id())){
+
+            // Kiểm tra spam
+            if (Order::isOrderSpam(Auth::id())) {
+                Log::warning('Order spam detected', ['user_id' => Auth::id()]);
                 return response()->json(['success' => false, 'message' => 'Bạn đang spam đặt hàng, vui lòng thử lại sau 5p'], 422);
             }
+
+            // Lấy danh sách sản phẩm
             $items = $this->getItems();
-            $user = Auth::user();
+            Log::info('Cart items fetched', ['items' => $items]);
+            if (empty($items)) {
+                Log::warning('Empty cart', ['user_id' => Auth::id()]);
+                return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm'], 400);
+            }
+
+            // Lấy địa chỉ người dùng
+            $user_address = UserAddress::where('id', $request->selected_address_id)
+                ->where('userID', Auth::id())
+                ->first();
+
+            if (!$user_address) {
+                Log::warning('Invalid address', ['user_id' => Auth::id(), 'address_id' => $request->selected_address_id]);
+                return response()->json(['success' => false, 'message' => 'Địa chỉ không hợp lệ'], 400);
+            }
+
+            // Tạo đơn hàng
+            $shopItems = [];
             foreach ($items as $item) {
                 $shop_id = $item['product']->shopID ?? null;
                 if ($shop_id) {
@@ -232,24 +293,28 @@ class CheckoutController extends Controller
             }
 
             $this->storeCouponsUsed($request->coupons_code);
-            $user_address = UserAddress::where('id', $request->selected_address_id)->where('userID', $user->id)->first();
+            $user_address = UserAddress::where('id', $request->selected_address_id)->where('userID', Auth::id())->first();
             $order = $this->createOrder($shopItems, $user_address, $request, $request->coupons_code);
             if(!$order){
                 return response()->json(['success' => false, 'message' => 'Lỗi khi tạo đơn hàng'], 400);
             }
 
+            // Xác định URL chuyển hướng
             $redirectUrl = null;
-            if($request->payment_method === 'COD'){
+            if ($request->payment_method === 'COD') {
                 $redirectUrl = route('checkout.success', ['order_code' => $order->order_code]);
-            }
-            else if($request->payment_method === 'MOMO'){
+            } elseif ($request->payment_method === 'MOMO') {
                 $redirectUrl = route('checkout.momo.payment', ['order_code' => $order->order_code]);
-            }
-            else if($request->payment_method === 'VNPAY'){
+            } elseif ($request->payment_method === 'VNPAY') {
                 $redirectUrl = route('checkout.vnpay.payment', ['order_code' => $order->order_code]);
             }
 
-            return response()->json(['success' => true, 'message' => 'Đặt hàng thành công', 'order' => $order, 'redirectUrl' => $redirectUrl], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Đặt hàng thành công',
+                'order' => $order,
+                'redirectUrl' => $redirectUrl
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -600,6 +665,25 @@ class CheckoutController extends Controller
                 ];
             }
         }
+        
+        // Trừ điểm của user nếu order có used_points > 0
+        if (isset($order->used_points) && $order->used_points > 0) {
+            $customer = Customer::where('userID', $order->userID)->first();
+            if ($customer) {
+                $customer->total_points = max(0, $customer->total_points - $order->used_points);
+                $customer->save();
+
+                // Ghi nhận lịch sử trừ điểm
+                PointTransaction::create([
+                    'userID' => $order->userID,
+                    'orderID' => $order->id,
+                    'points' => -abs($order->used_points),
+                    'type' => 'use_for_order',
+                    'description' => 'Trừ điểm khi sử dụng cho đơn hàng #' . $order->order_code,
+                ]);
+            }
+        }
+
         return view('user.checkout_status.success_payment', compact('order', 'products'));
     }
 

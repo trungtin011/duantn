@@ -2,7 +2,7 @@
 
 @section('title', 'Thêm Sản Phẩm Mới')
 @section('content')
-    <div class="container mx-auto px-4">
+    <div class="mx-auto">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div>
@@ -16,6 +16,7 @@
                     class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và đăng</button>
                 <a href="{{ route('seller.products.index') }}"
                     class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Hủy</a>
+
             </div>
         </div>
         <!-- Error Messages -->
@@ -35,50 +36,55 @@
             @csrf
 
             <!-- General Product Information (Always Visible) - Top Section -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                        <h4 class="text-xl font-semibold mb-4">Thông tin chung</h4>
-                        <div class="mb-4">
-                            <label class="block text-gray-700 font-medium mb-1">Tên sản phẩm <span
-                                    class="text-red-500">*</span></label>
-                            <input type="text" name="name" id="product-name"
-                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Nhập tên sản phẩm" value="{{ old('name') }}">
+            <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                <h4 class="text-xl font-semibold mb-4">Thông tin chung</h4>
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-1">Tên sản phẩm <span
+                            class="text-red-500">*</span></label>
+                                                <div class="relative">
+                                <input type="text" name="name" id="product-name"
+                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Nhập tên sản phẩm" value="{{ old('name') }}" maxlength="100">
+                                <div class="absolute right-2 top-2 text-xs text-gray-400">
+                                    <span id="name-char-count">0</span>/100
+                                </div>
+                            </div>
                             @error('name')
                                 <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                             @enderror
                             <span class="text-sm text-gray-500 block mt-1">Tên sản phẩm nên ngắn gọn và duy nhất.</span>
-                        </div>
+                </div>
                 <div class="mb-4">
-                            <label class="block text-gray-700 font-medium mb-1">Mô tả sản phẩm</label>
-                            <textarea id="description" name="description"
-                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                rows="6">{!! old('description') !!}</textarea>
-                            @error('description')
-                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                            @enderror
-                        </div>
+                    <label class="block text-gray-700 font-medium mb-1">Mô tả sản phẩm</label>
+                    <textarea id="description" name="description"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="6">{!! old('description') !!}</textarea>
+                    @error('description')
+                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                    @enderror
+                </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 font-medium mb-1">SKU sản phẩm <span
                             class="text-red-500">*</span></label>
                     <input type="text" name="sku"
                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="VD: SP001" value="{{ old('sku') }}" required>
+                        placeholder="VD: SP001" value="{{ old('sku') }}">
                     @error('sku')
                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                     @enderror
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-1">Loại sản phẩm <span
+                            class="text-red-500">*</span></label>
+                    <div>
+                        <label>
+                            <input type="radio" name="product_type" value="simple" checked> Sản phẩm đơn
+                        </label>
+                        <label class="ml-4">
+                            <input type="radio" name="product_type" value="variant"> Sản phẩm có biến thể
+                        </label>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 font-medium mb-1">Loại sản phẩm <span
-                                class="text-red-500">*</span></label>
-                        <div>
-                            <label>
-                                <input type="radio" name="product_type" value="simple" checked> Sản phẩm đơn
-                            </label>
-                            <label class="ml-4">
-                                <input type="radio" name="product_type" value="variant"> Sản phẩm có biến thể
-                            </label>
-                        </div>
-                    </div>
+                </div>
             </div>
 
             <!-- Two-Column Layout for Product Details (Tabs & Content) -->
@@ -88,16 +94,24 @@
                     <div class="bg-white p-4 rounded-lg shadow-sm sticky top-4">
                         <nav class="flex flex-col space-y-2">
                             {{-- Tab buttons will be dynamically shown/hidden based on product_type --}}
-                            <button type="button" class="tab-button active text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100" data-tab="general-details">
+                            <button type="button"
+                                class="tab-button active text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="general-details">
                                 <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm & SEO
                             </button>
-                            <button type="button" class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100" data-tab="pricing-inventory">
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="pricing-inventory">
                                 <i class="fas fa-boxes mr-2"></i>Giá & Tồn kho
                             </button>
-                            <button type="button" class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100" data-tab="shipping">
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="shipping">
                                 <i class="fas fa-truck mr-2"></i>Vận chuyển
                             </button>
-                            <button type="button" class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100" data-tab="attributes-variants">
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="attributes-variants">
                                 <i class="fas fa-tags mr-2"></i>Thuộc tính & Biến thể
                             </button>
                         </nav>
@@ -115,8 +129,7 @@
                             <div class="flex flex-col gap-3 mb-4">
                                 <!-- Thương hiệu -->
                                 <div>
-                                    <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương hiệu <span
-                                            class="text-red-500">*</span></label>
+                                    <label for="brand_id" class="block text-gray-700 font-medium mb-1">Thương hiệu</label>
                                     <div
                                         class="flex flex-col gap-2 items-start bg-gray-100 rounded-md p-2 overflow-y-scroll h-auto max-h-40">
                                         @foreach ($brands as $brand)
@@ -328,7 +341,8 @@
                                 <input type="text" name="meta_title" id="meta-title"
                                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value="{{ old('meta_title') }}" maxlength="60" placeholder="Tối đa 60 ký tự">
-                                <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm kiếm.</span>
+                                <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm
+                                    kiếm.</span>
                                 @error('meta_title')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
@@ -365,12 +379,14 @@
                                         class="text-red-500">*</span></label>
                                 <div class="text-center border-2 border-dashed border-gray-300 rounded-md p-4">
                                     <img id="uploadIcon1" class="w-24 h-auto mx-auto mb-2 hidden"
-                                        src="https://html.hixstudio.net/ebazer/assets/img/icons/upload.png" alt="Upload Icon">
+                                        src="https://html.hixstudio.net/ebazer/assets/img/icons/upload.png"
+                                        alt="Upload Icon">
                                     <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh nhỏ hơn 5Mb</span>
                                     <label for="mainImage"
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                         ảnh chính</label>
-                                    <input type="file" id="mainImage" name="main_image" class="hidden" accept="image/*">
+                                    <input type="file" id="mainImage" name="main_image" class="hidden"
+                                        accept="image/*">
                                 </div>
                                 @error('main_image')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -400,48 +416,48 @@
                     <div id="tab-pricing-inventory" class="tab-content hidden">
                         <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                             <h4 class="text-xl font-semibold mb-4">Giá & Tồn kho</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá gốc <span
-                                        class="text-red-500">*</span></label>
-                                <input type="number" name="price" step="0.01"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="VD: 100000" value="{{ old('price') }}" required data-original-required="true">
-                                @error('price')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Giá gốc <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="number" name="price" step="0.01"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="VD: 100000" value="{{ old('price') }}">
+                                    @error('price')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Giá nhập <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="number" name="purchase_price" step="0.01"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="VD: 80000" value="{{ old('purchase_price') }}">
+                                    @error('purchase_price')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Giá bán <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="number" name="sale_price" step="0.01"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="VD: 120000" value="{{ old('sale_price') }}">
+                                    @error('sale_price')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="number" name="stock_total"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="VD: 100" value="{{ old('stock_total') }}">
+                                    @error('stock_total')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá nhập <span
-                                        class="text-red-500">*</span></label>
-                                <input type="number" name="purchase_price" step="0.01"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="VD: 80000" value="{{ old('purchase_price') }}" required data-original-required="true">
-                                @error('purchase_price')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Giá bán <span
-                                        class="text-red-500">*</span></label>
-                                <input type="number" name="sale_price" step="0.01"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="VD: 120000" value="{{ old('sale_price') }}" required data-original-required="true">
-                                @error('sale_price')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho <span
-                                        class="text-red-500">*</span></label>
-                                <input type="number" name="stock_total"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="VD: 100" value="{{ old('stock_total') }}" required data-original-required="true">
-                                @error('stock_total')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
                         </div>
                     </div>
 
@@ -449,42 +465,42 @@
                     <div id="tab-shipping" class="tab-content hidden">
                         <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                             <h4 class="text-xl font-semibold mb-4">Vận chuyển</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
-                                <input type="number" name="length" step="0.01"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: 10" value="{{ old('length') }}">
-                                @error('length')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
-                                <input type="number" name="width" step="0.01"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: 5" value="{{ old('width') }}">
-                                @error('width')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
-                                <input type="number" name="height" step="0.01"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: 3" value="{{ old('height') }}">
-                                @error('height')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
-                                <input type="number" name="weight" step="0.01"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: 0.5" value="{{ old('weight') }}">
-                                @error('weight')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                    <input type="number" name="length" step="0.01"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="VD: 10" value="{{ old('length') }}">
+                                    @error('length')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
+                                    <input type="number" name="width" step="0.01"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="VD: 5" value="{{ old('width') }}">
+                                    @error('width')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
+                                    <input type="number" name="height" step="0.01"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="VD: 3" value="{{ old('height') }}">
+                                    @error('height')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
+                                    <input type="number" name="weight" step="0.01"
+                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="VD: 0.5" value="{{ old('weight') }}">
+                                    @error('weight')
+                                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -492,267 +508,284 @@
 
                     <!-- Tab Content: Attributes & Variants (for Variant Products) -->
                     <div id="tab-attributes-variants" class="tab-content hidden">
-                    <!-- Thuộc tính sản phẩm -->
-                    <div id="attribute-section" class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                        <h4 class="text-xl font-semibold mb-4">Thuộc tính sản phẩm</h4>
-                        <div id="attribute-container" class="mb-4">
-                            <label class="block text-gray-700 font-medium mb-1">Thuộc tính sản phẩm</label>
-                            @php
-                                // Nếu có old('attributes'), sử dụng nó; nếu không, khởi tạo một thuộc tính mặc định
-                                $attributes = old('attributes', [[]]);
-                            @endphp
-                            @foreach ($attributes as $index => $attribute)
-                                <div class="flex items-center gap-4 mb-2 attribute-row">
-                                    <select name="attributes[{{ $index }}][id]"
-                                        class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select"
-                                        onchange="updateAttributeValues(this)">
-                                        <option value="" disabled {{ empty($attribute['id']) ? 'selected' : '' }}>
-                                            Chọn hoặc nhập thuộc tính
-                                        </option>
-                                        <option value="new" {{ ($attribute['id'] ?? '') === 'new' ? 'selected' : '' }}>
-                                            Tạo thuộc tính mới
-                                        </option>
-                                        @foreach ($allAttributes as $attr)
-                                            <option value="{{ $attr['id'] }}"
-                                                {{ ($attribute['id'] ?? '') == $attr['id'] ? 'selected' : '' }}>
-                                                {{ $attr['name'] }}
+                        <!-- Thuộc tính sản phẩm -->
+                        <div id="attribute-section" class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                            <h4 class="text-xl font-semibold mb-4">Thuộc tính sản phẩm</h4>
+                            <div id="attribute-container" class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-1">Thuộc tính sản phẩm</label>
+                                @php
+                                    // Nếu có old('attributes'), sử dụng nó; nếu không, khởi tạo một thuộc tính mặc định
+                                    $attributes = old('attributes', [[]]);
+                                @endphp
+                                @foreach ($attributes as $index => $attribute)
+                                    <div class="flex items-center gap-4 mb-2 attribute-row">
+                                        <select name="attributes[{{ $index }}][id]"
+                                            class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select"
+                                            onchange="updateAttributeValues(this)">
+                                            <option value="" disabled
+                                                {{ empty($attribute['id']) ? 'selected' : '' }}>
+                                                Chọn hoặc nhập thuộc tính
                                             </option>
-                                        @endforeach
-                                    </select>
-                                    <input type="text" name="attributes[{{ $index }}][name]"
-                                        value="{{ old("attributes.$index.name", $attribute['name'] ?? '') }}"
-                                        class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name {{ ($attribute['id'] ?? '') === 'new' ? '' : 'hidden' }}"
-                                        placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
-                                    <input type="text" name="attributes[{{ $index }}][values]"
-                                        value="{{ old("attributes.$index.values", $attribute['values'] ?? '') }}"
-                                        class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values"
-                                            placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" required data-original-required="true">
-                                    <button type="button"
-                                        class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
-                                </div>
-                            @endforeach
+                                            <option value="new"
+                                                {{ ($attribute['id'] ?? '') === 'new' ? 'selected' : '' }}>
+                                                Tạo thuộc tính mới
+                                            </option>
+                                            @foreach ($allAttributes as $attr)
+                                                <option value="{{ $attr['id'] }}"
+                                                    {{ ($attribute['id'] ?? '') == $attr['id'] ? 'selected' : '' }}>
+                                                    {{ $attr['name'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <input type="text" name="attributes[{{ $index }}][name]"
+                                            value="{{ old("attributes.$index.name", $attribute['name'] ?? '') }}"
+                                            class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name {{ ($attribute['id'] ?? '') === 'new' ? '' : 'hidden' }}"
+                                            placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
+                                        <input type="text" name="attributes[{{ $index }}][values]"
+                                            value="{{ old("attributes.$index.values", $attribute['values'] ?? '') }}"
+                                            class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values"
+                                            placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)">
+                                        <button type="button"
+                                            class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button type="button" id="add-attribute-btn"
+                                class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Thêm thuộc
+                                tính</button>
                         </div>
-                        <button type="button" id="add-attribute-btn"
-                            class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Thêm thuộc
-                            tính</button>
-                    </div>
 
-                    <!-- Khu vực hiển thị biến thể -->
-                    <div id="variants-section" class="bg-white p-6 rounded-lg shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-xl font-semibold">Biến thể sản phẩm</h4>
-                            <button type="button" id="toggle-variants"
-                                class="text-gray-600 hover:text-gray-800 focus:outline-none">
-                                <svg id="toggle-icon" class="w-6 h-6" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div id="variant-content" class="mb-4">
-                            <label class="block text-gray-700 font-medium mb-1">Biến thể sản phẩm</label>
-                            <button type="button" id="generate-variants-btn"
-                                class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Tạo biến
-                                thể</button>
-                            <div id="variant-container" class="mt-4">
-                                @if (old('variants'))
-                                    @foreach (old('variants') as $index => $variant)
-                                        <div
-                                            class="p-6 border border-gray-300 rounded-md mb-6 bg-white relative variant-item">
-                                            <div class="flex justify-between items-center mb-3">
-                                                <h5 class="text-lg font-semibold">Biến thể {{ $index + 1 }}:
-                                                    {{ $variant['name'] }}</h5>
-                                                <div class="flex space-x-3">
-                                                    <button type="button"
-                                                        class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
-                                                    <button type="button" class="toggle-variants"
-                                                        data-index="{{ $index }}"
-                                                        class="text-gray-600 hover:text-gray-800 focus:outline-none">
-                                                        <svg class="toggle-icon w-6 h-6" fill="none"
-                                                            stroke="currentColor" viewBox="0 0 24 24"
-                                                            xmlns="http://www.w3.org/2000/svg">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div class="variant-content transition-all duration-300 ease-in-out hidden">
-                                                <input type="hidden" name="variants[{{ $index }}][index]"
-                                                    value="{{ $index }}">
-                                                <input type="hidden" name="variants[{{ $index }}][name]"
-                                                    value="{{ $variant['name'] }}">
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                                        <input type="number" name="variants[{{ $index }}][price]"
-                                                            value="{{ old("variants.$index.price") }}" step="0.01"
-                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Nhập giá gốc" required data-original-required="true">
-                                                        @error("variants.$index.price")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">Giá
-                                                            nhập</label>
-                                                        <input type="number"
-                                                            name="variants[{{ $index }}][purchase_price]"
-                                                            value="{{ old("variants.$index.purchase_price") }}"
-                                                            step="0.01"
-                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Nhập giá nhập" required data-original-required="true">
-                                                        @error("variants.$index.purchase_price")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                                                        <input type="number"
-                                                            name="variants[{{ $index }}][sale_price]"
-                                                            value="{{ old("variants.$index.sale_price") }}"
-                                                            step="0.01"
-                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Nhập giá bán" required data-original-required="true">
-                                                        @error("variants.$index.sale_price")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                                        <input type="text" name="variants[{{ $index }}][sku]"
-                                                            value="{{ old("variants.$index.sku") }}"
-                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Nhập SKU" required data-original-required="true">
-                                                        @error("variants.$index.sku")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">Số lượng tồn
-                                                            kho</label>
-                                                        <input type="number"
-                                                            name="variants[{{ $index }}][stock_total]"
-                                                            value="{{ old("variants.$index.stock_total") }}"
-                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Nhập số lượng" required data-original-required="true">
-                                                        @error("variants.$index.stock_total")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">Chiều dài
-                                                            (inch)
-                                                        </label>
-                                                        <input type="number"
-                                                            name="variants[{{ $index }}][length]"
-                                                            value="{{ old("variants.$index.length") }}" step="0.01"
-                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Chiều dài" data-original-required="true">
-                                                        @error("variants.$index.length")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">Chiều rộng
-                                                            (inch)</label>
-                                                        <input type="number" name="variants[{{ $index }}][width]"
-                                                            value="{{ old("variants.$index.width") }}" step="0.01"
-                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Chiều rộng" data-original-required="true">
-                                                        @error("variants.$index.width")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">Chiều cao
-                                                            (inch)</label>
-                                                        <input type="number"
-                                                            name="variants[{{ $index }}][height]"
-                                                            value="{{ old("variants.$index.height") }}" step="0.01"
-                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Chiều cao" data-original-required="true">
-                                                        @error("variants.$index.height")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-gray-700 font-medium mb-1">Trọng lượng
-                                                            (kg)</label>
-                                                        <input type="number"
-                                                            name="variants[{{ $index }}][weight]"
-                                                            value="{{ old("variants.$index.weight") }}" step="0.01"
-                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                placeholder="Trọng lượng" data-original-required="true">
-                                                        @error("variants.$index.weight")
-                                                            <span
-                                                                class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                                        @enderror
+                        <!-- Khu vực hiển thị biến thể -->
+                        <div id="variants-section" class="bg-white p-6 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-xl font-semibold">Biến thể sản phẩm</h4>
+                                <button type="button" id="toggle-variants"
+                                    class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                    <svg id="toggle-icon" class="w-6 h-6" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 15l7-7 7 7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="variant-content" class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-1">Biến thể sản phẩm</label>
+                                <button type="button" id="generate-variants-btn"
+                                    class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Tạo biến
+                                    thể</button>
+                                <div id="variant-container" class="mt-4">
+                                    @if (old('variants'))
+                                        @foreach (old('variants') as $index => $variant)
+                                            <div
+                                                class="p-6 border border-gray-300 rounded-md mb-6 bg-white relative variant-item">
+                                                <div class="flex justify-between items-center mb-3">
+                                                    <h5 class="text-lg font-semibold">Biến thể {{ $index + 1 }}:
+                                                        {{ $variant['name'] }}</h5>
+                                                    <div class="flex space-x-3">
+                                                        <button type="button"
+                                                            class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
+                                                        <button type="button" class="toggle-variants"
+                                                            data-index="{{ $index }}"
+                                                            class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                                            <svg class="toggle-icon w-6 h-6" fill="none"
+                                                                stroke="currentColor" viewBox="0 0 24 24"
+                                                                xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                            </svg>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div class="mb-4">
-                                                    <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến
-                                                        thể</label>
-                                                    @foreach ($variant['attributes'] ?? [] as $attrIndex => $attr)
-                                                        <div class="flex items-center gap-4 mb-2">
-                                                            <input type="text"
-                                                                name="variants[{{ $index }}][attributes][{{ $attrIndex }}][name]"
-                                                                value="{{ $attr['name'] ?? '' }}"
-                                                                placeholder="Tên thuộc tính"
-                                                                class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                readonly>
-                                                            <input type="text"
-                                                                name="variants[{{ $index }}][attributes][{{ $attrIndex }}][value]"
-                                                                value="{{ $attr['value'] ?? '' }}"
-                                                                placeholder="Giá trị thuộc tính"
-                                                                class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                readonly>
+                                                <div
+                                                    class="variant-content transition-all duration-300 ease-in-out hidden">
+                                                    <input type="hidden" name="variants[{{ $index }}][index]"
+                                                        value="{{ $index }}">
+                                                    <input type="hidden" name="variants[{{ $index }}][name]"
+                                                        value="{{ $variant['name'] }}">
+                                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Giá
+                                                                gốc</label>
+                                                            <input type="number"
+                                                                name="variants[{{ $index }}][price]"
+                                                                value="{{ old("variants.$index.price") }}" step="0.01"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Nhập giá gốc">
+                                                            @error("variants.$index.price")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
                                                         </div>
-                                                    @endforeach
-                                                </div>
-                                                <div>
-                                                    <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
-                                                    @if (session('error'))
-                                                        <span class="text-sm text-red-500 block mb-3">Vui lòng chọn lại ảnh
-                                                            biến thể do lỗi trước đó.</span>
-                                                    @endif
-                                                    <input type="file" name="variant_images[{{ $index }}][]"
-                                                        multiple
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        accept="image/*"
-                                                        onchange="previewVariantImage(event, {{ $index }})">
-                                                    <div id="preview-images-{{ $index }}"
-                                                        class="mt-2 flex flex-wrap gap-2"></div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Giá
+                                                                nhập</label>
+                                                            <input type="number"
+                                                                name="variants[{{ $index }}][purchase_price]"
+                                                                value="{{ old("variants.$index.purchase_price") }}"
+                                                                step="0.01"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Nhập giá nhập">
+                                                            @error("variants.$index.purchase_price")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Giá
+                                                                bán</label>
+                                                            <input type="number"
+                                                                name="variants[{{ $index }}][sale_price]"
+                                                                value="{{ old("variants.$index.sale_price") }}"
+                                                                step="0.01"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Nhập giá bán">
+                                                            @error("variants.$index.sale_price")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                                            <input type="text"
+                                                                name="variants[{{ $index }}][sku]"
+                                                                value="{{ old("variants.$index.sku") }}"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Nhập SKU">
+                                                            @error("variants.$index.sku")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Số lượng
+                                                                tồn
+                                                                kho</label>
+                                                            <input type="number"
+                                                                name="variants[{{ $index }}][stock_total]"
+                                                                value="{{ old("variants.$index.stock_total") }}"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Nhập số lượng">
+                                                            @error("variants.$index.stock_total")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Chiều dài
+                                                                (inch)
+                                                            </label>
+                                                            <input type="number"
+                                                                name="variants[{{ $index }}][length]"
+                                                                value="{{ old("variants.$index.length") }}"
+                                                                step="0.01"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Chiều dài" data-original-required="true">
+                                                            @error("variants.$index.length")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Chiều rộng
+                                                                (inch)</label>
+                                                            <input type="number"
+                                                                name="variants[{{ $index }}][width]"
+                                                                value="{{ old("variants.$index.width") }}"
+                                                                step="0.01"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Chiều rộng" data-original-required="true">
+                                                            @error("variants.$index.width")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Chiều cao
+                                                                (inch)</label>
+                                                            <input type="number"
+                                                                name="variants[{{ $index }}][height]"
+                                                                value="{{ old("variants.$index.height") }}"
+                                                                step="0.01"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Chiều cao" data-original-required="true">
+                                                            @error("variants.$index.height")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-gray-700 font-medium mb-1">Trọng lượng
+                                                                (kg)</label>
+                                                            <input type="number"
+                                                                name="variants[{{ $index }}][weight]"
+                                                                value="{{ old("variants.$index.weight") }}"
+                                                                step="0.01"
+                                                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                placeholder="Trọng lượng" data-original-required="true">
+                                                            @error("variants.$index.weight")
+                                                                <span
+                                                                    class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                                                            @enderror
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-4">
+                                                        <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến
+                                                            thể</label>
+                                                        @foreach ($variant['attributes'] ?? [] as $attrIndex => $attr)
+                                                            <div class="flex items-center gap-4 mb-2">
+                                                                <input type="text"
+                                                                    name="variants[{{ $index }}][attributes][{{ $attrIndex }}][name]"
+                                                                    value="{{ $attr['name'] ?? '' }}"
+                                                                    placeholder="Tên thuộc tính"
+                                                                    class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    readonly>
+                                                                <input type="text"
+                                                                    name="variants[{{ $index }}][attributes][{{ $attrIndex }}][value]"
+                                                                    value="{{ $attr['value'] ?? '' }}"
+                                                                    placeholder="Giá trị thuộc tính"
+                                                                    class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    readonly>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-gray-700 font-medium mb-1">Hình
+                                                            ảnh</label>
+                                                        @if (session('error'))
+                                                            <span class="text-sm text-red-500 block mb-3">Vui lòng chọn lại
+                                                                ảnh
+                                                                biến thể do lỗi trước đó.</span>
+                                                        @endif
+                                                        <input type="file"
+                                                            name="variant_images[{{ $index }}][]" multiple
+                                                            class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            accept="image/*"
+                                                            onchange="previewVariantImage(event, {{ $index }})">
+                                                        <div id="preview-images-{{ $index }}"
+                                                            class="mt-2 flex flex-wrap gap-2"></div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    @endforeach
-                                @endif
+                                        @endforeach
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                    </div>
-                </div>
+            </div>
 
-                <!-- Footer Buttons -->
+            <!-- Footer Buttons -->
+            <div class="col-span-12 flex justify-start space-x-3 mt-6">
                 <div class="col-span-12 flex justify-start space-x-3 mt-6">
                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và
                         đăng</button>
                     <a href="{{ route('seller.products.index') }}"
                         class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Hủy</a>
-            </div>
+                </div>
         </form>
     </div>
+
 
 @endsection
 @push('scripts')
@@ -876,7 +909,7 @@
                         .join('')}
                 </select>
                 <input type="text" name="attributes[${attributeIndex}][name]" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name hidden" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
-                <input type="text" name="attributes[${attributeIndex}][values]" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" required data-original-required="true">
+                <input type="text" name="attributes[${attributeIndex}][values]" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)">
                 <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
             `;
             container.appendChild(newAttribute);
@@ -951,7 +984,7 @@
                     .filter(v => v);
 
                 if (attrId === 'new' && !attrName) {
-                    alert(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+                    showFieldError(names[index], `Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
                     return;
                 }
 
@@ -972,10 +1005,28 @@
             });
 
             if (!hasValidAttribute) {
-                alert('Vui lòng nhập ít nhất một thuộc tính hợp lệ với tên và giá trị.');
+                showFieldError(document.querySelector('#generate-variants-btn'),
+                    'Vui lòng nhập ít nhất một thuộc tính hợp lệ với tên và giá trị.');
                 debugLog('No valid attributes provided');
                 return;
             }
+
+            // Lưu dữ liệu biến thể cũ nếu có
+            const oldVariants = {};
+            const existingVariants = variantContainer.querySelectorAll('.variant-item');
+            existingVariants.forEach((variant, index) => {
+                const variantName = variant.querySelector('input[name$="[name]"]')?.value;
+                if (variantName) {
+                    oldVariants[variantName] = {};
+                    const inputs = variant.querySelectorAll('input[type="number"], input[type="text"]');
+                    inputs.forEach(input => {
+                        const fieldName = input.name.match(/\[([^\]]+)\]$/)?.[1];
+                        if (fieldName) {
+                            oldVariants[variantName][fieldName] = input.value;
+                        }
+                    });
+                }
+            });
 
             variantContainer.innerHTML = '';
             const variants = getCombinations(attributeData.map(attr => attr.values));
@@ -985,9 +1036,13 @@
                 const variantDiv = document.createElement('div');
                 variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white',
                     'relative', 'variant-item');
+
+                const variantName = variant.join(' - ');
+                const oldData = oldVariants[variantName] || {};
+
                 let variantHTML = `
                     <div class="flex justify-between items-center mb-3">
-                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.join(' - ')}</h5>
+                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variantName}</h5>
                         <div class="flex space-x-3">
                             <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
                             <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
@@ -999,53 +1054,53 @@
                     </div>
                     <div class="variant-content transition-all duration-300 ease-in-out hidden">
                         <input type="hidden" name="variants[${index}][index]" value="${index}">
-                        <input type="hidden" name="variants[${index}][name]" value="${variant.join(' - ')}">
+                        <input type="hidden" name="variants[${index}][name]" value="${variantName}">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
-                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" required data-original-required="true">
+                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" value="${oldData.price || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
-                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" required data-original-required="true">
+                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" value="${oldData.purchase_price || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
-                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" required data-original-required="true">
+                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" value="${oldData.sale_price || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" required data-original-required="true">
+                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" value="${oldData.sku || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
-                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" required data-original-required="true">
+                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" value="${oldData.stock_total || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
-                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài" data-original-required="true">
+                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài" value="${oldData.length || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
-                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng" data-original-required="true">
+                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng" value="${oldData.width || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
-                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao" data-original-required="true">
+                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao" value="${oldData.height || ''}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
-                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng" data-original-required="true">
+                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng" value="${oldData.weight || ''}">
                             </div>
                         </div>
                         <div class="mb-4">
                             <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                             ${variant.map((value, attrIndex) => `
-                                                    <div class="flex items-center gap-4 mb-2">
-                                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                    </div>
-                                                `).join('')}
+                                                        <div class="flex items-center gap-4 mb-2">
+                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                        </div>
+                                                    `).join('')}
                         </div>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
@@ -1053,12 +1108,12 @@
                                 <span class="text-sm text-red-500 block mb-3">Vui lòng chọn lại ảnh
                                     biến thể do lỗi trước đó.</span>
                             @endif
-                            <input type="file" name="variant_images[{{ $index }}][]"
+                            <input type="file" name="variant_images[${index}][]"
                                 multiple
                                 class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 accept="image/*"
-                                onchange="previewVariantImage(event, {{ $index }})">
-                            <div id="preview-images-{{ $index }}"
+                                onchange="previewVariantImage(event, ${index})">
+                            <div id="preview-images-${index}"
                                 class="mt-2 flex flex-wrap gap-2"></div>
                         </div>
                         </div>
@@ -1349,13 +1404,18 @@
             });
         }
 
-        // Hàm validate form
+        // Hàm validate form với validation thủ công và hiển thị lỗi inline
         function validateForm(e) {
+            e.preventDefault();
             const productForm = document.getElementById('product-form');
             if (!productForm) {
                 debugLog('Product form not found');
                 return;
             }
+
+            // Xóa tất cả thông báo lỗi cũ
+            clearAllErrors();
+
             debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
             const brandCheckboxes = document.querySelectorAll('input[name="brand_ids[]"]:checked');
             const categoryCheckboxes = document.querySelectorAll('input[name="category_ids[]"]:checked');
@@ -1371,30 +1431,43 @@
             const productType = productTypeInput ? productTypeInput.value : null;
 
             // Common validations
-            if (!document.querySelector('input[name="name"]').value.trim()) {
-                e.preventDefault();
-                alert('Vui lòng nhập tên sản phẩm.');
+            const nameInput = document.querySelector('input[name="name"]');
+            if (!nameInput.value.trim()) {
+                showFieldError(nameInput, 'Vui lòng nhập tên sản phẩm.');
+                isValid = false;
+            } else if (nameInput.value.trim().length > 100) {
+                showFieldError(nameInput, 'Tên sản phẩm không được vượt quá 100 ký tự.');
+                isValid = false;
+            } else {
+                // Kiểm tra tên sản phẩm đã tồn tại
+                const nameError = nameInput.parentNode.querySelector('.field-error');
+                if (nameError && nameError.textContent.includes('đã tồn tại')) {
+                    isValid = false;
+                }
+            }
+
+            const skuInput = document.querySelector('input[name="sku"]');
+            if (!skuInput.value.trim()) {
+                showFieldError(skuInput, 'Vui lòng nhập mã SKU.');
                 isValid = false;
             }
-            if (!document.querySelector('input[name="sku"]').value.trim()) {
-                e.preventDefault();
-                alert('Vui lòng nhập mã SKU.');
-                isValid = false;
-            }
-            // These are now in general-details tab, always required.
-            if (brandCheckboxes.length === 0) {
-                e.preventDefault();
-                alert('Vui lòng chọn ít nhất một thương hiệu.');
-                isValid = false;
-            }
+
+            // Thương hiệu không bắt buộc nữa
+            // if (brandCheckboxes.length === 0) {
+            //     showFieldError(document.querySelector('input[name="brand_ids[]"]'),
+            //         'Vui lòng chọn ít nhất một thương hiệu.');
+            //     isValid = false;
+            // }
+
             if (categoryCheckboxes.length === 0) {
-                e.preventDefault();
-                alert('Vui lòng chọn ít nhất một danh mục.');
+                showFieldError(document.querySelector('input[name="category_ids[]"]'),
+                    'Vui lòng chọn ít nhất một danh mục.');
                 isValid = false;
             }
-            if (!document.getElementById('mainImage').files.length) {
-                e.preventDefault();
-                alert('Vui lòng chọn ảnh chính.');
+
+            const mainImageInput = document.getElementById('mainImage');
+            if (!mainImageInput.files.length) {
+                showFieldError(mainImageInput, 'Vui lòng chọn ảnh chính.');
                 isValid = false;
             }
 
@@ -1406,98 +1479,166 @@
                 const stockInput = document.querySelector('#tab-pricing-inventory input[name="stock_total"]');
 
                 if (!priceInput || !priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
+                    showFieldError(priceInput, 'Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
                     isValid = false;
                 }
-                if (!purchasePriceInput || !purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(purchasePriceInput.value) < 0) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
+                if (!purchasePriceInput || !purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
+                        purchasePriceInput.value) < 0) {
+                    showFieldError(purchasePriceInput, 'Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
                     isValid = false;
                 }
-                if (!salePriceInput || !salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput.value) < 0) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
+                if (!salePriceInput || !salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
+                        .value) < 0) {
+                    showFieldError(salePriceInput, 'Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
                     isValid = false;
+                }
+
+                // Kiểm tra logic giá nhập và giá bán
+                if (purchasePriceInput && salePriceInput && purchasePriceInput.value && salePriceInput.value) {
+                    const purchasePrice = parseFloat(purchasePriceInput.value);
+                    const salePrice = parseFloat(salePriceInput.value);
+
+                    if (purchasePrice > salePrice) {
+                        showFieldError(purchasePriceInput, 'Giá nhập không được lớn hơn giá bán.');
+                        showFieldError(salePriceInput, 'Giá bán phải lớn hơn hoặc bằng giá nhập.');
+                        isValid = false;
+                    }
                 }
                 if (!stockInput || !stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
+                    showFieldError(stockInput, 'Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
                     isValid = false;
                 }
             } else if (productType === 'variant') {
-                const attributeSelects = document.querySelectorAll('#tab-attributes-variants .attribute-row .attribute-select');
+                const attributeSelects = document.querySelectorAll(
+                    '#tab-attributes-variants .attribute-row .attribute-select');
                 const variantItems = document.querySelectorAll('#variant-container > .variant-item');
 
                 // Check attributes
                 if (attributeSelects.length === 0) {
-                    e.preventDefault();
-                    alert('Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
+                    showFieldError(document.querySelector('#add-attribute-btn'),
+                        'Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
                     isValid = false;
                 } else {
-                attributeSelects.forEach((select, index) => {
+                    attributeSelects.forEach((select, index) => {
                         const nameInput = select.closest('.attribute-row').querySelector('.attribute-name');
                         const valuesInput = select.closest('.attribute-row').querySelector('.attribute-values');
-                    if (select.value === 'new' && (!nameInput.value || !nameInput.value.trim())) {
-                        e.preventDefault();
-                        alert(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
-                        isValid = false;
-                    }
-                    if (!valuesInput.value || !valuesInput.value.trim()) {
-                        e.preventDefault();
-                        alert(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
-                        isValid = false;
-                    }
-                });
+                        if (select.value === 'new' && (!nameInput.value || !nameInput.value.trim())) {
+                            showFieldError(nameInput, `Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+                            isValid = false;
+                        }
+                        if (!valuesInput.value || !valuesInput.value.trim()) {
+                            showFieldError(valuesInput,
+                                `Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
+                            isValid = false;
+                        }
+                    });
                 }
-
 
                 // Check variants
                 if (variantItems.length === 0) {
-                    e.preventDefault();
-                    alert('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
+                    showFieldError(document.querySelector('#generate-variants-btn'),
+                        'Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
                     isValid = false;
                 } else {
-                variantItems.forEach((item, index) => {
-                    const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
-                        const purchasePriceInput = item.querySelector(`input[name="variants[${index}][purchase_price]"]`);
-                    const salePriceInput = item.querySelector(`input[name="variants[${index}][sale_price]"]`);
-                    const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
-                    const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
+                    variantItems.forEach((item, index) => {
+                        const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
+                        const purchasePriceInput = item.querySelector(
+                            `input[name="variants[${index}][purchase_price]"]`);
+                        const salePriceInput = item.querySelector(`input[name="variants[${index}][sale_price]"]`);
+                        const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
+                        const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
 
-                    if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                        e.preventDefault();
-                        alert(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
-                        isValid = false;
-                    }
-                        if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(purchasePriceInput.value) < 0) {
-                        e.preventDefault();
-                        alert(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
-                        isValid = false;
-                    }
-                        if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput.value) < 0) {
-                        e.preventDefault();
-                        alert(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
-                        isValid = false;
-                    }
-                    if (!skuInput.value || !skuInput.value.trim()) {
-                        e.preventDefault();
-                        alert(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
-                        isValid = false;
-                    }
-                    if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                        e.preventDefault();
-                        alert(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
-                        isValid = false;
-                    }
-                });
-            }
+                        if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
+                            showFieldError(priceInput, `Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
+                            isValid = false;
+                        }
+                        if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
+                                purchasePriceInput.value) < 0) {
+                            showFieldError(purchasePriceInput,
+                                `Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
+                            isValid = false;
+                        }
+                        if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
+                            .value) < 0) {
+                            showFieldError(salePriceInput,
+                                `Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
+                            isValid = false;
+                        }
+
+                        // Kiểm tra logic giá nhập và giá bán cho biến thể
+                        if (purchasePriceInput.value && salePriceInput.value) {
+                            const purchasePrice = parseFloat(purchasePriceInput.value);
+                            const salePrice = parseFloat(salePriceInput.value);
+
+                            if (purchasePrice > salePrice) {
+                                showFieldError(purchasePriceInput,
+                                    `Giá nhập không được lớn hơn giá bán cho biến thể ${index + 1}.`);
+                                showFieldError(salePriceInput,
+                                    `Giá bán phải lớn hơn hoặc bằng giá nhập cho biến thể ${index + 1}.`);
+                                isValid = false;
+                            }
+                        }
+                        if (!skuInput.value || !skuInput.value.trim()) {
+                            showFieldError(skuInput, `Vui lòng nhập SKU cho biến thể ${index + 1}.`);
+                            isValid = false;
+                        }
+                        if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
+                            showFieldError(stockInput,
+                                `Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
+                            isValid = false;
+                        }
+                    });
+                }
             }
 
             if (isValid) {
                 tinymce.triggerSave();
                 debugLog('Form submission validated successfully');
+                // Nếu tất cả validation pass, submit form
+                productForm.submit();
+            } else {
+                // Scroll to first error
+                const firstError = document.querySelector('.field-error');
+                if (firstError) {
+                    firstError.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
             }
+        }
+
+        // Hàm hiển thị lỗi cho từng trường
+        function showFieldError(field, message) {
+            if (!field) return;
+
+            // Xóa lỗi cũ nếu có
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Thêm class lỗi cho field
+            field.classList.add('border-red-500');
+
+            // Tạo element hiển thị lỗi
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error text-sm text-red-500 mt-1';
+            errorDiv.textContent = message;
+
+            // Chèn lỗi sau field
+            field.parentNode.appendChild(errorDiv);
+        }
+
+        // Hàm xóa tất cả lỗi
+        function clearAllErrors() {
+            // Xóa tất cả thông báo lỗi
+            document.querySelectorAll('.field-error').forEach(error => error.remove());
+
+            // Xóa class lỗi khỏi tất cả fields
+            document.querySelectorAll('.border-red-500').forEach(field => {
+                field.classList.remove('border-red-500');
+            });
         }
 
         // Main initialization
@@ -1634,7 +1775,8 @@
             const generalDetailsTabButton = document.querySelector('.tab-button[data-tab="general-details"]');
             const pricingInventoryTabButton = document.querySelector('.tab-button[data-tab="pricing-inventory"]');
             const shippingTabButton = document.querySelector('.tab-button[data-tab="shipping"]');
-            const attributesVariantsTabButton = document.querySelector('.tab-button[data-tab="attributes-variants"]');
+            const attributesVariantsTabButton = document.querySelector(
+                '.tab-button[data-tab="attributes-variants"]');
 
             const tabGeneralDetails = document.getElementById('tab-general-details');
             const tabPricingInventory = document.getElementById('tab-pricing-inventory');
@@ -1655,25 +1797,23 @@
                 pricingInventoryTabButton.classList.remove('active');
                 shippingTabButton.classList.remove('active');
                 attributesVariantsTabButton.classList.remove('active');
-                
-                // Helper to manage required attributes and disabled state
-                function setFieldsState(elements, isRequired, isDisabled) {
+
+                // Helper to manage disabled state (no more required attributes)
+                function setFieldsState(elements, isDisabled) {
                     elements.forEach(el => {
-                        if (el.hasAttribute('data-original-required') && isRequired) {
-                            el.setAttribute('required', 'required');
-                        } else {
-                            el.removeAttribute('required');
-                        }
                         el.disabled = isDisabled;
                     });
                 }
 
                 // Get all relevant inputs within tabs
-                const generalDetailsInputs = document.querySelectorAll('#tab-general-details input:not([type="hidden"]), #tab-general-details select, #tab-general-details textarea');
-                const pricingInputs = document.querySelectorAll('#tab-pricing-inventory input:not([type="hidden"])');
+                const generalDetailsInputs = document.querySelectorAll(
+                    '#tab-general-details input:not([type="hidden"]), #tab-general-details select, #tab-general-details textarea'
+                    );
+                const pricingInputs = document.querySelectorAll(
+                '#tab-pricing-inventory input:not([type="hidden"])');
                 const shippingInputs = document.querySelectorAll('#tab-shipping input:not([type="hidden"])');
-                const attributesVariantsInputs = document.querySelectorAll('#tab-attributes-variants input:not([type="hidden"]), #tab-attributes-variants select');
-
+                const attributesVariantsInputs = document.querySelectorAll(
+                    '#tab-attributes-variants input:not([type="hidden"]), #tab-attributes-variants select');
 
                 if (selectedProductType === 'variant') {
                     // Show General Details and Attributes & Variants tab content and buttons
@@ -1682,11 +1822,10 @@
                     tabAttributesVariants.classList.remove('hidden');
                     attributesVariantsTabButton.style.display = '';
 
-
-                    // Disable/unrequire simple product specific fields
-                    setFieldsState(pricingInputs, false, true);
-                    setFieldsState(shippingInputs, false, true);
-                    setFieldsState(attributesVariantsInputs, true, false); // Enable/require variant fields
+                    // Disable simple product specific fields
+                    setFieldsState(pricingInputs, true);
+                    setFieldsState(shippingInputs, true);
+                    setFieldsState(attributesVariantsInputs, false); // Enable variant fields
 
                     // Hide simple product specific tab buttons
                     pricingInventoryTabButton.style.display = 'none';
@@ -1698,24 +1837,23 @@
                     generalDetailsTabButton.classList.add('active'); // Make general-details the default active tab
                     tabPricingInventory.classList.remove('hidden');
                     pricingInventoryTabButton.style.display = '';
-                    tabShipping.classList.remove('hidden'); 
+                    tabShipping.classList.remove('hidden');
                     shippingTabButton.style.display = '';
 
-                    // Enable/require simple fields, disable/unrequire variant fields
-                    setFieldsState(pricingInputs, true, false);
-                    setFieldsState(shippingInputs, true, false);
-                    setFieldsState(attributesVariantsInputs, false, true); // Disable/unrequire variant fields
+                    // Enable simple fields, disable variant fields
+                    setFieldsState(pricingInputs, false);
+                    setFieldsState(shippingInputs, false);
+                    setFieldsState(attributesVariantsInputs, true); // Disable variant fields
 
-                     // Hide attributes-variants button in sidebar for simple
+                    // Hide attributes-variants button in sidebar for simple
                     attributesVariantsTabButton.style.display = 'none';
                 }
-                // Ensure main SKU (outside tabs) is always required and enabled
-                document.querySelector('input[name="sku"]').required = true;
+                // Ensure main SKU (outside tabs) is always enabled
                 document.querySelector('input[name="sku"]').disabled = false;
             }
 
             productTypeRadios.forEach(radio => radio.addEventListener('change', toggleProductTypeSections));
-            
+
             // Initial call on load
             toggleProductTypeSections();
 
@@ -1725,15 +1863,17 @@
 
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    const selectedProductType = document.querySelector('input[name="product_type"]:checked').value;
+                    const selectedProductType = document.querySelector(
+                        'input[name="product_type"]:checked').value;
                     const targetTabId = button.dataset.tab;
                     let shouldSwitch = true;
 
                     // Prevent switching to a tab not relevant for the current product type
                     if (selectedProductType === 'simple' && targetTabId === 'attributes-variants') {
-                        shouldSwitch = false; 
+                        shouldSwitch = false;
                     }
-                    if (selectedProductType === 'variant' && (targetTabId === 'pricing-inventory' || targetTabId === 'shipping')) {
+                    if (selectedProductType === 'variant' && (targetTabId === 'pricing-inventory' ||
+                            targetTabId === 'shipping')) {
                         // Allow switching, but the fields will remain disabled/unrequired by toggleProductTypeSections
                         // This case is already handled by setFieldsState, so just allow the tab switch.
                     }
@@ -1744,34 +1884,465 @@
 
                         button.classList.add('active');
                         document.getElementById(`tab-${targetTabId}`).classList.remove('hidden');
-                } else {
+                    } else {
                         // If switch is prevented, activate the currently displayed tab button
-                        const currentlyDisplayedTab = document.querySelector('.tab-content:not(.hidden)');
+                        const currentlyDisplayedTab = document.querySelector(
+                            '.tab-content:not(.hidden)');
                         if (currentlyDisplayedTab) {
-                             document.querySelector(`.tab-button[data-tab="${currentlyDisplayedTab.id.replace('tab-', '')}"]`).classList.add('active');
+                            document.querySelector(
+                                `.tab-button[data-tab="${currentlyDisplayedTab.id.replace('tab-', '')}"]`
+                                ).classList.add('active');
                         }
                     }
                 });
             });
 
             // Store original required state for inputs inside tabs, so we can re-apply/remove dynamically
-            document.querySelectorAll('#tab-general-details input, #tab-general-details select, #tab-general-details textarea, #tab-pricing-inventory input, #tab-shipping input, #tab-attributes-variants input, #tab-attributes-variants select, #tab-attributes-variants textarea').forEach(input => {
-                        if (input.required) {
-                            input.setAttribute('data-original-required', 'true');
+            document.querySelectorAll(
+                '#tab-general-details input, #tab-general-details select, #tab-general-details textarea, #tab-pricing-inventory input, #tab-shipping input, #tab-attributes-variants input, #tab-attributes-variants select, #tab-attributes-variants textarea'
+                ).forEach(input => {
+                if (input.required) {
+                    input.setAttribute('data-original-required', 'true');
                 }
             });
 
             // Re-call toggleProductTypeSections after `data-original-required` is set to ensure correct initial state
             toggleProductTypeSections();
 
+            // Thêm validation real-time cho các trường quan trọng
+            addRealTimeValidation();
+
+            // Khôi phục dữ liệu cũ nếu có lỗi validation
+            restoreFormData();
+
+            // Thêm validation cho logic giá nhập và giá bán khi load trang
+            setTimeout(() => {
+                validatePriceLogic();
+                validateVariantPriceLogic();
+            }, 200);
+
         });
+
+        // Hàm thêm validation real-time
+        function addRealTimeValidation() {
+            // Validation cho tên sản phẩm
+            const nameInput = document.querySelector('input[name="name"]');
+            const nameCharCount = document.getElementById('name-char-count');
+            
+            if (nameInput) {
+                let nameCheckTimeout;
+                
+                // Cập nhật character counter
+                const updateCharCount = () => {
+                    const length = nameInput.value.length;
+                    nameCharCount.textContent = length;
+                    
+                    // Thay đổi màu khi gần đạt giới hạn
+                    if (length >= 90) {
+                        nameCharCount.classList.add('text-red-500');
+                        nameCharCount.classList.remove('text-gray-400');
+                    } else if (length >= 80) {
+                        nameCharCount.classList.add('text-yellow-500');
+                        nameCharCount.classList.remove('text-gray-400', 'text-red-500');
+                    } else {
+                        nameCharCount.classList.remove('text-yellow-500', 'text-red-500');
+                        nameCharCount.classList.add('text-gray-400');
+                    }
+                };
+                
+                // Cập nhật counter khi load trang
+                updateCharCount();
+                
+                nameInput.addEventListener('input', function() {
+                    // Cập nhật character counter
+                    updateCharCount();
+                    
+                    // Clear timeout cũ
+                    clearTimeout(nameCheckTimeout);
+                    
+                    // Clear error nếu có
+                    clearFieldError(this);
+                    
+                    // Set timeout mới để kiểm tra sau 500ms
+                    nameCheckTimeout = setTimeout(() => {
+                        checkProductName(this.value.trim());
+                    }, 500);
+                });
+                
+                nameInput.addEventListener('blur', function() {
+                    if (!this.value.trim()) {
+                        showFieldError(this, 'Vui lòng nhập tên sản phẩm.');
+                    } else if (this.value.trim().length > 100) {
+                        showFieldError(this, 'Tên sản phẩm không được vượt quá 100 ký tự.');
+                    } else {
+                        // Kiểm tra ngay khi blur
+                        checkProductName(this.value.trim());
+                    }
+                });
+            }
+
+            // Validation cho SKU
+            const skuInput = document.querySelector('input[name="sku"]');
+            if (skuInput) {
+                skuInput.addEventListener('blur', function() {
+                    if (!this.value.trim()) {
+                        showFieldError(this, 'Vui lòng nhập mã SKU.');
+                    } else {
+                        clearFieldError(this);
+                    }
+                });
+            }
+
+            // Validation cho giá sản phẩm đơn
+            const priceInputs = document.querySelectorAll('#tab-pricing-inventory input[type="number"]');
+            priceInputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value && (isNaN(this.value) || parseFloat(this.value) < 0)) {
+                        showFieldError(this, 'Vui lòng nhập giá trị hợp lệ (>= 0).');
+                    } else if (this.value) {
+                        clearFieldError(this);
+                    }
+
+                    // Kiểm tra logic giá nhập và giá bán
+                    validatePriceLogic();
+                });
+            });
+
+            // Thêm validation cho giá biến thể
+            document.addEventListener('blur', function(e) {
+                if (e.target.name && e.target.name.includes('variants') && e.target.type === 'number') {
+                    if (e.target.value && (isNaN(e.target.value) || parseFloat(e.target.value) < 0)) {
+                        showFieldError(e.target, 'Vui lòng nhập giá trị hợp lệ (>= 0).');
+                    } else if (e.target.value) {
+                        clearFieldError(e.target);
+                    }
+
+                    // Kiểm tra logic giá nhập và giá bán cho biến thể
+                    validateVariantPriceLogic();
+                }
+            }, true);
+
+            // Validation cho thuộc tính
+            document.addEventListener('blur', function(e) {
+                if (e.target.classList.contains('attribute-values')) {
+                    if (!e.target.value.trim()) {
+                        showFieldError(e.target, 'Vui lòng nhập giá trị thuộc tính.');
+                    } else {
+                        clearFieldError(e.target);
+                    }
+                }
+            }, true);
+
+            // Validation cho SKU biến thể
+            document.addEventListener('blur', function(e) {
+                if (e.target.name && e.target.name.includes('variants') && e.target.name.includes('[sku]')) {
+                    if (!e.target.value.trim()) {
+                        showFieldError(e.target, 'Vui lòng nhập SKU cho biến thể.');
+                    } else {
+                        clearFieldError(e.target);
+                    }
+                }
+            }, true);
+        }
+
+        // Hàm xóa lỗi cho một trường cụ thể
+        function clearFieldError(field) {
+            if (!field) return;
+
+            // Xóa class lỗi
+            field.classList.remove('border-red-500');
+
+            // Xóa thông báo lỗi
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+        }
+
+        // Hàm validation logic giá nhập và giá bán cho sản phẩm đơn
+        function validatePriceLogic() {
+            const purchasePriceInput = document.querySelector('#tab-pricing-inventory input[name="purchase_price"]');
+            const salePriceInput = document.querySelector('#tab-pricing-inventory input[name="sale_price"]');
+
+            if (purchasePriceInput && salePriceInput && purchasePriceInput.value && salePriceInput.value) {
+                const purchasePrice = parseFloat(purchasePriceInput.value);
+                const salePrice = parseFloat(salePriceInput.value);
+
+                if (purchasePrice > salePrice) {
+                    showFieldError(purchasePriceInput, 'Giá nhập không được lớn hơn giá bán.');
+                    showFieldError(salePriceInput, 'Giá bán phải lớn hơn hoặc bằng giá nhập.');
+                } else {
+                    clearFieldError(purchasePriceInput);
+                    clearFieldError(salePriceInput);
+                }
+            }
+        }
+
+        // Hàm validation logic giá nhập và giá bán cho biến thể
+        function validateVariantPriceLogic() {
+            const variantItems = document.querySelectorAll('#variant-container .variant-item');
+
+            variantItems.forEach((variant, index) => {
+                const purchasePriceInput = variant.querySelector(
+                `input[name="variants[${index}][purchase_price]"]`);
+                const salePriceInput = variant.querySelector(`input[name="variants[${index}][sale_price]"]`);
+
+                if (purchasePriceInput && salePriceInput && purchasePriceInput.value && salePriceInput.value) {
+                    const purchasePrice = parseFloat(purchasePriceInput.value);
+                    const salePrice = parseFloat(salePriceInput.value);
+
+                    if (purchasePrice > salePrice) {
+                        showFieldError(purchasePriceInput, 'Giá nhập không được lớn hơn giá bán.');
+                        showFieldError(salePriceInput, 'Giá bán phải lớn hơn hoặc bằng giá nhập.');
+                    } else {
+                        clearFieldError(purchasePriceInput);
+                        clearFieldError(salePriceInput);
+                    }
+                }
+            });
+        }
+
+                // Hàm kiểm tra tên sản phẩm đã tồn tại
+        function checkProductName(name) {
+            if (!name || name.length < 2) {
+                return; // Không kiểm tra nếu tên quá ngắn
+            }
+
+            const nameInput = document.querySelector('input[name="name"]');
+            const nameContainer = nameInput.parentNode;
+            
+            // Tạo hoặc hiển thị spinner
+            let spinner = nameContainer.querySelector('.name-check-spinner');
+            if (!spinner) {
+                spinner = document.createElement('div');
+                spinner.className = 'name-check-spinner';
+                spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                nameContainer.appendChild(spinner);
+            }
+            spinner.style.display = 'block';
+            
+            fetch('{{ route("seller.products.check-name") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    name: name
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                spinner.style.display = 'none';
+                if (data.exists) {
+                    showFieldError(nameInput, data.message);
+                } else {
+                    clearFieldError(nameInput);
+                }
+            })
+            .catch(error => {
+                spinner.style.display = 'none';
+                console.error('Error checking product name:', error);
+            });
+        }
+
+        // Hàm khôi phục dữ liệu form từ session storage (nếu có)
+        function restoreFormData() {
+            // Kiểm tra xem có lỗi validation không
+            const hasErrors = document.querySelector('.bg-red-100');
+            if (hasErrors) {
+                // Nếu có lỗi, form sẽ tự động giữ dữ liệu cũ thông qua Laravel's old() helper
+                console.log('Form có lỗi validation, dữ liệu cũ đã được khôi phục');
+                
+                // Khôi phục trạng thái tab và loại sản phẩm
+                restoreProductTypeState();
+                
+                // Khôi phục dữ liệu biến thể nếu có
+                restoreVariantData();
+            }
+        }
+
+        // Hàm khôi phục trạng thái loại sản phẩm
+        function restoreProductTypeState() {
+            const productType = '{{ old('product_type', 'simple') }}';
+            const radioButton = document.querySelector(`input[name="product_type"][value="${productType}"]`);
+            if (radioButton) {
+                radioButton.checked = true;
+                // Trigger change event để cập nhật UI
+                radioButton.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // Hàm khôi phục dữ liệu biến thể
+        function restoreVariantData() {
+            const oldVariants = @json(old('variants', []));
+            const oldAttributes = @json(old('attributes', []));
+
+            if (oldVariants && oldVariants.length > 0) {
+                // Nếu có dữ liệu biến thể cũ, tạo lại biến thể
+                setTimeout(() => {
+                    generateVariantsFromOldData(oldVariants);
+                }, 100);
+            }
+
+            // Khôi phục dữ liệu thuộc tính nếu có
+            if (oldAttributes && oldAttributes.length > 0) {
+                restoreAttributeData(oldAttributes);
+            }
+        }
+
+        // Hàm khôi phục dữ liệu thuộc tính
+        function restoreAttributeData(oldAttributes) {
+            const attributeContainer = document.getElementById('attribute-container');
+            if (!attributeContainer) return;
+
+            // Xóa tất cả thuộc tính hiện tại
+            attributeContainer.innerHTML = '';
+
+            oldAttributes.forEach((attribute, index) => {
+                const attributeRow = document.createElement('div');
+                attributeRow.classList.add('flex', 'items-center', 'gap-4', 'mb-2', 'attribute-row');
+
+                let attributeHTML = `
+                    <select name="attributes[${index}][id]" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select">
+                        <option value="" disabled>Chọn hoặc nhập thuộc tính</option>
+                        <option value="new" ${attribute.id === 'new' ? 'selected' : ''}>Tạo thuộc tính mới</option>
+                        ${window.allAttributes
+                            .filter(attr => attr.id && attr.name)
+                            .map(attr => `<option value="${attr.id}" ${attribute.id == attr.id ? 'selected' : ''}>${attr.name}</option>`)
+                            .join('')}
+                    </select>
+                    <input type="text" name="attributes[${index}][name]" value="${attribute.name || ''}" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name ${attribute.id === 'new' ? '' : 'hidden'}" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
+                    <input type="text" name="attributes[${index}][values]" value="${attribute.values || ''}" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)">
+                    <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
+                `;
+
+                attributeRow.innerHTML = attributeHTML;
+                attributeContainer.appendChild(attributeRow);
+
+                // Thêm event listeners
+                const select = attributeRow.querySelector('.attribute-select');
+                select.addEventListener('change', function() {
+                    updateAttributeValues(this);
+                });
+
+                attributeRow.querySelector('.remove-attribute').addEventListener('click', () => {
+                    attributeRow.remove();
+                    updateAttributeIndices();
+                });
+            });
+
+            // Cập nhật index cho thuộc tính
+            attributeIndex = oldAttributes.length;
+        }
+
+        // Hàm tạo biến thể từ dữ liệu cũ
+        function generateVariantsFromOldData(oldVariants) {
+            const variantContainer = document.getElementById('variant-container');
+            if (!variantContainer) return;
+
+            variantContainer.innerHTML = '';
+
+            oldVariants.forEach((variant, index) => {
+                const variantDiv = document.createElement('div');
+                variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white',
+                    'relative', 'variant-item');
+
+                let variantHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h5 class="text-lg font-semibold">Biến thể ${index + 1}: ${variant.name || 'Biến thể'}</h5>
+                        <div class="flex space-x-3">
+                            <button type="button" class="text-red-500 hover:text-red-600 remove-variant">Xóa</button>
+                            <button type="button" class="toggle-variants" data-index="${index}" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                                <svg class="toggle-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="variant-content transition-all duration-300 ease-in-out">
+                        <input type="hidden" name="variants[${index}][index]" value="${index}">
+                        <input type="hidden" name="variants[${index}][name]" value="${variant.name || ''}">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá gốc</label>
+                                <input type="number" name="variants[${index}][price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá gốc" value="${variant.price || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá nhập</label>
+                                <input type="number" name="variants[${index}][purchase_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá nhập" value="${variant.purchase_price || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Giá bán</label>
+                                <input type="number" name="variants[${index}][sale_price]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập giá bán" value="${variant.sale_price || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">SKU</label>
+                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" value="${variant.sku || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
+                                <input type="number" name="variants[${index}][stock_total]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập số lượng" value="${variant.stock_total || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều dài (inch)</label>
+                                <input type="number" name="variants[${index}][length]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều dài" value="${variant.length || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều rộng (inch)</label>
+                                <input type="number" name="variants[${index}][width]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều rộng" value="${variant.width || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Chiều cao (inch)</label>
+                                <input type="number" name="variants[${index}][height]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Chiều cao" value="${variant.height || ''}">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">Trọng lượng (kg)</label>
+                                <input type="number" name="variants[${index}][weight]" step="0.01" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Trọng lượng" value="${variant.weight || ''}">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
+                            ${variant.attributes ? variant.attributes.map((attr, attrIndex) => `
+                                    <div class="flex items-center gap-4 mb-2">
+                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attr.name || ''}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${attr.value || ''}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                    </div>
+                                `).join('') : ''}
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
+                            <input type="file" name="variant_images[${index}][]"
+                                multiple
+                                class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                accept="image/*"
+                                onchange="previewVariantImage(event, ${index})">
+                            <div id="preview-images-${index}"
+                                class="mt-2 flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                `;
+                variantDiv.innerHTML = variantHTML;
+                variantContainer.appendChild(variantDiv);
+
+                variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
+                    variantDiv.remove();
+                    updateVariantIndices();
+                });
+            });
+
+            initializeToggleButtons();
+            updateVariantIndices();
+        }
     </script>
 @endpush
 @push('styles')
     <style>
         .tab-button.active {
-            background-color: #e0f2fe; /* Light blue for active tab */
-            color: #2563eb; /* Darker blue text */
+            background-color: #e0f2fe;
+            /* Light blue for active tab */
+            color: #2563eb;
+            /* Darker blue text */
             font-weight: 600;
         }
 
@@ -1782,11 +2353,59 @@
         .tab-content.hidden {
             display: none;
         }
+
         .sticky {
-            position: -webkit-sticky; /* Safari */
+            position: -webkit-sticky;
+            /* Safari */
             position: sticky;
-            top: 1rem; /* Adjust as needed */
-            align-self: flex-start; /* For flex container parent */
+            top: 1rem;
+            /* Adjust as needed */
+            align-self: flex-start;
+            /* For flex container parent */
+        }
+
+        /* Styles cho validation errors */
+        .field-error {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .border-red-500 {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px #ef4444;
+        }
+
+        .border-red-500:focus {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Loading state cho kiểm tra tên sản phẩm */
+        .name-check-spinner {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 14px;
+            display: none;
+            z-index: 10;
+        }
+
+        /* Đảm bảo container có position relative */
+        .mb-4 {
+            position: relative;
         }
     </style>
 @endpush

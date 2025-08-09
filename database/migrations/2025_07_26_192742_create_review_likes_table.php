@@ -8,11 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('review_likes', function (Blueprint $table) {
-            $table->foreignId('order_review_id')->constrained('order_reviews')->onDelete('cascade');
-            $table->unique(['user_id', 'order_review_id']);
+        Schema::create('review_likes', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_review_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
         });
     }
+
 
     public function down(): void
     {

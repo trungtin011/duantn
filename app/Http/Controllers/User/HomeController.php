@@ -22,6 +22,9 @@ use App\Models\PointTransaction;
 use App\Models\OrderReview;
 use App\Models\Post;
 use App\Models\Combo;
+use App\Models\Shop;
+use App\Models\AdsCampaign;
+use App\Models\AdsCampaignItem;
 
 class HomeController extends Controller
 {
@@ -91,24 +94,26 @@ class HomeController extends Controller
             ->orderByDesc('updated_at')
             ->get();
 
-        // Sản phẩm trending (bán nhiều nhất)
+        // Sản phẩm được xem nhiều nhất
         $trendingProducts = Product::with(['defaultImage', 'categories', 'variants'])
-            ->orderByDesc('sold_quantity')
+            ->whereHas('viewHistory')
+            ->withCount('viewHistory')
+            ->orderByDesc('view_history_count')
             ->where('status', 'active')
             ->take(10)
             ->get();
 
         // Sản phẩm đánh giá cao nhất
-        $topRatedProducts = Product::with(['defaultImage', 'reviews', 'categories', 'variants'])
-            ->withAvg('reviews', 'rating')
-            ->whereHas('reviews')
-            ->orderByDesc('reviews_avg_rating')
+        $topRatedProducts = Product::with(['defaultImage', 'orderReviews', 'categories', 'variants'])
+            ->withAvg('orderReviews', 'rating')
+            ->whereHas('orderReviews')
+            ->orderByDesc('order_reviews_avg_rating')
             ->where('status', 'active')
             ->take(10)
             ->get();
 
         // Flash sale
-        $flashSaleProducts = Product::with(['defaultImage', 'reviews', 'categories', 'variants'])
+        $flashSaleProducts = Product::with(['defaultImage', 'orderReviews', 'categories', 'variants'])
             ->whereNotNull('flash_sale_price')
             ->where('flash_sale_end_at', '>', Carbon::now())
             ->where('status', 'active')
@@ -141,7 +146,7 @@ class HomeController extends Controller
         });
 
         // Sản phẩm mới (tạo trong vòng 7 ngày gần nhất)
-        $newProducts = Product::with(['defaultImage', 'categories', 'reviews', 'variants'])
+        $newProducts = Product::with(['defaultImage', 'categories', 'orderReviews', 'variants'])
             ->where('created_at', '>=', Carbon::now()->subDays(7))
             ->where('status', 'active')
             ->orderByDesc('created_at')
@@ -164,8 +169,79 @@ class HomeController extends Controller
             ->orderByDesc('created_at')
             ->take(8)
             ->get();
+            
+        // Lấy sản phẩm quảng cáo từ ads_campaigns
+        $advertisedProducts = AdsCampaignItem::with(['product.defaultImage', 'product.shop', 'adsCampaign.shop'])
+            ->whereHas('adsCampaign', function ($query) {
+                $query->where('status', 'active')
+                      ->where('start_date', '<=', now())
+                      ->where('end_date', '>=', now());
+            })
+            ->whereHas('product', function ($query) {
+                $query->where('status', 'active');
+            })
+            ->inRandomOrder()
+            ->take(6)
+            ->get();
+        // Lấy và tính toán xếp hạng shop
+        $rankingShops = Shop::where('shop_status', 'active')
+            ->where(function ($query) {
+                $query->where('total_products', '>', 0);
+            })
+            ->withCount('followers') // Thêm eager loading để đếm followers từ bảng shop_followers
+            ->withCount('orderReviews') // Thêm eager loading để đếm reviews từ bảng order_reviews
+            ->withAvg('orderReviews', 'rating') // Thêm eager loading để tính trung bình rating từ bảng order_reviews
+            ->withSum('products', 'sold_quantity') // Thêm tổng số lượng sản phẩm đã bán
+            ->orderBy('order_reviews_avg_rating', 'desc')
+            ->orderBy('total_sales', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function ($shop) {
+                // Sử dụng rating thực tế từ bảng order_reviews
+                $actualRating = $shop->order_reviews_avg_rating ?? 0;
+                $actualReviewsCount = $shop->order_reviews_count ?? 0;
+
+                $ratingScore = $actualRating / 5;
+                $salesScore = min($shop->total_sales / 1000000000, 1);
+                $productsScore = min($shop->total_products / 100, 1);
+                // Sử dụng số lượng followers thực tế từ bảng shop_followers
+                $actualFollowers = $shop->followers_count;
+                $followersScore = min($actualFollowers / 1000, 1);
+
+                $totalScore =
+                    ($ratingScore * 0.4) +
+                    ($salesScore * 0.3) +
+                    ($productsScore * 0.2) +
+                    ($followersScore * 0.1);
+
+                if ($totalScore >= 0.8) {
+                    $shop->tier = 'diamond';
+                    $shop->tier_icon = 'diamond';
+                } elseif ($totalScore >= 0.6) {
+                    $shop->tier = 'gold';
+                    $shop->tier_icon = 'medal';
+                } elseif ($totalScore >= 0.4) {
+                    $shop->tier = 'silver';
+                    $shop->tier_icon = 'ribbon';
+                } else {
+                    $shop->tier = 'bronze';
+                    $shop->tier_icon = 'shield';
+                }
+
+                $shop->total_score = round($totalScore * 100, 1);
+                $shop->formatted_sales = number_format($shop->total_sales / 1000000, 1) . 'M';
+                // Gán số lượng followers thực tế
+                $shop->total_followers = $actualFollowers;
+                // Gán rating thực tế từ order_reviews
+                $shop->shop_rating = round($actualRating, 1);
+                $shop->total_reviews = $actualReviewsCount;
+                // Gán tổng số lượng sản phẩm đã bán
+                $shop->total_products_sold = $shop->products_sum_sold_quantity ?? 0;
+                return $shop;
+            });
 
         return view('user.home', compact(
+            'rankingShops',
             'parentCategory',
             'subCategories',
             'fashionSub',
@@ -184,7 +260,8 @@ class HomeController extends Controller
             'testimonials',
             'blogs',
             'user',
-            'comboProducts'
+            'comboProducts',
+            'advertisedProducts'
         ));
     }
 }

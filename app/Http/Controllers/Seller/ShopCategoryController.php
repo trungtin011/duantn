@@ -14,21 +14,39 @@ class ShopCategoryController extends Controller
     {
         $shop = Auth::user()->shop;
         $categories = $shop->shopCategories()->with('products')->paginate(10);
+        $products = $shop->products;
+        $selectedProducts = []; // danh mục mới chưa có sản phẩm chọn
 
-        return view('seller.categories.index', compact('categories'));
+        return view('seller.categories.index', compact('categories', 'products', 'selectedProducts'));
+    }
+
+    public function create()
+    {
+        $shop = Auth::user()->shop;
+        $products = $shop->products;
+        $selectedProducts = []; // danh mục mới chưa có sản phẩm
+
+        return view('seller.categories.create', compact('products', 'selectedProducts'));
     }
 
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255']);
-
-        Auth::user()->shop->shopCategories()->create([
-            'name' => $request->name,
-            'shop_id' => Auth::user()->shop->id,
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'product_ids' => 'array',
         ]);
+
+        $shop = Auth::user()->shop;
+
+        $category = $shop->shopCategories()->create([
+            'name' => $request->name,
+        ]);
+
+        $category->products()->sync($request->product_ids ?? []);
 
         return redirect()->route('seller.categories.index')->with('success', 'Tạo danh mục thành công');
     }
+
 
     public function edit(ShopCategory $category)
     {

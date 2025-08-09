@@ -7,8 +7,9 @@
 
 <!-- Custom style -->
 @push('styles')
-    @vite(['resources/css/user/style-prefix.css', 'resources/css/user/style-home.css'])
+    @vite(['resources/css/user/style-home.css'])
     <style>
+        /* Custom styles for enhanced shop ranking */
         .quick-view-modal {
             display: none;
             position: fixed;
@@ -17,24 +18,182 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
         }
 
         .quick-view-modal.active {
             display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        .notification-toast.closed {
-            display: none;
-            /* Hoặc các hiệu ứng khác */
+        /* Animation for shop ranking cards */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shop-ranking-card {
+            animation: slideInUp 0.3s ease-out;
+        }
+
+
+
+        /* Responsive fixes for shop ranking cards */
+        @media (max-width: 640px) {
+            .shop-ranking-card {
+                padding: 0.75rem;
+            }
+
+            .shop-ranking-card .grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .shop-ranking-card .text-xs {
+                font-size: 0.625rem;
+            }
+        }
+
+        /* Ensure ranking badges don't overflow */
+        .ranking-badge {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        /* Hiệu ứng lửa cho top 1 */
+        .flame-effect {
+            background: linear-gradient(45deg,
+                    transparent 20%,
+                    rgba(255, 107, 53, 0.7) 35%,
+                    rgba(239, 50, 72, 0.9) 50%,
+                    rgba(255, 107, 53, 0.7) 65%,
+                    transparent 80%);
+            animation: flame-glow 1.5s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes flame-glow {
+            0% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1.08);
+            }
+        }
+
+
+
+        /* Hiệu ứng lửa thực tế */
+        .flame-particle {
+            animation: flame-flicker 1.2s ease-in-out infinite alternate;
+        }
+
+        .flame-particle:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .flame-particle:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .flame-particle:nth-child(4) {
+            animation-delay: 0.9s;
+        }
+
+        @keyframes flame-flicker {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.8) translateY(0px);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.1) translateY(-2px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(-1px);
+            }
+        }
+
+        /* Shop ranking container */
+        .shop-ranking-container {
+            padding-top: 0.5rem;
+        }
+
+        /* Đồng nhất chiều cao tên sản phẩm */
+        .showcase-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 3rem;
+            line-height: 1.4;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .product-minimal .showcase-title {
+            min-height: 2.5rem;
+        }
+
+
+
+        /* Responsive shop cards */
+        @media (max-width: 768px) {
+            .shop-ranking-container .grid {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 0.75rem;
+            }
+
+            .shop-ranking-container .shop-ranking-card {
+                width: 100%;
+                min-width: unset;
+                max-width: unset;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .shop-ranking-container .grid {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 1rem;
+            }
+
+            .shop-ranking-container .shop-ranking-card {
+                width: 100%;
+                min-width: unset;
+                max-width: unset;
+            }
+        }
+
+        .shop-title {
+            -webkit-text-stroke-width: 0.5px;
+            -webkit-text-stroke-color: rgb(0, 0, 0);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
         }
     </style>
 @endpush
 
 @section('content')
-    {{-- <div class="overlay" data-overlay></div>
+    <div class="overlay" data-overlay></div>
     <div class="modal" data-modal>
         <div class="modal-close-overlay" data-modal-overlay></div>
         <div class="modal-content">
@@ -47,7 +206,7 @@
             <div class="newsletter">
                 <form action="#">
                     <div class="newsletter-header">
-                        <h3 class="newsletter-title">Đăng ký nhận tin.</h3>
+                        <h3 class="newsletter-title">Đăng ký nhận tin</h3>
                         <p class="newsletter-desc">
                             Hãy đăng ký <b>Anon</b> để nhận thông tin sản phẩm mới và cập nhật khuyến mãi.
                         </p>
@@ -57,7 +216,7 @@
                 </form>
             </div>
         </div>
-    </div> --}}
+    </div>
 
     @foreach ($purchasedProducts as $product)
         <div class="notification-toast" data-toast>
@@ -83,12 +242,7 @@
         <nav class="desktop-navigation-menu">
             <div class="container">
                 <ul class="desktop-menu-category-list">
-                    {{-- <li class="menu-category">
-                        <a href="#" class="menu-title">Trang chủ</a>
-                    </li> --}}
-                    <li class="menu-category">
-                        <a href="{{ route('combo.index') }}" class="menu-title">Combo</a>
-                    </li>
+                    <li class="menu-category"></li>
                     <li class="menu-category">
                         <a href="#" class="menu-title">Danh mục</a>
                         <div class="dropdown-panel">
@@ -252,11 +406,11 @@
             </div>
             <ul class="mobile-menu-category-list">
                 <li class="menu-category">
-                    <a href="#" class="menu-title">Home</a>
+                    <a href="#" class="menu-title">Trang chủ</a>
                 </li>
                 <li class="menu-category">
                     <button class="accordion-menu" data-accordion-btn>
-                        <p class="menu-title">Men's</p>
+                        <p class="menu-title">Nam</p>
                         <div>
                             <ion-icon name="add-outline" class="add-icon"></ion-icon>
                             <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
@@ -264,22 +418,22 @@
                     </button>
                     <ul class="submenu-category-list" data-accordion>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Shirt</a>
+                            <a href="#" class="submenu-title">Áo sơ mi</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Shorts & Jeans</a>
+                            <a href="#" class="submenu-title">Quần short & Jeans</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Safety Shoes</a>
+                            <a href="#" class="submenu-title">Giày bảo hộ</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Wallet</a>
+                            <a href="#" class="submenu-title">Ví</a>
                         </li>
                     </ul>
                 </li>
                 <li class="menu-category">
                     <button class="accordion-menu" data-accordion-btn>
-                        <p class="menu-title">Women's</p>
+                        <p class="menu-title">Nữ</p>
                         <div>
                             <ion-icon name="add-outline" class="add-icon"></ion-icon>
                             <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
@@ -287,22 +441,22 @@
                     </button>
                     <ul class="submenu-category-list" data-accordion>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Dress & Frock</a>
+                            <a href="#" class="submenu-title">Váy & Đầm</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Earrings</a>
+                            <a href="#" class="submenu-title">Khuyên tai</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Necklace</a>
+                            <a href="#" class="submenu-title">Dây chuyền</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Makeup Kit</a>
+                            <a href="#" class="submenu-title">Bộ trang điểm</a>
                         </li>
                     </ul>
                 </li>
                 <li class="menu-category">
                     <button class="accordion-menu" data-accordion-btn>
-                        <p class="menu-title">Jewelry</p>
+                        <p class="menu-title">Trang sức</p>
                         <div>
                             <ion-icon name="add-outline" class="add-icon"></ion-icon>
                             <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
@@ -310,22 +464,22 @@
                     </button>
                     <ul class="submenu-category-list" data-accordion>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Earrings</a>
+                            <a href="#" class="submenu-title">Khuyên tai</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Couple Rings</a>
+                            <a href="#" class="submenu-title">Nhẫn cặp</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Necklace</a>
+                            <a href="#" class="submenu-title">Dây chuyền</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Bracelets</a>
+                            <a href="#" class="submenu-title">Vòng tay</a>
                         </li>
                     </ul>
                 </li>
                 <li class="menu-category">
                     <button class="accordion-menu" data-accordion-btn>
-                        <p class="menu-title">Perfume</p>
+                        <p class="menu-title">Nước hoa</p>
                         <div>
                             <ion-icon name="add-outline" class="add-icon"></ion-icon>
                             <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
@@ -333,56 +487,56 @@
                     </button>
                     <ul class="submenu-category-list" data-accordion>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Clothes Perfume</a>
+                            <a href="#" class="submenu-title">Nước hoa quần áo</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Deodorant</a>
+                            <a href="#" class="submenu-title">Chất khử mùi</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Flower Fragrance</a>
+                            <a href="#" class="submenu-title">Hương hoa</a>
                         </li>
                         <li class="submenu-category">
-                            <a href="#" class="submenu-title">Air Freshener</a>
+                            <a href="#" class="submenu-title">Chất làm thơm không khí</a>
                         </li>
                     </ul>
                 </li>
                 <li class="menu-category">
-                    <a href="#" class="menu-title">Blog</a>
+                    <a href="#" class="menu-title">Bài viết</a>
                 </li>
                 <li class="menu-category">
-                    <a href="#" class="menu-title">Hot Offers</a>
+                    <a href="#" class="menu-title">Ưu đãi hấp dẫn</a>
                 </li>
             </ul>
             <div class="menu-bottom">
                 <ul class="menu-category-list">
                     <li class="menu-category">
                         <button class="accordion-menu" data-accordion-btn>
-                            <p class="menu-title">Language</p>
+                            <p class="menu-title">Ngôn ngữ</p>
                             <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
                         </button>
                         <ul class="submenu-category-list" data-accordion>
+                            <li class="submenu-category">
+                                <a href="#" class="submenu-title">Tiếng Việt</a>
+                            </li>
                             <li class="submenu-category">
                                 <a href="#" class="submenu-title">English</a>
                             </li>
                             <li class="submenu-category">
                                 <a href="#" class="submenu-title">Español</a>
                             </li>
-                            <li class="submenu-category">
-                                <a href="#" class="submenu-title">Frençh</a>
-                            </li>
                         </ul>
                     </li>
                     <li class="menu-category">
                         <button class="accordion-menu" data-accordion-btn>
-                            <p class="menu-title">Currency</p>
+                            <p class="menu-title">Tiền tệ</p>
                             <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
                         </button>
                         <ul class="submenu-category-list" data-accordion>
                             <li class="submenu-category">
-                                <a href="#" class="submenu-title">USD $</a>
+                                <a href="#" class="submenu-title">VND ₫</a>
                             </li>
                             <li class="submenu-category">
-                                <a href="#" class="submenu-title">EUR €</a>
+                                <a href="#" class="submenu-title">USD $</a>
                             </li>
                         </ul>
                     </li>
@@ -405,33 +559,34 @@
                         <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="women's latest fashion sale"
                             class="banner-img">
                         <div class="banner-content">
-                            <p class="banner-subtitle">Trending item</p>
-                            <h2 class="banner-title">Women's latest fashion sale</h2>
-                            <p class="banner-text">starting at $ <b>20</b>.00</p>
-                            <a href="#" class="banner-btn">Shop now</a>
+                            <p class="banner-subtitle">Sản phẩm thịnh hành</p>
+                            <h2 class="banner-title">Thời trang nữ mới nhất</h2>
+                            <p class="banner-text">bắt đầu từ <b>20</b>.000₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
                         </div>
                     </div>
                     <div class="slider-item">
                         <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses" class="banner-img">
                         <div class="banner-content">
-                            <p class="banner-subtitle">Trending accessories</p>
-                            <h2 class="banner-title">Modern sunglasses</h2>
-                            <p class="banner-text">starting at $ <b>15</b>.00</p>
-                            <a href="#" class="banner-btn">Shop now</a>
+                            <p class="banner-subtitle">Phụ kiện thịnh hành</p>
+                            <h2 class="banner-title">Kính mát hiện đại</h2>
+                            <p class="banner-text">bắt đầu từ <b>15</b>.000₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
                         </div>
                     </div>
                     <div class="slider-item">
                         <img src="{{ asset('assets/images/banner-3.jpg') }}" alt="new fashion summer sale"
                             class="banner-img">
                         <div class="banner-content">
-                            <p class="banner-subtitle">Sale Offer</p>
-                            <h2 class="banner-title">New fashion summer sale</h2>
-                            <p class="banner-text">starting at $ <b>29</b>.99</p>
-                            <a href="#" class="banner-btn">Shop now</a>
+                            <p class="banner-subtitle">Ưu đãi giảm giá</p>
+                            <h2 class="banner-title">Thời trang hè mới</h2>
+                            <p class="banner-text">bắt đầu từ <b>29</b>.990₫</p>
+                            <a href="#" class="banner-btn">Mua ngay</a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
         </div>
 
         <div class="category">
@@ -441,7 +596,7 @@
                         $homeCategories = $homeCategories->take(8); // Giới hạn tối đa 8 danh mục
                     @endphp
                     @foreach ($homeCategories as $category)
-                        <div class="category-item w-[calc(25%-0.9375rem)] min-w-[140px] flex-shrink-0">
+                        <div class="category-item w-1/2 sm:w-[calc(25%-0.9375rem)] sm:min-w-[140px] flex-shrink-0">
                             <div class="category-img-box h-10 w-10 flex items-center justify-center bg-gray-200">
                                 @if ($category->image_path && file_exists(public_path('storage/' . $category->image_path)))
                                     <img src="{{ asset('storage/' . $category->image_path) }}"
@@ -461,7 +616,8 @@
                                     <p class="category-item-amount">({{ $category->products_count }})</p>
                                 </div>
                                 <a href="{{ route('search', ['category' => [$category->id]]) }}" class="category-btn">Xem
-                                    tất cả</a>
+                                    tất cả
+                                </a>
                             </div>
                         </div>
                     @endforeach
@@ -471,47 +627,187 @@
 
         <div class="product-container">
             <div class="container">
-                <div class="sidebar has-scrollbar" data-mobile-menu>
-                    <div class="sidebar-category mt-[30px]">
-                        <div class="sidebar-top">
-                            <h2 class="sidebar-title">Danh mục</h2>
-                            <button class="sidebar-close-btn" data-mobile-menu-close-btn>
-                                <ion-icon name="close-outline"></ion-icon>
-                            </button>
+                <div class="sidebar has-scrollbar relative" data-mobile-menu>
+                    <button class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-2.5"
+                        data-mobile-menu-close-btn>
+                        <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
+                    </button>
+                    <div class="shop-container-bg rounded-xl border border-orange-200 p-6 mb-8 mt-10 lg:mt-0">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2
+                                class="text-lg font-bold flex items-center justify-between gap-2 w-full shop-title">
+                                Shop Bán Chạy
+                                <ion-icon name="flame"
+                                    class="text-orange-500 text-xl bg-white rounded-full p-2"></ion-icon>
+                            </h2>
                         </div>
-                        <ul class="sidebar-menu-category-list">
-                            @foreach ($sidebarCategories as $category)
-                                <li class="sidebar-menu-category">
-                                    <button class="sidebar-accordion-menu" data-accordion-btn>
-                                        <div class="menu-title-flex">
-                                            <img src="{{ $category->image_path ? asset('storage/' . $category->image_path) : asset('assets/images/icons/default.svg') }}"
-                                                alt="{{ $category->name }}" class="menu-title-img" width="20"
-                                                height="20">
-                                            <p class="menu-title">{{ $category->name }}</p>
+
+                        <!-- Header với legend -->
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 mb-4">
+                            <h3 class="text-md pl-3 pr-3 font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                Top Shop theo doanh số bán hàng
+                            </h3>
+                            <div class="grid grid-cols-2 gap-x-2 w-[200px] gap-y-2 items-center mx-auto">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 flex-shrink-0 border border-yellow-300">
+                                    <ion-icon name="trophy" class="mr-1 text-md"></ion-icon>
+                                    Top 1
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 flex-shrink-0 border border-gray-300">
+                                    <ion-icon name="medal" class="mr-1 text-md"></ion-icon>
+                                    Top 2
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 flex-shrink-0 border border-amber-300">
+                                    <ion-icon name="ribbon" class="mr-1 text-md"></ion-icon>
+                                    Top 3
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 flex-shrink-0 border border-blue-300">
+                                    <ion-icon name="star" class="mr-1 text-md"></ion-icon>
+                                    Top 4
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách shop -->
+                        <div class="shop-ranking-container">
+                            <div class="grid grid-cols-1 gap-3 pb-2 relative">
+                                @foreach ($rankingShops as $index => $shop)
+                                    <div class="relative bg-white border border-gray-200 rounded-lg p-2.5 shop-ranking-card {{ $index < 3 ? 'ring-1 ring-opacity-30' : '' }} {{ $index === 0 ? 'ring-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : '' }} {{ $index === 1 ? 'ring-gray-400 bg-gradient-to-r from-gray-50 to-slate-50' : '' }} {{ $index === 2 ? 'ring-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50' : '' }}"
+                                        style="animation-delay: {{ $index * 0.1 }}s;">
+
+                                        <!-- Badge xếp hạng -->
+                                        <div
+                                            class="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md z-10 {{ $index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-400 to-slate-500' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-600 to-yellow-500' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-500 to-purple-600' : '' }}">
+                                            {{ $index + 1 }}
                                         </div>
-                                        <div>
-                                            <ion-icon name="add-outline" class="add-icon"></ion-icon>
-                                            <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
+
+                                        <!-- Header shop -->
+                                        <div class="flex items-start justify-between mb-3 gap-2">
+                                            <div class="flex items-center gap-2 flex-1 min-w-0">
+                                                <div class="relative flex-shrink-0">
+                                                    <img src="{{ asset('storage/' . $shop->shop_logo) }}"
+                                                        alt="{{ $shop->shop_name }}"
+                                                        class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                                    @if ($index < 3)
+                                                        <div
+                                                            class="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs {{ $index === 0 ? 'bg-yellow-500' : '' }} {{ $index === 1 ? 'bg-gray-500' : '' }} {{ $index === 2 ? 'bg-amber-600' : '' }}">
+                                                            <ion-icon
+                                                                name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : 'ribbon') }}"
+                                                                class="text-white text-[8px]"></ion-icon>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <h4 class="font-semibold text-gray-800 text-md truncate">
+                                                        {{ $shop->shop_name }}</h4>
+                                                    <div class="flex items-center gap-1 mt-1">
+                                                        <div class="flex items-center gap-1">
+                                                            @for ($i = 1; $i <= 5; $i++)
+                                                                @if ($shop->shop_rating >= $i)
+                                                                    <ion-icon name="star"
+                                                                        class="text-yellow-400 text-md"></ion-icon>
+                                                                @elseif($shop->shop_rating >= $i - 0.5)
+                                                                    <ion-icon name="star-half"
+                                                                        class="text-yellow-400 text-md"></ion-icon>
+                                                                @else
+                                                                    <ion-icon name="star-outline"
+                                                                        class="text-gray-300 text-md"></ion-icon>
+                                                                @endif
+                                                            @endfor
+                                                        </div>
+                                                        <span
+                                                            class="text-md text-gray-600 font-medium">{{ number_format($shop->shop_rating, 1) }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Ranking badge -->
+                                            <span
+                                                class="ranking-badge inline-flex items-center px-1.5 py-0.5 rounded-full text-md font-medium flex-shrink-0 {{ $index === 0 ? 'bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 border border-yellow-300' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 border border-gray-300' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 border border-amber-300' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 border border-blue-300' : '' }}">
+                                                <ion-icon
+                                                    name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : ($index === 2 ? 'ribbon' : 'star')) }}"
+                                                    class="mr-1 text-md"></ion-icon>
+                                                <span class="text-[12px]">{{ $index + 1 }}</span>
+                                            </span>
                                         </div>
-                                    </button>
-                                    @if ($category->subCategories->count())
-                                        <ul class="sidebar-submenu-category-list" data-accordion>
-                                            @foreach ($category->subCategories as $sub)
-                                                <li class="sidebar-submenu-category">
-                                                    <a href="#" class="sidebar-submenu-title">
-                                                        <p class="product-name colo-[#787878]">{{ $sub->name }}</p>
-                                                        <data value="{{ $sub->products->count() }}"
-                                                            class="stock colo-[#787878]" title="Sản phẩm có sẵn">
-                                                            {{ $sub->products->count() }}
-                                                        </data>
-                                                    </a>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
+
+                                        <!-- Stats -->
+                                        <div
+                                            class="text-center p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded border border-green-200 mb-2">
+                                            <!-- Header với icon và label -->
+                                            <div class="flex items-center justify-center gap-1 mb-1">
+                                                <ion-icon name="bag-check-outline"
+                                                    class="text-[#ef3248] text-md"></ion-icon>
+                                                <span class="text-md font-medium text-gray-800">Đã bán</span>
+                                            </div>
+
+                                            <!-- Số lượng bán -->
+                                            <p class="text-lg font-bold text-[#ef3248] mb-2">
+                                                {{ number_format($shop->total_products_sold) }}
+                                            </p>
+
+                                            <!-- Progress bar -->
+                                            <div class="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                @php
+                                                    $maxSales = max(
+                                                        $rankingShops->pluck('total_products_sold')->toArray(),
+                                                    );
+                                                    $percentage =
+                                                        $maxSales > 0
+                                                            ? ($shop->total_products_sold / $maxSales) * 100
+                                                            : 0;
+
+                                                    // Phối màu chủ đạo với gradient đẹp
+                                                    $barColor = 'bg-gradient-to-r from-[#ef3248] to-[#ff6b35]';
+                                                @endphp
+                                                <div class="h-full {{ $barColor }} rounded-full transition-all duration-300 relative"
+                                                    style="width: {{ min($percentage, 100) }}%">
+                                                    @if ($shop->total_products_sold >= 100)
+                                                        <div class="absolute -right-1 -top-0.5">
+                                                            <ion-icon name="flame"
+                                                                class="text-orange-500 text-md"></ion-icon>
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                <!-- Hiệu ứng lửa xung quanh cho top 1 -->
+                                                @if ($index === 0)
+                                                    <div class="absolute inset-0 rounded-full flame-effect"></div>
+                                                    <!-- Các ngọn lửa nhỏ -->
+                                                    <div class="absolute -top-1 left-1 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-orange-500 text-md"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -top-1 right-1 flame-particle">
+                                                        <ion-icon name="flame" class="text-red-500 text-md"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -bottom-1 left-3 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-yellow-500 text-md"></ion-icon>
+                                                    </div>
+                                                    <div class="absolute -bottom-1 right-3 flame-particle">
+                                                        <ion-icon name="flame"
+                                                            class="text-orange-500 text-md"></ion-icon>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <!-- Action button -->
+                                        <a href="{{ route('shop.show', $shop->id) }}"
+                                            class="block w-full text-center py-1 px-2 bg-[#ef3248] hover:bg-[#d62a3e] text-white font-medium rounded transition-colors duration-200 text-md">
+                                            <span class="flex items-center justify-center gap-1">
+                                                Xem shop
+                                                <ion-icon name="arrow-forward-outline" class="text-md"></ion-icon>
+                                            </span>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
 
                     <div class="product-showcase">
@@ -525,14 +821,14 @@
                                                 width="75" height="75" class="showcase-img">
                                         </a>
                                         <div class="showcase-content">
-                                            <a href="{{ route('product.show', $product->slug) }}">
+                                            <a href="{{ route('product.show', $product->slug) }}" class="h-[30px]">
                                                 <h4 class="showcase-title">{{ $product->name }}</h4>
                                             </a>
                                             <div class="showcase-rating">
                                                 @for ($i = 1; $i <= 5; $i++)
-                                                    @if ($product->reviews->avg('rating') >= $i)
+                                                    @if ($product->orderReviews->avg('rating') >= $i)
                                                         <ion-icon name="star"></ion-icon>
-                                                    @elseif ($product->reviews->avg('rating') >= $i - 0.5)
+                                                    @elseif ($product->orderReviews->avg('rating') >= $i - 0.5)
                                                         <ion-icon name="star-half-outline"></ion-icon>
                                                     @else
                                                         <ion-icon name="star-outline"></ion-icon>
@@ -541,9 +837,9 @@
                                             </div>
                                             <div class="price-box">
                                                 @if ($product->display_original_price && $product->display_price < $product->display_original_price)
-                                                    <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                                     <p class="price">
                                                         {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
+                                                    <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                                 @else
                                                     <p class="price">
                                                         {{ number_format($product->display_price, 0, ',', '.') }}₫
@@ -619,78 +915,6 @@
                         </div>
                     @endif
 
-
-                    {{-- <div class="product-featured">
-                        <h2 class="title">Flash Sale</h2>
-                        <div class="showcase-wrapper has-scrollbar">
-                            @foreach ($flashSaleProducts as $product)
-                                <div class="showcase-container">
-                                    <div class="showcase">
-                                        <div class="showcase-banner">
-                                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                class="showcase-img">
-                                        </div>
-                                        <div class="showcase-content">
-                                            <div class="showcase-rating">
-                                                @php
-                                                    $avg = round($product->reviews->avg('rating') ?? 0);
-                                                @endphp
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    <ion-icon
-                                                        name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
-                                                @endfor
-                                            </div>
-                                            <a href="{{ route('product.show', $product->slug) }}">
-                                                <h3 class="showcase-title">{{ $product->name }}</h3>
-                                            </a>
-                                            <p class="showcase-desc">
-                                                {{ Str::limit(strip_tags($product->description), 100) }}
-                                            </p>
-                                            <div class="price-box">
-                                                <p class="price">{{ number_format($product->flash_sale_price) }}₫</p>
-                                                <del>{{ number_format($product->price) }}₫</del>
-                                            </div>
-                                            <button class="add-cart-btn">Thêm vào giỏ hàng</button>
-                                            <div class="showcase-status">
-                                                <div class="wrapper">
-                                                    <p>Đã bán: <b>{{ $product->sold_quantity ?? 0 }}</b></p>
-                                                    <p>Còn lại:
-                                                        <b>{{ $product->stock_total - $product->sold_quantity }}</b>
-                                                    </p>
-                                                </div>
-                                                <div class="showcase-status-bar"></div>
-                                            </div>
-                                            @if ($product->flash_sale_end_at)
-                                                <div class="countdown-box">
-                                                    <p class="countdown-desc">Nhanh tay! Kết thúc sau:</p>
-                                                    <div class="countdown"
-                                                        data-end-time="{{ $product->flash_sale_end_at->timestamp }}">
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Ngày</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Giờ</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Phút</p>
-                                                        </div>
-                                                        <div class="countdown-content">
-                                                            <p class="display-number">00</p>
-                                                            <p class="display-text">Giây</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div> --}}
-
                     @include('partials.combo_products')
 
                     <div class="product-minimal">
@@ -714,10 +938,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
@@ -744,10 +970,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
@@ -770,9 +998,9 @@
                         </div>
 
                         <div class="product-showcase">
-                            <h2 class="title">Đang thịnh hành</h2>
+                            <h2 class="title">Được xem nhiều</h2>
                             @if ($trendingProducts->isEmpty())
-                                <p>Hiện chưa có sản phẩm nào thịnh hành.</p>
+                                <p class="mt-4">Hiện chưa có sản phẩm nào được xem.</p>
                             @else
                                 @php
                                     $trendingProducts = $trendingProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
@@ -789,10 +1017,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
@@ -819,10 +1049,12 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
@@ -864,15 +1096,17 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="showcase-rating">
                                                         @php
-                                                            $avg = round($product->reviews_avg_rating ?? 0);
+                                                            $avg = round($product->orderReviews->avg('rating') ?? 0);
                                                         @endphp
                                                         @for ($i = 1; $i <= 5; $i++)
                                                             <ion-icon
@@ -903,15 +1137,17 @@
                                                         class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
-                                                    <a href="{{ route('product.show', $product->slug) }}">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
                                                         <h4 class="showcase-title">{{ $product->name }}</h4>
                                                     </a>
-                                                    <a href="#" class="showcase-category">
+                                                    <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                                        class="showcase-category">
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="showcase-rating">
                                                         @php
-                                                            $avg = round($product->reviews_avg_rating ?? 0);
+                                                            $avg = round($product->orderReviews->avg('rating') ?? 0);
                                                         @endphp
                                                         @for ($i = 1; $i <= 5; $i++)
                                                             <ion-icon
@@ -978,15 +1214,16 @@
                                         </div>
                                     </div>
                                     <div class="showcase-content">
-                                        <a href="#" class="showcase-category">
+                                        <a href="{{ route('search', ['category' => [$category->id]]) }}"
+                                            class="showcase-category">
                                             {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                         </a>
-                                        <a href="{{ route('product.show', $product->slug) }}">
-                                            <h3 class="showcase-title">{{ $product->name }}</h3>
+                                        <a href="{{ route('product.show', $product->slug) }}" class="h-[30px]">
+                                            <h3 class="showcase-title truncate">{{ $product->name }}</h3>
                                         </a>
                                         <div class="showcase-rating">
                                             @php
-                                                $avg = round($product->reviews->avg('rating') ?? 0);
+                                                $avg = round($product->orderReviews->avg('rating') ?? 0);
                                             @endphp
                                             @for ($i = 1; $i <= 5; $i++)
                                                 <ion-icon name="{{ $i <= $avg ? 'star' : 'star-outline' }}"></ion-icon>
@@ -997,7 +1234,8 @@
                                                 <p class="price">
                                                     {{ number_format($product->display_price, 0, ',', '.') }}₫
                                                 </p>
-                                                <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
+                                                <del
+                                                    class="truncate text-xs">{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                             @else
                                                 <p class="price">
                                                     {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
@@ -1019,19 +1257,24 @@
 
                     @foreach ($testimonials as $review)
                         <div class="testimonial-card">
-                            <img src="{{ $review->user->avatar_url ?? asset('images/default_avatar.png') }}"
-                                alt="{{ $review->user->name ?? 'Khách hàng ảnh' }}" class="testimonial-banner"
-                                width="80" height="80">
+                            <div class="flex items-center gap-2">
+                                @include('partials.user-avatar', [
+                                    'user' => $review->user,
+                                    'size' => '2xl',
+                                    'className' => 'testimonial-banner',
+                                ])
+                            </div>
 
-                            <p class="testimonial-name">{{ $review->user->name ?? 'Khách hàng ẩn danh' }}</p>
-                            <p class="testimonial-title">
+                            <p class="testimonial-name truncate">{{ $review->user->username ?? 'Khách hàng ẩn danh' }}
+                            </p>
+                            <p class="testimonial-title truncate">
                                 {{ $review->product->name ?? 'Sản phẩm đã mua' }}
                             </p>
 
                             <img src="{{ asset('assets/images/icons/quotes.svg') }}" alt="quotation"
                                 class="quotation-img" width="26">
 
-                            <p class="testimonial-desc">
+                            <p class="testimonial-desc truncate">
                                 {{ Str::limit($review->comment, 120) }}
                             </p>
                         </div>
@@ -1042,14 +1285,78 @@
                 </div>
 
                 <div class="cta-container">
-                    <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection" class="cta-banner">
-                    <a href="#" class="cta-content">
-                        <p class="discount">25% Discount</p>
-                        <h2 class="cta-title">Summer collection</h2>
-                        <p class="cta-text">Starting @ $10</p>
-                        <button class="cta-btn">Shop now</button>
-                    </a>
+                    @if ($advertisedProducts->isNotEmpty())
+                        <div class="advertised-products-container">
+                            <h3 class="advertised-title">Sản phẩm quảng cáo</h3>
+
+                            <!-- Slides Container -->
+                            <div class="advertised-slides-container">
+                                @php
+                                    $productsPerSlide = 2;
+                                    $totalSlides = ceil($advertisedProducts->count() / $productsPerSlide);
+                                @endphp
+
+                                @for ($slideIndex = 0; $slideIndex < $totalSlides; $slideIndex++)
+                                    <div class="advertised-slide {{ $slideIndex === 0 ? 'active' : '' }}"
+                                        data-slide="{{ $slideIndex }}">
+                                        <div class="advertised-grid">
+                                            @foreach ($advertisedProducts->slice($slideIndex * $productsPerSlide, $productsPerSlide) as $adItem)
+                                                <div class="advertised-item">
+                                                    <div class="ad-badge">Quảng cáo</div>
+                                                    <a href="{{ route('product.show', $adItem->product->slug) }}"
+                                                        class="ad-product-link">
+                                                        <img src="{{ $adItem->product->image_url }}"
+                                                            alt="{{ $adItem->product->name }}" class="ad-product-img">
+                                                        <div class="ad-product-info">
+                                                            <h4 class="ad-product-name">
+                                                                {{ Str::limit($adItem->product->name, 30) }}</h4>
+                                                            <div class="ad-product-price">
+                                                                @if (
+                                                                    $adItem->product->display_original_price &&
+                                                                        $adItem->product->display_price < $adItem->product->display_original_price)
+                                                                    <span
+                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
+                                                                    <span
+                                                                        class="ad-price-old">{{ number_format($adItem->product->display_original_price) }}₫</span>
+                                                                @else
+                                                                    <span
+                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+
+                            <!-- Dots Navigation -->
+                            @if ($totalSlides > 1)
+                                <div class="advertised-dots">
+                                    @for ($dotIndex = 0; $dotIndex < $totalSlides; $dotIndex++)
+                                        <button class="advertised-dot {{ $dotIndex === 0 ? 'active' : '' }}"
+                                            data-slide="{{ $dotIndex }}"
+                                            aria-label="Go to slide {{ $dotIndex + 1 }}">
+                                        </button>
+                                    @endfor
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <!-- Fallback banner nếu không có quảng cáo -->
+                        <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection"
+                            class="cta-banner">
+                        <a href="#" class="cta-content">
+                            <p class="discount">Giảm 25%</p>
+                            <h2 class="cta-title">Bộ sưu tập hè</h2>
+                            <p class="cta-text">Bắt đầu từ 10.000₫</p>
+                            <button class="cta-btn">Mua ngay</button>
+                        </a>
+                    @endif
                 </div>
+
                 <div class="service">
                     <h2 class="title">Dịch vụ của chúng tôi</h2>
                     <div class="service-container">
@@ -1111,435 +1418,550 @@
                         </div>
                     @endforeach
                     @if ($blogs->isEmpty())
-                        <p>Hiện chưa có bài viết nào.</p>
                     @endif
                 </div>
             </div>
         </div>
+    </main>
 
-
-        <!-- Modal Quick View -->
-        <div id="quick-view-modal" class="quick-view-modal">
-            <div class="w-[1200px] bg-[#fff] rounded-[10px]">
-                <div class="flex flex-col">
-                    <div class="flex items-center justify-between p-4 border-b border-gray-300 border-dashed mb-4">
-                        <h3>Xem nhanh</h3>
-                        <button class="close-btn">×</button>
-                    </div>
-                    <div class="quick-view-body"></div>
+    <!-- Modal Quick View -->
+    <div id="quick-view-modal" class="quick-view-modal">
+        <div class="w-[1200px] bg-[#fff] rounded-[10px]">
+            <div class="flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-gray-300 border-dashed mb-4">
+                    <h3>Xem nhanh</h3>
+                    <button class="close-btn text-2xl">×</button>
                 </div>
+                <div class="quick-view-body"></div>
             </div>
         </div>
+    </div>
 
-        @push('scripts')
-            @vite(['resources/js/home.js'])
-            <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const modal = document.getElementById('quick-view-modal');
-                    const closeBtn = modal.querySelector('.close-btn');
-                    closeBtn.addEventListener('click', function() {
+    @push('scripts')
+        @vite(['resources/js/home.js'])
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = document.getElementById('quick-view-modal');
+                const closeBtn = modal.querySelector('.close-btn');
+                closeBtn.addEventListener('click', function() {
+                    modal.classList.remove('active');
+                });
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
                         modal.classList.remove('active');
-                    });
-                    modal.addEventListener('click', function(e) {
-                        if (e.target === modal) {
-                            modal.classList.remove('active');
-                        }
-                    });
+                    }
                 });
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Xử lý toggle wishlist
-                    document.querySelectorAll('.toggle-wishlist-btn').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const productId = this.getAttribute('data-product-id');
-                            const isWishlisted = this.getAttribute('data-is-wishlisted') === '1';
-                            const icon = this.querySelector('ion-icon');
+            });
+            document.addEventListener('DOMContentLoaded', function() {
+                // Xử lý toggle wishlist
+                document.querySelectorAll('.toggle-wishlist-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const productId = this.getAttribute('data-product-id');
+                        const isWishlisted = this.getAttribute('data-is-wishlisted') === '1';
+                        const icon = this.querySelector('ion-icon');
 
-                            axios.post(`/customer/product/${productId}/toggle-wishlist`, {}, {
-                                    headers: {
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                    }
-                                })
-                                .then(response => {
-                                    if (response.data.success) {
-                                        this.setAttribute('data-is-wishlisted', response.data
-                                            .isWishlisted ? '1' : '0');
-                                        icon.setAttribute('name', response.data.isWishlisted ? 'heart' :
-                                            'heart-outline');
-                                        Swal.fire({
-                                            position: 'top-end',
-                                            toast: true,
-                                            icon: 'success',
-                                            title: 'Thành công',
-                                            text: response.data.message,
-                                            showConfirmButton: false,
-                                            timer: 1500
-                                        });
-                                    } else {
-                                        Swal.fire({
-                                            position: 'top-end',
-                                            toast: true,
-                                            icon: 'error',
-                                            title: 'Lỗi',
-                                            text: response.data.message,
-                                            showConfirmButton: false,
-                                            timer: 1500
-                                        });
-                                    }
-                                })
-                                .catch(error => {
-                                    Swal.fire({
-                                        position: 'top-end',
-                                        toast: true,
-                                        icon: 'error',
-                                        title: 'Lỗi',
-                                        text: error.response?.status === 401 ?
-                                            'Vui lòng đăng nhập để sử dụng chức năng này!' :
-                                            'Đã có lỗi xảy ra!',
-                                        showConfirmButton: error.response?.status === 401,
-                                        confirmButtonText: 'Đăng nhập',
-                                    }).then(result => {
-                                        if (result.isConfirmed && error.response?.status ===
-                                            401) {
-                                            window.location.href = '/login';
-                                        }
-                                    });
-                                });
-                        });
-                    });
-
-                    // Xử lý quick view
-                    document.querySelectorAll('.quick-view-btn').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const slug = this.getAttribute('data-product-slug');
-                            const modal = document.getElementById('quick-view-modal');
-                            const modalBody = modal.querySelector('.quick-view-body');
-
-                            axios.get(`/customer/products/${slug}/quick-view`)
-                                .then(response => {
-                                    if (response.data.success) {
-                                        modalBody.innerHTML = response.data.html;
-
-                                        // ✅ Gán dữ liệu biến thể
-                                        window.variantData = response.data.variantData;
-                                        console.log('✅ Gán variantData từ Laravel:', window
-                                            .variantData);
-
-                                        modal.classList.add('active');
-
-                                        if (typeof initQuickViewScripts === 'function') {
-                                            initQuickViewScripts();
-                                        }
-                                    } else {
-                                        Swal.fire('Lỗi', response.data.message, 'error');
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Lỗi tải QuickView:', error);
-                                    Swal.fire('Lỗi', 'Không thể tải sản phẩm!', 'error');
-                                });
-                        });
-                    });
-
-                    // Add Combo to Cart functionality (moved outside initQuickViewScripts)
-                    document.querySelectorAll('.add-combo-cart-btn').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const comboId = this.getAttribute('data-combo-id');
-
-                            fetch('/cart/add-combo', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                        'Accept': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        combo_id: comboId
-                                    })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
-                                    Swal.fire({
-                                        position: 'top-end',
-                                        toast: true,
-                                        icon: data.success ? 'success' : 'error',
-                                        title: data.message,
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    });
-                                })
-                                .catch(error => {
-                                    console.error('Error adding combo to cart:', error);
-                                    Swal.fire({
-                                        position: 'top-end',
-                                        toast: true,
-                                        icon: 'error',
-                                        title: 'Lỗi',
-                                        text: 'Không thể thêm combo vào giỏ!',
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    });
-                                });
-                        });
-                    });
-
-                });
-
-                function initQuickViewScripts() {
-                    const mainImage = document.getElementById('main-image');
-                    const priceDisplay = document.getElementById('price-display');
-                    const stockInfo = document.getElementById('stock_info');
-                    const quantityInput = document.getElementById('quantity');
-                    const decreaseBtn = document.getElementById('decreaseQty');
-                    const increaseBtn = document.getElementById('increaseQty');
-                    const selectedVariantIdInput = document.getElementById('selected_variant_id');
-                    const addToCartButtons = document.querySelectorAll('.add-to-cart');
-                    const variantButtons = document.querySelectorAll('button[data-value]');
-                    const token = document.querySelector('meta[name="csrf-token"]')?.content;
-                    let selectedVariantId = null;
-
-                    if (!mainImage || !priceDisplay || !stockInfo || !quantityInput || !selectedVariantIdInput) {
-                        console.warn('Thiếu phần tử DOM trong quick view, dừng init.');
-                        return;
-                    }
-
-                    const hasVariants = variantButtons.length > 0;
-                    if (!hasVariants) {
-                        selectedVariantId = 'default'; // sản phẩm không có biến thể
-                        selectedVariantIdInput.value = 'default';
-                        // Explicitly display default product price for simple products on modal open
-                        const defaultPrice = parseFloat(priceDisplay.dataset.price);
-                        const defaultOriginalPrice = parseFloat(priceDisplay.dataset.originalPrice);
-                        const defaultStock = parseInt(stockInfo.dataset.stock);
-                        resetToDefault(
-                            mainImage?.src || '/storage/product_images/default.jpg', // Use main image src as default
-                            defaultPrice,
-                            defaultOriginalPrice,
-                            defaultStock
-                        );
-                    }
-
-                    // Thay ảnh chính khi click ảnh phụ
-                    document.querySelectorAll('.sub-image').forEach(img => {
-                        img.addEventListener('click', function() {
-                            const newSrc = this.dataset.src;
-                            if (mainImage && newSrc) mainImage.src = newSrc;
-                        });
-                    });
-
-                    // Format số
-                    function number_format(number, decimals = 0, dec_point = ',', thousands_sep = '.') {
-                        number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
-                        let n = !isFinite(+number) ? 0 : +number;
-                        let prec = Math.abs(decimals);
-                        let s = (prec ? (Math.round(n * Math.pow(10, prec)) / Math.pow(10, prec)).toFixed(prec) : '' + Math.round(
-                            n)).split('.');
-                        s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, thousands_sep);
-                        if ((s[1] || '').length < prec) {
-                            s[1] = (s[1] || '') + '0'.repeat(prec - s[1].length);
-                        }
-                        return s.join(dec_point);
-                    }
-
-                    // Tăng/giảm số lượng
-                    if (decreaseBtn) {
-                        decreaseBtn.addEventListener('click', () => {
-                            let qty = parseInt(quantityInput.value);
-                            if (qty > 1) quantityInput.value = qty - 1;
-                        });
-                    }
-
-                    if (increaseBtn) {
-                        increaseBtn.addEventListener('click', () => {
-                            let qty = parseInt(quantityInput.value);
-                            const stock = parseInt(stockInfo.textContent.split(' ')[0]) || 0;
-                            if (qty < stock) quantityInput.value = qty + 1;
-                        });
-                    }
-
-
-                    // Reset về trạng thái mặc định
-                    function resetToDefault(defaultImage, price, originalPrice, stock) {
-                        selectedVariantId = null;
-                        selectedVariantIdInput.value = 'default';
-                        if (mainImage && defaultImage) mainImage.src = defaultImage;
-
-                        priceDisplay.innerHTML = `
-                        <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
-                        ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
-                    `;
-                        stockInfo.textContent = `${stock} sản phẩm có sẵn`;
-                    }
-
-                    // Xử lý chọn biến thể
-                    variantButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            const value = button.getAttribute('data-value');
-                            const attributeName = button.getAttribute('data-attribute-name');
-                            const optionsContainer = button.closest(`[id$="-options"]`);
-                            const allButtons = optionsContainer.querySelectorAll('button[data-value]');
-
-                            if (button.classList.contains('bg-gray-200') && button.classList.contains(
-                                    'border-gray-500')) {
-                                button.classList.remove('bg-gray-200', 'border-gray-500');
-                                button.classList.add('border-gray-300');
-                                resetToDefault(button.dataset.defaultImage, button.dataset.price, button.dataset
-                                    .originalPrice, button.dataset.stock);
-                                return;
-                            }
-
-                            allButtons.forEach(btn => {
-                                btn.classList.remove('bg-gray-200', 'border-gray-500');
-                                btn.classList.add('border-gray-300');
-                            });
-
-                            button.classList.remove('border-gray-300');
-                            button.classList.add('bg-gray-200', 'border-gray-500');
-
-                            const selectedAttributes = {};
-                            document.querySelectorAll('[id$="-options"] button[data-value].bg-gray-200').forEach(
-                                btn => {
-                                    const attrName = btn.getAttribute('data-attribute-name');
-                                    const attrValue = btn.getAttribute('data-value');
-                                    selectedAttributes[attrName] = attrValue;
-                                });
-
-                            const variantData = window.variantData || {};
-                            let matched = null;
-
-                            for (let id in variantData) {
-                                let variant = variantData[id];
-                                let matchedAll = true;
-                                for (let attr in selectedAttributes) {
-                                    if (!variant.attributes || variant.attributes[attr] !== selectedAttributes[
-                                            attr]) {
-                                        matchedAll = false;
-                                        break;
-                                    }
+                        axios.post(`/customer/product/${productId}/toggle-wishlist`, {}, {
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                                 }
-                                if (matchedAll) {
-                                    matched = {
-                                        id,
-                                        ...variant
-                                    };
-                                    break;
-                                }
-                            }
-
-                            console.log('Đã chọn attributes:', selectedAttributes);
-                            console.log('Dữ liệu variantData:', variantData);
-                            console.log('Biến thể phù hợp:', matched);
-
-                            if (matched) {
-                                selectedVariantId = matched.id;
-                                selectedVariantIdInput.value = matched.id;
-
-                                // Hiển thị lại giá
-                                if (priceDisplay) {
-                                    priceDisplay.innerHTML = `
-                                    <span class="text-red-600 text-2xl font-bold">${number_format(matched.price)} VNĐ</span>
-                                    <span class="text-gray-500 line-through text-md">${number_format(matched.original_price)} VNĐ</span>
-                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${matched.discount_percentage}%</span>
-                                `;
-                                }
-
-                                if (mainImage) {
-                                    console.log('Hiển thị ảnh biến thể:', matched.image);
-                                    mainImage.src = matched.image || '/storage/product_images/default.jpg';
-                                }
-                                if (stockInfo) stockInfo.textContent = `${matched.stock} sản phẩm có sẵn`;
-                            } else {
-                                // Không tìm thấy biến thể phù hợp → reset
-                                selectedVariantId = null;
-                                selectedVariantIdInput.value = '';
-                                resetToDefault(
-                                    mainImage?.dataset.default || '/storage/product_images/default.jpg',
-                                    parseFloat(priceDisplay?.dataset.price || 0),
-                                    parseFloat(priceDisplay?.dataset.originalPrice || 0),
-                                    parseInt(stockInfo?.dataset.stock || 0)
-                                );
-
-                            }
-
-                        });
-                    });
-
-                    // Xử lý thêm vào giỏ hàng
-                    addToCartButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            if (!selectedVariantId && hasVariants) {
-                                Swal.fire({
-                                    position: 'top-end',
-                                    toast: true,
-                                    icon: 'warning',
-                                    title: 'Vui lòng chọn biến thể!',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                                return;
-                            }
-
-                            const quantity = parseInt(quantityInput.value);
-                            const stock = parseInt(stockInfo.textContent.split(' ')[0]);
-
-                            if (quantity > stock) {
-                                Swal.fire({
-                                    position: 'top-end',
-                                    toast: true,
-                                    icon: 'warning',
-                                    title: 'Vượt quá số lượng tồn kho!',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                                return;
-                            }
-
-                            fetch('/customer/cart/add', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': token,
-                                        'Accept': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        product_id: button.getAttribute('data-product-id'),
-                                        variant_id: selectedVariantId,
-                                        quantity: quantity
-                                    })
-                                })
-                                .then(res => res.json())
-                                .then(data => {
+                            })
+                            .then(response => {
+                                if (response.data.success) {
+                                    this.setAttribute('data-is-wishlisted', response.data
+                                        .isWishlisted ? '1' : '0');
+                                    icon.setAttribute('name', response.data.isWishlisted ? 'heart' :
+                                        'heart-outline');
                                     Swal.fire({
                                         position: 'top-end',
                                         toast: true,
                                         icon: 'success',
-                                        title: data.message || 'Thêm vào giỏ thành công',
-                                        timer: 1500,
-                                        showConfirmButton: false
+                                        title: 'Thành công',
+                                        text: response.data.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
                                     });
-                                })
-                                .catch(error => {
+                                } else {
                                     Swal.fire({
                                         position: 'top-end',
                                         toast: true,
                                         icon: 'error',
                                         title: 'Lỗi',
-                                        text: 'Không thể thêm sản phẩm vào giỏ!',
-                                        timer: 1500,
-                                        showConfirmButton: false
+                                        text: response.data.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
                                     });
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: error.response?.status === 401 ?
+                                        'Vui lòng đăng nhập để sử dụng chức năng này!' :
+                                        'Đã có lỗi xảy ra!',
+                                    showConfirmButton: error.response?.status === 401,
+                                    confirmButtonText: 'Đăng nhập',
+                                }).then(result => {
+                                    if (result.isConfirmed && error.response?.status ===
+                                        401) {
+                                        window.location.href = '/login';
+                                    }
                                 });
+                            });
+                    });
+                });
+
+                // Xử lý quick view
+                document.querySelectorAll('.quick-view-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const slug = this.getAttribute('data-product-slug');
+                        const modal = document.getElementById('quick-view-modal');
+                        const modalBody = modal.querySelector('.quick-view-body');
+
+                        axios.get(`/customer/products/${slug}/quick-view`)
+                            .then(response => {
+                                if (response.data.success) {
+                                    modalBody.innerHTML = response.data.html;
+
+                                    // ✅ Gán dữ liệu biến thể
+                                    window.variantData = response.data.variantData;
+                                    console.log('✅ Gán variantData từ Laravel:', window
+                                        .variantData);
+
+                                    modal.classList.add('active');
+
+                                    if (typeof initQuickViewScripts === 'function') {
+                                        initQuickViewScripts();
+                                    }
+                                } else {
+                                    Swal.fire('Lỗi', response.data.message, 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Lỗi tải QuickView:', error);
+                                Swal.fire('Lỗi', 'Không thể tải sản phẩm!', 'error');
+                            });
+                    });
+                });
+
+                // Add Combo to Cart functionality (moved outside initQuickViewScripts)
+                document.querySelectorAll('.add-combo-cart-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const comboId = this.getAttribute('data-combo-id');
+
+                        fetch('/cart/add-combo', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    combo_id: comboId
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: data.success ? 'success' : 'error',
+                                    title: data.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error adding combo to cart:', error);
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể thêm combo vào giỏ!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                    });
+                });
+
+            });
+
+            function initQuickViewScripts() {
+                const mainImage = document.getElementById('main-image');
+                const priceDisplay = document.getElementById('price-display');
+                const stockInfo = document.getElementById('stock_info');
+                const quantityInput = document.getElementById('quantity');
+                const decreaseBtn = document.getElementById('decreaseQty');
+                const increaseBtn = document.getElementById('increaseQty');
+                const selectedVariantIdInput = document.getElementById('selected_variant_id');
+                const addToCartButtons = document.querySelectorAll('.add-to-cart');
+                const variantButtons = document.querySelectorAll('button[data-value]');
+                const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                let selectedVariantId = null;
+
+                if (!mainImage || !priceDisplay || !stockInfo || !quantityInput || !selectedVariantIdInput) {
+                    console.warn('Thiếu phần tử DOM trong quick view, dừng init.');
+                    return;
+                }
+
+                const hasVariants = variantButtons.length > 0;
+                if (!hasVariants) {
+                    selectedVariantId = 'default'; // sản phẩm không có biến thể
+                    selectedVariantIdInput.value = 'default';
+                    // Explicitly display default product price for simple products on modal open
+                    const defaultPrice = parseFloat(priceDisplay.dataset.price);
+                    const defaultOriginalPrice = parseFloat(priceDisplay.dataset.originalPrice);
+                    const defaultStock = parseInt(stockInfo.dataset.stock);
+                    resetToDefault(
+                        mainImage?.src || '/storage/product_images/default.jpg', // Use main image src as default
+                        defaultPrice,
+                        defaultOriginalPrice,
+                        defaultStock
+                    );
+                }
+
+                // Thay ảnh chính khi click ảnh phụ
+                document.querySelectorAll('.sub-image').forEach(img => {
+                    img.addEventListener('click', function() {
+                        const newSrc = this.dataset.src;
+                        if (mainImage && newSrc) mainImage.src = newSrc;
+                    });
+                });
+
+                // Format số
+                function number_format(number, decimals = 0, dec_point = ',', thousands_sep = '.') {
+                    number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
+                    let n = !isFinite(+number) ? 0 : +number;
+                    let prec = Math.abs(decimals);
+                    let s = (prec ? (Math.round(n * Math.pow(10, prec)) / Math.pow(10, prec)).toFixed(prec) : '' + Math.round(
+                        n)).split('.');
+                    s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, thousands_sep);
+                    if ((s[1] || '').length < prec) {
+                        s[1] = (s[1] || '') + '0'.repeat(prec - s[1].length);
+                    }
+                    return s.join(dec_point);
+                }
+
+                // Tăng/giảm số lượng
+                if (decreaseBtn) {
+                    decreaseBtn.addEventListener('click', () => {
+                        let qty = parseInt(quantityInput.value);
+                        if (qty > 1) quantityInput.value = qty - 1;
+                    });
+                }
+
+                if (increaseBtn) {
+                    increaseBtn.addEventListener('click', () => {
+                        let qty = parseInt(quantityInput.value);
+                        const stock = parseInt(stockInfo.textContent.split(' ')[0]) || 0;
+                        if (qty < stock) quantityInput.value = qty + 1;
+                    });
+                }
+
+
+                // Reset về trạng thái mặc định
+                function resetToDefault(defaultImage, price, originalPrice, stock) {
+                    selectedVariantId = null;
+                    selectedVariantIdInput.value = 'default';
+                    if (mainImage && defaultImage) mainImage.src = defaultImage;
+
+                    priceDisplay.innerHTML = `
+                        <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
+                        ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                    `;
+                    stockInfo.textContent = `${stock} sản phẩm có sẵn`;
+                }
+
+                // Xử lý chọn biến thể
+                variantButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const value = button.getAttribute('data-value');
+                        const attributeName = button.getAttribute('data-attribute-name');
+                        const optionsContainer = button.closest(`[id$="-options"]`);
+                        const allButtons = optionsContainer.querySelectorAll('button[data-value]');
+
+                        if (button.classList.contains('bg-gray-200') && button.classList.contains(
+                                'border-gray-500')) {
+                            button.classList.remove('bg-gray-200', 'border-gray-500');
+                            button.classList.add('border-gray-300');
+                            resetToDefault(button.dataset.defaultImage, button.dataset.price, button.dataset
+                                .originalPrice, button.dataset.stock);
+                            return;
+                        }
+
+                        allButtons.forEach(btn => {
+                            btn.classList.remove('bg-gray-200', 'border-gray-500');
+                            btn.classList.add('border-gray-300');
                         });
+
+                        button.classList.remove('border-gray-300');
+                        button.classList.add('bg-gray-200', 'border-gray-500');
+
+                        const selectedAttributes = {};
+                        document.querySelectorAll('[id$="-options"] button[data-value].bg-gray-200').forEach(
+                            btn => {
+                                const attrName = btn.getAttribute('data-attribute-name');
+                                const attrValue = btn.getAttribute('data-value');
+                                selectedAttributes[attrName] = attrValue;
+                            });
+
+                        const variantData = window.variantData || {};
+                        let matched = null;
+
+                        for (let id in variantData) {
+                            let variant = variantData[id];
+                            let matchedAll = true;
+                            for (let attr in selectedAttributes) {
+                                if (!variant.attributes || variant.attributes[attr] !== selectedAttributes[
+                                        attr]) {
+                                    matchedAll = false;
+                                    break;
+                                }
+                            }
+                            if (matchedAll) {
+                                matched = {
+                                    id,
+                                    ...variant
+                                };
+                                break;
+                            }
+                        }
+
+                        console.log('Đã chọn attributes:', selectedAttributes);
+                        console.log('Dữ liệu variantData:', variantData);
+                        console.log('Biến thể phù hợp:', matched);
+
+                        if (matched) {
+                            selectedVariantId = matched.id;
+                            selectedVariantIdInput.value = matched.id;
+
+                            // Hiển thị lại giá
+                            if (priceDisplay) {
+                                priceDisplay.innerHTML = `
+                                    <span class="text-red-600 text-2xl font-bold">${number_format(matched.price)} VNĐ</span>
+                                    <span class="text-gray-500 line-through text-md">${number_format(matched.original_price)} VNĐ</span>
+                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${matched.discount_percentage}%</span>
+                                `;
+                            }
+
+                            if (mainImage) {
+                                console.log('Hiển thị ảnh biến thể:', matched.image);
+                                mainImage.src = matched.image || '/storage/product_images/default.jpg';
+                            }
+                            if (stockInfo) stockInfo.textContent = `${matched.stock} sản phẩm có sẵn`;
+                        } else {
+                            // Không tìm thấy biến thể phù hợp → reset
+                            selectedVariantId = null;
+                            selectedVariantIdInput.value = '';
+                            resetToDefault(
+                                mainImage?.dataset.default || '/storage/product_images/default.jpg',
+                                parseFloat(priceDisplay?.dataset.price || 0),
+                                parseFloat(priceDisplay?.dataset.originalPrice || 0),
+                                parseInt(stockInfo?.dataset.stock || 0)
+                            );
+
+                        }
+
+                    });
+                });
+
+                // Xử lý thêm vào giỏ hàng
+                addToCartButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        if (!selectedVariantId && hasVariants) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vui lòng chọn biến thể!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        const quantity = parseInt(quantityInput.value);
+                        const stock = parseInt(stockInfo.textContent.split(' ')[0]);
+
+                        if (quantity > stock) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vượt quá số lượng tồn kho!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        fetch('/customer/cart/add', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    product_id: button.getAttribute('data-product-id'),
+                                    variant_id: selectedVariantId,
+                                    quantity: quantity
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'success',
+                                    title: data.message || 'Thêm vào giỏ thành công',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể thêm sản phẩm vào giỏ!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            });
+                    });
+                });
+            }
+
+
+            if (typeof initQuickViewScripts === 'function') {
+                initQuickViewScripts();
+            }
+
+            // Advertised Products Slider
+            function initAdvertisedSlider() {
+                const dots = document.querySelectorAll('.advertised-dot');
+                const slides = document.querySelectorAll('.advertised-slide');
+
+                if (dots.length === 0 || slides.length === 0) return;
+
+                let currentSlide = 0;
+                let isTransitioning = false;
+                let autoSlideInterval = null;
+
+                function goToSlide(slideIndex) {
+                    if (isTransitioning) return; // Prevent multiple transitions
+
+                    isTransitioning = true;
+
+                    // Remove active class from all slides and dots
+                    slides.forEach(slide => {
+                        slide.classList.remove('active', 'prev');
+                    });
+                    dots.forEach(dot => dot.classList.remove('active'));
+
+                    // Add active class to current slide and dot
+                    slides[slideIndex].classList.add('active');
+                    dots[slideIndex].classList.add('active');
+
+                    // Add prev class to previous slide for smooth transition
+                    if (slideIndex > 0) {
+                        slides[slideIndex - 1].classList.add('prev');
+                    }
+
+                    // Wait for transition to complete before allowing next transition
+                    setTimeout(() => {
+                        isTransitioning = false;
+                    }, 600); // Slightly longer than CSS transition (500ms)
+                }
+
+                function startAutoSlide() {
+                    if (autoSlideInterval) {
+                        clearInterval(autoSlideInterval);
+                    }
+
+                    autoSlideInterval = setInterval(() => {
+                        if (!isTransitioning) {
+                            currentSlide = (currentSlide + 1) % slides.length;
+                            goToSlide(currentSlide);
+                        }
+                    }, 4000); // 4 seconds between slides
+                }
+
+                function stopAutoSlide() {
+                    if (autoSlideInterval) {
+                        clearInterval(autoSlideInterval);
+                        autoSlideInterval = null;
+                    }
+                }
+
+                // Add click event to dots
+                dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => {
+                        if (!isTransitioning) {
+                            currentSlide = index;
+                            goToSlide(currentSlide);
+
+                            // Restart auto slide after manual click
+                            stopAutoSlide();
+                            startAutoSlide();
+                        }
+                    });
+                });
+
+                // Start auto slide
+                startAutoSlide();
+
+                // Pause auto slide on hover
+                const container = document.querySelector('.advertised-products-container');
+                if (container) {
+                    container.addEventListener('mouseenter', () => {
+                        stopAutoSlide();
                     });
 
+                    container.addEventListener('mouseleave', () => {
+                        startAutoSlide();
+                    });
                 }
+            }
 
+            // Initialize advertised slider when DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                initAdvertisedSlider();
+                initPriceHandling();
+            });
 
-                if (typeof initQuickViewScripts === 'function') {
-                    initQuickViewScripts();
-                }
-            </script>
-        @endpush
-    @endsection
+            // Handle long prices automatically
+            function initPriceHandling() {
+                const priceBoxes = document.querySelectorAll('.product-minimal .price-box');
+
+                priceBoxes.forEach(priceBox => {
+                    const price = priceBox.querySelector('.price');
+                    const delPrice = priceBox.querySelector('del');
+
+                    if (price) {
+                        // Check if price is too long
+                        if (price.scrollWidth > price.offsetWidth) {
+                            price.style.fontSize = '0.75rem';
+                        }
+                    }
+
+                    if (delPrice) {
+                        // Check if del price is too long
+                        if (delPrice.scrollWidth > delPrice.offsetWidth) {
+                            delPrice.style.fontSize = '0.625rem';
+                        }
+                    }
+                });
+            }
+        </script>
+    @endpush
+@endsection

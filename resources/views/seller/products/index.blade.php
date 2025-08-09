@@ -27,14 +27,11 @@
                             class="dropdown border border-gray-300 rounded-md px-3 py-2 text-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600">
                             <option value="">Tất cả</option>
                             <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Không hoạt động
-                            </option>
-                            <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Số lượng thấp
-                            </option>
-                            <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Hết
-                                hàng</option>
-                            <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Lên lịch
-                            </option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
+                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Không hoạt động</option>
+                            <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Số lượng thấp</option>
+                            <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Hết hàng</option>
+                            <option value="scheduled" {{ request('status') == 'scheduled' ? 'selected' : '' }}>Lên lịch</option>
                         </select>
                     </div>
                 </form>
@@ -115,19 +112,23 @@
                                 class="inline-block 
                                 {{ $product->status == 'active'
                                     ? 'bg-green-100 text-green-600'
-                                    : ($product->status == 'inactive'
-                                        ? 'bg-red-100 text-red-600'
-                                        : ($product->status == 'scheduled'
-                                            ? 'bg-blue-100 text-blue-600'
-                                            : 'bg-gray-200 text-gray-500')) }} 
+                                    : ($product->status == 'pending'
+                                        ? 'bg-yellow-100 text-yellow-600'
+                                        : ($product->status == 'inactive'
+                                            ? 'bg-red-100 text-red-600'
+                                            : ($product->status == 'scheduled'
+                                                ? 'bg-blue-100 text-blue-600'
+                                                : 'bg-gray-200 text-gray-500'))) }} 
                                 text-[10px] font-semibold px-2 py-0.5 rounded-md select-none">
                                 {{ $product->status == 'active'
                                     ? 'Hoạt động'
-                                    : ($product->status == 'inactive'
-                                        ? 'Không hoạt động'
-                                        : ($product->status == 'scheduled'
-                                            ? 'Lên lịch'
-                                            : 'Không xác định')) }}
+                                    : ($product->status == 'pending'
+                                        ? 'Chờ duyệt'
+                                        : ($product->status == 'inactive'
+                                            ? 'Không hoạt động'
+                                            : ($product->status == 'scheduled'
+                                                ? 'Lên lịch'
+                                                : 'Không xác định'))) }}
                             </span>
                         </td>
                         <td class="py-4 pr-6 text-right flex items-center gap-2 justify-end">

@@ -130,6 +130,16 @@ class CouponControllerSeller extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Xác định created_by_role dựa trên user hiện tại
+        $createdByRole = 'admin';
+        if (Auth::user() && Auth::user()->seller) {
+            $createdByRole = 'shop';
+        }
+
+        Log::info('Created by role', [
+            'created_by_role' => $createdByRole
+        ]);
+
         try {
             // Handle image upload
             $imagePath = null;
@@ -137,7 +147,7 @@ class CouponControllerSeller extends Controller
                 $imagePath = $request->file('image')->store('coupons', 'public');
             }
 
-            Coupon::create([
+            $couponData = [
                 'code' => $request->code,
                 'name' => $request->name,
                 'description' => $request->description,
@@ -151,13 +161,18 @@ class CouponControllerSeller extends Controller
                 'max_uses_total' => $request->max_uses_total,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
+                'created_by_role' => $createdByRole,
                 'rank_limit' => $request->rank_limit,
                 'is_active' => $request->has('is_active'),
                 'is_public' => $request->has('is_public'),
                 'created_by' => Auth::id(),
                 'shop_id' => $shop->id,
                 'status' => 'active',
-            ]);
+            ];
+
+            Log::info('Creating coupon', $couponData);
+
+            Coupon::create($couponData);
 
             return redirect()->route('seller.coupon.index')->with('success', 'Mã giảm giá đã được tạo thành công.');
         } catch (\Exception $e) {

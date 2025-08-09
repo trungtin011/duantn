@@ -85,7 +85,20 @@ class ReviewController extends Controller
 
     public function index()
     {
-        $reviews = Review::with('user', 'product.shop', 'product.images')->latest()->get();
+        $seller = Auth::user();
+
+        // Lấy shop của seller (vì shops.ownerID trỏ đến users.id)
+        $shop = $seller->shop;
+
+        // Lấy tất cả sản phẩm thuộc shop
+        $productIds = $shop->products()->select('products.id')->pluck('id');
+
+        // Lấy tất cả đánh giá của các sản phẩm đó
+        $reviews = OrderReview::with(['product', 'user'])
+            ->whereIn('product_id', $productIds)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
         return view('seller.reviews.index', compact('reviews'));
     }
 
@@ -105,5 +118,26 @@ class ReviewController extends Controller
         }
 
         return redirect()->route('seller.reviews.index')->with('error', 'Không tìm thấy đánh giá!');
+    }
+    public function reply(Request $request, $id)
+    {
+        $request->validate([
+            'seller_reply' => 'required|string|max:1000',
+        ]);
+
+        $review = OrderReview::with('product.shop')->findOrFail($id);
+
+        if ($review->product->shop->ownerID !== Auth::id()) {
+            abort(403, 'Bạn không có quyền phản hồi đánh giá này.');
+        }
+
+        if ($review->seller_reply) {
+            return redirect()->back()->with('error', 'Bạn đã phản hồi đánh giá này rồi.');
+        }
+
+        $review->seller_reply = $request->seller_reply;
+        $review->save();
+
+        return redirect()->back()->with('success', 'Phản hồi của bạn đã được gửi.');
     }
 }

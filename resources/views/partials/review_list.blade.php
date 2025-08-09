@@ -1,8 +1,7 @@
 @foreach ($reviews as $review)
     <div class="border-b py-4">
         <div class="flex">
-            <img src="{{ $review->user->avatar ? Storage::url($review->user->avatar) : asset('storage/user_avatars/default_avatar.png') }}"
-                alt="Avatar" class="w-10 h-10 rounded-full object-cover mr-3" loading="lazy">
+            @include('partials.user-avatar', ['user' => $review->user, 'size' => 'lg'])
             <div class="flex flex-col gap-1">
                 <h4 class="mr-2 text-gray-800 text-sm">
                     {{ $review->user->fullname ?? 'Người dùng ẩn danh' }}

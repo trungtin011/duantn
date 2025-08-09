@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\HelpController;
 use App\Http\Controllers\Admin\AdminShopController;
 use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsControllers;
+
 // seller
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
@@ -40,6 +41,11 @@ use App\Http\Controllers\Seller\SellerSettingsController;
 use App\Http\Controllers\Seller\ChatSettingsController;
 use App\Http\Controllers\Seller\ShopCategoryController;
 use App\Http\Controllers\Seller\CouponControllerSeller;
+use App\Http\Controllers\Seller\ReviewController;
+use App\Http\Controllers\Seller\AdsCampaignController; // Thêm dòng này
+use App\Http\Controllers\Seller\WalletController;
+use App\Http\Controllers\Seller\WithdrawController;
+
 //user
 use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\User\HomeController;
@@ -59,9 +65,10 @@ use App\Http\Controllers\User\FrontendController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\User\ComboController as UserComboController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\User\ComboController as UserComboController;
+use App\Http\Controllers\MessageController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -138,6 +145,9 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('/user/{user}', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    Route::post('admin/users/{id}/ban', [UserControllerAdmin::class, 'ban'])->name('admin.users.ban');
+    Route::post('admin/users/{id}/unban', [UserControllerAdmin::class, 'unban'])->name('admin.users.unban');
+
 
     //quản lý review
     Route::get('/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
@@ -148,6 +158,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     // products admin
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductControllerAdmin::class, 'index'])->name('admin.products.index');
+        Route::get('/select-shop', [ProductControllerAdmin::class, 'selectShop'])->name('admin.products.select-shop');
         Route::get('/create', [ProductControllerAdmin::class, 'create'])->name('admin.products.create');
         Route::post('/', [ProductControllerAdmin::class, 'store'])->name('admin.products.store');
         Route::get('/{product}/variants/create', [ProductControllerAdmin::class, 'createVariant'])->name('admin.products.variants.create');
@@ -156,8 +167,12 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::put('/{id}', [ProductControllerAdmin::class, 'update'])->name('admin.products.update');
         Route::delete('/{id}', [ProductControllerAdmin::class, 'destroy'])->name('admin.products.destroy');
         Route::get('/{id}', [ProductControllerAdmin::class, 'show'])->name('admin.products.show');
+        Route::post('/{id}/approve', [ProductControllerAdmin::class, 'approveProduct'])->name('admin.products.approve');
+        Route::post('/{id}/reject', [ProductControllerAdmin::class, 'rejectProduct'])->name('admin.products.reject');
+        Route::post('/approve-multiple', [ProductControllerAdmin::class, 'approveMultiple'])->name('admin.products.approveMultiple');
         Route::get('/get-sub-brands', [ProductControllerAdmin::class, 'getSubBrands'])->name('admin.get-sub-brands');
         Route::get('/get-sub-categories', [ProductControllerAdmin::class, 'getSubCategories'])->name('admin.get-sub-categories');
+        Route::get('admin/products/ajax', [ProductControllerAdmin::class, 'ajaxList'])->name('admin.products.ajax');
     });
 
     // attributes
@@ -177,23 +192,25 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::put('/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
         Route::post('/{id}/refund', [AdminOrderController::class, 'refund'])->name('admin.orders.refund');
         Route::get('/report', [AdminOrderController::class, 'report'])->name('admin.orders.report');
+        Route::get('admin/orders/ajax', [AdminOrderController::class, 'ajaxList'])->name('admin.orders.ajax');
+        Route::get('admin/orders/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
     });
-
 
     // notifications
     Route::prefix('notifications')->group(function () {
-        Route::get('/edit/{id}', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
+        Route::get('/ajax', [AdminNotificationsControllers::class, 'ajax'])->name('admin.notifications.ajax');
         Route::get('/create', [AdminNotificationsControllers::class, 'create'])->name('admin.notifications.create');
         Route::get('/', [AdminNotificationsControllers::class, 'index'])->name('admin.notifications.index');
         Route::post('/', [AdminNotificationsControllers::class, 'store'])->name('admin.notifications.store');
+        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
+        Route::get('/edit/{id}', [AdminNotificationsControllers::class, 'edit'])->name('admin.notifications.edit');
         Route::post('/mark-all-as-read', [AdminNotificationsControllers::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
         Route::delete('/{id}', [AdminNotificationsControllers::class, 'destroy'])->name('admin.notifications.destroy');
-        Route::get('/{id}', [AdminNotificationsControllers::class, 'show'])->name('admin.notifications.show');
-        Route::put('/{id}', [AdminNotificationsControllers::class, 'update'])->name('admin.notifications.update');
         Route::patch('/{id}/toggle-status', [AdminNotificationsControllers::class, 'toggleStatus'])->name('admin.notifications.toggleStatus');
+        Route::get('/{id}', [AdminNotificationsControllers::class, 'show'])->name('admin.notifications.show');
     });
 
-    // products categories
+    // categories
     Route::prefix('categories')->group(function () {
         Route::get('/', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
         Route::post('/', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
@@ -216,6 +233,8 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::delete('/logo', [AdminSettingsController::class, 'destroyLogo'])->name('admin.settings.destroyLogo');
         Route::delete('/banner', [AdminSettingsController::class, 'destroyBanner'])->name('admin.settings.destroyBanner');
         Route::delete('/favicon', [AdminSettingsController::class, 'destroyFavicon'])->name('admin.settings.destroyFavicon');
+        Route::get('/emails', [AdminSettingsController::class, 'editEmails'])->name('admin.settings.emails');
+        Route::post('/emails', [AdminSettingsController::class, 'updateEmails'])->name('admin.settings.emails.update');
     });
 
     // users
@@ -225,6 +244,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::put('/{id}', [UserControllerAdmin::class, 'update'])->name('admin.users.update');
         Route::get('/{id}', [UserControllerAdmin::class, 'show'])->name('admin.users.show');
         Route::delete('/{id}', [UserControllerAdmin::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('admin/users/ajax', [UserControllerAdmin::class, 'ajaxList'])->name('admin.users.ajax');
     });
 
     // reports
@@ -232,6 +252,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/', [AdminReportController::class, 'index'])->name('admin.reports.index');
         Route::get('/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
         Route::put('/{report}/update-status', [AdminReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
+        Route::get('admin/reports/ajax', [AdminReportController::class, 'ajaxList'])->name('admin.reports.ajax');
     });
 
     // Admin Coupon Routes
@@ -278,6 +299,35 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         return view('seller.home');
     })->name('seller.dashboard');
 
+    // Ads Campaigns Routes
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
+
+    Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
+    Route::get('/wallet/withdraw', [WithdrawController::class, 'index'])->name('seller.withdraw.index');
+    Route::post('/wallet/withdraw', [WithdrawController::class, 'requestWithdraw'])->name('seller.withdraw.request');
+    Route::get('/withdraw', [WalletController::class, 'showWithdrawForm'])->name('seller.withdraw.create');
+    Route::post('/withdraw', [WalletController::class, 'processWithdraw'])->name('seller.withdraw.store');
+    Route::post('/wallet/withdraw', [WalletController::class, 'processWithdraw'])->name('wallet.withdraw.process');
+    Route::get('/wallet/withdraw', [WalletController::class, 'showWithdrawForm'])->name('wallet.withdraw');
+    Route::post('/wallet/transfer-revenue', [WalletController::class, 'transferCompletedOrdersToWallet'])->name('wallet.transfer.revenue');
+    Route::get('linked-banks', [WalletController::class, 'showLinkedBanks'])->name('seller.linked-banks.index');
+    Route::post('linked-banks', [WalletController::class, 'storeLinkedBank'])->name('seller.linked-banks.store');
+    Route::delete('linked-banks/{id}', [WalletController::class, 'deleteLinkedBank'])->name('seller.linked-banks.destroy');
+    Route::post('/wallet/reverse-revenue', [WalletController::class, 'reverseTransferredRevenue'])->name('wallet.reverse.revenue');
+
+
+
+
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
         Route::get('/{code}', [SellerOrderController::class, 'show'])->name('seller.order.show');
@@ -298,6 +348,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::get('/{id}', [ProductControllerSeller::class, 'show'])->name('seller.products.show');
         Route::get('/api/attribute-values', [ProductControllerSeller::class, 'getAttributeValues']);
         Route::post('/upload', [ProductControllerSeller::class, 'uploadImage'])->name('seller.upload.image');
+        Route::post('/check-name', [ProductControllerSeller::class, 'checkProductName'])->name('seller.products.check-name');
 
         Route::get('/simple', [ProductController::class, 'simple'])->name('product.simple');
         Route::get('/variable', [ProductController::class, 'variable'])->name('product.variable');
@@ -336,10 +387,23 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
         Route::patch('/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
         Route::delete('/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
     });
+
+    Route::get('/orders', function () {
+        return view('seller.orders');
+    })->name('seller.orders');
+
+    Route::get('/combos', [ComboController::class, 'index'])->name('seller.combo.index');
+    Route::get('/combos/create', [ComboController::class, 'create'])->name('seller.combo.create');
+    Route::post('/combos', [ComboController::class, 'store'])->name('seller.combo.store');
+    Route::get('/combos/{id}/edit', [ComboController::class, 'edit'])->name('seller.combo.edit');
+    Route::patch('/combos/{id}', [ComboController::class, 'update'])->name('seller.combo.update');
+    Route::delete('/combos/{id}', [ComboController::class, 'destroy'])->name('seller.combo.destroy');
 });
 
 Route::prefix('customer')->group(function () {
+    // Route chi tiết sản phẩm
     Route::get('/products/product_detail/{slug}', [ProductController::class, 'show'])->name('product.show');
+    // Route xem nhanh sản phẩm
     Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
     // Route tìm kiếm sản phẩm
     Route::get('/search', [ProductController::class, 'search'])->name('search');
@@ -349,7 +413,7 @@ Route::prefix('customer')->group(function () {
     Route::post('/shop/{shop}/follow', [ShopController::class, 'follow'])->middleware('auth')->name('shop.follow');
     // Route unfollow shop
     Route::post('/shop/{shop}/unfollow', [ShopController::class, 'unfollow'])->name('shop.unfollow');
-    // Route search products
+    // Route tìm kiếm sản phẩm của shop
     Route::get('/shop/{shop}/search', [ShopController::class, 'searchProducts'])->name('shop.search');
     // Route show shop
     Route::get('/shop/{shop}', [ShopController::class, 'show'])->name('shop.show');
@@ -357,13 +421,21 @@ Route::prefix('customer')->group(function () {
     Route::get('/shop/{shop}/category/{category}', [ShopController::class, 'productsByCategory'])->name('shop.category');
     // Route bình luận sản phẩm
     Route::post('/product/{productId}/review', [ProductController::class, 'storeReview'])->name('product.review');
+    // Route thêm/xoá sản phẩm yêu thích
     Route::post('/product/{productId}/toggle-wishlist', [ProductController::class, 'toggleWishlist'])->name('product.toggleWishlist');
+    // Route báo cáo sản phẩm
     Route::post('/product/{product}/report', [ProductController::class, 'reportProduct'])->name('product.report');
+    // Route lưu mã giảm giá
     Route::post('/coupon/{couponId}/save', [ProductController::class, 'saveCoupon'])->name('coupon.save');
+    // Route lưu tất cả mã giảm giá của shop
     Route::post('/shop/{shopId}/save-all-coupons', [ProductController::class, 'saveAllCoupons'])->name('shop.saveAllCoupons');
-    // Like/Unlike review (OrderReview)
+    // Route like/unlike review (OrderReview)
     Route::post('/review/{reviewId}/like', [ProductController::class, 'likeReview'])->name('review.like')->middleware('auth');
-    // Route mua ngay
+    // Route Danh sách combo
+    Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
+    // Route xem chi tiết combo
+    Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
+    // Route mua ngay sản phẩm
     Route::post('/instant-buy', [ProductController::class, 'instantBuy'])->name('instant-buy');
     Route::get('/contact', function () {
         return view('user.contact');
@@ -539,7 +611,19 @@ Route::post('/customer/cart/add-multi', [CartController::class, 'addMultiToCart'
 Route::post('/customer/apply-app-discount', [UserCouponController::class, 'applyAppDiscount'])->name('customer.apply-app-discount');
 
 Route::middleware(['auth'])->group(function () {
-    Route::post('/order-review/store', [UserOrderController::class, 'storeReview'])->name('reviews.store');
+    Route::post('/order-review/store', [UserOrderController::class, 'storeReview'])->name('order.reviews.store');
+    // Ads Campaigns Routes
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
 });
 
 Route::get('/login/qr', [QrLoginController::class, 'showQrLogin'])->name('login.qr.generate');
@@ -584,14 +668,55 @@ Route::middleware('auth')->group(function () {
 });
 Route::post('/account/password/request-confirm', [UserController::class, 'requestPasswordChangeConfirm'])->name('account.password.request.confirm');
 Route::post('/account/password/confirm-code', [UserController::class, 'confirmPasswordChangeCode'])->name('account.password.confirm.code');
-Route::post('/account/password/verify-code', [UserController::class, 'confirmPasswordChangeCode'])
+Route::post('/account/password/verify-code', [UserController::class, 'verifyPasswordCode'])
     ->name('account.password.code.verify');
 Route::get('/account/password/verify-code', [UserController::class, 'showVerifyCodeForm'])
     ->name('account.password.code.verify.form');
 
+// Test email route for debugging
+Route::post('/account/test-email', [UserController::class, 'testEmail'])->name('account.test.email');
+
+// Debug route for checking reset code
+Route::get('/account/debug-reset_code', [UserController::class, 'debugResetCode'])->name('account.debug.reset.code');
+
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
-Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
+
 Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
 Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
+Route::get('/seller/reviews', [ReviewController::class, 'index'])->name('seller.reviews.index');
+Route::post('/seller/reviews/{review}/reply', [ReviewController::class, 'reply'])
+    ->name('seller.reviews.reply');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/messages/{shop_id}', [ChatController::class, 'messages'])->name('chat.messages');
+    Route::post('/chat/send/{shop_id}', [ChatController::class, 'send'])->name('chat.send');
+    Route::get('/chat/popup', [ChatController::class, 'popup'])->name('chat.popup');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/seller/chat', [\App\Http\Controllers\ChatController::class, 'sellerIndex'])->name('seller.chat');
+    Route::get('/seller/chat/messages/{customer_id}', [\App\Http\Controllers\ChatController::class, 'sellerMessages'])->name('seller.chat.messages');
+    Route::post('/seller/chat/send/{customer_id}', [\App\Http\Controllers\ChatController::class, 'sellerSend'])->name('seller.chat.send');
+});
+
+// Route chi tiết shop
+Route::get('/shop/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
+
+
+Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.')->group(function () {
+    // Ads Campaigns Routes (Added as a separate group to avoid conflicts)
+    Route::prefix('ads-campaigns')->name('ads_campaigns.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Seller\AdsCampaignController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\Seller\AdsCampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'addProducts'])->name('add_products');
+        Route::post('/{campaign_id}/add-products', [App\Http\Controllers\Seller\AdsCampaignController::class, 'storeProducts'])->name('store_products');
+        Route::get('/{id}/edit', [App\Http\Controllers\Seller\AdsCampaignController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\Seller\AdsCampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [App\Http\Controllers\Seller\AdsCampaignController::class, 'toggleStatus'])->name('toggle_status');
+    });
+});

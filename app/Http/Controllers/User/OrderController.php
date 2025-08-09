@@ -42,27 +42,25 @@ class OrderController extends Controller
             ->pluck('product_id')
             ->toArray();
 
-        if($status == 'pending'){
+        if ($status == 'pending') {
             $orders = Order::where('userID', $user->id)
                 ->where('order_status', $status)
-                ->where('payment_status','pending')
-                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->where('payment_status', 'pending')
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.items.combo.products.variant', 'shopOrders.shop'])
                 ->orderBy('created_at', 'desc')
                 ->paginate($perPage);
-        }
-        elseif($status == 'paid'){
+        } elseif ($status == 'paid') {
             $orders = Order::where('userID', $user->id)
                 ->where('order_status', 'pending')
                 ->whereIn('payment_status', ['paid', 'cod_paid'])
-                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.items.combo.products.variant', 'shopOrders.shop'])
                 ->orderBy('created_at', 'desc')
                 ->paginate($perPage);
-        }
-        else{
+        } else {
             $orders = Order::where('userID', $user->id)
                 ->where('order_status', $status)
-                ->where('payment_status', '!=' ,'failed')
-                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.shop'])
+                ->where('payment_status', '!=', 'failed')
+                ->with(['shopOrders.items.product.images', 'shopOrders.items.variant', 'shopOrders.items.combo.products.variant', 'shopOrders.shop'])
                 ->orderBy('created_at', 'desc')
                 ->paginate($perPage);
         }
@@ -81,12 +79,21 @@ class OrderController extends Controller
 
     public function parentOrder()
     {
-        return view('user.order.parent-order');
+        Log::info('OrderController@parentOrder called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
+        return view('user.order.parent-order', compact('user'));
     }
 
     public function show($shopOrderID)
     {
+        Log::info('OrderController@show called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
         $userId = Auth::id();
+
+        // Lấy danh sách sản phẩm đã đánh giá
+        $reviewedProductIds = OrderReview::where('user_id', $user->id)
+            ->pluck('product_id')
+            ->toArray();
 
         $shopOrder = \App\Models\ShopOrder::with([
             'items.product.images' => function ($query) {
@@ -95,6 +102,7 @@ class OrderController extends Controller
             'items.variant' => function ($query) {
                 $query->select('id', 'productID', 'variant_name', 'price', 'sale_price');
             },
+            'items.combo.products.variant',
             'shop',
             'order.address',
             'order.user' => function ($query) {
@@ -120,12 +128,21 @@ class OrderController extends Controller
             'orderItems' => $orderItems,
             'orderAddress' => $orderAddress,
             'parentOrder' => $order,
+            'user' => $user,
+            'reviewedProductIds' => $reviewedProductIds,
         ]);
     }
 
     public function showParent($orderCode)
     {
+        Log::info('OrderController@showParent called', ['user_id' => Auth::id()]);
+        $user = Auth::user();
         $userId = Auth::id();
+
+        // Lấy danh sách sản phẩm đã đánh giá
+        $reviewedProductIds = OrderReview::where('user_id', $user->id)
+            ->pluck('product_id')
+            ->toArray();
 
         $parentOrder = Order::with([
             'shopOrders.items.product.images' => function ($query) {
@@ -134,6 +151,7 @@ class OrderController extends Controller
             'shopOrders.items.variant' => function ($query) {
                 $query->select('id', 'productID', 'variant_name', 'price', 'sale_price');
             },
+            'shopOrders.items.combo.products.variant',
             'shopOrders.shop',
             'address',
             'user' => function ($query) {
@@ -157,6 +175,8 @@ class OrderController extends Controller
             'parentOrder' => $parentOrder,
             'orderAddress' => $orderAddress,
             'statuses' => $statuses,
+            'user' => $user,
+            'reviewedProductIds' => $reviewedProductIds,
         ]);
     }
 
@@ -239,9 +259,9 @@ class OrderController extends Controller
             'address',
             'shopOrders.items'
         ])
-        ->whereNotNull('userID')
-        ->where('userID', $userId)
-        ->findOrFail($orderID);
+            ->whereNotNull('userID')
+            ->where('userID', $userId)
+            ->findOrFail($orderID);
 
         try {
             $this->validateReorderItems($originalOrder->items);
@@ -282,8 +302,8 @@ class OrderController extends Controller
                 OrderAddress::create([
                     'order_id'      => $newOrder->id,
                     'receiver_name' => $address->receiver_name,
-                    'receiver_phone'=> $address->receiver_phone,
-                    'receiver_email'=> $address->receiver_email,
+                    'receiver_phone' => $address->receiver_phone,
+                    'receiver_email' => $address->receiver_email,
                     'address'       => $address->address,
                     'province'      => $address->province,
                     'district'      => $address->district,
@@ -328,7 +348,7 @@ class OrderController extends Controller
                         'product_name'   => $item->product_name,
                         'brand'          => $item->brand,
                         'category'       => $item->category,
-                        'attribute_value'=> $item->attribute_value,
+                        'attribute_value' => $item->attribute_value,
                         'attribute_name' => $item->attribute_name,
                         'product_image'  => $item->product_image,
                         'quantity'       => $item->quantity,
@@ -455,7 +475,7 @@ class OrderController extends Controller
 
             $shopOrder->status = 'completed';
             $shopOrder->save();
-            
+
             $shop = $shopOrder->shop;
             $shop->total_sales += $shopOrder->items->sum('total_price');
             $shop->save();
@@ -477,7 +497,7 @@ class OrderController extends Controller
                 $customer = Customer::where('userID', $order->userID)->first();
                 if ($customer) {
                     $totalAmount = $shopOrder->items->sum('total_price');
-                    $pointRate = 0.01; 
+                    $pointRate = 0.01;
                     $earnedPoints = floor($totalAmount * $pointRate);
 
                     $rankPercent = match ($customer->rank) {
@@ -512,7 +532,7 @@ class OrderController extends Controller
                 $platform_revenues->shop_id = $shopOrder->shopID;
                 $platform_revenues->shop_name = $shopOrder->shop->shop_name;
                 $platform_revenues->payment_method = $shopOrder->order->payment_method;
-                $platform_revenues->commission_rate = 0.05; 
+                $platform_revenues->commission_rate = 0.05;
                 $platform_revenues->commission_amount = $shopOrder->items->sum('total_price') * $platform_revenues->commission_rate;
                 $platform_revenues->total_amount = $shopOrder->items->sum('total_price');
                 $platform_revenues->net_revenue = $shopOrder->items->sum('total_price') - $platform_revenues->commission_amount;
@@ -520,11 +540,128 @@ class OrderController extends Controller
                 $platform_revenues->confirmed_at = now();
                 $platform_revenues->save();
             }
-            
+
             return response()->json(['success' => true, 'message' => 'Đã xác nhận nhận hàng thành công']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Lỗi khi xác nhận nhận hàng: ' . $e->getMessage()]);
         }
     }
-    
-}   
+
+    public function storeReview(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+        }
+
+        $request->validate([
+            'orderID' => 'required|exists:shop_order,id',
+            'shopID' => 'required|exists:shops,id',
+            'productID' => 'required|exists:products,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'video' => 'nullable|file|max:10240',
+        ]);
+
+        try {
+            // Kiểm tra xem sản phẩm đã được đánh giá chưa
+            $existingReview = OrderReview::where('user_id', $user->id)
+                ->where('product_id', $request->productID)
+                ->where('shop_order_id', $request->orderID)
+                ->first();
+
+            if ($existingReview) {
+                return response()->json(['success' => false, 'message' => 'Bạn đã đánh giá sản phẩm này rồi']);
+            }
+
+            // Kiểm tra đơn hàng đã hoàn thành chưa
+            $shopOrder = ShopOrder::where('id', $request->orderID)
+                ->whereHas('order', function ($query) use ($user) {
+                    $query->where('userID', $user->id);
+                })
+                ->first();
+
+            if (!$shopOrder || $shopOrder->status !== 'completed') {
+                return response()->json(['success' => false, 'message' => 'Chỉ có thể đánh giá sản phẩm từ đơn hàng đã hoàn thành']);
+            }
+
+            DB::beginTransaction();
+
+            // Tạo đánh giá
+            $review = OrderReview::create([
+                'user_id' => $user->id,
+                'product_id' => $request->productID,
+                'shop_id' => $request->shopID,
+                'shop_order_id' => $request->orderID,
+                'rating' => $request->rating,
+                'comment' => $request->comment,
+            ]);
+
+            // Xử lý upload hình ảnh
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('reviews/images', 'public');
+
+                    // Lưu vào bảng order_review_images
+                    \App\Models\OrderReviewImage::create([
+                        'review_id' => $review->id,
+                        'image_path' => $path,
+                    ]);
+                }
+            }
+
+            // Xử lý upload video
+            if ($request->hasFile('video')) {
+                $videoPath = $request->file('video')->store('reviews/videos', 'public');
+
+                // Lưu vào bảng order_review_videos
+                \App\Models\OrderReviewVideo::create([
+                    'review_id' => $review->id,
+                    'video_path' => $videoPath,
+                ]);
+            }
+
+            // Tính toán điểm thưởng
+            $points = 0;
+            $commentLength = strlen($request->comment);
+            $hasImages = $request->hasFile('images') && count($request->file('images')) > 0;
+            $hasVideo = $request->hasFile('video');
+
+            if ($commentLength >= 50) {
+                if ($hasImages && $hasVideo) {
+                    $points = 200;
+                } elseif ($hasImages || $hasVideo) {
+                    $points = 100;
+                }
+            }
+
+            // Cộng điểm cho user nếu có
+            if ($points > 0) {
+                $customer = Customer::where('userID', $user->id)->first();
+                if ($customer) {
+                    $customer->total_points += $points;
+                    $customer->save();
+
+                    PointTransaction::create([
+                        'userID' => $user->id,
+                        'orderID' => $request->orderID,
+                        'points' => $points,
+                        'type' => 'bonus',
+                        'description' => 'Nhận điểm từ đánh giá sản phẩm #' . $request->productID,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đánh giá đã được gửi thành công!' . ($points > 0 ? " Bạn đã nhận được {$points} xu!" : '')
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi khi tạo đánh giá: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra khi gửi đánh giá: ' . $e->getMessage()]);
+        }
+    }
+}

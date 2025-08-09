@@ -14,13 +14,17 @@ use Illuminate\Support\Facades\DB;
 class AppServiceProvider extends ServiceProvider
 {
 
+
     public function register(): void
     {
-        //
+        // Load helper functions
+        require_once app_path('Http/Helpers.php');
     }
 
     public function boot(): void
     {
+
+
         View::composer('layouts.app', function ($view) {
             $settings = DB::table('settings')->first();
             $view->with('settings', $settings);
