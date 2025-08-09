@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\BannerController;
 
 // seller
+use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Seller\ProductControllerSeller;
 use App\Http\Controllers\Seller\RegisterSeller\RegisterShopController;
 use App\Http\Controllers\Seller\OrderController as SellerOrderController;
@@ -588,7 +589,7 @@ Route::prefix('customer')->group(function () {
         Route::get('/checkout/vnpay/payment/{order_code}', [VNPayController::class, 'vnpayPayment'])->name('checkout.vnpay.payment');
 
         Route::prefix('user/order')->group(function () {
-            Route::get('/parent-order', [OrderController::class, 'parentOrder'])->name('user.order.parent-order');
+            Route::match(['get', 'post'], '/parent-order', [OrderController::class, 'parentOrder'])->name('user.order.parent-order');
             Route::get('/', [OrderController::class, 'getParentOrdersByStatus'])->name('order_history');
             Route::get('/ajax/{status}', [OrderController::class, 'getParentOrdersByStatus'])->name('user.order.ajax');
             Route::get('/{orderID}', [OrderController::class, 'show'])->name('user.order.detail');
@@ -773,3 +774,12 @@ Route::post('/api/upload-cccd-temp', function(Request $request) {
         'message' => 'Không có file được upload'
     ]);
 })->middleware('web');
+Route::get('/admin/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
+Route::get('/admin/reviews/ajax', [AdminReviewController::class, 'ajax'])->name('admin.reviews.ajax');
+
+Route::post('/admin/reviews/{shop}/warn', [AdminReviewController::class, 'warnSeller'])->name('admin.reviews.warnSeller');
+
+Route::post('/admin/reviews/{user}/ban', [AdminReviewController::class, 'banCustomer'])->name('admin.reviews.banCustomer');
+
+Route::delete('/admin/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+Route::post('/admin/reviews/{shop}/ban', [AdminReviewController::class, 'banSeller'])->name('admin.reviews.banSeller');

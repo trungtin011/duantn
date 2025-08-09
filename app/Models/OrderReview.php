@@ -8,12 +8,11 @@ class OrderReview extends Model
 {
     protected $table = 'order_reviews';
 
-    protected $fillable = ['user_id', 'product_id', 'shop_order_id', 'shop_id', 'rating', 'comment'];
-
+    protected $fillable = ['user_id', 'product_id', 'shop_order_id', 'shop_id', 'rating', 'comment', 'seller_reply'];
 
     public function shopOrder()
     {
-        return $this->belongsTo(ShopOrder::class, 'shopID');
+        return $this->belongsTo(ShopOrder::class, 'shop_order_id');
     }
 
     public function user()
