@@ -14,6 +14,17 @@ class AdsCampaign extends Model
         'start_date',
         'end_date',
         'status',
+        'bid_amount',
+        'impressions',
+        'clicks',
+        'total_spent',
+    ];
+
+    protected $casts = [
+        'bid_amount' => 'decimal:2',
+        'total_spent' => 'decimal:2',
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
     ];
 
     public function shop()
@@ -24,5 +35,10 @@ class AdsCampaign extends Model
     public function adsCampaignItems()
     {
         return $this->hasMany(AdsCampaignItem::class);
+    }
+
+    public function adClicks()
+    {
+        return $this->hasMany(AdClick::class, 'ads_campaign_id');
     }
 }

@@ -216,6 +216,9 @@
 </head>
 
 <body class="font-[Inter]">
+    <!-- Ad Click Notifications -->
+    @include('partials.ad_click_notifications')
+    
     <!-- Loader Fullscreen -->
     <div id="global-loader"
         style="position:fixed;z-index:99999;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;">
@@ -718,7 +721,7 @@
                                         Sản phẩm của tôi
                                     </a>
                                     <a href="{{ route('seller.order.index') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-6 py-3 text-white hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -1205,7 +1208,8 @@
             }
         });
     </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 
 </html>
