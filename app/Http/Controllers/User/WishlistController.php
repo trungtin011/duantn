@@ -19,9 +19,12 @@ class WishlistController extends Controller
         $wishlistItems = Wishlist::where('userID', $user->id)
             ->with([
                 'product' => function ($query) {
-                    $query->with(['images' => function ($q) {
-                        $q->where('is_default', 1);
-                    }]);
+                    $query->with([
+                        'images' => function ($q) {
+                            $q->where('is_default', 1);
+                        },
+                        'variants' // Eager load variants for variant selection modal
+                    ]);
                 },
                 'shop'
             ])
