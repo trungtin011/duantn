@@ -1,5 +1,5 @@
 <div class="max-w-5xl mx-auto p-4">
-    @if($advertisedProductsByShop->isNotEmpty())
+    @if ($advertisedProductsByShop->isNotEmpty())
         @php
             $totalShops = $advertisedProductsByShop->count();
             $firstShop = $advertisedProductsByShop->first()['shop'];
@@ -56,7 +56,7 @@
                                 </div>
                             </a>
                         </div>
-                        
+
                         <div class="space-y-1">
                             <h4 class="font-medium text-gray-800 text-sm line-clamp-2">
                                 <a href="{{ route('ad.click') }}?ad_click_type=product_detail&shop_id={{ $firstShop->id }}&campaign_id={{ $firstShopAds['all_campaigns']->first()['campaign']->id }}&product_id={{ $product->id }}" 
@@ -64,18 +64,18 @@
                                     {{ $product->name }}
                                 </a>
                             </h4>
-                            
+
                             <div class="flex items-center gap-1">
                                 <span class="text-red-500 font-bold text-sm">
                                     ₫{{ number_format($product->getCurrentPriceAttribute()) }}
                                 </span>
-                                @if($product->getDiscountPercentageAttribute() > 0)
+                                @if ($product->getDiscountPercentageAttribute() > 0)
                                     <span class="text-gray-400 line-through text-xs">
                                         ₫{{ number_format($product->price) }}
                                     </span>
                                 @endif
                             </div>
-                            
+
                             <div class="text-xs text-gray-500">
                                 Đã bán {{ number_format($product->sold_quantity) }}
                             </div>
