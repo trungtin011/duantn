@@ -46,18 +46,7 @@
                     <p class="text-red-500 text-xs italic">{{ $message }}</p>
                 @enderror
             </div>
-            <div class="mb-4">
-                <label for="status" class="block text-gray-700 text-sm font-bold mb-2">Trạng thái:</label>
-                <select class="form-input w-full border border-gray-300 rounded-md p-2" id="status" name="status">
-                    <option value="pending" {{ old('status', $campaign->status) == 'pending' ? 'selected' : '' }}>Chờ xử lý</option>
-                    <option value="active" {{ old('status', $campaign->status) == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                    <option value="ended" {{ old('status', $campaign->status) == 'ended' ? 'selected' : '' }}>Đã kết thúc</option>
-                    <option value="cancelled" {{ old('status', $campaign->status) == 'cancelled' ? 'selected' : '' }}>Đã hủy</option>
-                </select>
-                @error('status')
-                    <p class="text-red-500 text-xs italic">{{ $message }}</p>
-                @enderror
-            </div>
+            
             <div class="flex items-center justify-end mt-6">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Cập nhật chiến dịch

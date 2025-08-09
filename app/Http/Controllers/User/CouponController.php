@@ -11,6 +11,26 @@ use App\Models\Customer;
 
 class CouponController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $status = $request->get('status', 'available'); // available|used|expired|all
+
+        $query = CouponUser::with(['coupon.shop'])
+            ->where('user_id', $user->id)
+            ->when($status !== 'all', function ($q) use ($status) {
+                return $q->where('status', $status);
+            })
+            ->orderByDesc('id');
+
+        $saved = $query->paginate(12);
+
+        return view('user.account.coupons.index', [
+            'saved' => $saved,
+            'status' => $status,
+            'user' => $user,
+        ]);
+    }
     public function applyAppDiscount(Request $request)
     {
         $user = Auth::user();

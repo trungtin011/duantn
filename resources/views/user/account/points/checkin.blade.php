@@ -2,7 +2,13 @@
 
 @section('account-content')
     <div class="bg-white px-6 py-4 rounded shadow">
-        <div class="py-10 w-1/2 p-3 rounded" style="background: linear-gradient(to top, #ec838f, #EF3248)">
+        <div class="pb-10 pt-3 w-full p-3 rounded" style="background: linear-gradient(to top, #ec838f, #EF3248)">
+            <div class="flex justify-between items-center">
+                <a href="{{ route('account.profile') }}" class="text-white text-sm flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    <span class="hover:underline">Quay lại</span>
+                </a>
+            </div>
             <h2 class="text-2xl font-semibold mb-4 text-center text-white">Ưu đãi ZyNox Xu</h2>
             <div class="bg-white px-6 py-4 rounded shadow">
                 <div class="grid grid-cols-6 gap-2 text-center mb-6">

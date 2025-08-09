@@ -103,7 +103,6 @@ class AdsCampaignController extends Controller
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'bid_amount' => 'required|numeric|min:0',
-            'status' => 'required|string|in:pending,active,ended,cancelled',
         ]);
 
         $campaign->update([
@@ -111,7 +110,6 @@ class AdsCampaignController extends Controller
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'bid_amount' => $request->bid_amount,
-            'status' => $request->status,
         ]);
 
         return redirect()->route('seller.ads_campaigns.index')
@@ -133,9 +131,13 @@ class AdsCampaignController extends Controller
         $shopId = Auth::user()->shop->id;
         $campaign = AdsCampaign::where('shop_id', $shopId)->findOrFail($id);
 
-        $newStatus = ($campaign->status === 'active') ? 'pending' : 'active';
-        $campaign->update(['status' => $newStatus]);
+        // Seller chỉ được quyền tắt chiến dịch đang active (đưa về pending),
+        // và KHÔNG được tự bật active nếu đang pending/cancelled.
+        if ($campaign->status === 'active') {
+            $campaign->update(['status' => 'pending']);
+            return back()->with('success', 'Đã tắt chiến dịch.');
+        }
 
-        return back()->with('success', 'Trạng thái chiến dịch đã được cập nhật.');
+        return back()->with('error', 'Chiến dịch đang chờ duyệt hoặc đã bị từ chối. Vui lòng đợi admin duyệt để kích hoạt.');
     }
 }
