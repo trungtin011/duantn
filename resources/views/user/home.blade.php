@@ -555,14 +555,13 @@
         <div class="banner">
             <div class="container">
                 <div class="slider-container has-scrollbar">
-                    @if($banners->count() > 0)
-                        @foreach($banners as $banner)
+                    @if ($banners->count() > 0)
+                        @foreach ($banners as $banner)
                             <div class="slider-item">
                                 <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="banner-img">
-                                <div class="banner-content" 
-                                     style="
-                                        @if($banner->content_position == 'center') 
-                                            display: flex; align-items: center; justify-content: center;
+                                <div class="banner-content"
+                                    style="
+                                        @if ($banner->content_position == 'center') display: flex; align-items: center; justify-content: center;
                                         @elseif($banner->content_position == 'left')
                                             display: flex; align-items: center; justify-content: flex-start;
                                         @elseif($banner->content_position == 'right')
@@ -574,22 +573,24 @@
                                         @elseif($banner->content_position == 'bottom-left')
                                             display: flex; align-items: flex-end; justify-content: flex-start;
                                         @elseif($banner->content_position == 'bottom-right')
-                                            display: flex; align-items: flex-end; justify-content: flex-end;
-                                        @endif
+                                            display: flex; align-items: flex-end; justify-content: flex-end; @endif
                                      ">
-                                    <div style="
+                                    <div
+                                        style="
                                         text-align: {{ $banner->text_align ?? 'center' }};
-                                        @if($banner->title_color) color: {{ $banner->title_color }}; @endif
+                                        @if ($banner->title_color) color: {{ $banner->title_color }}; @endif
                                     ">
-                                        @if($banner->description)
-                                            <p class="banner-subtitle" style="@if($banner->subtitle_color) color: {{ $banner->subtitle_color }}; @endif @if($banner->subtitle_font_size) font-size: {{ $banner->subtitle_font_size }}; @endif">
+                                        @if ($banner->description)
+                                            <p class="banner-subtitle"
+                                                style="@if ($banner->subtitle_color) color: {{ $banner->subtitle_color }}; @endif @if ($banner->subtitle_font_size) font-size: {{ $banner->subtitle_font_size }}; @endif">
                                                 {{ $banner->description }}
                                             </p>
                                         @endif
-                                        <h2 class="banner-title" style="@if($banner->title_color) color: {{ $banner->title_color }}; @endif @if($banner->title_font_size) font-size: {{ $banner->title_font_size }}; @endif">
+                                        <h2 class="banner-title"
+                                            style="@if ($banner->title_color) color: {{ $banner->title_color }}; @endif @if ($banner->title_font_size) font-size: {{ $banner->title_font_size }}; @endif">
                                             {{ $banner->title }}
                                         </h2>
-                                        @if($banner->link_url)
+                                        @if ($banner->link_url)
                                             <a href="{{ $banner->link_url }}" class="banner-btn">Xem chi tiết</a>
                                         @else
                                             <a href="#" class="banner-btn">Xem chi tiết</a>
@@ -611,7 +612,8 @@
                             </div>
                         </div>
                         <div class="slider-item">
-                            <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses" class="banner-img">
+                            <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses"
+                                class="banner-img">
                             <div class="banner-content">
                                 <p class="banner-subtitle">Phụ kiện thịnh hành</p>
                                 <h2 class="banner-title">Kính mát hiện đại</h2>
@@ -1299,7 +1301,6 @@
             <div class="container flex gap-[30px]">
                 <div class="testimonial">
                     <h2 class="title">Đánh giá khách hàng</h2>
-
                     @foreach ($testimonials as $review)
                         <div class="testimonial-card">
                             <div class="flex items-center gap-2">
@@ -1330,10 +1331,65 @@
                 </div>
 
                 <div class="cta-container">
-                    @if ($advertisedProductsByShop->isNotEmpty())
-                        @include('partials.advertised_products', [
-                            'advertisedProductsByShop' => $advertisedProductsByShop,
-                        ])
+                    @if ($advertisedProducts->isNotEmpty())
+                        <div class="advertised-products-container">
+                            <h3 class="advertised-title">Sản phẩm quảng cáo</h3>
+
+                            <!-- Slides Container -->
+                            <div class="advertised-slides-container">
+                                @php
+                                    $productsPerSlide = 2;
+                                    $totalSlides = ceil($advertisedProducts->count() / $productsPerSlide);
+                                @endphp
+
+                                @for ($slideIndex = 0; $slideIndex < $totalSlides; $slideIndex++)
+                                    <div class="advertised-slide {{ $slideIndex === 0 ? 'active' : '' }}"
+                                        data-slide="{{ $slideIndex }}">
+                                        <div class="advertised-grid">
+                                            @foreach ($advertisedProducts->slice($slideIndex * $productsPerSlide, $productsPerSlide) as $adItem)
+                                                <div class="advertised-item">
+                                                    <div class="ad-badge">Quảng cáo</div>
+                                                    <a href="{{ route('product.show', $adItem->product->slug) }}"
+                                                        class="ad-product-link">
+                                                        <img src="{{ $adItem->product->image_url }}"
+                                                            alt="{{ $adItem->product->name }}" class="ad-product-img">
+                                                        <div class="ad-product-info">
+                                                            <h4 class="ad-product-name">
+                                                                {{ Str::limit($adItem->product->name, 30) }}</h4>
+                                                            <div class="ad-product-price">
+                                                                @if (
+                                                                    $adItem->product->display_original_price &&
+                                                                        $adItem->product->display_price < $adItem->product->display_original_price)
+                                                                    <span
+                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
+                                                                    <span
+                                                                        class="ad-price-old">{{ number_format($adItem->product->display_original_price) }}₫</span>
+                                                                @else
+                                                                    <span
+                                                                        class="ad-price-new">{{ number_format($adItem->product->display_price) }}₫</span>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endfor
+                            </div>
+
+                            <!-- Dots Navigation -->
+                            @if ($totalSlides > 1)
+                                <div class="advertised-dots">
+                                    @for ($dotIndex = 0; $dotIndex < $totalSlides; $dotIndex++)
+                                        <button class="advertised-dot {{ $dotIndex === 0 ? 'active' : '' }}"
+                                            data-slide="{{ $dotIndex }}"
+                                            aria-label="Go to slide {{ $dotIndex + 1 }}">
+                                        </button>
+                                    @endfor
+                                </div>
+                            @endif
+                        </div>
                     @else
                         <!-- Fallback banner nếu không có quảng cáo -->
                         <img src="{{ asset('assets/images/cta-banner.jpg') }}" alt="summer collection"
@@ -1664,7 +1720,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }
