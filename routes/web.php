@@ -639,6 +639,90 @@ Route::get('/danh-muc/{slug}', function ($slug) {
 // Blog
 Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
 Route::get('/blog-detail/{slug}', [FrontendController::class, 'blogDetail'])->name('blog.detail');
+Route::post('/blog/{post}/comment', function(\App\Models\Post $post, \Illuminate\Http\Request $request) {
+    $request->validate([
+        'content' => 'required|string|min:5|max:2000',
+    ], [
+        'content.required' => 'Vui lòng nhập nội dung bình luận.',
+        'content.min' => 'Bình luận tối thiểu 5 ký tự.',
+        'content.max' => 'Bình luận tối đa 2000 ký tự.',
+    ]);
+
+    $userId = optional(\Illuminate\Support\Facades\Auth::user())->id;
+
+    // Nếu người dùng đã bình luận thì cập nhật, nếu chưa thì tạo mới
+    $comment = \App\Models\Comment::where('post_id', $post->id)
+        ->when($userId, fn($q) => $q->where('user_id', $userId))
+        ->first();
+
+    if ($comment) {
+        $comment->update([
+            'content' => $request->input('content'),
+            'status' => $userId ? 'approved' : 'pending',
+        ]);
+    } else {
+        \App\Models\Comment::create([
+            'user_id' => $userId,
+            'post_id' => $post->id,
+            'product_id' => null,
+            'content' => $request->input('content'),
+            'status' => $userId ? 'approved' : 'pending',
+            'rating' => null,
+            'parent_id' => null,
+        ]);
+    }
+
+    if ($request->expectsJson()) {
+        $count = $post->allComments()->count();
+        return response()->json(['success' => true, 'count' => $count]);
+    }
+    return back()->with('success', 'Đã gửi bình luận.');
+})->name('blog.comment');
+
+// Post reactions (likes) for blog posts
+Route::middleware('auth')->group(function () {
+    Route::post('/blog/{post}/react', function (\App\Models\Post $post, \Illuminate\Http\Request $request) {
+        $request->validate([
+            'type' => 'nullable|string|max:20',
+        ]);
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        // Toggle reaction (default single like per user)
+        $existing = \App\Models\PostReaction::where('post_id', $post->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existing) {
+            // Nếu chọn cùng type -> hủy reaction; nếu khác type -> cập nhật type
+            if ($existing->type === $request->input('type')) {
+                $existing->delete();
+            } else {
+                $existing->update(['type' => $request->input('type')]);
+            }
+        } else {
+            \App\Models\PostReaction::create([
+                'post_id' => $post->id,
+                'user_id' => $user->id,
+                'type' => $request->input('type'),
+            ]);
+        }
+
+        // Trả về tổng và đếm theo từng loại để client cập nhật đúng nút
+        $totals = [];
+        foreach (\App\Models\Post::REACTION_TYPES as $t) {
+            $totals[$t] = $post->likes()->where('type', $t)->count();
+        }
+        $activeType = \App\Models\PostReaction::where('post_id', $post->id)
+            ->where('user_id', $user->id)
+            ->value('type');
+        return response()->json([
+            'reacted' => true,
+            'count' => $post->likes()->count(),
+            'by_type' => $totals,
+            'active_type' => $activeType,
+        ]);
+    })->name('blog.react');
+});
 Route::get('/blog/search', [FrontendController::class, 'blogSearch'])->name('blog.search');
 Route::post('/blog/filter', [FrontendController::class, 'blogFilter'])->name('blog.filter');
 Route::get('blog-cat/{slug}', [FrontendController::class, 'blogByCategory'])->name('blog.category');

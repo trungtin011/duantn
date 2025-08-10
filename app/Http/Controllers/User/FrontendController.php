@@ -7,9 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\PostTag;
-use App\Models\PostComment;
 use App\Models\HelpArticle;
 use App\Models\HelpCategory;
+use App\Models\Comment;
+use Illuminate\Support\Facades\Auth;
 
 class FrontendController extends Controller
 {
@@ -27,19 +28,13 @@ class FrontendController extends Controller
 
         if (!empty($_GET['category'])) {
             $slug = explode(',', $_GET['category']);
-            // dd($slug);
             $cat_ids = PostCategory::select('id')->whereIn('slug', $slug)->pluck('id')->toArray();
-            return $cat_ids;
             $post->whereIn('post_cat_id', $cat_ids);
-            // return $post;
         }
         if (!empty($_GET['tag'])) {
             $slug = explode(',', $_GET['tag']);
-            // dd($slug);
             $tag_ids = PostTag::select('id')->whereIn('slug', $slug)->pluck('id')->toArray();
-            // return $tag_ids;
-            $post->where('post_tag_id', $tag_ids);
-            // return $post;
+            $post->whereIn('post_tag_id', $tag_ids);
         }
 
         if (!empty($_GET['show'])) {
@@ -56,14 +51,24 @@ class FrontendController extends Controller
     {
         $post = Post::getPostBySlug($slug);
         $rcnt_post = Post::where('status', 'active')->orderBy('id', 'DESC')->limit(3)->get();
-        // return $post;
-        return view('user.post.blog_detail')->with('post', $post)->with('recent_posts', $rcnt_post);
+        $userComment = null;
+        if (Auth::check() && $post) {
+            $userComment = Comment::where('post_id', $post->id)
+                ->where('user_id', Auth::id())
+                ->first();
+        }
+        return view('user.post.blog_detail')
+            ->with('post', $post)
+            ->with('recent_posts', $rcnt_post)
+            ->with('userComment', $userComment);
     }
 
     public function blogSearch(Request $request)
     {
         // return $request->all();
         $rcnt_post = Post::where('status', 'active')->orderBy('id', 'DESC')->limit(3)->get();
+        $categories = PostCategory::where('status', 'active')->orderBy('title', 'ASC')->get();
+        $tags = PostTag::where('status', 'active')->orderBy('title', 'ASC')->get();
         $posts = Post::orwhere('title', 'like', '%' . $request->search . '%')
             ->orwhere('quote', 'like', '%' . $request->search . '%')
             ->orwhere('summary', 'like', '%' . $request->search . '%')
@@ -71,7 +76,7 @@ class FrontendController extends Controller
             ->orwhere('slug', 'like', '%' . $request->search . '%')
             ->orderBy('id', 'DESC')
             ->paginate(8);
-        return view('user.post.blog')->with('posts', $posts)->with('recent_posts', $rcnt_post);
+        return view('user.post.blog')->with('posts', $posts)->with('recent_posts', $rcnt_post)->with('categories', $categories)->with('tags', $tags);
     }
 
     public function blogFilter(Request $request)
@@ -108,16 +113,19 @@ class FrontendController extends Controller
     {
         $post = PostCategory::getBlogByCategory($request->slug);
         $rcnt_post = Post::where('status', 'active')->orderBy('id', 'DESC')->limit(3)->get();
-        return view('user.post.blog')->with('posts', $post->post)->with('recent_posts', $rcnt_post);
+        $categories = PostCategory::where('status', 'active')->orderBy('title', 'ASC')->get();
+        $tags = PostTag::where('status', 'active')->orderBy('title', 'ASC')->get();
+        return view('user.post.blog')->with('posts', $post->post)->with('recent_posts', $rcnt_post)->with('categories', $categories)->with('tags', $tags);
     }
 
     public function blogByTag(Request $request)
     {
         // dd($request->slug);
         $post = Post::getBlogByTag($request->slug);
-        // return $post;
         $rcnt_post = Post::where('status', 'active')->orderBy('id', 'DESC')->limit(3)->get();
-        return view('user.post.blog')->with('posts', $post)->with('recent_posts', $rcnt_post);
+        $categories = PostCategory::where('status', 'active')->orderBy('title', 'ASC')->get();
+        $tags = PostTag::where('status', 'active')->orderBy('title', 'ASC')->get();
+        return view('user.post.blog')->with('posts', $post)->with('recent_posts', $rcnt_post)->with('categories', $categories)->with('tags', $tags);
     }
 
 

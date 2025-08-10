@@ -591,15 +591,11 @@
                                             {{ $banner->title }}
                                         </h2>
                                         @if ($banner->link_url)
-                                            <a href="{{ $banner->link_url }}" 
-                                               data-banner-ad="{{ $banner->id }}"
-                                               data-shop-id="0"
-                                               class="banner-btn">Xem chi tiết</a>
+                                            <a href="{{ $banner->link_url }}" data-banner-ad="{{ $banner->id }}"
+                                                data-shop-id="0" class="banner-btn">Xem chi tiết</a>
                                         @else
-                                            <a href="#" 
-                                               data-banner-ad="{{ $banner->id }}"
-                                               data-shop-id="0"
-                                               class="banner-btn">Xem chi tiết</a>
+                                            <a href="#" data-banner-ad="{{ $banner->id }}" data-shop-id="0"
+                                                class="banner-btn">Xem chi tiết</a>
                                         @endif
                                     </div>
                                 </div>
@@ -1066,9 +1062,8 @@
                                             <div class="showcase">
                                                 <a href="{{ route('product.show', $product->slug) }}"
                                                     class="showcase-img-box">
-                                                    <img src="{{ $product->defaultImage ? asset('storage/' . $product->defaultImage->image_path) : asset('storage/product_images/default.jpg') }}" 
-                                                         alt="{{ $product->name }}"
-                                                         class="showcase-img" width="70">
+                                                    <img src="{{ $product->defaultImage ? asset('storage/' . $product->defaultImage->image_path) : asset('storage/product_images/default.jpg') }}"
+                                                        alt="{{ $product->name }}" class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
                                                     <a href="{{ route('product.show', $product->slug) }}"
@@ -1082,7 +1077,9 @@
                                                     <div class="price-box">
                                                         @if ($product->variants->isNotEmpty())
                                                             @php
-                                                                $minPrice = $product->variants->min('sale_price') ?: $product->variants->min('price');
+                                                                $minPrice =
+                                                                    $product->variants->min('sale_price') ?:
+                                                                    $product->variants->min('price');
                                                                 $minOriginalPrice = $product->variants->min('price');
                                                             @endphp
                                                             @if ($minOriginalPrice > 0 && $minPrice < $minOriginalPrice)
@@ -1115,9 +1112,8 @@
                                             <div class="showcase">
                                                 <a href="{{ route('product.show', $product->slug) }}"
                                                     class="showcase-img-box">
-                                                    <img src="{{ $product->defaultImage ? asset('storage/' . $product->defaultImage->image_path) : asset('storage/product_images/default.jpg') }}" 
-                                                         alt="{{ $product->name }}"
-                                                         class="showcase-img" width="70">
+                                                    <img src="{{ $product->defaultImage ? asset('storage/' . $product->defaultImage->image_path) : asset('storage/product_images/default.jpg') }}"
+                                                        alt="{{ $product->name }}" class="showcase-img" width="70">
                                                 </a>
                                                 <div class="showcase-content">
                                                     <a href="{{ route('product.show', $product->slug) }}"
@@ -1131,7 +1127,9 @@
                                                     <div class="price-box">
                                                         @if ($product->variants->isNotEmpty())
                                                             @php
-                                                                $minPrice = $product->variants->min('sale_price') ?: $product->variants->min('price');
+                                                                $minPrice =
+                                                                    $product->variants->min('sale_price') ?:
+                                                                    $product->variants->min('price');
                                                                 $minOriginalPrice = $product->variants->min('price');
                                                             @endphp
                                                             @if ($minOriginalPrice > 0 && $minPrice < $minOriginalPrice)
@@ -1481,30 +1479,50 @@
             </div>
         </div>
 
-        <div class="blog">
-            <div class="container">
-                <div class="blog-container has-scrollbar">
-                    @foreach ($blogs as $blog)
-                        <div class="blog-card">
-                            <a href="{{ route('blog.detail', $blog->slug) }}">
-                                <img src="{{ asset($blog->image_path) }}" alt="{{ $blog->title }}" width="300"
-                                    class="blog-banner">
+        <div class="py-10 bg-white">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-900">Bài viết mới</h2>
+                    <a href="{{ route('blog') }}" class="text-sm text-[#f42f46] hover:underline">Xem tất cả</a>
+                </div>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    @forelse ($blogs as $blog)
+                        @php
+                            $photo = $blog->photo ?? $blog->image_path ?? null;
+                            $img = $photo && file_exists(public_path($photo))
+                                ? asset($photo)
+                                : ($photo && filter_var($photo, FILTER_VALIDATE_URL)
+                                    ? $photo
+                                    : asset('frontend/img/default.jpg'));
+                            $catTitle = $blog->cat_info->title ?? $blog->category ?? null;
+                            $catSlug = $blog->cat_info->slug ?? ($catTitle ? \Illuminate\Support\Str::slug($catTitle) : null);
+                            $author = $blog->author_info->username ?? $blog->author ?? 'Ẩn danh';
+                        @endphp
+
+                        <article class="group rounded-xl overflow-hidden border border-gray-100 bg-white shadow-sm hover:shadow-md transition">
+                            <a href="{{ route('blog.detail', $blog->slug) }}" class="block aspect-[16/10] overflow-hidden bg-gray-50">
+                                <img src="{{ $img }}" alt="{{ $blog->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             </a>
-                            <div class="blog-content">
-                                <a href="#" class="blog-category">{{ $blog->category }}</a>
-                                <a href="{{ route('blog.detail', $blog->slug) }}">
-                                    <h3 class="blog-title">{{ $blog->title }}</h3>
+                            <div class="p-4">
+                                @if ($catTitle)
+                                    <a href="{{ $catSlug ? route('blog.category', $catSlug) : '#' }}" class="inline-block text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-600">
+                                        {{ $catTitle }}
+                                    </a>
+                                @endif
+                                <a href="{{ route('blog.detail', $blog->slug) }}" class="block mt-2 text-base font-semibold text-gray-900 line-clamp-2">
+                                    {{ $blog->title }}
                                 </a>
-                                <p class="blog-meta">
-                                    By <cite>{{ $blog->author ?? 'Admin' }}</cite> /
-                                    <time
-                                        datetime="{{ $blog->created_at->format('Y-m-d') }}">{{ $blog->created_at->format('M d, Y') }}</time>
-                                </p>
+                                <div class="mt-2 text-xs text-gray-500 flex items-center gap-2">
+                                    <span>{{ $author }}</span>
+                                    <span>•</span>
+                                    <time datetime="{{ $blog->created_at->format('Y-m-d') }}">{{ $blog->created_at->format('d M, Y') }}</time>
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
-                    @if ($blogs->isEmpty())
-                    @endif
+                        </article>
+                    @empty
+                        <p class="text-gray-500">Chưa có bài viết nào.</p>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -1760,7 +1778,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }

@@ -68,7 +68,7 @@ class CouponControllerSeller extends Controller
 
         // Quy tắc validate
         $rules = [
-            'code' => 'required|string|max:50|unique:coupons,code',
+            'code' => 'required|string|max:50|unique:coupon,code',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -76,7 +76,7 @@ class CouponControllerSeller extends Controller
             'discount_type' => 'required|in:percentage,fixed',
             'max_discount_amount' => 'nullable|numeric|min:0',
             'min_order_amount' => 'nullable|numeric|min:0',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1|max:100000',
             'max_uses_per_user' => 'nullable|integer|min:1',
             'max_uses_total' => 'nullable|integer|min:1',
             'rank_limit' => 'required|in:all,gold,silver,bronze,diamond',
@@ -116,6 +116,7 @@ class CouponControllerSeller extends Controller
             'quantity.required' => 'Vui lòng nhập số lượng.',
             'quantity.integer' => 'Số lượng phải là số nguyên.',
             'quantity.min' => 'Số lượng phải lớn hơn 0.',
+            'quantity.max' => 'Số lượng không được vượt quá 100000.',
             'max_uses_per_user.integer' => 'Số lần dùng mỗi người phải là số nguyên.',
             'max_uses_per_user.min' => 'Số lần dùng mỗi người phải lớn hơn 0.',
             'max_uses_total.integer' => 'Tổng số lần sử dụng phải là số nguyên.',
@@ -144,6 +145,15 @@ class CouponControllerSeller extends Controller
 
         // Validate dữ liệu
         $validator = Validator::make($request->all(), $rules, $messages);
+
+        // Ràng buộc bổ sung: max_uses_total không vượt quá quantity (nếu có)
+        $validator->after(function ($validator) use ($request) {
+            if ($request->filled('max_uses_total') && $request->filled('quantity')) {
+                if ((int) $request->max_uses_total > (int) $request->quantity) {
+                    $validator->errors()->add('max_uses_total', 'Tổng số lần sử dụng không được vượt quá số lượng.');
+                }
+            }
+        });
 
         // Validate ngày tháng
         if ($request->filled(['start_day', 'start_month', 'start_year', 'end_day', 'end_month', 'end_year'])) {
@@ -188,6 +198,7 @@ class CouponControllerSeller extends Controller
         // Xác định created_by_role
         $createdByRole = Auth::user() && Auth::user()->seller ? 'shop' : 'admin';
 
+        $couponData = [];
         try {
             // Xử lý upload ảnh
             $imagePath = null;
@@ -263,7 +274,7 @@ class CouponControllerSeller extends Controller
 
         // Quy tắc validate
         $rules = [
-            'code' => 'required|string|max:50|unique:coupons,code,' . $id,
+            'code' => 'required|string|max:50|unique:coupon,code,' . $id,
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -271,16 +282,12 @@ class CouponControllerSeller extends Controller
             'discount_type' => 'required|in:percentage,fixed',
             'max_discount_amount' => 'nullable|numeric|min:0',
             'min_order_amount' => 'nullable|numeric|min:0',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1|max:100000',
             'max_uses_per_user' => 'nullable|integer|min:1',
             'max_uses_total' => 'nullable|integer|min:1',
             'rank_limit' => 'required|in:all,gold,silver,bronze,diamond',
-            'start_day' => 'required|integer|between:1,31',
-            'start_month' => 'required|integer|between:1,12',
-            'start_year' => 'required|integer|min:' . now()->year,
-            'end_day' => 'required|integer|between:1,31',
-            'end_month' => 'required|integer|between:1,12',
-            'end_year' => 'required|integer|min:' . now()->year,
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after:start_date',
             'is_active' => 'boolean',
             'is_public' => 'boolean',
         ];
@@ -311,69 +318,34 @@ class CouponControllerSeller extends Controller
             'quantity.required' => 'Vui lòng nhập số lượng.',
             'quantity.integer' => 'Số lượng phải là số nguyên.',
             'quantity.min' => 'Số lượng phải lớn hơn 0.',
+            'quantity.max' => 'Số lượng không được vượt quá 100000.',
             'max_uses_per_user.integer' => 'Số lần dùng mỗi người phải là số nguyên.',
             'max_uses_per_user.min' => 'Số lần dùng mỗi người phải lớn hơn 0.',
             'max_uses_total.integer' => 'Tổng số lần sử dụng phải là số nguyên.',
             'max_uses_total.min' => 'Tổng số lần sử dụng phải lớn hơn 0.',
             'rank_limit.required' => 'Vui lòng chọn hạn chế theo hạng.',
             'rank_limit.in' => 'Hạn chế theo hạng không hợp lệ.',
-            'start_day.required' => 'Vui lòng chọn ngày bắt đầu.',
-            'start_day.integer' => 'Ngày bắt đầu phải là số nguyên.',
-            'start_day.between' => 'Ngày bắt đầu phải từ 1 đến 31.',
-            'start_month.required' => 'Vui lòng chọn tháng bắt đầu.',
-            'start_month.integer' => 'Tháng bắt đầu phải là số nguyên.',
-            'start_month.between' => 'Tháng bắt đầu phải từ 1 đến 12.',
-            'start_year.required' => 'Vui lòng chọn năm bắt đầu.',
-            'start_year.integer' => 'Năm bắt đầu phải là số nguyên.',
-            'start_year.min' => 'Năm bắt đầu phải từ ' . now()->year . ' trở đi.',
-            'end_day.required' => 'Vui lòng chọn ngày kết thúc.',
-            'end_day.integer' => 'Ngày kết thúc phải là số nguyên.',
-            'end_day.between' => 'Ngày kết thúc phải từ 1 đến 31.',
-            'end_month.required' => 'Vui lòng chọn tháng kết thúc.',
-            'end_month.integer' => 'Tháng kết thúc phải là số nguyên.',
-            'end_month.between' => 'Tháng kết thúc phải từ 1 đến 12.',
-            'end_year.required' => 'Vui lòng chọn năm kết thúc.',
-            'end_year.integer' => 'Năm kết thúc phải là số nguyên.',
-            'end_year.min' => 'Năm kết thúc phải từ ' . now()->year . ' trở đi.',
+            'start_date.required' => 'Vui lòng chọn ngày bắt đầu.',
+            'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
+            'start_date.after_or_equal' => 'Ngày bắt đầu phải từ hôm nay trở đi.',
+            'end_date.required' => 'Vui lòng chọn ngày kết thúc.',
+            'end_date.date' => 'Ngày kết thúc không hợp lệ.',
+            'end_date.after' => 'Ngày kết thúc phải sau ngày bắt đầu.',
         ];
 
         // Validate dữ liệu
         $validator = Validator::make($request->all(), $rules, $messages);
 
-        // Validate ngày tháng
-        if ($request->filled(['start_day', 'start_month', 'start_year', 'end_day', 'end_month', 'end_year'])) {
-            try {
-                $startDate = Carbon::create(
-                    $request->start_year,
-                    $request->start_month,
-                    $request->start_day
-                );
-                $endDate = Carbon::create(
-                    $request->end_year,
-                    $request->end_month,
-                    $request->end_day
-                );
-
-                if ($startDate->lt(Carbon::today())) {
-                    $validator->errors()->add('start_day', 'Ngày bắt đầu phải từ hôm nay trở đi.');
+        // Ràng buộc bổ sung: max_uses_total không vượt quá quantity (nếu có)
+        $validator->after(function ($validator) use ($request) {
+            if ($request->filled('max_uses_total') && $request->filled('quantity')) {
+                if ((int) $request->max_uses_total > (int) $request->quantity) {
+                    $validator->errors()->add('max_uses_total', 'Tổng số lần sử dụng không được vượt quá số lượng.');
                 }
-
-                if ($endDate->lte($startDate)) {
-                    $validator->errors()->add('end_day', 'Ngày kết thúc phải sau ngày bắt đầu ít nhất 1 ngày.');
-                }
-
-                Log::info('Validated dates', [
-                    'start_date' => $startDate->toDateString(),
-                    'end_date' => $endDate->toDateString(),
-                ]);
-            } catch (\Exception $e) {
-                $validator->errors()->add('start_day', 'Ngày bắt đầu không hợp lệ.');
-                $validator->errors()->add('end_day', 'Ngày kết thúc không hợp lệ.');
             }
-        } else {
-            $validator->errors()->add('start_day', 'Vui lòng nhập đầy đủ ngày, tháng, năm bắt đầu.');
-            $validator->errors()->add('end_day', 'Vui lòng nhập đầy đủ ngày, tháng, năm kết thúc.');
-        }
+        });
+
+        // Bỏ khối validate theo ngày/tháng/năm vì edit dùng input date trực tiếp
 
         // Nếu validate thất bại, trả về lỗi
         if ($validator->fails()) {
@@ -394,6 +366,10 @@ class CouponControllerSeller extends Controller
                 }
                 $imagePath = null;
             }
+
+            // Parse ngày từ input dạng date
+            $startDate = Carbon::parse($request->start_date);
+            $endDate = Carbon::parse($request->end_date);
 
             $coupon->update([
                 'code' => $request->code,

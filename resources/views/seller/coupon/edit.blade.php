@@ -48,7 +48,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="discount_value" class="form-label">Giá trị giảm giá <span class="text-red-500">*</span></label>
-                        <input type="number" class="form-control @error('discount_value') border-red-500 @enderror" id="discount_value" name="discount_value" value="{{ old('discount_value', $coupon->discount_value) }}" step="0.01" placeholder="Nhập giá trị">
+                        <input type="number" class="form-control @error('discount_value') border-red-500 @enderror" id="discount_value" name="discount_value" value="{{ old('discount_value', $coupon->discount_value) }}" step="0.01" min="0" placeholder="Nhập giá trị">
                         @error('discount_value')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div>
@@ -63,31 +63,31 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="max_discount_amount" class="form-label">Số tiền giảm tối đa</label>
-                        <input type="number" class="form-control @error('max_discount_amount') border-red-500 @enderror" id="max_discount_amount" name="max_discount_amount" value="{{ old('max_discount_amount', $coupon->max_discount_amount) }}" step="0.01" placeholder="Tối đa (nếu có)">
+                        <input type="number" class="form-control @error('max_discount_amount') border-red-500 @enderror" id="max_discount_amount" name="max_discount_amount" value="{{ old('max_discount_amount', $coupon->max_discount_amount) }}" step="0.01" min="0" placeholder="Tối đa (nếu có)">
                         @error('max_discount_amount')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div>
                         <label for="min_order_amount" class="form-label">Đơn hàng tối thiểu</label>
-                        <input type="number" class="form-control @error('min_order_amount') border-red-500 @enderror" id="min_order_amount" name="min_order_amount" value="{{ old('min_order_amount', $coupon->min_order_amount) }}" step="0.01" placeholder="Tối thiểu (nếu có)">
+                        <input type="number" class="form-control @error('min_order_amount') border-red-500 @enderror" id="min_order_amount" name="min_order_amount" value="{{ old('min_order_amount', $coupon->min_order_amount) }}" step="0.01" min="0" placeholder="Tối thiểu (nếu có)">
                         @error('min_order_amount')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="quantity" class="form-label">Số lượng <span class="text-red-500">*</span></label>
-                        <input type="number" class="form-control @error('quantity') border-red-500 @enderror" id="quantity" name="quantity" value="{{ old('quantity', $coupon->quantity) }}" placeholder="Số lượng">
+                        <input type="number" class="form-control @error('quantity') border-red-500 @enderror" id="quantity" name="quantity" value="{{ old('quantity', $coupon->quantity) }}" placeholder="Số lượng" min="1" max="100000">
                         @error('quantity')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div>
                         <label for="max_uses_per_user" class="form-label">Số lần dùng mỗi người</label>
-                        <input type="number" class="form-control @error('max_uses_per_user') border-red-500 @enderror" id="max_uses_per_user" name="max_uses_per_user" value="{{ old('max_uses_per_user', $coupon->max_uses_per_user) }}" placeholder="Tối đa/người">
+                        <input type="number" class="form-control @error('max_uses_per_user') border-red-500 @enderror" id="max_uses_per_user" name="max_uses_per_user" value="{{ old('max_uses_per_user', $coupon->max_uses_per_user) }}" placeholder="Tối đa/người" min="1">
                         @error('max_uses_per_user')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="max_uses_total" class="form-label">Tổng số lần sử dụng</label>
-                        <input type="number" class="form-control @error('max_uses_total') border-red-500 @enderror" id="max_uses_total" name="max_uses_total" value="{{ old('max_uses_total', $coupon->max_uses_total) }}" placeholder="Tổng số lần">
+                        <input type="number" class="form-control @error('max_uses_total') border-red-500 @enderror" id="max_uses_total" name="max_uses_total" value="{{ old('max_uses_total', $coupon->max_uses_total) }}" placeholder="Tổng số lần" min="1">
                         @error('max_uses_total')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div>

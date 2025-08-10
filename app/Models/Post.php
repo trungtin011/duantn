@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
+    public const REACTION_TYPES = ['smile','love','grin','wow','joy','angry'];
     protected $fillable = [
         'title',
         'slug',
@@ -47,11 +48,16 @@ class Post extends Model
 
     public function comments()
     {
-        return $this->hasMany(PostComment::class)->whereNull('parent_id')->where('status', 'active')->with('user_info')->orderBy('id', 'DESC');
+        return $this->hasMany(Comment::class, 'post_id')
+            ->whereNull('parent_id')
+            ->where('status', 'approved')
+            ->with(['user', 'children.user'])
+            ->orderBy('id', 'DESC');
     }
     public function allComments()
     {
-        return $this->hasMany(PostComment::class)->where('status', 'active');
+        return $this->hasMany(Comment::class, 'post_id')
+            ->where('status', 'approved');
     }
 
 
@@ -68,6 +74,17 @@ class Post extends Model
     {
         // dd($slug);
         return Post::where('tags', $slug)->paginate(8);
+    }
+
+    // Thả cảm xúc (likes) cho bài viết
+    public function likes()
+    {
+        return $this->hasMany(PostReaction::class, 'post_id');
+    }
+
+    public function reactionCountByType(string $type): int
+    {
+        return $this->likes()->where('type', $type)->count();
     }
 
     public static function countActivePost()

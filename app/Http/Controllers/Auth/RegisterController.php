@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use App\Models\Customer;
 
 class RegisterController extends Controller
 {
@@ -49,19 +51,38 @@ class RegisterController extends Controller
             'gender.required' => 'Giới tính là bắt buộc.',
         ]);
 
-        User::create([
-            'username' => $request->username,
-            'fullname' => $request->fullname,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'gender' => $request->gender,
-            'birthday' => $request->birthday,
-            'status' => 'active',
-            'role' => 'customer',
-            'is_verified' => false,
-        ]);
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('login')->with('success', 'Đăng ký thành công! Mời bạn đăng nhập.');
+            $user = User::create([
+                'username' => $request->username,
+                'fullname' => $request->fullname,
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'gender' => $request->gender,
+                'birthday' => $request->birthday,
+                'status' => 'active',
+                'role' => 'customer',
+                'is_verified' => false,
+            ]);
+
+            Customer::create([
+                'userID' => $user->id,
+                'ranking' => 'bronze',
+                'preferred_payment_method' => null,
+                'total_orders' => 0,
+                'total_spent' => 0,
+                'total_points' => 0,
+                'last_order_at' => null,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('login')->with('success', 'Đăng ký thành công! Mời bạn đăng nhập.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.');
+        }
     }
 }
