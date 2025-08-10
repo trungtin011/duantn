@@ -74,15 +74,16 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Biểu tượng danh mục</label>
                         <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                             <div class="space-y-4">
-                                <div class="w-16 h-16 mx-auto bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-folder text-white text-xl"></i>
+                                <div id="iconPreviewBox" class="w-16 h-16 mx-auto bg-gradient-to-r from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
+                                    <i id="iconDefault" class="fas fa-folder text-white text-xl"></i>
+                                    <img id="iconPreview" src="" alt="preview" class="hidden w-full h-full object-cover rounded-lg" />
                                 </div>
                                 <div>
                                     <label for="icon_file" class="cursor-pointer">
                                         <span class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
                                             Chọn file biểu tượng
                                         </span>
-                                        <input type="file" id="icon_file" name="icon_file" class="hidden" accept="image/*">
+                                         <input type="file" id="icon_file" name="icon_file" class="hidden" accept="image/*">
                                     </label>
                                 </div>
                                 <p class="text-xs text-gray-500">PNG, JPG, SVG tối đa 2MB</p>
@@ -107,4 +108,34 @@
             </div>
         </form>
     </section>
+    @push('scripts')
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('icon_file');
+        const iconDefault = document.getElementById('iconDefault');
+        const iconPreview = document.getElementById('iconPreview');
+
+        if (!input) return;
+        input.addEventListener('change', function () {
+            const file = input.files && input.files[0];
+            if (!file) {
+                if (iconPreview) {
+                    iconPreview.src = '';
+                    iconPreview.classList.add('hidden');
+                }
+                if (iconDefault) iconDefault.classList.remove('hidden');
+                return;
+            }
+
+            const objectUrl = URL.createObjectURL(file);
+            if (iconPreview) {
+                iconPreview.src = objectUrl;
+                iconPreview.onload = function () { URL.revokeObjectURL(objectUrl); };
+                iconPreview.classList.remove('hidden');
+            }
+            if (iconDefault) iconDefault.classList.add('hidden');
+        });
+    });
+    </script>
+    @endpush
 @endsection

@@ -213,14 +213,15 @@
                         <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                             <div class="space-y-2">
                                 @if($coupon->image)
-                                    <div class="mb-3">
-                                        <img src="{{ asset('storage/' . $coupon->image) }}" alt="Hình ảnh hiện tại" class="w-20 h-20 object-cover rounded mx-auto">
+                                    <div id="currentImageBox" class="mb-3">
+                                        <img id="currentImage" src="{{ asset('storage/' . $coupon->image) }}" alt="Hình ảnh hiện tại" class="w-20 h-20 object-cover rounded mx-auto">
                                         <p class="text-xs text-gray-500 mt-1">Hình ảnh hiện tại</p>
                                     </div>
                                 @endif
-                                <div class="w-16 h-16 mx-auto bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                                <div id="imageIconBox" class="w-16 h-16 mx-auto bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center {{ $coupon->image ? 'hidden' : '' }}">
                                     <i class="fas fa-tag text-white text-xl"></i>
                                 </div>
+                                <img id="imagePreview" src="" alt="Xem trước hình ảnh" class="hidden w-20 h-20 object-cover rounded mx-auto" />
                                 <div>
                                     <label for="image" class="cursor-pointer">
                                         <span class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
@@ -251,4 +252,39 @@
             </div>
         </form>
     </section>
+    @push('scripts')
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('image');
+        const iconBox = document.getElementById('imageIconBox');
+        const preview = document.getElementById('imagePreview');
+        const currentBox = document.getElementById('currentImageBox');
+        const currentImg = document.getElementById('currentImage');
+
+        if (!input) return;
+
+        input.addEventListener('change', function () {
+            const file = input.files && input.files[0];
+            if (!file) {
+                if (preview) {
+                    preview.src = '';
+                    preview.classList.add('hidden');
+                }
+                if (currentBox) currentBox.classList.remove('hidden');
+                if (iconBox && (!currentImg || currentImg.src === '')) iconBox.classList.remove('hidden');
+                return;
+            }
+
+            const objectUrl = URL.createObjectURL(file);
+            if (preview) {
+                preview.src = objectUrl;
+                preview.onload = function () { URL.revokeObjectURL(objectUrl); };
+                preview.classList.remove('hidden');
+            }
+            if (iconBox) iconBox.classList.add('hidden');
+            if (currentBox) currentBox.classList.add('hidden');
+        });
+    });
+    </script>
+    @endpush
 @endsection

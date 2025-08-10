@@ -55,7 +55,7 @@
             x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
             x-transition:leave="transition duration-300 ease-in-out" x-transition:leave-start="translate-x-0"
             x-transition:leave-end="-translate-x-full"
-            class="fixed inset-y-0 left-0 z-50 bg-white shadow-lg lg:static lg:translate-x-0 transition-all duration-300"
+            class="fixed inset-y-0 left-0 z-50 bg-white lg:static lg:translate-x-0 transition-all duration-300"
             :class="{
                 'w-64': (sidebarOpen && !mobileCollapsed) || (!sidebarOpen && mobileSidebarOpen && !mobileCollapsed),
                 'w-16': (!sidebarOpen && !mobileSidebarOpen) || (mobileCollapsed && mobileSidebarOpen),
@@ -240,7 +240,7 @@
 
                     <!-- Banners -->
                     <a href="{{ route('admin.banners.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.coupon.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.banners.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg fill="#000000" class="w-5 h-5 mr-3" version="1.1" id="Layer_1"
                             xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                             viewBox="0 0 512 512" xml:space="preserve">

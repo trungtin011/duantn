@@ -74,10 +74,8 @@ class CouponController extends Controller
             'code' => [
                 'required',
                 'string',
-                'min:3',
                 'max:50',
                 'unique:coupon,code',
-                'regex:/^[A-Z0-9_-]+$/',
             ],
             'name' => [
                 'required',
@@ -173,10 +171,8 @@ class CouponController extends Controller
         ], [
             'code.required' => 'Mã giảm giá là bắt buộc.',
             'code.string' => 'Mã giảm giá phải là chuỗi ký tự.',
-            'code.min' => 'Mã giảm giá phải có ít nhất 3 ký tự.',
             'code.max' => 'Mã giảm giá không được vượt quá 50 ký tự.',
             'code.unique' => 'Mã giảm giá này đã tồn tại.',
-            'code.regex' => 'Mã giảm giá chỉ được chứa chữ hoa, số, dấu gạch dưới và dấu gạch ngang.',
             
             'name.required' => 'Tên mã giảm giá là bắt buộc.',
             'name.string' => 'Tên mã giảm giá phải là chuỗi ký tự.',
@@ -297,10 +293,8 @@ class CouponController extends Controller
             'code' => [
                 'required',
                 'string',
-                'min:3',
                 'max:50',
                 Rule::unique('coupon', 'code')->ignore($id),
-                'regex:/^[A-Z0-9_-]+$/',
             ],
             'name' => [
                 'required',
@@ -396,7 +390,6 @@ class CouponController extends Controller
         ], [
             'code.required' => 'Mã giảm giá là bắt buộc.',
             'code.unique' => 'Mã giảm giá này đã tồn tại.',
-            'code.regex' => 'Mã giảm giá chỉ được chứa chữ hoa, số, dấu gạch ngang và dấu gạch dưới.',
             'name.required' => 'Tên mã giảm giá là bắt buộc.',
             'name.min' => 'Tên mã giảm giá phải có ít nhất 2 ký tự.',
             'discount_value.required' => 'Giá trị giảm giá là bắt buộc.',

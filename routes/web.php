@@ -23,7 +23,6 @@ use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\HelpArticleController;
 use App\Http\Controllers\Admin\HelpCategoryController;
-use App\Http\Controllers\Admin\LogoController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\PostCategoryController;
 use App\Http\Controllers\Admin\PostTagController;
@@ -296,15 +295,17 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('admin/reports/ajax', [AdminReportController::class, 'ajaxList'])->name('admin.reports.ajax');
     });
 
-    // Admin Coupon Routes
-    Route::get('/', [CouponController::class, 'index'])->name('admin.coupon.index');
-    Route::get('/create', [CouponController::class, 'create'])->name('admin.coupon.create');
-    Route::post('/', [CouponController::class, 'store'])->name('admin.coupon.store');
-    Route::get('/{id}', [CouponController::class, 'show'])->name('admin.coupon.show');
-    Route::get('/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupon.edit');
-    Route::put('/{id}', [CouponController::class, 'update'])->name('admin.coupon.update');
-    Route::delete('/{id}', [CouponController::class, 'destroy'])->name('admin.coupon.destroy');
-    Route::post('/{id}/toggle-status', [CouponController::class, 'toggleStatus'])->name('admin.coupon.toggle-status');
+    // Admin Coupon Routes (scoped to avoid conflicts)
+    Route::prefix('coupon')->group(function () {
+        Route::get('/', [CouponController::class, 'index'])->name('admin.coupon.index');
+        Route::get('/create', [CouponController::class, 'create'])->name('admin.coupon.create');
+        Route::post('/', [CouponController::class, 'store'])->name('admin.coupon.store');
+        Route::get('/{id}', [CouponController::class, 'show'])->name('admin.coupon.show');
+        Route::get('/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupon.edit');
+        Route::put('/{id}', [CouponController::class, 'update'])->name('admin.coupon.update');
+        Route::delete('/{id}', [CouponController::class, 'destroy'])->name('admin.coupon.destroy');
+        Route::post('/{id}/toggle-status', [CouponController::class, 'toggleStatus'])->name('admin.coupon.toggle-status');
+    });
 
     Route::get('refunds', [RefundController::class, 'index'])->name('admin.refunds.index');
     Route::get('refunds/{id}', [RefundController::class, 'show'])->name('admin.refunds.show');
@@ -323,9 +324,10 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     // Post
     Route::resource('post', PostController::class);
     // Help
+    // HelpCategory AJAX must be defined BEFORE resource to avoid being captured by {id}
+    Route::get('help-category/ajax', [HelpCategoryController::class, 'ajaxList'])->name('help-category.ajax');
     Route::resource('help-category', HelpCategoryController::class);
     Route::resource('help-article', HelpArticleController::class);
-    Route::resource('logo', LogoController::class);
 
     // Shop Management (Admin)
     Route::prefix('shops')->group(function () {
