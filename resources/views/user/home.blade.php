@@ -194,7 +194,7 @@
 
 @section('content')
     <div class="overlay" data-overlay></div>
-    <div class="modal" data-modal>
+    {{-- <div class="modal" data-modal>
         <div class="modal-close-overlay" data-modal-overlay></div>
         <div class="modal-content">
             <button class="modal-close-btn" data-modal-close>
@@ -216,7 +216,7 @@
                 </form>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     @foreach ($purchasedProducts as $product)
         <div class="notification-toast" data-toast>

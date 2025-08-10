@@ -22,7 +22,7 @@
         <div class="showcase-wrapper has-scrollbar">
             @foreach ($comboProducts as $combo)
                 <div class="showcase-container relative">
-                    <a href="{{ route('shop.profile', $combo->products->first()->product->shop->id) }}"
+                    <a href="{{ route('combo.show', $combo->id) }}"
                         class="text-[#ef3248] hover:underline text-sm font-medium whitespace-nowrap absolute top-5 right-5">
                         Chi tiết
                     </a>

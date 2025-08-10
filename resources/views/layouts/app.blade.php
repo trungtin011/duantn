@@ -244,21 +244,23 @@
     <!-- Top Header -->
     <div class="bg-black text-white py-3">
         <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            @auth
-                @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
-                    <div>
-                        <a href="{{ route('seller.index') }}"
-                            class="text-[#EF3248] text-sm capitalize hover:text-orange-600">
-                            Kênh người bán
-                        </a>
-                    </div>
-                @endif
-            @endauth
-            <div class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left text-sm">
+            <div class="hidden md:flex">
+                @auth
+                    @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
+                        <div>
+                            <a href="{{ route('seller.index') }}"
+                                class="text-[#EF3248] text-sm capitalize hover:text-orange-600">
+                                Kênh người bán
+                            </a>
+                        </div>
+                    @endif
+                @endauth
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left text-sm hidden md:flex">
                 <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
                 <button class="text-white font-bold border-b border-white hover:text-orange-500">Mua ngay</button>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end px-3">
                 <!-- Notification Dropdown -->
                 <div class="relative dropdown-notification cursor-pointer">
                     <div class="flex items-center gap-1 hover:text-[#EF3248] cursor-pointer">
@@ -319,8 +321,12 @@
                         @endauth
                     </div>
                     <div
-                        class="absolute dropdown-notification-content z-10 right-0 bg-white w-[400px] max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden">
-                        <div class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle"></div>
+                        class="absolute dropdown-notification-content z-20 bg-white w-[300px] max-w-[90vw]
+                            left-0 sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[400px]
+                            max-h-[70vh] sm:max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden">
+                        <div
+                            class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle hidden sm:block">
+                        </div>
                         @auth
                             @if (isset($groupedNotifications) && $groupedNotifications->count() > 0)
                                 <div class="p-4">
@@ -608,17 +614,10 @@
 
     <!-- Header -->
     <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
-        <div class="container-header mx-auto sm:px-0 py-[10px] px-[10px] flex justify-between items-center">
+        <div class="container-header mx-auto sm:px-0 py-[10px] px-3 flex justify-between items-center">
             <!-- Logo -->
             @if (empty($settings->logo))
-                <a class="w-full lg:w-[10%]" href="/">
-                    {{-- <div class="bg-black flex items-center gap-2 py-1 px-2 rounded lg:w-[175px]">
-                        <img src="{{ asset('images/logo.svg') }}" alt="logo" class="w-[30%] h-[30%]">
-                        <div class="text-white grid">
-                            <h5 class="m-0 text-xl">ZynoxMall</h5>
-                            <span class="text-xs text-right">zynoxmall.xyz</span>
-                        </div>
-                    </div> --}}
+                <a class="w-20 md:w-[10%] lg:w-[10%]" href="/">
                     <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-full h-full">
                 </a>
             @else
@@ -665,7 +664,7 @@
 
         <!-- Mobile Menu -->
         <div x-show="mobileMenuOpen" class="md:hidden px-4 pb-4">
-            <ul class="flex flex-col gap-3 text-sm font-medium text-gray-700 border-t pt-3">
+            <ul class="flex justify-center gap-3 text-sm font-medium text-gray-700 border-t pt-3">
                 <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
                 <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
                 <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
@@ -684,9 +683,16 @@
                 @endauth
             </ul>
             <div class="md:hidden flex items-center justify-center gap-3 mt-4">
-                <input type="text" placeholder="Bạn muốn tìm kiếm gì ?"
-                    class="px-4 py-1.5 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                <a><i class="fa fa-search text-gray-700 hover:text-orange-500"></i></a>
+                <form action="{{ route('search') }}" method="GET" id="searchForm"
+                    class="rounded-full border border-gray-300 px-4 py-1 w-full flex items-center justify-between relative">
+
+                    <input type="text" name="query" id="searchInput" placeholder="Bạn muốn tìm kiếm gì ?"
+                        class="px-4 py-1.5 text-sm rounded-full focus:outline-none" value="{{ request('query') }}"
+                        autocomplete="off" />
+                    <button type="submit">
+                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                    </button>
+                </form>
                 <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
                 <a href="{{ route('cart') }}"><i
                         class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
@@ -698,11 +704,11 @@
                             <i class="fa fa-user"></i>
                         </div>
                         <div x-show="userDropdownOpen"
-                            class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-gradient-to-b from-gray-800 to-purple-900 bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-10">
+                            class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-white rounded-md shadow-lg z-10">
                             @auth
                                 @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
                                     <a href="{{ route('admin.dashboard') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                             class="size-6">
                                             <path stroke="#FFFFFF" stroke-width="2"
@@ -711,7 +717,7 @@
                                         Quản trị viên
                                     </a>
                                     <a href="{{ route('admin.products.index') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -721,7 +727,7 @@
                                     </a>
                                 @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
                                     <a href="{{ route('seller.dashboard') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -730,7 +736,7 @@
                                         Bảng điều khiển Seller
                                     </a>
                                     <a href="{{ route('seller.products.index') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -739,7 +745,7 @@
                                         Sản phẩm của tôi
                                     </a>
                                     <a href="{{ route('seller.order.index') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-6 py-3 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -749,7 +755,7 @@
                                     </a>
                                 @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
                                     <a href="{{ route('account.profile') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -758,7 +764,7 @@
                                         Quản lý tài khoản
                                     </a>
                                     <a href="{{ route('order_history') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -767,29 +773,20 @@
                                         Đơn hàng của tôi
                                     </a>
                                     <a href="{{ route('wishlist') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
                                         </svg>
-                                        Danh sách ước
-                                    </a>
-                                    <a href="{{ route('seller.register') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
-                                        </svg>
-                                        Trở thành người bán
+                                        Yêu thích
                                     </a>
                                 @endif
                                 <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST"
                                     class="inline">
                                     @csrf
                                     <button type="submit"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -812,24 +809,40 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-[#111] text-white pt-10">
-        <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+    <footer class="bg-[#000] text-white pt-10">
+        @php
+            $companyName = $settings->company_name ?? config('app.name');
+            $contactAddress = $settings->address ?? ($settings->shop_address ?? '');
+            $contactEmail = $settings->email ?? ($settings->shop_email ?? config('mail.from.address'));
+            $contactPhone = $settings->phone ?? ($settings->shop_phone ?? '');
+        @endphp
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
             <div>
-                <h4 class="font-bold mb-2">Exclusive</h4>
-                <p class="text-sm text-gray-400 mb-2">Đăng ký</p>
-                <p class="text-sm text-gray-400 mb-2">Giảm giá 10% cho đơn hàng đầu tiên</p>
-                <div class="flex">
-                    <input type="email" placeholder="Nhập email của bạn"
-                        class="w-full px-2 py-1 text-sm text-black rounded" />
-                    <button class="ml-2 bg-white text-black px-2 py-1 rounded"><i
-                            class="fa fa-arrow-right"></i></button>
-                </div>
+                <h4 class="font-bold mb-2">
+                    <!-- Logo -->
+                    @if (empty($settings->logo))
+                        <a class="w-20 lg:w-[50%]" href="/">
+                            <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-full h-full">
+                        </a>
+                    @else
+                        <a href="{{ route('home') }}" class="flex items-center">
+                            <img src="{{ asset('storage/' . $settings->logo) }}" alt="logo" class="w-20">
+                        </a>
+                    @endif
+                </h4>
             </div>
             <div>
                 <h4 class="font-bold mb-2">Hỗ trợ</h4>
-                <p class="text-sm text-gray-400">403 Quang Trung, Buôn Ma Thuột, Đaklak</p>
-                <p class="text-sm text-gray-400">exclusive@gmail.com</p>
-                <p class="text-sm text-gray-400">0915571415</p>
+                <p class="text-sm text-gray-400">
+                    {{ $contactAddress ?: 'Địa chỉ đang cập nhật' }}
+                </p>
+                <p class="text-sm text-gray-400">
+                    {{ $contactEmail ?: 'support@example.com' }}
+                </p>
+                <p class="text-sm text-gray-400">
+                    {{ $contactPhone ?: '0000 000 000' }}
+                </p>
             </div>
             <div>
                 <h4 class="font-bold mb-2">Tài khoản</h4>
@@ -863,32 +876,43 @@
             </div>
             <div>
                 <h4 class="font-bold mb-2">Liên kết nhanh</h4>
-                <a href="{{ route('help.center') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Chính
-                    sách bảo mật</a>
-                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Điều khoản sử dụng</a>
-                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Câu hỏi thường gặp</a>
-                <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Liên hệ</a>
-            </div>
-            <div>
-                <h4 class="font-bold mb-2">Tải App</h4>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
-                    class="w-28 mb-2" />
-                <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
-                    class="w-28" />
-                <p class="text-xs text-gray-400 mt-2">Tiết kiệm 5.3 ứng dụng dành cho người dùng mới</p>
+                <a href="{{ route('help.center') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Trung
+                    tâm trợ giúp</a>
+                <a href="{{ route('home') }}#policies"
+                    class="text-sm text-gray-400 hover:text-orange-500 block">Chính sách & điều khoản</a>
+                <a href="{{ route('contact') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Liên
+                    hệ</a>
             </div>
             <div>
                 <h4 class="font-bold mb-2">Kết nối</h4>
-                <div class="flex gap-3 text-lg">
-                    <a href="#" class="text-white hover:text-orange-500"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="text-white hover:text-orange-500"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-white hover:text-orange-500"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="text-white hover:text-orange-500"><i class="fab fa-linkedin-in"></i></a>
+                @php
+                    $fb = $settings->facebook_url ?? '#';
+                    $zalo = $settings->zalo_url ?? '#';
+                    $yt = $settings->youtube_url ?? '#';
+                    $tt = $settings->tiktok_url ?? '#';
+                @endphp
+                <div class="flex items-center gap-3 mt-2">
+                    <a href="{{ $fb }}"
+                        class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
+                        aria-label="Facebook">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
                 </div>
+                <p class="text-xs text-gray-400 mt-3">Nhận thông tin khuyến mãi và sản phẩm mới qua email: <a
+                        class="underline" href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></p>
             </div>
         </div>
-        <div class="border-t border-[#222] mt-10 py-4 text-center text-sm text-gray-400">
-            © Copyright Rimel 2022. All rights reserved.
+        <!-- Payment methods -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+            <div class="flex flex-wrap items-center gap-3 opacity-80">
+                <span class="text-xs text-gray-400 mr-2">Phương thức thanh toán:</span>
+                <img src="{{ asset('images/payments/momo.png') }}" alt="MoMo" class="h-6">
+                <img src="{{ asset('images/payments/vnpay.png') }}" alt="VNPay" class="h-6">
+                <img src="{{ asset('images/payments/cod.png') }}" alt="COD" class="h-6">
+            </div>
+        </div>
+        <div class="border-t border-[#222] mt-10 py-4 text-center text-xs sm:text-sm text-gray-400 px-4">
+            © {{ now()->year }} {{ $companyName }}. Bảo lưu mọi quyền.
         </div>
     </footer>
 

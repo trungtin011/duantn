@@ -15,7 +15,8 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            ;
             padding: 40px 20px;
             text-align: center;
             color: white;
@@ -212,7 +213,12 @@
         <h1>Xin chào, Có thể giúp gì cho bạn? </h1>
         <div class="search-container">
             <input type="text" class="search-box" placeholder="Nhập từ khóa hoặc nội dung cần tìm">
-            <button class="search-btn">🔍</button>
+            <button class="search-btn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+            </button>
         </div>
     </div>
 
@@ -220,10 +226,10 @@
         <div class="categories">
             <h2 class="section-title">Danh mục</h2>
             <div class="category-grid">
-                @foreach($categories as $cat)
+                @foreach ($categories as $cat)
                     <a href="{{ route('help.category', $cat->slug) }}" class="category-item">
                         <div class="category-icon">
-                            @if(Str::startsWith($cat->icon, 'help-category-icons/'))
+                            @if (Str::startsWith($cat->icon, 'help-category-icons/'))
                                 {{-- icon là ảnh --}}
                                 <img src="{{ Storage::url($cat->icon) }}" alt="icon" style="width: 32px; height: 32px;">
                             @else
@@ -246,20 +252,12 @@
                     <div class="faq-text">[Dịch vụ] Cách liên hệ Chăm sóc khách hàng, Hotline, Tổng đài Shopee</div>
                 </div>
             </div>
-
-            <div class="help-section">
-                <div class="help-question">Bạn có muốn tìm thêm thông tin gì không?</div>
-                <a href="#" class="contact-btn">
-                    <span class="contact-icon">📞</span>
-                    Liên hệ Shopee
-                </a>
-            </div>
         </div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.submenu-item a').forEach(link => {
-                    link.addEventListener('click', function (e) {
+                    link.addEventListener('click', function(e) {
                         e.preventDefault();
                         const url = this.href;
 
@@ -275,7 +273,7 @@
                 });
             });
             // Thêm hiệu ứng tìm kiếm
-            document.querySelector('.search-btn').addEventListener('click', function () {
+            document.querySelector('.search-btn').addEventListener('click', function() {
                 const searchTerm = document.querySelector('.search-box').value;
                 if (searchTerm.trim()) {
                     alert('Tìm kiếm: ' + searchTerm);
@@ -283,7 +281,7 @@
             });
 
             // Thêm hiệu ứng enter cho ô tìm kiếm
-            document.querySelector('.search-box').addEventListener('keypress', function (e) {
+            document.querySelector('.search-box').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     const searchTerm = this.value;
                     if (searchTerm.trim()) {
@@ -294,7 +292,7 @@
 
             // Thêm hiệu ứng click cho các danh mục
             document.querySelectorAll('.category-item').forEach(item => {
-                item.addEventListener('click', function () {
+                item.addEventListener('click', function() {
                     const categoryName = this.querySelector('.category-text').textContent;
                     alert('Bạn đã chọn: ' + categoryName);
                 });
@@ -302,16 +300,16 @@
 
             // Thêm hiệu ứng click cho FAQ
             document.querySelectorAll('.faq-item').forEach(item => {
-                item.addEventListener('click', function () {
+                item.addEventListener('click', function() {
                     const faqText = this.querySelector('.faq-text').textContent;
                     alert('Xem thêm: ' + faqText);
                 });
             });
 
             // Thêm hiệu ứng cho nút liên hệ
-            document.querySelector('.contact-btn').addEventListener('click', function (e) {
+            document.querySelector('.contact-btn').addEventListener('click', function(e) {
                 e.preventDefault();
                 alert('Liên hệ với Shopee Support');
             });
         </script>
-@endsection
+    @endsection
