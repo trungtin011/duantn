@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Địa Chỉ Việt Nam</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Chức Năng Chọn Địa Chỉ Việt Nam</h1>
+    
+    <div class="form-group">
+        <label for="province">Tỉnh / Thành phố:</label>
+        <select id="province" name="province">
+            <option value="">Chọn tỉnh/thành</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="district">Quận / Huyện:</label>
+        <select id="district" name="district" disabled>
+            <option value="">Chọn quận/huyện</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="ward">Phường / Xã:</label>
+        <select id="ward" name="ward" disabled>
+            <option value="">Chọn phường/xã</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="address">Địa chỉ chi tiết:</label>
+        <input type="text" id="address" name="address" placeholder="Số nhà, tên đường...">
+    </div>
+    
+    <div class="result" id="result" style="display: none;">
+        <h3>Kết quả:</h3>
+        <p><strong>Địa chỉ đầy đủ:</strong> <span id="fullAddress"></span></p>
+    </div>
+
+    <script src="address-data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const provinceSelect = document.getElementById('province');
+            const districtSelect = document.getElementById('district');
+            const wardSelect = document.getElementById('ward');
+            const addressInput = document.getElementById('address');
+            const resultDiv = document.getElementById('result');
+            const fullAddressSpan = document.getElementById('fullAddress');
+
+            // Populate provinces
+            VIETNAM_ADDRESS_DATA.provinces.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province.code;
+                option.textContent = province.name;
+                provinceSelect.appendChild(option);
+            });
+
+            // Handle province change
+            provinceSelect.addEventListener('change', function() {
+                districtSelect.innerHTML = '<option value="">Chọn quận/huyện</option>';
+                wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+                wardSelect.disabled = true;
+                districtSelect.disabled = false;
+                
+                const provinceCode = this.value;
+                const districts = getDistrictsByProvince(provinceCode);
+                
+                districts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.code;
+                    option.textContent = district.name;
+                    districtSelect.appendChild(option);
+                });
+                
+                updateResult();
+            });
+
+            // Handle district change
+            districtSelect.addEventListener('change', function() {
+                wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+                wardSelect.disabled = false;
+                
+                const districtCode = this.value;
+                const wards = getWardsByDistrict(districtCode);
+                
+                wards.forEach(ward => {
+                    const option = document.createElement('option');
+                    option.value = ward.code;
+                    option.textContent = ward.name;
+                    wardSelect.appendChild(option);
+                });
+                
+                updateResult();
+            });
+
+            // Handle ward change
+            wardSelect.addEventListener('change', updateResult);
+            
+            // Handle address input change
+            addressInput.addEventListener('input', updateResult);
+
+            function updateResult() {
+                const province = provinceSelect.options[provinceSelect.selectedIndex];
+                const district = districtSelect.options[districtSelect.selectedIndex];
+                const ward = wardSelect.options[wardSelect.selectedIndex];
+                const address = addressInput.value;
+
+                if (province && district && ward && address) {
+                    const fullAddress = `${address}, ${ward.textContent}, ${district.textContent}, ${province.textContent}`;
+                    fullAddressSpan.textContent = fullAddress;
+                    resultDiv.style.display = 'block';
+                } else {
+                    resultDiv.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

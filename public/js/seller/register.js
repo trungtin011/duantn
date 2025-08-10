@@ -1,5 +1,9 @@
 // Modern Seller Registration JavaScript
 
+// Include address data
+// Note: This file should be included before register.js in the HTML
+// <script src="{{ asset('js/seller/address-data.js') }}"></script>
+
 // Stepper functionality
 function updateStepper(currentStep) {
     const steps = document.querySelectorAll('.stepper-step');
@@ -169,21 +173,13 @@ function initializeAddressAPI() {
 
     if (!provinceSelect || !districtSelect || !wardSelect) return;
 
-    // Fetch provinces
-    fetch('https://provinces.open-api.vn/api/?depth=1')
-        .then(res => res.json())
-        .then(data => {
-            data.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.code;
-                option.textContent = item.name;
-                provinceSelect.appendChild(option);
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching provinces:', error);
-            showNotification('Không thể tải danh sách tỉnh/thành phố', 'error');
-        });
+    // Populate provinces from local data
+    VIETNAM_ADDRESS_DATA.provinces.forEach(province => {
+        const option = document.createElement('option');
+        option.value = province.code;
+        option.textContent = province.name;
+        provinceSelect.appendChild(option);
+    });
 
     // Province change handler
     provinceSelect.addEventListener('change', function () {
@@ -195,20 +191,13 @@ function initializeAddressAPI() {
         const provinceCode = this.value;
         if (!provinceCode) return;
         
-        fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
-            .then(res => res.json())
-            .then(data => {
-                data.districts.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.code;
-                    option.textContent = item.name;
-                    districtSelect.appendChild(option);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching districts:', error);
-                showNotification('Không thể tải danh sách quận/huyện', 'error');
-            });
+        const districts = getDistrictsByProvince(provinceCode);
+        districts.forEach(district => {
+            const option = document.createElement('option');
+            option.value = district.code;
+            option.textContent = district.name;
+            districtSelect.appendChild(option);
+        });
     });
 
     // District change handler
@@ -219,20 +208,13 @@ function initializeAddressAPI() {
         const districtCode = this.value;
         if (!districtCode) return;
         
-        fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
-            .then(res => res.json())
-            .then(data => {
-                data.wards.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.code;
-                    option.textContent = item.name;
-                    wardSelect.appendChild(option);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching wards:', error);
-                showNotification('Không thể tải danh sách phường/xã', 'error');
-            });
+        const wards = getWardsByDistrict(districtCode);
+        wards.forEach(ward => {
+            const option = document.createElement('option');
+            option.value = ward.code;
+            option.textContent = ward.name;
+            wardSelect.appendChild(option);
+        });
     });
 }
 

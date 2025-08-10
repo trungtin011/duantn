@@ -65,50 +65,113 @@ class ProductController extends Controller
             Cache::forget('all_brands');
         }
 
-        // Lấy tất cả danh mục
-        $categories = Cache::remember('all_categories', 600, function () {
-            return Category::with(['subCategories.subCategories'])
-                ->whereNull('parent_id') // Lấy tất cả danh mục cha
-                ->select('id', 'name', 'parent_id')
-                ->get()
-                ->map(function ($cat) {
-                    $cat->product_count = $cat->products()->where('status', 'active')->count();
-                    foreach ($cat->subCategories as $sub) {
-                        $sub->product_count = $sub->products()->where('status', 'active')->count();
-                        foreach ($sub->subCategories as $sub2) {
-                            $sub2->product_count = $sub2->products()->where('status', 'active')->count();
-                            $sub->product_count += $sub2->product_count;
-                        }
-                        $cat->product_count += $sub->product_count;
-                    }
-                    return $cat;
-                });
-        });
-
-        // Lấy tất cả thương hiệu
-        $brands = Cache::remember('all_brands', 600, function () {
-            return Brand::with(['subBrands'])
-                ->whereNull('parent_id') // Lấy tất cả thương hiệu cha
-                ->select('id', 'name', 'parent_id')
-                ->get()
-                ->map(function ($brand) {
-                    $brand->product_count = $brand->products()->where('status', 'active')->count();
-                    foreach ($brand->subBrands as $sub) {
-                        $sub->product_count = $sub->products()->where('status', 'active')->count();
-                        $brand->product_count += $sub->product_count;
-                    }
-                    return $brand;
-                });
-        });
-
-        // Truy vấn sản phẩm
-        $productQuery = Product::query()
-            // Tạm thời bỏ logic tìm kiếm để kiểm tra
-            // ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
+        // Truy vấn sản phẩm trước để lấy danh mục và thương hiệu liên quan
+        $baseProductQuery = Product::query()
+            ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
             ->when($categoryIds, fn($q) => $q->whereHas('categories', fn($q2) => $q2->whereIn('categories.id', $categoryIds)))
             ->when($brandIds, fn($q) => $q->whereHas('brands', fn($q2) => $q2->whereIn('brands.id', $brandIds)))
             ->when($priceMin, fn($q) => $q->where('sale_price', '>=', $priceMin))
-            ->when($priceMax, fn($q) => $q->where('sale_price', '<=', $priceMax));
+            ->when($priceMax, fn($q) => $q->where('sale_price', '<=', $priceMax))
+            ->where('status', 'active');
+
+        // Lấy danh mục và thương hiệu từ kết quả tìm kiếm
+        $relevantCategories = collect();
+        $relevantBrands = collect();
+
+        // Lấy sản phẩm để xác định danh mục và thương hiệu liên quan
+        $sampleProducts = (clone $baseProductQuery)->with(['categories', 'brands'])->limit(1000)->get();
+        
+        // Thu thập danh mục từ sản phẩm
+        foreach ($sampleProducts as $product) {
+            foreach ($product->categories as $category) {
+                $relevantCategories->put($category->id, $category);
+            }
+            foreach ($product->brands as $brand) {
+                $relevantBrands->put($brand->id, $brand);
+            }
+        }
+
+        // Lấy danh mục cha và con từ danh mục liên quan
+        $categories = collect();
+        foreach ($relevantCategories as $category) {
+            // Lấy danh mục cha
+            $parentCategory = Category::with(['subCategories.subCategories'])
+                ->where('id', $category->parent_id)
+                ->orWhere('id', $category->id)
+                ->first();
+            
+            if ($parentCategory && !$categories->has($parentCategory->id)) {
+                $categories->put($parentCategory->id, $parentCategory);
+            }
+        }
+
+        // Lấy thương hiệu cha từ thương hiệu liên quan
+        $brands = collect();
+        foreach ($relevantBrands as $brand) {
+            $parentBrand = Brand::with(['subBrands'])
+                ->where('id', $brand->parent_id)
+                ->orWhere('id', $brand->id)
+                ->first();
+            
+            if ($parentBrand && !$brands->has($parentBrand->id)) {
+                $brands->put($parentBrand->id, $parentBrand);
+            }
+        }
+
+        // Tính số lượng sản phẩm cho mỗi danh mục và thương hiệu
+        $categories = $categories->map(function ($cat) use ($sampleProducts) {
+            $cat->product_count = $sampleProducts->filter(function ($product) use ($cat) {
+                return $product->categories->contains('id', $cat->id) ||
+                       $product->categories->any(function ($productCat) use ($cat) {
+                           return $productCat->parent_id === $cat->id;
+                       });
+            })->count();
+            
+            if ($cat->subCategories) {
+                foreach ($cat->subCategories as $sub) {
+                    $sub->product_count = $sampleProducts->filter(function ($product) use ($sub) {
+                        return $product->categories->contains('id', $sub->id);
+                    })->count();
+                    
+                    if ($sub->subCategories) {
+                        foreach ($sub->subCategories as $sub2) {
+                            $sub2->product_count = $sampleProducts->filter(function ($product) use ($sub2) {
+                                return $product->categories->contains('id', $sub2->id);
+                            })->count();
+                            $sub->product_count += $sub2->product_count;
+                        }
+                    }
+                    $cat->product_count += $sub->product_count;
+                }
+            }
+            return $cat;
+        });
+
+        $brands = $brands->map(function ($brand) use ($sampleProducts) {
+            $brand->product_count = $sampleProducts->filter(function ($product) use ($brand) {
+                return $product->brands->contains('id', $brand->id) ||
+                       $product->brands->any(function ($productBrand) use ($brand) {
+                           return $productBrand->parent_id === $brand->id;
+                       });
+            })->count();
+            
+            if ($brand->subBrands) {
+                foreach ($brand->subBrands as $sub) {
+                    $sub->product_count = $sampleProducts->filter(function ($product) use ($sub) {
+                        return $product->brands->contains('id', $sub->id);
+                    })->count();
+                    $brand->product_count += $sub->product_count;
+                }
+            }
+            return $brand;
+        });
+
+        // Sắp xếp theo số lượng sản phẩm giảm dần
+        $categories = $categories->sortByDesc('product_count')->values();
+        $brands = $brands->sortByDesc('product_count')->values();
+
+        // Sử dụng truy vấn cơ bản đã tạo trước đó
+        $productQuery = clone $baseProductQuery;
 
         // Lấy các sản phẩm quảng cáo
         $advertisedProductsByShop = collect();
@@ -176,10 +239,9 @@ class ProductController extends Controller
         $advertisedProductIds = $advertisedProductIds->toArray();
 
         // Loại trừ các sản phẩm quảng cáo khỏi truy vấn chính
-        // Tạm thời tắt để kiểm tra
-        // if (!empty($advertisedProductIds)) {
-        //     $productQuery->whereNotIn('id', $advertisedProductIds);
-        // }
+        if (!empty($advertisedProductIds)) {
+            $productQuery->whereNotIn('id', $advertisedProductIds);
+        }
 
         $products = $productQuery->paginate(50); // Tăng số lượng sản phẩm trên mỗi trang
 
@@ -197,13 +259,20 @@ class ProductController extends Controller
             'sort' => $sort
         ]);
 
-        // Trong phương thức search, phần AJAX
+        // Xử lý AJAX request - trả về HTML cho product_list và cập nhật bộ lọc
         if ($request->ajax()) {
+            // Trả về cả danh sách sản phẩm và bộ lọc cập nhật
+            $productListHtml = view('partials.product_list', compact('products', 'advertisedProductsByShop'))->render();
+            $categoryFiltersHtml = view('partials.category_filters', compact('categories', 'categoryIds'))->render();
+            $brandFiltersHtml = view('partials.brand_filters', compact('brands', 'brandIds'))->render();
+            
             return response()->json([
-                'html' => view('partials.product_list', compact('products', 'advertisedProductsByShop'))->render(),
-                'categories_html' => view('partials.category_filters', compact('categories'))->render(),
-                'brands_html' => view('partials.brand_filters', compact('brands'))->render(),
-                // 'advertised_html' => view('partials.advertised_products', compact('advertisedProducts'))->render(), // Không render riêng nữa
+                'productList' => $productListHtml,
+                'categoryFilters' => $categoryFiltersHtml,
+                'brandFilters' => $brandFiltersHtml,
+                'totalProducts' => $products->total(),
+                'currentPage' => $products->currentPage(),
+                'lastPage' => $products->lastPage()
             ]);
         }
 

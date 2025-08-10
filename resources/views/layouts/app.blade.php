@@ -611,14 +611,15 @@
         <div class="container-header mx-auto sm:px-0 py-[10px] px-[10px] flex justify-between items-center">
             <!-- Logo -->
             @if (empty($settings->logo))
-                <a class="w-full lg:w-[14%] flex items-center justify-center gap-2 py-2" href="/">
-                    <div class="bg-black flex items-center gap-2 py-1 px-2 rounded lg:w-[175px]">
+                <a class="w-full lg:w-[10%]" href="/">
+                    {{-- <div class="bg-black flex items-center gap-2 py-1 px-2 rounded lg:w-[175px]">
                         <img src="{{ asset('images/logo.svg') }}" alt="logo" class="w-[30%] h-[30%]">
                         <div class="text-white grid">
                             <h5 class="m-0 text-xl">ZynoxMall</h5>
                             <span class="text-xs text-right">zynoxmall.xyz</span>
                         </div>
-                    </div>
+                    </div> --}}
+                    <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-full h-full">
                 </a>
             @else
                 <a href="{{ route('home') }}" class="flex items-center">

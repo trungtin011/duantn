@@ -115,41 +115,4 @@ class LoginController extends Controller
         Auth::login($user);
         return redirect()->route('home')->with('success', 'Đăng nhập bằng Google thành công!');
     }
-
-    public function handleFacebookCallback()
-    {
-        try {
-            /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
-            $socialiteProvider = Socialite::driver('facebook');
-            $facebookUser = $socialiteProvider->stateless()->user();
-        } catch (\Exception $e) {
-            return redirect()->route('login')->with('error', 'Đăng nhập Facebook thất bại. Vui lòng thử lại.');
-        }
-        $email = $facebookUser->getEmail() ?? 'fb_' . $facebookUser->getId() . '@noemail.facebook';
-        $user = User::firstOrCreate(
-            ['email' => $email],
-            [
-                'username' => Str::slug($facebookUser->getName()) . '-' . Str::random(4),
-                'fullname' => $facebookUser->getName(),
-                'email' => $email,
-                'password' => bcrypt(Str::random(16)),
-                'avatar' => $facebookUser->getAvatar(),
-                'phone' => null,
-                'is_verified' => true,
-                'status' => \App\Enums\UserStatus::ACTIVE,
-                'role' => \App\Enums\UserRole::CUSTOMER,
-            ]
-        );
-        Auth::login($user);
-        return redirect()->route('home')->with('success', 'Đăng nhập bằng Facebook thành công!');
-    }
-
-    public function redirectToFacebook()
-    {
-        /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
-        $socialiteProvider = Socialite::driver('facebook');
-        return $socialiteProvider
-            ->scopes(['email'])
-            ->redirect();
-    }
 }

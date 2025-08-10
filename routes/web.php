@@ -300,9 +300,11 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/', [CouponController::class, 'index'])->name('admin.coupon.index');
     Route::get('/create', [CouponController::class, 'create'])->name('admin.coupon.create');
     Route::post('/', [CouponController::class, 'store'])->name('admin.coupon.store');
+    Route::get('/{id}', [CouponController::class, 'show'])->name('admin.coupon.show');
     Route::get('/{id}/edit', [CouponController::class, 'edit'])->name('admin.coupon.edit');
     Route::put('/{id}', [CouponController::class, 'update'])->name('admin.coupon.update');
     Route::delete('/{id}', [CouponController::class, 'destroy'])->name('admin.coupon.destroy');
+    Route::post('/{id}/toggle-status', [CouponController::class, 'toggleStatus'])->name('admin.coupon.toggle-status');
 
     Route::get('refunds', [RefundController::class, 'index'])->name('admin.refunds.index');
     Route::get('refunds/{id}', [RefundController::class, 'show'])->name('admin.refunds.show');
