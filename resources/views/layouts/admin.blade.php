@@ -719,7 +719,6 @@
     @vite('resources/js/admin/admin.js')
     @vite('resources/js/admin/order.js')
     @vite('resources/js/admin/category.js')
-    @vite('resources/js/admin/create-product.js')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const notificationBtn = document.querySelector('.dropdown-notification');

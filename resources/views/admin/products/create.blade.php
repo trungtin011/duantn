@@ -1,5 +1,7 @@
 @extends('layouts.admin')
-
+@push('scripts')
+    @vite('resources/js/admin/create-product.js')
+@endpush
 @section('title', 'Thêm Sản Phẩm Mới')
 
 @section('content')
@@ -79,7 +81,8 @@
                     @error('name')
                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                     @enderror
-                     <span id="name-length-warning" class="text-sm text-red-500 mt-1 hidden">Tên sản phẩm không được vượt quá 100 ký tự.</span>
+                    <span id="name-length-warning" class="text-sm text-red-500 mt-1 hidden">Tên sản phẩm không được vượt quá
+                        100 ký tự.</span>
                 </div>
 
                 <div class="mb-4">
@@ -282,13 +285,6 @@
                                     <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
                                 </label>
                             </div>
-
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Từ khóa (Tags)</label>
-                                <input type="text" name="meta_keywords" id="meta-keywords"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: áo thun, thời trang, mùa hè" value="{{ old('meta_keywords') }}">
-                            </div>
                         </div>
 
                         <!-- SEO Section -->
@@ -340,7 +336,8 @@
                                         Chọn ảnh chính
                                     </label>
                                     <input type="file" id="mainImage" class="hidden" accept="image/*">
-                                    <input type="hidden" name="main_image_temp" id="mainImageTemp" value="{{ old('main_image_temp') }}">
+                                    <input type="hidden" name="main_image_temp" id="mainImageTemp"
+                                        value="{{ old('main_image_temp') }}">
                                 </div>
                                 @error('main_image')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -357,8 +354,10 @@
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">
                                         Chọn ảnh phụ
                                     </label>
-                                    <input type="file" id="additionalImages" multiple class="hidden" accept="image/*">
-                                    <input type="hidden" name="images_temp" id="additionalImagesTemp" value='@json(old("images_temp", []))'>
+                                    <input type="file" id="additionalImages" multiple class="hidden"
+                                        accept="image/*">
+                                    <input type="hidden" name="images_temp" id="additionalImagesTemp"
+                                        value='@json(old('images_temp', []))'>
                                 </div>
                             </div>
                         </div>

@@ -177,7 +177,7 @@ class ProductControllerAdmin extends Controller
                 'meta_keywords' => $metaKeywords,
                 'is_featured' => $request->has('is_featured') ? 1 : 0,
                 'is_variant' => $isVariant ? 1 : 0,
-                'status' => $request->save_draft ? 'draft' : 'pending',
+                'status' => $request->save_draft ? 'draft' : 'active',
                 'sold_quantity' => 0,
                 'shopID' => $shop->id,
             ]);
@@ -718,7 +718,7 @@ class ProductControllerAdmin extends Controller
                 'meta_keywords' => $metaKeywords,
                 'is_featured' => $request->has('is_featured') ? 1 : 0,
                 'is_variant' => $request->filled('variants') ? 1 : 0,
-                'status' => $request->save_draft ? 'draft' : 'pending',
+                'status' => $request->save_draft ? 'draft' : 'active',
             ]);
 
             // Xử lý danh mục

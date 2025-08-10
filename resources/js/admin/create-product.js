@@ -1,12 +1,13 @@
 // Debug logging function
 function debugLog(message, data = null) {
-    if (typeof console !== 'undefined' && console.log) {
-        if (data) {
-            console.log(`[DEBUG] ${message}`, data);
-        } else {
-            console.log(`[DEBUG] ${message}`);
-        }
-    }
+    // Tắt debug log để giảm spam
+    // if (typeof console !== 'undefined' && console.log) {
+    //     if (data) {
+    //         console.log(`[DEBUG] ${message}`, data);
+    //     } else {
+    //         console.log(`[DEBUG] ${message}`);
+    //     }
+    // }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Image Preview + Temp upload
     initializeImagePreviews();
-    try { restoreTempImages(); } catch (e) { console.warn('Restore temp images error', e); }
+    try { restoreTempImages(); } catch (e) { /* console.warn('Restore temp images error', e); */ }
 
     // SEO Preview
     initializeSEOPreview();
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeVariantHandling();
 
     // Rehydrate from old inputs after a failed validation
-    try { preloadOldData(); } catch (e) { console.warn('Preload old data error', e); }
+    try { preloadOldData(); } catch (e) { /* console.warn('Preload old data error', e); */ }
 
     // Form Validation
     initializeFormValidation();
@@ -63,9 +64,15 @@ function initializeTabs() {
 function initializeProductTypeToggle() {
     const productTypeRadios = document.querySelectorAll('input[name="product_type"]');
 
+    // Xóa event listeners cũ để tránh duplicate
     productTypeRadios.forEach(radio => {
-        radio.addEventListener('change', function () {
-            console.log('Product type changed to:', this.value);
+        radio.removeEventListener('change', radio._changeHandler);
+    });
+
+    productTypeRadios.forEach(radio => {
+        // Tạo handler function và lưu reference
+        radio._changeHandler = function () {
+            // console.log('Product type changed to:', this.value);
 
             // Remove checked class from all radio buttons
             productTypeRadios.forEach(r => {
@@ -77,29 +84,42 @@ function initializeProductTypeToggle() {
 
             // Update tab visibility
             updateTabVisibility();
-        });
+        };
+
+        radio.addEventListener('change', radio._changeHandler);
     });
 
-    // Initial setup
+    // Initial setup - không gọi dispatchEvent để tránh infinite loop
     const selectedType = document.querySelector('input[name="product_type"]:checked');
     if (selectedType) {
-        selectedType.dispatchEvent(new Event('change'));
+        // selectedType.dispatchEvent(new Event('change')); // Comment để tránh infinite loop
+        // Thay vào đó, gọi trực tiếp updateTabVisibility
+        updateTabVisibility();
     }
 
     // Add click event to labels for better UX
     const radioLabels = document.querySelectorAll('input[name="product_type"] + span');
     radioLabels.forEach(label => {
-        label.addEventListener('click', function () {
+        label.addEventListener('click', function (e) {
+            e.preventDefault(); // Ngăn chặn hành vi mặc định
             const radio = this.previousElementSibling;
-            if (radio) {
+            if (radio && !radio.checked) {
                 radio.checked = true;
-                radio.dispatchEvent(new Event('change'));
+                // Gọi trực tiếp updateTabVisibility thay vì dispatchEvent
+                updateTabVisibility();
             }
         });
     });
 }
 
+// Flag để ngăn chặn gọi updateTabVisibility nhiều lần
+let isUpdatingTabs = false;
+
 function updateTabVisibility() {
+    if (isUpdatingTabs) return; // Nếu đang update thì bỏ qua
+    
+    isUpdatingTabs = true;
+    
     const productType = document.querySelector('input[name="product_type"]:checked')?.value;
     const tabButtons = document.querySelectorAll('.tab-button');
 
@@ -122,6 +142,11 @@ function updateTabVisibility() {
             }
         }
     });
+    
+    // Reset flag sau khi hoàn thành
+    setTimeout(() => {
+        isUpdatingTabs = false;
+    }, 100);
 }
 
 // Image Preview

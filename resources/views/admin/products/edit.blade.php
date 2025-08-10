@@ -121,7 +121,7 @@
         @endif
 
         <!-- Main Content Form -->
-        <form id="product-form" action="{{ route('seller.products.update', $product->id) }}" method="POST"
+        <form id="product-form" action="{{ route('admin.products.update', $product->id) }}" method="POST"
             enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -422,17 +422,6 @@
                                     <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
                                 </label>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Từ khóa (Tags)</label>
-                                <input type="text" name="meta_keywords" id="meta-keywords"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Thêm từ khóa (phân cách bằng dấu phẩy)"
-                                    value="{{ old('meta_keywords', $product->meta_keywords) }}"
-                                    data-original-required="false">
-                                @error('meta_keywords')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
                         </div>
 
                         <!-- SEO Section -->
@@ -485,15 +474,18 @@
                                 <label class="block text-gray-700 font-medium mb-1">Ảnh chính <span
                                         class="text-red-500">*</span></label>
                                 <div class="text-center border-2 border-dashed border-gray-300 rounded-md p-4">
+                                    @php
+                                        $mainImage = $product->images->whereNull('variant_id')->where('is_default', 1)->first();
+                                    @endphp
                                     <img id="uploadIcon1" class="w-24 h-auto mx-auto mb-2"
-                                        src="{{ $product->images->first() ? asset('storage/' . $product->images->first()->image_path) : 'https://html.hixstudio.net/ebazer/assets/img/icons/upload.png' }}"
-                                        alt="{{ $product->images->first() ? 'Uploaded Image' : 'Upload Icon' }}">
+                                        src="{{ $mainImage ? asset('storage/' . $mainImage->image_path) : 'https://html.hixstudio.net/ebazer/assets/img/icons/upload.png' }}"
+                                        alt="{{ $mainImage ? 'Uploaded Image' : 'Upload Icon' }}">
                                     <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh nhỏ hơn 5Mb</span>
                                     <label for="mainImage"
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                         ảnh chính</label>
                                     <input type="hidden" name="existing_main_image"
-                                        value="{{ $product->images->first()->image_path ?? '' }}">
+                                        value="{{ $mainImage ? $mainImage->image_path : '' }}">
                                     <input type="file" id="mainImage" name="main_image" class="hidden"
                                         accept="image/*" data-original-required="true">
                                     @error('main_image')
@@ -507,7 +499,7 @@
                                 <label class="block text-gray-700 font-medium mb-1">Ảnh phụ</label>
                                 <div class="text-center border-2 border-dashed border-gray-300 rounded-md p-4">
                                     <div id="additionalImagesPreview" class="mt-2 flex flex-wrap gap-2">
-                                        @foreach ($product->images->whereNull('variant_id') as $image)
+                                        @foreach ($product->images->whereNull('variant_id')->where('is_default', 0) as $image)
                                             <div class="relative existing-image">
                                                 <img src="{{ asset('storage/' . $image->image_path) }}"
                                                     class="w-24 h-24 object-cover rounded-md border">
@@ -942,7 +934,8 @@
             window.allAttributes = @json($combinedAttributes);
 
             function debugLog(message, data = null) {
-                console.log(`[DEBUG] ${message}`, data);
+                // Tắt debug log để giảm spam
+                // console.log(`[DEBUG] ${message}`, data);
             }
 
             // Hàm cập nhật giá trị thuộc tính khi chọn từ dropdown
@@ -989,13 +982,47 @@
             }
 
             // Hàm thêm thuộc tính mới
-            let attributeIndex = document.querySelectorAll('#attribute-container .attribute-row').length;
+            let attributeIndex = 0; // Khởi tạo từ 0
+            let isAddingAttribute = false; // Flag để ngăn chặn thêm nhiều lần
+            let lastClickTime = 0; // Thời gian click cuối cùng
+            let attributeCounter = 0; // Counter để đếm số lần thêm thành công
 
             function addAttribute() {
-                debugLog('Adding new attribute');
+                const now = Date.now();
+                
+                // Kiểm tra xem có đang thêm thuộc tính không để tránh duplicate
+                if (isAddingAttribute) {
+                    debugLog('Already adding attribute, skipping...');
+                    return;
+                }
+                
+                // Kiểm tra thời gian giữa các lần click để tránh double click
+                if (now - lastClickTime < 500) {
+                    debugLog('Click too fast, skipping...');
+                    return;
+                }
+                
+                lastClickTime = now;
+                isAddingAttribute = true; // Set flag
+                
+                debugLog('Adding new attribute - attempt #' + (attributeCounter + 1));
                 const container = document.getElementById('attribute-container');
+                
+                if (!container) {
+                    debugLog('Container not found, aborting...');
+                    isAddingAttribute = false;
+                    return;
+                }
+                
+                // Cập nhật attributeIndex dựa trên số lượng hiện tại
+                const currentCount = container.querySelectorAll('.attribute-row').length;
+                attributeIndex = currentCount;
+                
+                debugLog('Current attribute count:', currentCount, 'New index:', attributeIndex);
+                
                 const newAttribute = document.createElement('div');
                 newAttribute.classList.add('flex', 'items-center', 'gap-4', 'mb-2', 'attribute-row');
+                newAttribute.setAttribute('data-attribute-id', Date.now()); // Unique ID để debug
                 newAttribute.innerHTML = `
                     <select name="attributes[${attributeIndex}][id]" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-select">
                         <option value="" disabled selected>Chọn hoặc nhập thuộc tính</option>
@@ -1009,7 +1036,11 @@
                     <input type="text" name="attributes[${attributeIndex}][values]" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" required data-original-required="true">
                     <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
                 `;
+                
                 container.appendChild(newAttribute);
+                attributeCounter++;
+                
+                debugLog('Attribute added successfully. Total added:', attributeCounter);
 
                 const newSelect = newAttribute.querySelector('.attribute-select');
                 newSelect.addEventListener('change', function() {
@@ -1017,9 +1048,7 @@
                 });
 
                 newAttribute.querySelector('.remove-attribute').addEventListener('click', () => {
-                    debugLog('Removing attribute row', {
-                        index: attributeIndex
-                    });
+                    debugLog('Removing attribute row');
                     newAttribute.remove();
                     updateAttributeIndices();
                 });
@@ -1032,6 +1061,12 @@
                         this.value = '';
                     }
                 });
+
+                // Reset flag sau khi thêm xong
+                setTimeout(() => {
+                    isAddingAttribute = false;
+                    debugLog('Attribute addition completed, flag reset');
+                }, 500);
 
                 attributeIndex++;
             }
@@ -1541,9 +1576,9 @@
                 // Kiểm tra loại sản phẩm
                 const productTypeInput = document.querySelector('input[name="product_type"]:checked');
                 if (!productTypeInput) {
-                    console.log('Không có radio product_type nào được chọn!');
+                    // console.log('Không có radio product_type nào được chọn!');
                 } else {
-                    console.log('Giá trị product_type được chọn:', productTypeInput.value);
+                    // console.log('Giá trị product_type được chọn:', productTypeInput.value);
                 }
                 const productType = productTypeInput ? productTypeInput.value : null;
 
@@ -1759,7 +1794,7 @@
                     })
                     .catch(error => {
                         spinner.style.display = 'none'; // Hide spinner on error
-                        console.error('Error checking product name:', error);
+                        // console.error('Error checking product name:', error);
                     });
             }
 
@@ -1767,9 +1802,15 @@
             function initializeProductTypeToggle() {
                 const productTypeRadios = document.querySelectorAll('input[name="product_type"]');
                 
+                // Xóa event listeners cũ để tránh duplicate
                 productTypeRadios.forEach(radio => {
-                    radio.addEventListener('change', function() {
-                        console.log('Product type changed to:', this.value);
+                    radio.removeEventListener('change', radio._changeHandler);
+                });
+                
+                productTypeRadios.forEach(radio => {
+                    // Tạo handler function và lưu reference
+                    radio._changeHandler = function() {
+                        // console.log('Product type changed to:', this.value);
                         
                         // Remove checked class from all radio buttons
                         productTypeRadios.forEach(r => {
@@ -1781,30 +1822,43 @@
                         
                         // Update tab visibility based on product type
                         updateTabVisibility();
-                    });
+                    };
+                    
+                    radio.addEventListener('change', radio._changeHandler);
                 });
                 
-                // Initial setup
+                // Initial setup - không gọi dispatchEvent để tránh infinite loop
                 const selectedType = document.querySelector('input[name="product_type"]:checked');
                 if (selectedType) {
                     selectedType.classList.add('checked');
-                    selectedType.dispatchEvent(new Event('change'));
+                    // selectedType.dispatchEvent(new Event('change')); // Comment để tránh infinite loop
+                    // Thay vào đó, gọi trực tiếp updateTabVisibility
+                    updateTabVisibility();
                 }
                 
                 // Add click event to labels for better UX
                 const radioLabels = document.querySelectorAll('input[name="product_type"] + span');
                 radioLabels.forEach(label => {
-                    label.addEventListener('click', function() {
+                    label.addEventListener('click', function(e) {
+                        e.preventDefault(); // Ngăn chặn hành vi mặc định
                         const radio = this.previousElementSibling;
-                        if (radio) {
+                        if (radio && !radio.checked) {
                             radio.checked = true;
-                            radio.dispatchEvent(new Event('change'));
+                            // Gọi trực tiếp updateTabVisibility thay vì dispatchEvent
+                            updateTabVisibility();
                         }
                     });
                 });
             }
 
+            // Flag để ngăn chặn gọi updateTabVisibility nhiều lần
+            let isUpdatingTabs = false;
+            
             function updateTabVisibility() {
+                if (isUpdatingTabs) return; // Nếu đang update thì bỏ qua
+                
+                isUpdatingTabs = true;
+                
                 const productType = document.querySelector('input[name="product_type"]:checked')?.value;
                 const tabButtons = document.querySelectorAll('.tab-button');
                 
@@ -1827,10 +1881,27 @@
                         }
                     }
                 });
+                
+                // Reset flag sau khi hoàn thành
+                setTimeout(() => {
+                    isUpdatingTabs = false;
+                }, 100);
             }
 
+            // Flag để kiểm tra xem event listeners đã được gắn chưa
+            let eventListenersAttached = false;
+            let scriptInstanceId = Date.now(); // Unique ID cho mỗi instance
+
             document.addEventListener('DOMContentLoaded', function() {
-                debugLog('DOM fully loaded');
+                debugLog('DOM fully loaded - Instance ID:', scriptInstanceId);
+                
+                // Kiểm tra xem event listeners đã được gắn chưa
+                if (eventListenersAttached) {
+                    debugLog('Event listeners already attached, skipping... Instance ID:', scriptInstanceId);
+                    return;
+                }
+                eventListenersAttached = true;
+                debugLog('Event listeners initialization started - Instance ID:', scriptInstanceId);
 
                 // Khởi tạo TinyMCE
                 if (typeof tinymce !== 'undefined') {
@@ -1865,7 +1936,7 @@
                         setup: editor => editor.on('change', () => editor.save())
                     });
                 } else {
-                    console.warn('TinyMCE not loaded, using fallback textarea');
+                    // console.warn('TinyMCE not loaded, using fallback textarea');
                 }
 
                 // Xử lý submit form
@@ -1991,23 +2062,53 @@
                 // Gắn sự kiện cho nút Thêm thuộc tính
                 const addAttributeButton = document.getElementById('add-attribute-btn');
                 if (addAttributeButton) {
-                    debugLog('Add attribute button found');
-                    addAttributeButton.addEventListener('click', () => {
-                        debugLog('Add attribute button clicked');
+                    debugLog('Add attribute button found - Instance ID:', scriptInstanceId);
+                    
+                    // Xóa tất cả event listeners cũ bằng cách clone button
+                    const newButton = addAttributeButton.cloneNode(true);
+                    newButton.id = 'add-attribute-btn'; // Đảm bảo ID được giữ nguyên
+                    addAttributeButton.parentNode.replaceChild(newButton, addAttributeButton);
+                    
+                    // Lấy button mới
+                    const freshButton = document.getElementById('add-attribute-btn');
+                    
+                    // Gắn event listener mới với biện pháp bảo vệ
+                    freshButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        debugLog('Add attribute button clicked - Instance ID:', scriptInstanceId);
+                        
+                        // Kiểm tra thêm một lần nữa để đảm bảo an toàn
+                        if (isAddingAttribute) {
+                            debugLog('Double protection: Already adding attribute, skipping...');
+                            return;
+                        }
+                        
                         addAttribute();
                     });
+                    
+                    // Đánh dấu button đã được xử lý
+                    freshButton.setAttribute('data-processed', 'true');
+                    freshButton.setAttribute('data-instance-id', scriptInstanceId);
+                    
+                    debugLog('Add attribute button event attached successfully - Instance ID:', scriptInstanceId);
                 } else {
-                    debugLog('Add attribute button NOT found');
+                    debugLog('Add attribute button NOT found - Instance ID:', scriptInstanceId);
                 }
 
                 // Gắn sự kiện cho nút Tạo biến thể
                 const generateVariantsButton = document.getElementById('generate-variants-btn');
-                if (generateVariantsButton) {
+                if (generateVariantsButton && !generateVariantsButton.hasAttribute('data-event-attached')) {
                     debugLog('Generate variants button found');
+                    generateVariantsButton.setAttribute('data-event-attached', 'true');
                     generateVariantsButton.addEventListener('click', () => {
                         debugLog('Generate variants button clicked');
                         generateVariants();
                     });
+                } else if (generateVariantsButton) {
+                    debugLog('Generate variants button event already attached');
                 } else {
                     debugLog('Generate variants button NOT found');
                 }
@@ -2025,6 +2126,23 @@
                 initializeSubCategoryToggles();
                 initializeSubBrandToggles();
                 initializeProductTypeToggle(); // Initialize product type radio buttons
+                
+                // Khởi tạo attributeIndex dựa trên số lượng thuộc tính hiện có
+                const existingAttributes = document.querySelectorAll('#attribute-container .attribute-row');
+                attributeIndex = existingAttributes.length;
+                debugLog('Initialized attributeIndex with existing attributes:', attributeIndex);
+                
+                // Kiểm tra và xóa tất cả event listeners cũ trên button "Thêm thuộc tính"
+                const allAddButtons = document.querySelectorAll('#add-attribute-btn');
+                if (allAddButtons.length > 1) {
+                    debugLog('Multiple add attribute buttons found, cleaning up...');
+                    // Giữ lại button đầu tiên và xóa các button khác
+                    for (let i = 1; i < allAddButtons.length; i++) {
+                        allAddButtons[i].remove();
+                    }
+                }
+                
+                debugLog('Final cleanup completed - Instance ID:', scriptInstanceId);
 
                 // Ẩn/hiện thuộc tính và biến thể theo loại sản phẩm
                 const productTypeRadios = document.querySelectorAll('input[name="product_type"]');

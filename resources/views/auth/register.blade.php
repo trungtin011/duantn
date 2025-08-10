@@ -137,12 +137,6 @@
                                 alt="Google icon">
                             Google
                         </a>
-                        <a href="{{ route('auth.facebook.login') }}"
-                            class="w-full flex items-center justify-center border border-blue-300 hover:bg-gray-100 py-2 text-sm md:text-base rounded">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/600px-2023_Facebook_icon.svg.png"
-                                class="h-4 w-4 mr-2" alt="Facebook icon">
-                            Facebook
-                        </a>
                     </div>
 
                     <!-- Login Link -->
