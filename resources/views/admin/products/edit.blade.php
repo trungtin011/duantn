@@ -104,8 +104,8 @@
             <div class="flex space-x-3">
                 <button type="submit" form="product-form"
                     class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và cập nhật</button>
-                <button type="submit" form="product-form" name="save_draft" value="1"
-                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Lưu nháp</button>
+                <a href="{{ route('admin.products.index') }}"
+                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Huỷ</a>
             </div>
         </div>
 
@@ -168,15 +168,15 @@
                             class="text-red-500">*</span></label>
                     <div class="flex space-x-6">
                         <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="product_type" value="simple" 
-                                   {{ old('product_type', !$product->is_variant ? 'simple' : 'variant') === 'simple' ? 'checked' : '' }}
-                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2">
+                            <input type="radio" name="product_type" value="simple"
+                                {{ old('product_type', !$product->is_variant ? 'simple' : 'variant') === 'simple' ? 'checked' : '' }}
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2">
                             <span class="ml-2 text-sm font-medium text-gray-900">Sản phẩm đơn</span>
                         </label>
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="product_type" value="variant"
-                                   {{ old('product_type', !$product->is_variant ? 'simple' : 'variant') === 'variant' ? 'checked' : '' }}
-                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2">
+                                {{ old('product_type', !$product->is_variant ? 'simple' : 'variant') === 'variant' ? 'checked' : '' }}
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2">
                             <span class="ml-2 text-sm font-medium text-gray-900">Sản phẩm có biến thể</span>
                         </label>
                     </div>
@@ -475,7 +475,10 @@
                                         class="text-red-500">*</span></label>
                                 <div class="text-center border-2 border-dashed border-gray-300 rounded-md p-4">
                                     @php
-                                        $mainImage = $product->images->whereNull('variant_id')->where('is_default', 1)->first();
+                                        $mainImage = $product->images
+                                            ->whereNull('variant_id')
+                                            ->where('is_default', 1)
+                                            ->first();
                                     @endphp
                                     <img id="uploadIcon1" class="w-24 h-auto mx-auto mb-2"
                                         src="{{ $mainImage ? asset('storage/' . $mainImage->image_path) : 'https://html.hixstudio.net/ebazer/assets/img/icons/upload.png' }}"
@@ -898,8 +901,8 @@
             <div class="col-span-12 flex justify-start space-x-3 mt-6">
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và
                     cập nhật</button>
-                <button type="submit" name="save_draft" value="1"
-                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Lưu nháp</button>
+                <a href="{{ route('admin.products.index') }}"
+                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Huỷ</a>
             </div>
         </form>
     </div>
@@ -989,37 +992,37 @@
 
             function addAttribute() {
                 const now = Date.now();
-                
+
                 // Kiểm tra xem có đang thêm thuộc tính không để tránh duplicate
                 if (isAddingAttribute) {
                     debugLog('Already adding attribute, skipping...');
                     return;
                 }
-                
+
                 // Kiểm tra thời gian giữa các lần click để tránh double click
                 if (now - lastClickTime < 500) {
                     debugLog('Click too fast, skipping...');
                     return;
                 }
-                
+
                 lastClickTime = now;
                 isAddingAttribute = true; // Set flag
-                
+
                 debugLog('Adding new attribute - attempt #' + (attributeCounter + 1));
                 const container = document.getElementById('attribute-container');
-                
+
                 if (!container) {
                     debugLog('Container not found, aborting...');
                     isAddingAttribute = false;
                     return;
                 }
-                
+
                 // Cập nhật attributeIndex dựa trên số lượng hiện tại
                 const currentCount = container.querySelectorAll('.attribute-row').length;
                 attributeIndex = currentCount;
-                
+
                 debugLog('Current attribute count:', currentCount, 'New index:', attributeIndex);
-                
+
                 const newAttribute = document.createElement('div');
                 newAttribute.classList.add('flex', 'items-center', 'gap-4', 'mb-2', 'attribute-row');
                 newAttribute.setAttribute('data-attribute-id', Date.now()); // Unique ID để debug
@@ -1036,10 +1039,10 @@
                     <input type="text" name="attributes[${attributeIndex}][values]" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" required data-original-required="true">
                     <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
                 `;
-                
+
                 container.appendChild(newAttribute);
                 attributeCounter++;
-                
+
                 debugLog('Attribute added successfully. Total added:', attributeCounter);
 
                 const newSelect = newAttribute.querySelector('.attribute-select');
@@ -1206,11 +1209,11 @@
                             <div class="mb-4">
                                 <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                                 ${variant.map((value, attrIndex) => `
-                                                                <div class="flex items-center gap-4 mb-2">
-                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                                </div>
-                                                            `).join('')}
+                                                                        <div class="flex items-center gap-4 mb-2">
+                                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                        </div>
+                                                                    `).join('')}
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
@@ -1366,7 +1369,7 @@
                         reader.onload = event => {
                             const imgContainer = document.createElement('div');
                             imgContainer.classList.add('relative', 'w-24', 'h-24',
-                            'new-image-preview'); // Add class for new images
+                                'new-image-preview'); // Add class for new images
                             imgContainer.innerHTML = `
                                 <img src="${event.target.result}" class="w-full h-full object-cover rounded-md border border-gray-300">
                                 <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-full" onclick="this.parentElement.remove()">✖</button>
@@ -1404,7 +1407,7 @@
                     reader.onload = function(e) {
                         const imgContainer = document.createElement('div');
                         imgContainer.classList.add('relative', 'w-24', 'h-24',
-                        'new-variant-image-preview'); // Add class for new variant images
+                            'new-variant-image-preview'); // Add class for new variant images
                         imgContainer.innerHTML = `
                             <img src="${e.target.result}" class="w-full h-full object-cover rounded-md border border-gray-300">
                             <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-full" onclick="this.parentElement.remove()">✖</button>
@@ -1468,7 +1471,7 @@
                 toggleButtons.forEach(button => {
                     // Remove existing event listeners
                     button.removeEventListener('click', handleToggleClick);
-                    
+
                     // Add new event listener
                     button.addEventListener('click', handleToggleClick);
                 });
@@ -1478,21 +1481,23 @@
                 const variantItem = this.closest('.variant-item');
                 const variantContent = variantItem.querySelector('.variant-content');
                 const toggleIcon = this.querySelector('.toggle-icon path');
-                
+
                 if (!variantContent || !toggleIcon) {
                     debugLog('Missing variantContent or toggleIcon');
                     return;
                 }
 
                 const isOpen = !variantContent.classList.contains('hidden');
-                
+
                 // Toggle visibility
                 variantContent.classList.toggle('hidden', isOpen);
-                
+
                 // Update icon
                 toggleIcon.setAttribute('d', isOpen ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7');
-                
-                debugLog('Toggling variant', { isOpen: !isOpen });
+
+                debugLog('Toggling variant', {
+                    isOpen: !isOpen
+                });
             }
 
             // Hàm khởi tạo toggle danh mục
@@ -1708,7 +1713,7 @@
                                 isValid = false;
                             }
                             if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
-                                .value) < 0) {
+                                    .value) < 0) {
                                 e.preventDefault();
                                 alert(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
                                 isValid = false;
@@ -1801,32 +1806,32 @@
             // Product Type Toggle Function
             function initializeProductTypeToggle() {
                 const productTypeRadios = document.querySelectorAll('input[name="product_type"]');
-                
+
                 // Xóa event listeners cũ để tránh duplicate
                 productTypeRadios.forEach(radio => {
                     radio.removeEventListener('change', radio._changeHandler);
                 });
-                
+
                 productTypeRadios.forEach(radio => {
                     // Tạo handler function và lưu reference
                     radio._changeHandler = function() {
                         // console.log('Product type changed to:', this.value);
-                        
+
                         // Remove checked class from all radio buttons
                         productTypeRadios.forEach(r => {
                             r.classList.remove('checked');
                         });
-                        
+
                         // Add checked class to selected radio
                         this.classList.add('checked');
-                        
+
                         // Update tab visibility based on product type
                         updateTabVisibility();
                     };
-                    
+
                     radio.addEventListener('change', radio._changeHandler);
                 });
-                
+
                 // Initial setup - không gọi dispatchEvent để tránh infinite loop
                 const selectedType = document.querySelector('input[name="product_type"]:checked');
                 if (selectedType) {
@@ -1835,7 +1840,7 @@
                     // Thay vào đó, gọi trực tiếp updateTabVisibility
                     updateTabVisibility();
                 }
-                
+
                 // Add click event to labels for better UX
                 const radioLabels = document.querySelectorAll('input[name="product_type"] + span');
                 radioLabels.forEach(label => {
@@ -1853,18 +1858,18 @@
 
             // Flag để ngăn chặn gọi updateTabVisibility nhiều lần
             let isUpdatingTabs = false;
-            
+
             function updateTabVisibility() {
                 if (isUpdatingTabs) return; // Nếu đang update thì bỏ qua
-                
+
                 isUpdatingTabs = true;
-                
+
                 const productType = document.querySelector('input[name="product_type"]:checked')?.value;
                 const tabButtons = document.querySelectorAll('.tab-button');
-                
+
                 tabButtons.forEach(button => {
                     const tabName = button.getAttribute('data-tab');
-                    
+
                     if (productType === 'simple') {
                         // Hide attributes-variants tab for simple products
                         if (tabName === 'attributes-variants') {
@@ -1881,7 +1886,7 @@
                         }
                     }
                 });
-                
+
                 // Reset flag sau khi hoàn thành
                 setTimeout(() => {
                     isUpdatingTabs = false;
@@ -1894,7 +1899,7 @@
 
             document.addEventListener('DOMContentLoaded', function() {
                 debugLog('DOM fully loaded - Instance ID:', scriptInstanceId);
-                
+
                 // Kiểm tra xem event listeners đã được gắn chưa
                 if (eventListenersAttached) {
                     debugLog('Event listeners already attached, skipping... Instance ID:', scriptInstanceId);
@@ -2063,36 +2068,36 @@
                 const addAttributeButton = document.getElementById('add-attribute-btn');
                 if (addAttributeButton) {
                     debugLog('Add attribute button found - Instance ID:', scriptInstanceId);
-                    
+
                     // Xóa tất cả event listeners cũ bằng cách clone button
                     const newButton = addAttributeButton.cloneNode(true);
                     newButton.id = 'add-attribute-btn'; // Đảm bảo ID được giữ nguyên
                     addAttributeButton.parentNode.replaceChild(newButton, addAttributeButton);
-                    
+
                     // Lấy button mới
                     const freshButton = document.getElementById('add-attribute-btn');
-                    
+
                     // Gắn event listener mới với biện pháp bảo vệ
                     freshButton.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        
+
                         debugLog('Add attribute button clicked - Instance ID:', scriptInstanceId);
-                        
+
                         // Kiểm tra thêm một lần nữa để đảm bảo an toàn
                         if (isAddingAttribute) {
                             debugLog('Double protection: Already adding attribute, skipping...');
                             return;
                         }
-                        
+
                         addAttribute();
                     });
-                    
+
                     // Đánh dấu button đã được xử lý
                     freshButton.setAttribute('data-processed', 'true');
                     freshButton.setAttribute('data-instance-id', scriptInstanceId);
-                    
+
                     debugLog('Add attribute button event attached successfully - Instance ID:', scriptInstanceId);
                 } else {
                     debugLog('Add attribute button NOT found - Instance ID:', scriptInstanceId);
@@ -2126,12 +2131,12 @@
                 initializeSubCategoryToggles();
                 initializeSubBrandToggles();
                 initializeProductTypeToggle(); // Initialize product type radio buttons
-                
+
                 // Khởi tạo attributeIndex dựa trên số lượng thuộc tính hiện có
                 const existingAttributes = document.querySelectorAll('#attribute-container .attribute-row');
                 attributeIndex = existingAttributes.length;
                 debugLog('Initialized attributeIndex with existing attributes:', attributeIndex);
-                
+
                 // Kiểm tra và xóa tất cả event listeners cũ trên button "Thêm thuộc tính"
                 const allAddButtons = document.querySelectorAll('#add-attribute-btn');
                 if (allAddButtons.length > 1) {
@@ -2141,7 +2146,7 @@
                         allAddButtons[i].remove();
                     }
                 }
-                
+
                 debugLog('Final cleanup completed - Instance ID:', scriptInstanceId);
 
                 // Ẩn/hiện thuộc tính và biến thể theo loại sản phẩm
@@ -2189,9 +2194,9 @@
                     // Get all relevant inputs within tabs
                     const generalDetailsInputs = document.querySelectorAll(
                         '#tab-general-details input:not([type="hidden"]), #tab-general-details select, #tab-general-details textarea'
-                        );
+                    );
                     const pricingInputs = document.querySelectorAll(
-                    '#tab-pricing-inventory input:not([type="hidden"])');
+                        '#tab-pricing-inventory input:not([type="hidden"])');
                     const shippingInputs = document.querySelectorAll('#tab-shipping input:not([type="hidden"])');
                     const attributesVariantsInputs = document.querySelectorAll(
                         '#tab-attributes-variants input:not([type="hidden"]), #tab-attributes-variants select');
@@ -2231,7 +2236,7 @@
                     // Ensure main SKU (outside tabs) is always required and enabled
                     document.querySelector('input[name="sku"]').required = true;
                     document.querySelector('input[name="sku"]').disabled = false;
-                    
+
                     // Update tab visibility using the new function
                     updateTabVisibility();
                 }
@@ -2240,7 +2245,7 @@
                     radio.addEventListener('change', function() {
                         // Call the existing toggle function
                         toggleProductTypeSections();
-                        
+
                         // Also call the new product type toggle function
                         initializeProductTypeToggle();
                     });
@@ -2249,7 +2254,7 @@
                 // Store original required state for inputs inside tabs, so we can re-apply/remove dynamically
                 document.querySelectorAll(
                     '#tab-general-details input, #tab-general-details select, #tab-general-details textarea, #tab-pricing-inventory input, #tab-shipping input, #tab-attributes-variants input, #tab-attributes-variants select, #tab-attributes-variants textarea'
-                    ).forEach(input => {
+                ).forEach(input => {
                     if (input.required || input.hasAttribute('data-original-required')) {
                         // If it was already required in HTML, or explicitly marked as original-required
                         input.setAttribute('data-original-required', input.required ? 'true' : 'false');
@@ -2301,7 +2306,7 @@
                             if (currentlyDisplayedTab) {
                                 document.querySelector(
                                     `.tab-button[data-tab="${currentlyDisplayedTab.id.replace('tab-', '')}"]`
-                                    ).classList.add('active');
+                                ).classList.add('active');
                             }
                         }
                     });

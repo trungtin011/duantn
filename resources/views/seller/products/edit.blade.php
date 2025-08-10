@@ -67,8 +67,8 @@
             <div class="flex space-x-3">
                 <button type="submit" form="product-form"
                     class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và cập nhật</button>
-                <button type="submit" form="product-form" name="save_draft" value="1"
-                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Lưu nháp</button>
+                <a href="{{ route('seller.products.index') }}"
+                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Huỷ</a>
             </div>
         </div>
 
@@ -865,8 +865,8 @@
             <div class="col-span-12 flex justify-start space-x-3 mt-6">
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và
                     cập nhật</button>
-                <button type="submit" name="save_draft" value="1"
-                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Lưu nháp</button>
+                <a href="{{ route('seller.products.index') }}"
+                    class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Huỷ</a>
             </div>
         </form>
     </div>

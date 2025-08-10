@@ -10,32 +10,47 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class CouponControllerSeller extends Controller
 {
-
     public function index(Request $request)
     {
+        // Giữ nguyên như mã gốc
         $shop = $this->getSellerShop();
         if (!$shop) {
             return redirect()->back()->with('error', 'Bạn chưa có shop để quản lý mã giảm giá.');
         }
 
         $query = Coupon::where('shop_id', $shop->id);
-        
+
         if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('code', 'like', '%' . $request->search . '%')
-                  ->orWhere('name', 'like', '%' . $request->search . '%');
+                    ->orWhere('name', 'like', '%' . $request->search . '%');
             });
         }
 
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('is_active', $request->status);
+        }
+
+        if ($request->has('type') && $request->type !== '') {
+            $query->where('discount_type', $request->type);
+        }
+
         $coupons = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        if ($request->ajax()) {
+            return view('seller.coupon.index', compact('coupons'));
+        }
+
         return view('seller.coupon.index', compact('coupons'));
     }
 
     public function create()
     {
+        // Giữ nguyên như mã gốc
         $shop = $this->getSellerShop();
         if (!$shop) {
             return redirect()->back()->with('error', 'Bạn chưa có shop để tạo mã giảm giá.');
@@ -44,9 +59,6 @@ class CouponControllerSeller extends Controller
         return view('seller.coupon.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $shop = $this->getSellerShop();
@@ -54,94 +66,130 @@ class CouponControllerSeller extends Controller
             return redirect()->back()->with('error', 'Bạn chưa có shop để tạo mã giảm giá.');
         }
 
-        // Xử lý ngày từ các trường riêng biệt
-        $startDate = null;
-        $endDate = null;
-        
-        if ($request->filled(['start_day', 'start_month', 'start_year'])) {
-            $startDate = sprintf('%04d-%02d-%02d', 
-                $request->start_year, 
-                $request->start_month, 
-                $request->start_day
-            );
-        }
-        
-        if ($request->filled(['end_day', 'end_month', 'end_year'])) {
-            $endDate = sprintf('%04d-%02d-%02d', 
-                $request->end_year, 
-                $request->end_month, 
-                $request->end_day
-            );
-        }
-
-        $validator = Validator::make($request->all(), [
-            'code' => 'required|unique:coupon,code|min:3|max:100',
-            'name' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        // Quy tắc validate
+        $rules = [
+            'code' => 'required|string|max:50|unique:coupons,code',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'discount_value' => 'required|numeric|min:0',
             'discount_type' => 'required|in:percentage,fixed',
             'max_discount_amount' => 'nullable|numeric|min:0',
             'min_order_amount' => 'nullable|numeric|min:0',
-            'quantity' => 'required|integer|min:0',
+            'quantity' => 'required|integer|min:1',
             'max_uses_per_user' => 'nullable|integer|min:1',
             'max_uses_total' => 'nullable|integer|min:1',
+            'rank_limit' => 'required|in:all,gold,silver,bronze,diamond',
             'start_day' => 'required|integer|between:1,31',
             'start_month' => 'required|integer|between:1,12',
-            'start_year' => 'required|integer|min:' . date('Y'),
+            'start_year' => 'required|integer|min:' . now()->year,
             'end_day' => 'required|integer|between:1,31',
             'end_month' => 'required|integer|between:1,12',
-            'end_year' => 'required|integer|min:' . date('Y'),
-            'rank_limit' => 'required|in:gold,silver,bronze,diamond,all',
+            'end_year' => 'required|integer|min:' . now()->year,
             'is_active' => 'boolean',
             'is_public' => 'boolean',
-        ]);
+        ];
 
-        // Thêm validation cho ngày hợp lệ
-        if ($startDate && $endDate) {
-            $validator->after(function ($validator) use ($startDate, $endDate) {
-                if (!checkdate(
-                    (int)date('m', strtotime($startDate)), 
-                    (int)date('d', strtotime($startDate)), 
-                    (int)date('Y', strtotime($startDate))
-                )) {
-                    $validator->errors()->add('start_date', 'Ngày bắt đầu không hợp lệ.');
+        // Thông báo lỗi tùy chỉnh
+        $messages = [
+            'code.required' => 'Vui lòng nhập mã giảm giá.',
+            'code.string' => 'Mã giảm giá phải là chuỗi ký tự.',
+            'code.max' => 'Mã giảm giá không được vượt quá 50 ký tự.',
+            'code.unique' => 'Mã giảm giá đã tồn tại trong hệ thống.',
+            'name.required' => 'Vui lòng nhập tên mã giảm giá.',
+            'name.string' => 'Tên mã giảm giá phải là chuỗi ký tự.',
+            'name.max' => 'Tên mã giảm giá không được vượt quá 255 ký tự.',
+            'description.string' => 'Mô tả phải là chuỗi ký tự.',
+            'description.max' => 'Mô tả không được vượt quá 500 ký tự.',
+            'image.image' => 'File phải là hình ảnh.',
+            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
+            'discount_value.required' => 'Vui lòng nhập giá trị giảm giá.',
+            'discount_value.numeric' => 'Giá trị giảm giá phải là số.',
+            'discount_value.min' => 'Giá trị giảm giá phải lớn hơn 0.',
+            'discount_type.required' => 'Vui lòng chọn loại giảm giá.',
+            'discount_type.in' => 'Loại giảm giá không hợp lệ.',
+            'max_discount_amount.numeric' => 'Số tiền giảm tối đa phải là số.',
+            'max_discount_amount.min' => 'Số tiền giảm tối đa phải lớn hơn 0.',
+            'min_order_amount.numeric' => 'Đơn hàng tối thiểu phải là số.',
+            'min_order_amount.min' => 'Đơn hàng tối thiểu phải lớn hơn 0.',
+            'quantity.required' => 'Vui lòng nhập số lượng.',
+            'quantity.integer' => 'Số lượng phải là số nguyên.',
+            'quantity.min' => 'Số lượng phải lớn hơn 0.',
+            'max_uses_per_user.integer' => 'Số lần dùng mỗi người phải là số nguyên.',
+            'max_uses_per_user.min' => 'Số lần dùng mỗi người phải lớn hơn 0.',
+            'max_uses_total.integer' => 'Tổng số lần sử dụng phải là số nguyên.',
+            'max_uses_total.min' => 'Tổng số lần sử dụng phải lớn hơn 0.',
+            'rank_limit.required' => 'Vui lòng chọn hạn chế theo hạng.',
+            'rank_limit.in' => 'Hạn chế theo hạng không hợp lệ.',
+            'start_day.required' => 'Vui lòng chọn ngày bắt đầu.',
+            'start_day.integer' => 'Ngày bắt đầu phải là số nguyên.',
+            'start_day.between' => 'Ngày bắt đầu phải từ 1 đến 31.',
+            'start_month.required' => 'Vui lòng chọn tháng bắt đầu.',
+            'start_month.integer' => 'Tháng bắt đầu phải là số nguyên.',
+            'start_month.between' => 'Tháng bắt đầu phải từ 1 đến 12.',
+            'start_year.required' => 'Vui lòng chọn năm bắt đầu.',
+            'start_year.integer' => 'Năm bắt đầu phải là số nguyên.',
+            'start_year.min' => 'Năm bắt đầu phải từ ' . now()->year . ' trở đi.',
+            'end_day.required' => 'Vui lòng chọn ngày kết thúc.',
+            'end_day.integer' => 'Ngày kết thúc phải là số nguyên.',
+            'end_day.between' => 'Ngày kết thúc phải từ 1 đến 31.',
+            'end_month.required' => 'Vui lòng chọn tháng kết thúc.',
+            'end_month.integer' => 'Tháng kết thúc phải là số nguyên.',
+            'end_month.between' => 'Tháng kết thúc phải từ 1 đến 12.',
+            'end_year.required' => 'Vui lòng chọn năm kết thúc.',
+            'end_year.integer' => 'Năm kết thúc phải là số nguyên.',
+            'end_year.min' => 'Năm kết thúc phải từ ' . now()->year . ' trở đi.',
+        ];
+
+        // Validate dữ liệu
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        // Validate ngày tháng
+        if ($request->filled(['start_day', 'start_month', 'start_year', 'end_day', 'end_month', 'end_year'])) {
+            try {
+                $startDate = Carbon::create(
+                    $request->start_year,
+                    $request->start_month,
+                    $request->start_day
+                );
+                $endDate = Carbon::create(
+                    $request->end_year,
+                    $request->end_month,
+                    $request->end_day
+                );
+
+                if ($startDate->lt(Carbon::today())) {
+                    $validator->errors()->add('start_day', 'Ngày bắt đầu phải từ hôm nay trở đi.');
                 }
-                
-                if (!checkdate(
-                    (int)date('m', strtotime($endDate)), 
-                    (int)date('d', strtotime($endDate)), 
-                    (int)date('Y', strtotime($endDate))
-                )) {
-                    $validator->errors()->add('end_date', 'Ngày kết thúc không hợp lệ.');
+
+                if ($endDate->lte($startDate)) {
+                    $validator->errors()->add('end_day', 'Ngày kết thúc phải sau ngày bắt đầu ít nhất 1 ngày.');
                 }
-                
-                if (strtotime($startDate) < strtotime(date('Y-m-d'))) {
-                    $validator->errors()->add('start_date', 'Ngày bắt đầu phải từ hôm nay trở đi.');
-                }
-                
-                if (strtotime($endDate) <= strtotime($startDate)) {
-                    $validator->errors()->add('end_date', 'Ngày kết thúc phải sau ngày bắt đầu.');
-                }
-            });
+
+                Log::info('Validated dates', [
+                    'start_date' => $startDate->toDateString(),
+                    'end_date' => $endDate->toDateString(),
+                ]);
+            } catch (\Exception $e) {
+                $validator->errors()->add('start_day', 'Ngày bắt đầu không hợp lệ.');
+                $validator->errors()->add('end_day', 'Ngày kết thúc không hợp lệ.');
+            }
+        } else {
+            $validator->errors()->add('start_day', 'Vui lòng nhập đầy đủ ngày, tháng, năm bắt đầu.');
+            $validator->errors()->add('end_day', 'Vui lòng nhập đầy đủ ngày, tháng, năm kết thúc.');
         }
 
+        // Nếu validate thất bại, trả về lỗi
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Xác định created_by_role dựa trên user hiện tại
-        $createdByRole = 'admin';
-        if (Auth::user() && Auth::user()->seller) {
-            $createdByRole = 'shop';
-        }
-
-        Log::info('Created by role', [
-            'created_by_role' => $createdByRole
-        ]);
+        // Xác định created_by_role
+        $createdByRole = Auth::user() && Auth::user()->seller ? 'shop' : 'admin';
 
         try {
-            // Handle image upload
+            // Xử lý upload ảnh
             $imagePath = null;
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('coupons', 'public');
@@ -151,16 +199,16 @@ class CouponControllerSeller extends Controller
                 'code' => $request->code,
                 'name' => $request->name,
                 'description' => $request->description,
-                'image' => $imagePath,
+                'image' => $imagePath, // Giữ null nếu không upload
                 'discount_value' => $request->discount_value,
                 'discount_type' => $request->discount_type,
-                'max_discount_amount' => $request->max_discount_amount,
-                'min_order_amount' => $request->min_order_amount,
+                'max_discount_amount' => $request->max_discount_amount ?? null, // Cho phép null
+                'min_order_amount' => $request->min_order_amount ?? null, // Cho phép null
                 'quantity' => $request->quantity,
-                'max_uses_per_user' => $request->max_uses_per_user,
-                'max_uses_total' => $request->max_uses_total,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
+                'max_uses_per_user' => $request->max_uses_per_user ?? null, // Cho phép null
+                'max_uses_total' => $request->max_uses_total ?? null, // Cho phép null
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
                 'created_by_role' => $createdByRole,
                 'rank_limit' => $request->rank_limit,
                 'is_active' => $request->has('is_active'),
@@ -176,14 +224,14 @@ class CouponControllerSeller extends Controller
 
             return redirect()->route('seller.coupon.index')->with('success', 'Mã giảm giá đã được tạo thành công.');
         } catch (\Exception $e) {
-            Log::error('Error creating coupon: ' . $e->getMessage());
+            Log::error('Error creating coupon: ' . $e->getMessage(), [
+                'shop_id' => $shop->id,
+                'coupon_data' => $couponData
+            ]);
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi tạo mã giảm giá.')->withInput();
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
         $shop = $this->getSellerShop();
@@ -192,13 +240,18 @@ class CouponControllerSeller extends Controller
         }
 
         $coupon = Coupon::where('shop_id', $shop->id)->findOrFail($id);
-        
+
+        // Thêm các giá trị ngày, tháng, năm
+        $coupon->start_day = $coupon->start_date->day;
+        $coupon->start_month = $coupon->start_date->month;
+        $coupon->start_year = $coupon->start_date->year;
+        $coupon->end_day = $coupon->end_date->day;
+        $coupon->end_month = $coupon->end_date->month;
+        $coupon->end_year = $coupon->end_date->year;
+
         return view('seller.coupon.edit', compact('coupon'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $id)
     {
         $shop = $this->getSellerShop();
@@ -208,55 +261,154 @@ class CouponControllerSeller extends Controller
 
         $coupon = Coupon::where('shop_id', $shop->id)->findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'code' => 'required|unique:coupon,code,' . $id . '|min:3|max:100',
-            'name' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        // Quy tắc validate
+        $rules = [
+            'code' => 'required|string|max:50|unique:coupons,code,' . $id,
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'discount_value' => 'required|numeric|min:0',
             'discount_type' => 'required|in:percentage,fixed',
             'max_discount_amount' => 'nullable|numeric|min:0',
             'min_order_amount' => 'nullable|numeric|min:0',
-            'quantity' => 'required|integer|min:0',
+            'quantity' => 'required|integer|min:1',
             'max_uses_per_user' => 'nullable|integer|min:1',
             'max_uses_total' => 'nullable|integer|min:1',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'rank_limit' => 'required|in:gold,silver,bronze,diamond,all',
+            'rank_limit' => 'required|in:all,gold,silver,bronze,diamond',
+            'start_day' => 'required|integer|between:1,31',
+            'start_month' => 'required|integer|between:1,12',
+            'start_year' => 'required|integer|min:' . now()->year,
+            'end_day' => 'required|integer|between:1,31',
+            'end_month' => 'required|integer|between:1,12',
+            'end_year' => 'required|integer|min:' . now()->year,
             'is_active' => 'boolean',
             'is_public' => 'boolean',
-        ]);
+        ];
 
+        // Thông báo lỗi tùy chỉnh (giữ nguyên như ở store)
+        $messages = [
+            'code.required' => 'Vui lòng nhập mã giảm giá.',
+            'code.string' => 'Mã giảm giá phải là chuỗi ký tự.',
+            'code.max' => 'Mã giảm giá không được vượt quá 50 ký tự.',
+            'code.unique' => 'Mã giảm giá đã tồn tại trong hệ thống.',
+            'name.required' => 'Vui lòng nhập tên mã giảm giá.',
+            'name.string' => 'Tên mã giảm giá phải là chuỗi ký tự.',
+            'name.max' => 'Tên mã giảm giá không được vượt quá 255 ký tự.',
+            'description.string' => 'Mô tả phải là chuỗi ký tự.',
+            'description.max' => 'Mô tả không được vượt quá 500 ký tự.',
+            'image.image' => 'File phải là hình ảnh.',
+            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
+            'discount_value.required' => 'Vui lòng nhập giá trị giảm giá.',
+            'discount_value.numeric' => 'Giá trị giảm giá phải là số.',
+            'discount_value.min' => 'Giá trị giảm giá phải lớn hơn 0.',
+            'discount_type.required' => 'Vui lòng chọn loại giảm giá.',
+            'discount_type.in' => 'Loại giảm giá không hợp lệ.',
+            'max_discount_amount.numeric' => 'Số tiền giảm tối đa phải là số.',
+            'max_discount_amount.min' => 'Số tiền giảm tối đa phải lớn hơn 0.',
+            'min_order_amount.numeric' => 'Đơn hàng tối thiểu phải là số.',
+            'min_order_amount.min' => 'Đơn hàng tối thiểu phải lớn hơn 0.',
+            'quantity.required' => 'Vui lòng nhập số lượng.',
+            'quantity.integer' => 'Số lượng phải là số nguyên.',
+            'quantity.min' => 'Số lượng phải lớn hơn 0.',
+            'max_uses_per_user.integer' => 'Số lần dùng mỗi người phải là số nguyên.',
+            'max_uses_per_user.min' => 'Số lần dùng mỗi người phải lớn hơn 0.',
+            'max_uses_total.integer' => 'Tổng số lần sử dụng phải là số nguyên.',
+            'max_uses_total.min' => 'Tổng số lần sử dụng phải lớn hơn 0.',
+            'rank_limit.required' => 'Vui lòng chọn hạn chế theo hạng.',
+            'rank_limit.in' => 'Hạn chế theo hạng không hợp lệ.',
+            'start_day.required' => 'Vui lòng chọn ngày bắt đầu.',
+            'start_day.integer' => 'Ngày bắt đầu phải là số nguyên.',
+            'start_day.between' => 'Ngày bắt đầu phải từ 1 đến 31.',
+            'start_month.required' => 'Vui lòng chọn tháng bắt đầu.',
+            'start_month.integer' => 'Tháng bắt đầu phải là số nguyên.',
+            'start_month.between' => 'Tháng bắt đầu phải từ 1 đến 12.',
+            'start_year.required' => 'Vui lòng chọn năm bắt đầu.',
+            'start_year.integer' => 'Năm bắt đầu phải là số nguyên.',
+            'start_year.min' => 'Năm bắt đầu phải từ ' . now()->year . ' trở đi.',
+            'end_day.required' => 'Vui lòng chọn ngày kết thúc.',
+            'end_day.integer' => 'Ngày kết thúc phải là số nguyên.',
+            'end_day.between' => 'Ngày kết thúc phải từ 1 đến 31.',
+            'end_month.required' => 'Vui lòng chọn tháng kết thúc.',
+            'end_month.integer' => 'Tháng kết thúc phải là số nguyên.',
+            'end_month.between' => 'Tháng kết thúc phải từ 1 đến 12.',
+            'end_year.required' => 'Vui lòng chọn năm kết thúc.',
+            'end_year.integer' => 'Năm kết thúc phải là số nguyên.',
+            'end_year.min' => 'Năm kết thúc phải từ ' . now()->year . ' trở đi.',
+        ];
+
+        // Validate dữ liệu
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        // Validate ngày tháng
+        if ($request->filled(['start_day', 'start_month', 'start_year', 'end_day', 'end_month', 'end_year'])) {
+            try {
+                $startDate = Carbon::create(
+                    $request->start_year,
+                    $request->start_month,
+                    $request->start_day
+                );
+                $endDate = Carbon::create(
+                    $request->end_year,
+                    $request->end_month,
+                    $request->end_day
+                );
+
+                if ($startDate->lt(Carbon::today())) {
+                    $validator->errors()->add('start_day', 'Ngày bắt đầu phải từ hôm nay trở đi.');
+                }
+
+                if ($endDate->lte($startDate)) {
+                    $validator->errors()->add('end_day', 'Ngày kết thúc phải sau ngày bắt đầu ít nhất 1 ngày.');
+                }
+
+                Log::info('Validated dates', [
+                    'start_date' => $startDate->toDateString(),
+                    'end_date' => $endDate->toDateString(),
+                ]);
+            } catch (\Exception $e) {
+                $validator->errors()->add('start_day', 'Ngày bắt đầu không hợp lệ.');
+                $validator->errors()->add('end_day', 'Ngày kết thúc không hợp lệ.');
+            }
+        } else {
+            $validator->errors()->add('start_day', 'Vui lòng nhập đầy đủ ngày, tháng, năm bắt đầu.');
+            $validator->errors()->add('end_day', 'Vui lòng nhập đầy đủ ngày, tháng, năm kết thúc.');
+        }
+
+        // Nếu validate thất bại, trả về lỗi
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
         try {
-            // Handle image upload
+            // Xử lý upload ảnh
             $imagePath = $coupon->image;
             if ($request->hasFile('image')) {
-                // Delete old image if it exists
                 if ($imagePath && Storage::disk('public')->exists($imagePath)) {
                     Storage::disk('public')->delete($imagePath);
                 }
-                // Store new image
                 $imagePath = $request->file('image')->store('coupons', 'public');
+            } elseif ($request->has('remove_image')) { // Thêm logic để xóa ảnh nếu người dùng chọn
+                if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                    Storage::disk('public')->delete($imagePath);
+                }
+                $imagePath = null;
             }
 
             $coupon->update([
                 'code' => $request->code,
                 'name' => $request->name,
                 'description' => $request->description,
-                'image' => $imagePath,
+                'image' => $imagePath, // Giữ null nếu không upload và không xóa
                 'discount_value' => $request->discount_value,
                 'discount_type' => $request->discount_type,
-                'max_discount_amount' => $request->max_discount_amount,
-                'min_order_amount' => $request->min_order_amount,
+                'max_discount_amount' => $request->max_discount_amount ?? null,
+                'min_order_amount' => $request->min_order_amount ?? null,
                 'quantity' => $request->quantity,
-                'max_uses_per_user' => $request->max_uses_per_user,
-                'max_uses_total' => $request->max_uses_total,
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
+                'max_uses_per_user' => $request->max_uses_per_user ?? null,
+                'max_uses_total' => $request->max_uses_total ?? null,
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
                 'rank_limit' => $request->rank_limit,
                 'is_active' => $request->has('is_active'),
                 'is_public' => $request->has('is_public'),
@@ -264,16 +416,17 @@ class CouponControllerSeller extends Controller
 
             return redirect()->route('seller.coupon.index')->with('success', 'Mã giảm giá đã được cập nhật thành công.');
         } catch (\Exception $e) {
-            Log::error('Error updating coupon: ' . $e->getMessage());
+            Log::error('Error updating coupon: ' . $e->getMessage(), [
+                'shop_id' => $shop->id,
+                'coupon_id' => $id
+            ]);
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật mã giảm giá.')->withInput();
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
+        // Giữ nguyên như mã gốc
         $shop = $this->getSellerShop();
         if (!$shop) {
             return redirect()->back()->with('error', 'Bạn chưa có shop để quản lý mã giảm giá.');
@@ -282,13 +435,12 @@ class CouponControllerSeller extends Controller
         $coupon = Coupon::where('shop_id', $shop->id)->findOrFail($id);
 
         try {
-            // Delete associated image if it exists
             if ($coupon->image && Storage::disk('public')->exists($coupon->image)) {
                 Storage::disk('public')->delete($coupon->image);
             }
 
             $coupon->delete();
-            
+
             return redirect()->route('seller.coupon.index')->with('success', 'Mã giảm giá đã được xóa thành công.');
         } catch (\Exception $e) {
             Log::error('Error deleting coupon: ' . $e->getMessage());
@@ -296,69 +448,61 @@ class CouponControllerSeller extends Controller
         }
     }
 
-    /**
-     * Remove multiple resources from storage.
-     */
     public function destroyMultiple(Request $request)
     {
+        // Giữ nguyên như mã gốc
         $shop = $this->getSellerShop();
         if (!$shop) {
             return redirect()->back()->with('error', 'Bạn chưa có shop để quản lý mã giảm giá.');
         }
 
         $ids = json_decode($request->ids, true);
-        
+
         if (empty($ids)) {
             return redirect()->back()->with('error', 'Không có mã giảm giá nào được chọn.');
         }
 
         try {
             $coupons = Coupon::where('shop_id', $shop->id)
-                            ->whereIn('id', $ids)
-                            ->get();
+                ->whereIn('id', $ids)
+                ->get();
 
             $deletedCount = 0;
             foreach ($coupons as $coupon) {
-                // Delete associated image if it exists
                 if ($coupon->image && Storage::disk('public')->exists($coupon->image)) {
                     Storage::disk('public')->delete($coupon->image);
                 }
                 $coupon->delete();
                 $deletedCount++;
             }
-            
+
             return redirect()->route('seller.coupon.index')
-                           ->with('success', "Đã xóa thành công {$deletedCount} mã giảm giá.");
+                ->with('success', "Đã xóa thành công {$deletedCount} mã giảm giá.");
         } catch (\Exception $e) {
             Log::error('Error deleting multiple coupons: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa mã giảm giá.');
         }
     }
 
-    /**
-     * Get seller's shop
-     */
     private function getSellerShop()
     {
+        // Giữ nguyên như mã gốc
         $user = Auth::user();
-        
-        // Check if user is a seller
+
         if (!$user->seller) {
             return null;
         }
 
-        // Get shop from session or database
         $shopId = session('current_shop_id');
         if ($shopId) {
             $shop = Shop::where('id', $shopId)
-                       ->where('ownerID', $user->id)
-                       ->first();
+                ->where('ownerID', $user->id)
+                ->first();
             if ($shop) {
                 return $shop;
             }
         }
 
-        // If no shop in session or invalid, get first shop
         $shop = Shop::where('ownerID', $user->id)->first();
         if ($shop) {
             session(['current_shop_id' => $shop->id]);

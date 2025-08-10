@@ -6,6 +6,8 @@
     @endpush
 @endsection
 
+@section('title', 'Sửa mã giảm giá')
+
 @section('content')
     <div class="admin-page-header mb-5">
         <h1 class="admin-page-title text-2xl">Sửa mã giảm giá</h1>
@@ -103,14 +105,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="start_date" class="form-label">Ngày bắt đầu <span class="text-red-500">*</span></label>
-                        <input type="text" class="form-control @error('start_date') border-red-500 @enderror" id="start_date" name="start_date" value="{{ old('start_date', $coupon->start_date ? $coupon->start_date->format('Y-m-d') : '') }}" placeholder="YYYY-MM-DD">
-                        <div class="text-xs text-gray-400 mt-1">Định dạng: YYYY-MM-DD</div>
+                        <input type="date" class="form-control @error('start_date') border-red-500 @enderror" id="start_date" name="start_date" value="{{ old('start_date', $coupon->start_date ? $coupon->start_date->format('Y-m-d') : '') }}" min="{{ date('Y-m-d') }}">
                         @error('start_date')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div>
                         <label for="end_date" class="form-label">Ngày kết thúc <span class="text-red-500">*</span></label>
-                        <input type="text" class="form-control @error('end_date') border-red-500 @enderror" id="end_date" name="end_date" value="{{ old('end_date', $coupon->end_date ? $coupon->end_date->format('Y-m-d') : '') }}" placeholder="YYYY-MM-DD">
-                        <div class="text-xs text-gray-400 mt-1">Định dạng: YYYY-MM-DD</div>
+                        <input type="date" class="form-control @error('end_date') border-red-500 @enderror" id="end_date" name="end_date" value="{{ old('end_date', $coupon->end_date ? $coupon->end_date->format('Y-m-d') : '') }}" min="{{ date('Y-m-d') }}">
                         @error('end_date')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>
@@ -131,4 +131,55 @@
             </form>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+
+    // Validation cho ngày
+    function validateDates() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Reset min date cho end_date
+        if (startDateInput.value) {
+            endDateInput.min = startDateInput.value;
+        }
+
+        // Validation
+        if (startDateInput.value && startDate < today) {
+            startDateInput.setCustomValidity('Ngày bắt đầu phải từ hôm nay trở đi');
+            return false;
+        } else {
+            startDateInput.setCustomValidity('');
+        }
+
+        if (endDateInput.value && endDate < startDate) {
+            endDateInput.setCustomValidity('Ngày kết thúc phải từ ngày bắt đầu trở đi');
+            return false;
+        } else {
+            endDateInput.setCustomValidity('');
+        }
+
+        return true;
+    }
+
+    startDateInput.addEventListener('change', validateDates);
+    endDateInput.addEventListener('change', validateDates);
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        if (!validateDates()) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
 @endsection
