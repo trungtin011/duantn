@@ -497,9 +497,20 @@ class ProductControllerAdmin extends Controller
                 ]);
             }
 
-            // Lưu ảnh chính
-            if ($request->hasFile('main_image') && $request->file('main_image')->isValid()) {
+            // Lưu ảnh chính: ưu tiên ảnh tạm nếu có
+            $path = null;
+            if ($request->filled('main_image_temp')) {
+                $tempPath = $request->input('main_image_temp');
+                if (Storage::disk('public')->exists($tempPath)) {
+                    $targetPath = 'product_images/' . basename($tempPath);
+                    Storage::disk('public')->move($tempPath, $targetPath);
+                    $path = $targetPath;
+                }
+            } elseif ($request->hasFile('main_image') && $request->file('main_image')->isValid()) {
                 $path = $request->file('main_image')->store('product_images', 'public');
+            }
+
+            if ($path) {
                 ProductImage::create([
                     'productID' => $product->id,
                     'variantID' => null,
@@ -511,7 +522,13 @@ class ProductControllerAdmin extends Controller
                 Log::info('Main image saved', ['image_path' => $path]);
             }
 
-            // Lưu ảnh phụ
+            // Lưu ảnh phụ: xử lý từ danh sách ảnh tạm + file upload trực tiếp
+            $tempImages = [];
+            if ($request->filled('images_temp')) {
+                $decoded = json_decode($request->input('images_temp'), true);
+                if (is_array($decoded)) { $tempImages = $decoded; }
+            }
+
             if ($request->hasFile('images')) {
                 $displayOrder = 1;
                 foreach ($request->file('images') as $image) {
@@ -526,6 +543,28 @@ class ProductControllerAdmin extends Controller
                             'alt_text' => "{$product->name} - Ảnh phụ {$displayOrder}",
                         ]);
                         Log::info('Additional image saved', ['image_path' => $path]);
+                    }
+                }
+            }
+
+            // Move temp images into product_images
+            if (!empty($tempImages)) {
+                $displayOrder = ProductImage::where('productID', $product->id)
+                    ->whereNull('variantID')
+                    ->max('display_order') ?? 0;
+                foreach ($tempImages as $tempPath) {
+                    if (Storage::disk('public')->exists($tempPath)) {
+                        $targetPath = 'product_images/' . basename($tempPath);
+                        Storage::disk('public')->move($tempPath, $targetPath);
+                        $displayOrder++;
+                        ProductImage::create([
+                            'productID' => $product->id,
+                            'variantID' => null,
+                            'image_path' => $targetPath,
+                            'is_default' => 0,
+                            'display_order' => $displayOrder,
+                            'alt_text' => "{$product->name} - Ảnh phụ {$displayOrder}",
+                        ]);
                     }
                 }
             }
@@ -1128,7 +1167,9 @@ class ProductControllerAdmin extends Controller
             'meta_description' => 'nullable|string|max:320',
             'meta_keywords' => 'nullable|string|max:255',
             'product_type' => 'required|in:simple,variant',
-            'main_image' => ($isUpdate ? 'nullable' : 'required') . '|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+            // Chấp nhận ảnh chính từ file trực tiếp hoặc ảnh tạm (main_image_temp)
+            'main_image' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+            'main_image_temp' => $isUpdate ? 'nullable|string' : 'required_without:main_image|string',
         ];
         if (request('product_type') === 'variant') {
             $rules = array_merge($rules, [

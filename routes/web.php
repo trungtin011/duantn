@@ -815,6 +815,32 @@ Route::post('/api/upload-cccd-temp', function(Request $request) {
     ]);
 })->middleware('web');
 
+// Temp upload for product images
+Route::post('/api/upload-product-temp', function(Request $request) {
+    if ($request->hasFile('file')) {
+        $file = $request->file('file');
+        // Validate file
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
+        ]);
+
+        $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('temp/products', $fileName, 'public');
+
+        return response()->json([
+            'success' => true,
+            'path' => $path, // relative to storage/app/public
+            'url' => asset('storage/' . $path),
+            'filename' => $fileName
+        ]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'Không có file được upload'
+    ], 400);
+})->middleware('web');
+
 Route::get('/admin/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
 Route::get('/admin/reviews/ajax', [AdminReviewController::class, 'ajax'])->name('admin.reviews.ajax');
 

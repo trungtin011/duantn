@@ -71,7 +71,7 @@
                     <div class="relative">
                         <input type="text" name="name" id="product-name"
                             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Nhập tên sản phẩm" value="{{ old('name') }}" maxlength="100">
+                            placeholder="Nhập tên sản phẩm" value="{{ old('name') }}">
                         <div class="absolute right-2 top-2 text-xs text-gray-400">
                             <span id="name-char-count">0</span>/100
                         </div>
@@ -79,6 +79,7 @@
                     @error('name')
                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                     @enderror
+                     <span id="name-length-warning" class="text-sm text-red-500 mt-1 hidden">Tên sản phẩm không được vượt quá 100 ký tự.</span>
                 </div>
 
                 <div class="mb-4">
@@ -338,8 +339,8 @@
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">
                                         Chọn ảnh chính
                                     </label>
-                                    <input type="file" id="mainImage" name="main_image" class="hidden"
-                                        accept="image/*">
+                                    <input type="file" id="mainImage" class="hidden" accept="image/*">
+                                    <input type="hidden" name="main_image_temp" id="mainImageTemp" value="{{ old('main_image_temp') }}">
                                 </div>
                                 @error('main_image')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -356,8 +357,8 @@
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">
                                         Chọn ảnh phụ
                                     </label>
-                                    <input type="file" id="additionalImages" name="images[]" multiple class="hidden"
-                                        accept="image/*">
+                                    <input type="file" id="additionalImages" multiple class="hidden" accept="image/*">
+                                    <input type="hidden" name="images_temp" id="additionalImagesTemp" value='@json(old("images_temp", []))'>
                                 </div>
                             </div>
                         </div>
@@ -490,6 +491,9 @@
 
 @push('scripts')
     <script>
+        // Provide old inputs for attributes and variants to JS for rehydration after validation errors
+        window.oldAttributesData = @json(old('attributes', []));
+        window.oldVariantsData = @json(old('variants', []));
         // Pass PHP data to JavaScript
         window.allAttributes = @json($allAttributes);
 

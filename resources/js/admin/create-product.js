@@ -18,8 +18,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Product Type Toggle
     initializeProductTypeToggle();
 
-    // Image Preview
+    // Image Preview + Temp upload
     initializeImagePreviews();
+    try { restoreTempImages(); } catch (e) { console.warn('Restore temp images error', e); }
 
     // SEO Preview
     initializeSEOPreview();
@@ -30,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Variant Management
     initializeVariantHandling();
+
+    // Rehydrate from old inputs after a failed validation
+    try { preloadOldData(); } catch (e) { console.warn('Preload old data error', e); }
 
     // Form Validation
     initializeFormValidation();
@@ -125,23 +129,29 @@ function initializeImagePreviews() {
     // Main image preview
     const mainImageInput = document.getElementById('mainImage');
     const mainImagePreview = document.getElementById('uploadIcon1');
+    const mainImageTemp = document.getElementById('mainImageTemp');
 
     if (mainImageInput && mainImagePreview) {
-        mainImageInput.addEventListener('change', function (e) {
+        mainImageInput.addEventListener('change', async function (e) {
             const file = e.target.files[0];
-            if (file) {
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
-                    this.value = '';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    mainImagePreview.src = e.target.result;
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
+                this.value = '';
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetch('/api/upload-product-temp', { method: 'POST', body: formData, headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
+            const data = await res.json();
+            if (data && data.success) {
+                if (mainImageTemp) mainImageTemp.value = data.path;
+                if (mainImagePreview) {
+                    mainImagePreview.src = data.url;
                     mainImagePreview.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
+                }
+            } else {
+                alert('Tải ảnh tạm thất bại');
             }
         });
     }
@@ -149,31 +159,63 @@ function initializeImagePreviews() {
     // Additional images preview
     const additionalImagesInput = document.getElementById('additionalImages');
     const additionalImagesPreview = document.getElementById('additionalImagesPreview');
+    const additionalImagesTemp = document.getElementById('additionalImagesTemp');
 
     if (additionalImagesInput && additionalImagesPreview) {
-        additionalImagesInput.addEventListener('change', function (e) {
-            additionalImagesPreview.innerHTML = '';
-
-            Array.from(e.target.files).forEach(file => {
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('Kích thước ảnh phải nhỏ hơn 5Mb!');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
+        additionalImagesInput.addEventListener('change', async function (e) {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            let tempList = [];
+            for (const file of files) {
+                if (file.size > 5 * 1024 * 1024) { alert('Kích thước ảnh phải nhỏ hơn 5Mb!'); continue; }
+                const formData = new FormData();
+                formData.append('file', file);
+                const res = await fetch('/api/upload-product-temp', { method: 'POST', body: formData, headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
+                const data = await res.json();
+                if (data && data.success) {
+                    tempList.push(data.path);
                     const imgContainer = document.createElement('div');
                     imgContainer.className = 'relative inline-block mr-2 mb-2';
                     imgContainer.innerHTML = `
-                        <img src="${e.target.result}" class="w-20 h-20 object-cover rounded border">
+                        <img src="${data.url}" class="w-20 h-20 object-cover rounded border">
                         <button type="button" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs" onclick="this.parentElement.remove()">×</button>
                     `;
                     additionalImagesPreview.appendChild(imgContainer);
-                };
-                reader.readAsDataURL(file);
-            });
+                }
+            }
+            if (additionalImagesTemp) {
+                const current = safeJsonParse(additionalImagesTemp.value, []);
+                additionalImagesTemp.value = JSON.stringify(current.concat(tempList));
+            }
+            // reset input to allow re-selecting same files later
+            additionalImagesInput.value = '';
         });
     }
+}
+
+function restoreTempImages() {
+    const mainImageTemp = document.getElementById('mainImageTemp');
+    const mainImagePreview = document.getElementById('uploadIcon1');
+    if (mainImageTemp && mainImageTemp.value && mainImagePreview) {
+        mainImagePreview.src = `/storage/${mainImageTemp.value}`.replaceAll('//', '/');
+        mainImagePreview.classList.remove('hidden');
+    }
+
+    const additionalImagesTemp = document.getElementById('additionalImagesTemp');
+    const additionalImagesPreview = document.getElementById('additionalImagesPreview');
+    if (additionalImagesTemp && additionalImagesTemp.value && additionalImagesPreview) {
+        const list = safeJsonParse(additionalImagesTemp.value, []);
+        list.forEach(p => {
+            const img = document.createElement('img');
+            img.src = `/storage/${p}`.replaceAll('//', '/');
+            img.className = 'w-20 h-20 object-cover rounded border mr-2 mb-2 inline-block';
+            additionalImagesPreview.appendChild(img);
+        });
+    }
+}
+
+function safeJsonParse(str, fallback) {
+    try { return JSON.parse(str ?? ''); } catch { return fallback; }
 }
 
 // SEO Preview
@@ -333,7 +375,7 @@ function generateVariants() {
         return;
     }
 
-    // Lưu dữ liệu biến thể cũ nếu có
+    // Lưu dữ liệu biến thể cũ nếu có (trên DOM)
     const oldVariants = {};
     const existingVariants = variantContainer.querySelectorAll('.variant-item');
     existingVariants.forEach((variant, index) => {
@@ -354,13 +396,16 @@ function generateVariants() {
     const variants = getCombinations(attributeData.map(attr => attr.values));
     debugLog('Generated variants', variants);
 
+    // Map dữ liệu biến thể preload từ server (sau khi submit lỗi)
+    const preloadedMap = (window.preloadedVariantValues || {});
+
     variants.forEach((variant, index) => {
         const variantDiv = document.createElement('div');
         variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white',
             'relative', 'variant-item');
 
         const variantName = variant.join(' - ');
-        const oldData = oldVariants[variantName] || {};
+        const oldData = preloadedMap[variantName] || oldVariants[variantName] || {};
 
         let variantHTML = `
             <div class="flex justify-between items-center mb-3">
@@ -503,6 +548,58 @@ function addAttribute() {
     });
 
     attributeIndex++;
+}
+
+// Add attribute row with preset data
+function addAttributeWithData(attributeDataObj) {
+    addAttribute();
+    const container = document.getElementById('attribute-container');
+    const lastRow = container.querySelector('.attribute-row:last-child');
+    if (!lastRow) return;
+
+    const select = lastRow.querySelector('select[name$="[id]"]');
+    const nameInput = lastRow.querySelector('input[name$="[name]"]');
+    const valuesInput = lastRow.querySelector('input[name$="[values]"]');
+
+    if (!select || !nameInput || !valuesInput) return;
+
+    const selectedId = attributeDataObj?.id ?? '';
+    const providedName = attributeDataObj?.name ?? '';
+    const providedValues = attributeDataObj?.values ?? '';
+
+    if (selectedId && selectedId !== 'new') {
+        select.value = selectedId;
+        updateAttributeValues(select);
+        if (providedValues) valuesInput.value = providedValues;
+    } else {
+        select.value = 'new';
+        updateAttributeValues(select);
+        nameInput.value = providedName;
+        valuesInput.value = providedValues;
+    }
+}
+
+// Preload from server old inputs after validation error
+function preloadOldData() {
+    const oldAttrs = (window.oldAttributesData || []);
+    const oldVars = (window.oldVariantsData || []);
+
+    // Build a map for variant values keyed by variant name
+    window.preloadedVariantValues = {};
+    if (Array.isArray(oldVars)) {
+        oldVars.forEach(v => {
+            if (v && typeof v === 'object' && v.name) {
+                const { name, price, purchase_price, sale_price, sku, stock_total, length, width, height, weight } = v;
+                window.preloadedVariantValues[name] = { price, purchase_price, sale_price, sku, stock_total, length, width, height, weight };
+            }
+        });
+    }
+
+    if (Array.isArray(oldAttrs) && oldAttrs.length) {
+        oldAttrs.forEach(attr => addAttributeWithData(attr));
+        // Auto generate variants using restored attributes
+        generateVariants();
+    }
 }
 
 // Helper functions for variant handling
@@ -697,6 +794,7 @@ function initializeFormValidation() {
 function initializeCharacterCounter() {
     const nameInput = document.getElementById('product-name');
     const nameCharCount = document.getElementById('name-char-count');
+    const nameLengthWarning = document.getElementById('name-length-warning');
 
     if (nameInput && nameCharCount) {
         const updateCharCount = () => {
@@ -713,6 +811,16 @@ function initializeCharacterCounter() {
             } else {
                 nameCharCount.classList.remove('text-yellow-500', 'text-red-500');
                 nameCharCount.classList.add('text-gray-400');
+            }
+
+            if (nameLengthWarning) {
+                if (length > 100) {
+                    nameLengthWarning.classList.remove('hidden');
+                    nameInput.classList.add('border-red-500');
+                } else {
+                    nameLengthWarning.classList.add('hidden');
+                    nameInput.classList.remove('border-red-500');
+                }
             }
         };
 
