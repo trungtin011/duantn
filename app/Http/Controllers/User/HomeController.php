@@ -29,6 +29,37 @@ use App\Models\Banner;
 
 class HomeController extends Controller
 {
+    /**
+     * Tính toán giá hiển thị cho sản phẩm
+     */
+    private function calculateDisplayPrices($product): array
+    {
+        if ($product->is_variant && $product->variants->isNotEmpty()) {
+            // Lấy giá thấp nhất từ các biến thể
+            $minPrice = $product->variants->min('price') ?? 0;
+            $minSalePrice = $product->variants->min('sale_price') ?? 0;
+            
+            // Nếu có sale_price và nhỏ hơn price thì dùng sale_price
+            if ($minSalePrice > 0 && $minSalePrice < $minPrice) {
+                return [
+                    'display_price' => $minSalePrice,
+                    'display_original_price' => $minPrice
+                ];
+            } else {
+                return [
+                    'display_price' => $minPrice,
+                    'display_original_price' => $minPrice
+                ];
+            }
+        } else {
+            // Sản phẩm đơn
+            return [
+                'display_price' => $product->sale_price > 0 ? $product->sale_price : $product->price,
+                'display_original_price' => $product->price
+            ];
+        }
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -97,14 +128,26 @@ class HomeController extends Controller
             ->orderByDesc('sold_quantity')
             ->where('status', 'active')
             ->take(8)
-            ->get();
+            ->get()
+            ->map(function ($product) {
+                $prices = $this->calculateDisplayPrices($product);
+                $product->display_price = $prices['display_price'];
+                $product->display_original_price = $prices['display_original_price'];
+                return $product;
+            });
 
         // Sản phẩm nổi bật
         $featuredProducts = Product::with(['defaultImage', 'categories', 'variants'])
             ->where('is_featured', 1)
             ->where('status', 'active')
             ->orderByDesc('updated_at')
-            ->get();
+            ->get()
+            ->map(function ($product) {
+                $prices = $this->calculateDisplayPrices($product);
+                $product->display_price = $prices['display_price'];
+                $product->display_original_price = $prices['display_original_price'];
+                return $product;
+            });
 
         // Sản phẩm được xem nhiều nhất
         $trendingProducts = app(\App\Services\ProductViewService::class)->getMostViewedProducts(10, 'all');
@@ -116,7 +159,13 @@ class HomeController extends Controller
             ->orderByDesc('order_reviews_avg_rating')
             ->where('status', 'active')
             ->take(10)
-            ->get();
+            ->get()
+            ->map(function ($product) {
+                $prices = $this->calculateDisplayPrices($product);
+                $product->display_price = $prices['display_price'];
+                $product->display_original_price = $prices['display_original_price'];
+                return $product;
+            });
 
         // Flash sale
         $flashSaleProducts = Product::with(['defaultImage', 'orderReviews', 'categories', 'variants'])
@@ -157,7 +206,13 @@ class HomeController extends Controller
             ->where('status', 'active')
             ->orderByDesc('created_at')
             ->take(12)
-            ->get();
+            ->get()
+            ->map(function ($product) {
+                $prices = $this->calculateDisplayPrices($product);
+                $product->display_price = $prices['display_price'];
+                $product->display_original_price = $prices['display_original_price'];
+                return $product;
+            });
 
         // Lấy 5 đánh giá gần đây từ khách hàng
         $testimonials = OrderReview::with(['user', 'product'])

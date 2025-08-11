@@ -245,14 +245,14 @@
                                             Tên Người Nhận <span class="text-red-500">*</span>
                                         </label>
                                         <input type="text" name="receiver_name"
-                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none ">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Số điện thoại <span class="text-red-500">*</span>
                                         </label>
                                         <input type="text" name="receiver_phone"
-                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none ">
                                     </div>
                                 </div>
 
@@ -278,7 +278,7 @@
                                             Tỉnh/Thành phố <span class="text-red-500">*</span>
                                         </label>
                                         <select name="province_id"
-                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none "
                                             id="city">
                                             <option value="">Chọn tỉnh/thành phố</option>
                                         </select>
@@ -290,7 +290,7 @@
                                             Quận/Huyện <span class="text-red-500">*</span>
                                         </label>
                                         <select name="district_id"
-                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none "
                                             id="district" disabled>
                                             <option value="">Chọn quận/huyện</option>
                                         </select>
@@ -302,7 +302,7 @@
                                             Phường/Xã <span class="text-red-500">*</span>
                                         </label>
                                         <select name="ward_id"
-                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none "
                                             id="ward" disabled>
                                             <option value="">Chọn phường/xã</option>
                                         </select>
@@ -316,7 +316,7 @@
                                         Địa chỉ cụ thể <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" name="address"
-                                        class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                                        class="w-full bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none ">
                                 </div>
 
                                 <div class="flex items-center">
@@ -352,7 +352,7 @@
                                     <div class="font-medium mb-1">Ví điện tử Momo</div>
                                     <p class="text-sm text-gray-600">Thanh toán nhanh qua ứng dụng Momo</p>
                                 </div>
-                                <img src="https://pay2s.vn/blog/wp-content/uploads/2024/11/momo_icon_circle_pinkbg_RGB-1024x1024.png"
+                                <img src="{{ asset('images/payments/momo.png') }}"
                                     alt="Momo" class="w-10 h-10">
                             </label>
 
@@ -491,12 +491,12 @@
                                                             {{ $item['product']->name }}</div>
                                                         @if (
                                                             (isset($item['is_combo']) && $item['is_combo'] && isset($item['variant']) && $item['variant']) ||
-                                                                ($item['product']->variants && $item['product']->variants->count() > 0))
+                                                                (isset($item['variant']) && $item['variant']))
                                                             <div class="text-sm text-gray-600 mb-1">
                                                                 @if (isset($item['is_combo']) && $item['is_combo'] && isset($item['variant']))
                                                                     {{ $item['variant']->variant_name ?? '' }}
-                                                                @elseif ($item['product']->variants && $item['product']->variants->count() > 0)
-                                                                    {{ $item['product']->variants->first()->variant_name ?? '' }}
+                                                                @elseif (isset($item['variant']) && $item['variant'])
+                                                                    {{ $item['variant']->variant_name ?? '' }}
                                                                 @endif
                                                             </div>
                                                         @endif
@@ -519,12 +519,10 @@
                                                             $currentPrice = $item['combo_info']['price_in_combo'];
                                                             $originalPrice = $item['combo_info']['original_price'];
                                                         } elseif (
-                                                            $item['product']->variants &&
-                                                            $item['product']->variants->count() > 0
+                                                            isset($item['variant']) && $item['variant']
                                                         ) {
-                                                            $currentPrice = $item['product']->variants->first()
-                                                                ->sale_price;
-                                                            $originalPrice = $item['product']->variants->first()->price;
+                                                            $currentPrice = $item['variant']->sale_price ?? $item['variant']->price;
+                                                            $originalPrice = $item['variant']->price;
                                                         } else {
                                                             $currentPrice =
                                                                 $item['product']->sale_price ?? $item['product']->price;
@@ -555,7 +553,7 @@
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Lời nhắn cho Shop:
                                                 {{ $shopData['shop']->shop_name }}</label>
                                             <textarea name="note_for_shop_{{ $shopData['shop']->id }}" data-shop-id="{{ $shopData['shop']->id }}"
-                                                class="w-full h-16 bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                                                class="w-full h-16 bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none "
                                                 placeholder="Ví dụ: Gói hàng cẩn thận..."></textarea>
                                         </div>
                                     </div>
@@ -640,7 +638,7 @@
                                 <label for="used_points" class="text-gray-700 text-sm">Nhập số điểm muốn sử dụng:</label>
                                 <input type="number" id="used_points" name="used_points" min="0"
                                     max="{{ $user_points }}" step="100" value="0"
-                                    class="w-24 bg-gray-50 border border-gray-300 rounded-lg py-1 px-2 focus:outline-none focus:ring-2 focus:ring-primary text-right">
+                                    class="w-24 bg-gray-50 border border-gray-300 rounded-lg py-1 px-2 focus:outline-none  text-right">
                                 <span class="text-gray-500 text-sm">điểm</span>
                             </div>
                         </div>
@@ -703,7 +701,7 @@
                             <form class="mb-6" id="discount-form">
                                 <div class="flex gap-2">
                                     <input type="text" name="discount_code" placeholder="Nhập mã giảm giá"
-                                        class="discount-input flex-1 bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                                        class="discount-input flex-1 bg-gray-50 border border-gray-300 rounded-lg py-2 px-3 focus:outline-none ">
                                     <button type="submit"
                                         class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors">Áp
                                         dụng</button>

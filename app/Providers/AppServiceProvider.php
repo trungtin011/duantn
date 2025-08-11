@@ -12,6 +12,7 @@ use App\Models\NotificationReceiver;
 use Illuminate\Support\Facades\DB;
 use App\Models\ShopOrder; 
 use App\Observers\ShopOrderObserver;
+use App\Observers\NotificationObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ShopOrder::observe(ShopOrderObserver::class);
+        Notification::observe(NotificationObserver::class);
         
         View::composer('layouts.app', function ($view) {
             $settings = DB::table('settings')->first();

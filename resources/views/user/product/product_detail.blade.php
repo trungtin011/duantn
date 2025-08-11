@@ -2,7 +2,6 @@
 @section('title', 'Chi tiết sản phẩm')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/user/product_detail.css') }}">
 <style>
     /* Custom scrollbar styles for variant options */
     .scrollbar-thin::-webkit-scrollbar {
@@ -127,35 +126,39 @@
                         </div>
                         <div class="flex items-center gap-2 sm:gap-4 flex-wrap" id="price-display">
                             @if ($product->variants->isNotEmpty())
-                                <!-- Sản phẩm có biến thể, lấy giá từ biến thể đầu tiên làm mặc định -->
+                                @php
+                                    $firstVariant = $product->variants->first();
+                                    $displayPrice = $firstVariant->sale_price ?: $firstVariant->price;
+                                    $originalPrice = $firstVariant->price;
+                                    $discount = $originalPrice > 0 ? round((($originalPrice - $displayPrice) / $originalPrice) * 100) : 0;
+                                @endphp
+                                <!-- Sản phẩm có biến thể: hiển thị giá của biến thể đầu tiên -->
                                 <span class="text-red-600 text-xl sm:text-2xl lg:text-3xl font-bold">
-                                    {{ number_format($product->variants->first()->sale_price ?: $product->sale_price, 0, ',', '.') }}
-                                    VNĐ
+                                    {{ number_format($displayPrice, 0, ',', '.') }} VNĐ
                                 </span>
-                                @if ($product->variants->first()->price > 0)
+                                @if ($originalPrice > 0 && $displayPrice < $originalPrice)
                                     <span class="text-gray-500 line-through text-base sm:text-lg">
-                                        {{ number_format($product->variants->first()->price ?: $product->price, 0, ',', '.') }}
-                                        VNĐ
+                                        {{ number_format($originalPrice, 0, ',', '.') }} VNĐ
                                     </span>
                                     <span class="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded text-xs sm:text-sm">
-                                        -{{ round((($product->variants->first()->price - $product->variants->first()->sale_price) / $product->variants->first()->price) * 100) ?: 0 }}%
+                                        -{{ $discount }}%
                                     </span>
                                 @endif
                             @else
-                                <!-- Sản phẩm đơn, lấy giá từ bảng products -->
-                                <span class="text-red-600 text-xl sm:text-2xl lg:text-3xl font-bold">
-                                    {{ number_format($product->sale_price, 0, ',', '.') }} VNĐ
-                                </span>
-                                @if ($product->price > 0)
-                                    <span class="text-gray-500 line-through text-base sm:text-lg">
-                                        {{ number_format($product->price, 0, ',', '.') }} VNĐ
-                                    </span>
-                                    <span class="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded text-xs sm:text-sm">
-                                        -{{ round((($product->price - $product->sale_price) / $product->price) * 100) ?: 0 }}%
-                                    </span>
-                                @endif
-                            @endif
-                        </div>
+                                 <!-- Sản phẩm đơn, lấy giá từ bảng products -->
+                                 <span class="text-red-600 text-xl sm:text-2xl lg:text-3xl font-bold">
+                                     {{ number_format($product->sale_price, 0, ',', '.') }} VNĐ
+                                 </span>
+                                 @if ($product->price > 0)
+                                     <span class="text-gray-500 line-through text-base sm:text-lg">
+                                         {{ number_format($product->price, 0, ',', '.') }} VNĐ
+                                     </span>
+                                     <span class="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded text-xs sm:text-sm">
+                                         -{{ round((($product->price - $product->sale_price) / $product->price) * 100) ?: 0 }}%
+                                     </span>
+                                 @endif
+                             @endif
+                         </div>
                         <p class="text-gray-700 text-sm sm:text-base leading-relaxed">{!! $product->meta_description !!}</p>
 
                         <!-- Thuộc tính của sản phẩm -->
@@ -220,7 +223,7 @@
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                                     <input type="hidden" name="variant_id" id="selected_variant_id"
-                                        value="{{ $selectedVariant ? $selectedVariant->id : ($product->variants->isEmpty() ? 'default' : '') }}">
+                                        value="{{ $selectedVariant ? $selectedVariant->id : '' }}">
                                     <button type="button" id="decreaseQty"
                                         class="border border-gray-300 px-3 sm:px-4 py-2 rounded-l-lg hover:bg-gray-100 text-base sm:text-lg">-</button>
                                     <input type="text" name="quantity" id="quantity" value="1"
@@ -230,7 +233,15 @@
                                 </form>
                             </div>
                             <span class="text-xs sm:text-sm text-gray-600" id="stock_info">
-                                {{ $defaultStock }} sản phẩm có sẵn
+                                @if ($product->variants->isNotEmpty())
+                                    @php
+                                        $firstVariant = $product->variants->first();
+                                        $stock = $firstVariant->stock ?? 0;
+                                    @endphp
+                                    {{ $stock }} sản phẩm có sẵn
+                                @else
+                                    {{ $defaultStock }} sản phẩm có sẵn
+                                @endif
                             </span>
                         </div>
 
@@ -347,9 +358,9 @@
                                         alt="{{ $viewedProduct->name }}"
                                         class="w-full h-24 sm:h-28 object-cover group-hover:scale-105 transition-transform duration-300"
                                         loading="lazy">
-                                    @if($viewedProduct->sale_price < $viewedProduct->price)
+                                    @if($viewedProduct->display_price < $viewedProduct->display_original_price)
                                         <div class="absolute top-1 left-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded">
-                                            -{{ round((($viewedProduct->price - $viewedProduct->sale_price) / $viewedProduct->price) * 100) }}%
+                                            -{{ round((($viewedProduct->display_original_price - $viewedProduct->display_price) / $viewedProduct->display_original_price) * 100) }}%
                                         </div>
                                     @endif
                                 </div>
@@ -359,7 +370,7 @@
                                     </h4>
                                     <div class="flex items-center justify-between mt-1">
                                         <span class="text-red-600 text-xs sm:text-sm font-semibold">
-                                            {{ number_format($viewedProduct->sale_price, 0, ',', '.') }}đ
+                                            {{ number_format($viewedProduct->display_price, 0, ',', '.') }}đ
                                         </span>
                                         <span class="text-gray-500 text-xs">
                                             <i class="fas fa-eye mr-1"></i>{{ $viewedProduct->view_count ?? 0 }}
@@ -411,7 +422,7 @@
                         </div>
                         <div class="flex flex-col justify-center gap-2 sm:gap-3">
                             <button
-                                class="bg-red-600 text-white px-4 sm:px-5 py-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap">
+                                class="bg-red-600 text-white px-4 sm:px-5 py-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap" onclick="window.location.href='/chat?shop_id={{ $product->shop->id }}&product_id={{ $product->id }}'">
                                 <i class="fa-solid fa-comment"></i> Nhắn tin
                             </button>
                             <a href="{{ route('shop.profile', $product->shop->id) }}"
@@ -478,7 +489,7 @@
                     <div class="mb-3 sm:mb-4">
                         <label for="report_type" class="block text-sm font-medium text-gray-700">Loại vi phạm</label>
                         <select name="report_type" id="report_type"
-                            class="mt-1 block w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                            class="mt-1 block w-full border-gray-300 rounded-lg text-sm focus:ouline-none">
                             <option value="fake_product">Sản phẩm giả nhái</option>
                             <option value="product_violation">Vi phạm chính sách sản phẩm</option>
                             <option value="copyright">Vi phạm bản quyền</option>
@@ -489,7 +500,7 @@
                         <label for="report_content" class="block text-sm font-medium text-gray-700">Nội dung báo
                             cáo</label>
                         <textarea name="report_content" id="report_content" rows="4"
-                            class="mt-1 block w-full border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500"
+                            class="mt-1 block w-full border-gray-300 rounded-lg text-sm focus:ouline-none"
                             placeholder="Mô tả chi tiết vi phạm"></textarea>
                     </div>
                     <div class="mb-3 sm:mb-4">
@@ -649,6 +660,7 @@
                 let modalSelectedVariant = null;
 
                 // Initialize selectedVariantId and selectedVariantIdInput if product has variants
+                // Chỉ khởi tạo nếu có selectedVariant từ URL parameter
                 @if ($product->variants->isNotEmpty() && $selectedVariant)
                     selectedVariantId = '{{ $selectedVariant->id }}';
                     selectedVariantIdInput.value = '{{ $selectedVariant->id }}';
@@ -709,9 +721,14 @@
                             ${defaultDiscount > 0 ? `<span class="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded text-xs sm:text-sm>${defaultDiscount}%</span>` : ''}
                         `;
                         const defaultStock = {{ $product->stock_total }};
+                        stockInfo.textContent = `${defaultStock} sản phẩm có sẵn`;
                     @endif
-                    stockInfo.textContent = `${defaultStock} sản phẩm có sẵn`;
                 }
+
+                // Khởi tạo trạng thái mặc định nếu không có biến thể nào được chọn
+                @if ($product->variants->isNotEmpty() && !$selectedVariant)
+                    resetToDefault();
+                @endif
 
                 // Xử lý chọn biến thể
                 variantButtons.forEach(button => {
@@ -790,37 +807,58 @@
                 // Xử lý thêm vào giỏ hàng
                 addToCartButtons.forEach(button => {
                     button.addEventListener('click', () => {
-                        if (!selectedVariantId &&
-                            {{ $product->variants->count() > 0 ? 'true' : 'false' }}) {
-                            Swal.fire({
-                                position: 'top-end',
-                                toast: true,
-                                icon: 'warning',
-                                title: 'Vui lòng chọn biến thể!',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                            return;
-                        }
+                        @if($product->variants->isNotEmpty())
+                            const parsedStock = parseInt((stockInfo.textContent || '').split(' ')[0]);
+                            const isVariantChosen = !!selectedVariantId && !Number.isNaN(parsedStock) && parsedStock >= 0;
+                            
+                            // Nếu sản phẩm có biến thể: yêu cầu đã chọn biến thể, nếu chưa chọn thì cảnh báo
+                            if (!isVariantChosen) {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'warning',
+                                    title: 'Vui lòng chọn biến thể!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                return;
+                            }
 
-                        const quantity = parseInt(quantityInput.value);
-                        const stock = selectedVariantId ? parseInt(stockInfo.textContent.split(' ')[
-                                0]) : // Use the stock from selected variant if available
-                            {{ $defaultStock }}; // Fallback to product total stock if no variant selected
+                            const quantity = parseInt(quantityInput.value);
+                            const stock = parsedStock;
 
-                        if (quantity > stock) {
-                            Swal.fire({
-                                position: 'top-end',
-                                toast: true,
-                                icon: 'warning',
-                                title: 'Số lượng vượt quá tồn kho!',
-                                text: `Tồn kho chỉ còn ${stock} sản phẩm.`,
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                            quantityInput.value = stock;
-                            return;
-                        }
+                            if (quantity > stock) {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'warning',
+                                    title: 'Số lượng vượt quá tồn kho!',
+                                    text: `Tồn kho chỉ còn ${stock} sản phẩm.`,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                quantityInput.value = stock;
+                                return;
+                            }
+                        @else
+                            // Nếu sản phẩm đơn, kiểm tra tồn kho bình thường
+                            const quantity = parseInt(quantityInput.value);
+                            const stock = {{ $product->stock_total }};
+                            
+                            if (quantity > stock) {
+                                Swal.fire({
+                                    position: 'top-end',
+                                    toast: true,
+                                    icon: 'warning',
+                                    title: 'Số lượng vượt quá tồn kho!',
+                                    text: `Tồn kho chỉ còn ${stock} sản phẩm.`,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                quantityInput.value = stock;
+                                return;
+                            }
+                        @endif
 
                         fetch('/customer/cart/add', {
                                 method: 'POST',
@@ -836,8 +874,11 @@
                                 })
                             })
                             .then(response => {
-                                if (!response.ok) throw new Error(
-                                    `HTTP error! Status: ${response.status}`);
+                                if (!response.ok) {
+                                    return response.json().then(err => {
+                                        throw new Error(err.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng!');
+                                    });
+                                }
                                 return response.json();
                             })
                             .then(data => {
@@ -857,8 +898,8 @@
                                     toast: true,
                                     icon: 'error',
                                     title: 'Lỗi',
-                                    text: 'Không thể thêm vào giỏ hàng!',
-                                    timer: 1500,
+                                    text: error.message,
+                                    timer: 2000,
                                     showConfirmButton: false
                                 });
                             });
@@ -870,8 +911,10 @@
                 if (instantBuyBtn) {
                     instantBuyBtn.addEventListener('click', () => {
                         @if($product->variants->isNotEmpty())
-                            // Nếu sản phẩm có biến thể: yêu cầu đã chọn biến thể, sau đó mua trực tiếp
-                            if (!selectedVariantId) {
+                            const parsedStock = parseInt((stockInfo.textContent || '').split(' ')[0]);
+                            const isVariantChosen = !!selectedVariantId && !Number.isNaN(parsedStock) && parsedStock >= 0;
+                            // Nếu sản phẩm có biến thể: yêu cầu đã chọn biến thể, nếu chưa chọn thì cảnh báo bằng alert
+                            if (!isVariantChosen) {
                                 Swal.fire({
                                     position: 'top-end',
                                     toast: true,
@@ -884,9 +927,15 @@
                             }
 
                             const quantity = parseInt(quantityInput.value);
-                            const stock = selectedVariantId ? parseInt(stockInfo.textContent.split(' ')[0]) : {{ $defaultStock }};
+                            const stock = parsedStock;
 
                             if (quantity > stock) {
+                                console.log('instant_buy: quantity exceeds stock', {
+                                    productId: {{ $product->id }},
+                                    variantId: selectedVariantId,
+                                    quantity,
+                                    stock
+                                });
                                 Swal.fire({
                                     position: 'top-end',
                                     toast: true,
@@ -900,13 +949,27 @@
                                 return;
                             }
 
-                            window.location.href = `/customer/direct-checkout?product_id={{ $product->id }}&variant_id=${selectedVariantId}&quantity=${quantity}`;
+                            console.log('instant_buy: proceed', {
+                                productId: {{ $product->id }},
+                                variantId: selectedVariantId,
+                                quantity,
+                                stock
+                            });
+                            console.log('instant_buy: redirecting in 800ms');
+                            setTimeout(() => {
+                                window.location.href = `/customer/direct-checkout?product_id={{ $product->id }}&variant_id=${selectedVariantId}&quantity=${quantity}`;
+                            }, 800);
                         @else
                             // Nếu sản phẩm đơn, mua trực tiếp
                             const quantity = parseInt(quantityInput.value);
                             const stock = {{ $product->stock_total }};
                             
                             if (quantity > stock) {
+                                console.log('instant_buy: quantity exceeds stock (simple product)', {
+                                    productId: {{ $product->id }},
+                                    quantity,
+                                    stock
+                                });
                                 Swal.fire({
                                     position: 'top-end',
                                     toast: true,
@@ -919,9 +982,16 @@
                                 quantityInput.value = stock;
                                 return;
                             }
-                            
-                            // Chuyển hướng đến trang checkout
-                            window.location.href = `/customer/direct-checkout?product_id={{ $product->id }}&quantity=${quantity}`;
+
+                            console.log('instant_buy: proceed (simple product)', {
+                                productId: {{ $product->id }},
+                                quantity,
+                                stock
+                            });
+                            console.log('instant_buy: redirecting in 800ms (simple product)');
+                            setTimeout(() => {
+                                window.location.href = `/customer/direct-checkout?product_id={{ $product->id }}&quantity=${quantity}`;
+                            }, 800);
                         @endif
                     });
                 }
@@ -934,7 +1004,26 @@
 
                 increaseBtn.addEventListener('click', () => {
                     let qty = parseInt(quantityInput.value);
-                    const stock = parseInt(stockInfo.textContent.split(' ')[0]) || {{ $defaultStock }};
+                    const stockParsed = parseInt((stockInfo.textContent || '').split(' ')[0]);
+                    
+                    @if ($product->variants->isNotEmpty())
+                        // Nếu là sản phẩm có biến thể và chưa chọn biến thể, không cho tăng số lượng
+                        if (Number.isNaN(stockParsed) || stockParsed <= 0) {
+                            Swal.fire({
+                                position: 'top-end',
+                                toast: true,
+                                icon: 'warning',
+                                title: 'Vui lòng chọn biến thể trước!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+                        const stock = stockParsed;
+                    @else
+                        const stock = Number.isNaN(stockParsed) ? {{ $defaultStock }} : stockParsed;
+                    @endif
+                    
                     if (qty < stock) quantityInput.value = qty + 1;
                 });
 

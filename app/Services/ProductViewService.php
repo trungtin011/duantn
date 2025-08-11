@@ -114,6 +114,37 @@ class ProductViewService
     }
 
     /**
+     * Tính toán giá hiển thị cho sản phẩm
+     */
+    private function calculateDisplayPrices($product): array
+    {
+        if ($product->is_variant && $product->variants->isNotEmpty()) {
+            // Lấy giá thấp nhất từ các biến thể
+            $minPrice = $product->variants->min('price') ?? 0;
+            $minSalePrice = $product->variants->min('sale_price') ?? 0;
+            
+            // Nếu có sale_price và nhỏ hơn price thì dùng sale_price
+            if ($minSalePrice > 0 && $minSalePrice < $minPrice) {
+                return [
+                    'display_price' => $minSalePrice,
+                    'display_original_price' => $minPrice
+                ];
+            } else {
+                return [
+                    'display_price' => $minPrice,
+                    'display_original_price' => $minPrice
+                ];
+            }
+        } else {
+            // Sản phẩm đơn
+            return [
+                'display_price' => $product->sale_price > 0 ? $product->sale_price : $product->price,
+                'display_original_price' => $product->price
+            ];
+        }
+    }
+
+    /**
      * Lấy danh sách sản phẩm được xem nhiều nhất
      */
     public function getMostViewedProducts(int $limit = 10, string $timeRange = 'all'): \Illuminate\Database\Eloquent\Collection
@@ -146,8 +177,19 @@ class ProductViewService
             
             return Product::whereIn('id', $productIds)
                 ->where('status', 'active')
-                ->with('images')
+                ->with(['images', 'variants' => function($query) {
+                    $query->select('id', 'productID', 'price', 'sale_price', 'stock', 'status')
+                          ->where('status', 'active');
+                }])
                 ->get()
+                ->map(function ($product) {
+                    // Tính toán giá hiển thị dựa trên biến thể hoặc sản phẩm đơn
+                    $prices = $this->calculateDisplayPrices($product);
+                    $product->display_price = $prices['display_price'];
+                    $product->display_original_price = $prices['display_original_price'];
+                    
+                    return $product;
+                })
                 ->sortBy(function ($product) use ($productIds) {
                     return array_search($product->id, $productIds->toArray());
                 });

@@ -535,6 +535,8 @@ Route::prefix('customer')->group(function () {
     Route::get('/combos', [UserComboController::class, 'index'])->name('combo.index');
     // Route xem chi tiết combo
     Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
+    // Route thêm combo vào giỏ hàng
+    Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
     // Route mua ngay sản phẩm
     Route::post('/instant-buy', [ProductController::class, 'instantBuy'])->name('instant-buy');
     Route::get('/contact', function () {
@@ -815,9 +817,6 @@ Route::get('/account/debug-reset_code', [UserController::class, 'debugResetCode'
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
-
-Route::get('/combos/{id}', [UserComboController::class, 'show'])->name('combo.show');
-Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
 Route::get('/seller/reviews', [ReviewController::class, 'index'])->name('seller.reviews.index');
 Route::post('/seller/reviews/{review}/reply', [ReviewController::class, 'reply'])
     ->name('seller.reviews.reply');

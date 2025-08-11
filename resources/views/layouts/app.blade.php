@@ -33,7 +33,6 @@
         })();
     </script>
 
-    @stack('styles')
     <!-- Font + Tailwind + Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -42,12 +41,12 @@
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <!-- Fonts & Styles -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    @stack('styles')
     @vite('resources/css/user/home.css')
     @vite('resources/css/user/orderDetail.css')
     @vite('resources/css/user/notifications.css')
@@ -296,6 +295,97 @@
                 transform: rotate(1turn)
             }
         }
+
+        /* Custom scrollbar for notification dropdown */
+        .notification-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .notification-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .notification-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+            transition: background 0.2s ease;
+        }
+
+        .notification-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Firefox scrollbar */
+        .notification-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
+
+        /* Smooth scrolling */
+        .notification-scrollbar {
+            scroll-behavior: smooth;
+        }
+
+        /* Notification content styling */
+        .notification-content {
+            max-height: calc(70vh - 2rem);
+            overflow-y: auto;
+        }
+
+        .notification-content .mb-3:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Ensure notification items don't overflow */
+        .notification-content .flex.items-start {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .notification-content .line-clamp-1,
+        .notification-content .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .notification-content .line-clamp-2 {
+            -webkit-line-clamp: 2;
+        }
+
+        /* Mobile optimization */
+        @media (max-width: 640px) {
+            .notification-scrollbar {
+                max-height: 60vh;
+            }
+            
+            .notification-content {
+                max-height: calc(60vh - 2rem);
+            }
+            
+            .notification-scrollbar::-webkit-scrollbar {
+                width: 4px;
+            }
+        }
+
+        /* Ensure dropdown is always visible */
+        .dropdown-notification-content.show {
+            display: block !important;
+            animation: fadeInDown 0.2s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 
     @auth
@@ -360,44 +450,34 @@
                         @auth
                             @php
                                 $unreadCount = 0;
-                                if (isset($groupedNotifications)) {
-                                    $processedOrderCodes = collect();
-                                    foreach ($groupedNotifications as $type => $notifications) {
-                                        foreach ($notifications as $notification) {
-                                            $isRead = false;
-                                            if ($notification->type === 'order' && $notification->order_code) {
-                                                if (!$processedOrderCodes->contains($notification->order_code)) {
-                                                    $processedOrderCodes->push($notification->order_code);
-                                                    if (
-                                                        $notification->receiver &&
-                                                        $notification->receiver->count() > 0
-                                                    ) {
-                                                        foreach ($notification->receiver as $receiver) {
-                                                            if ($receiver->receiver_id == auth()->id()) {
-                                                                $isRead = $receiver->is_read;
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                    if (!$isRead) {
-                                                        $unreadCount++;
-                                                    }
-                                                }
-                                            } else {
-                                                if ($notification->receiver && $notification->receiver->count() > 0) {
-                                                    foreach ($notification->receiver as $receiver) {
-                                                        if ($receiver->receiver_id == auth()->id()) {
-                                                            $isRead = $receiver->is_read;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                if (!$isRead) {
-                                                    $unreadCount++;
+                                $userNotifications = collect();
+                                
+                                // Lấy thông báo của user hiện tại (đồng bộ với NotificationController)
+                                if (auth()->check()) {
+                                    // Sử dụng cache để tránh query nhiều lần
+                                    $userNotifications = cache()->remember('user_notifications_' . auth()->id(), 300, function() {
+                                        return \App\Http\Controllers\NotificationController::getUserNotificationsForHeader(auth()->id(), 10);
+                                    });
+                                    
+                                    // Đếm số thông báo chưa đọc
+                                    $unreadCount = 0;
+                                    foreach ($userNotifications as $notification) {
+                                        $isRead = false;
+                                        if ($notification->receiver && $notification->receiver->count() > 0) {
+                                            foreach ($notification->receiver as $receiver) {
+                                                if ($receiver->receiver_id == auth()->id()) {
+                                                    $isRead = $receiver->is_read;
+                                                    break;
                                                 }
                                             }
                                         }
+                                        if (!$isRead) {
+                                            $unreadCount++;
+                                        }
                                     }
+                                    
+                                    // Nhóm thông báo theo loại
+                                    $groupedNotifications = $userNotifications->groupBy('type');
                                 }
                             @endphp
                             @if ($unreadCount > 0)
@@ -410,13 +490,14 @@
                     <div
                         class="absolute dropdown-notification-content z-20 bg-white w-[300px] max-w-[90vw]
                             left-0 sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[400px]
-                            max-h-[70vh] sm:max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden">
+                            max-h-[70vh] sm:max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden
+                            notification-scrollbar transform transition-all duration-200 ease-in-out">
                         <div
                             class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle hidden sm:block">
                         </div>
                         @auth
-                            @if (isset($groupedNotifications) && $groupedNotifications->count() > 0)
-                                <div class="p-4">
+                            @if (isset($groupedNotifications) && $groupedNotifications->count() > 0 && auth()->check())
+                                <div class="p-4 notification-content">
                                     <div class="flex items-center justify-between mb-4">
                                         <span class="text-sm font-semibold text-gray-700">Thông báo mới</span>
                                         <a href="{{ route('notifications.index') }}"
@@ -462,10 +543,8 @@
                                             @foreach ($notifications->sortByDesc('created_at')->take(3) as $notification)
                                                 @php
                                                     $isRead = false;
-                                                    if (
-                                                        $notification->receiver &&
-                                                        $notification->receiver->count() > 0
-                                                    ) {
+                                                    // Vì đã lọc theo user nên chỉ cần kiểm tra trạng thái đọc
+                                                    if ($notification->receiver && $notification->receiver->count() > 0) {
                                                         foreach ($notification->receiver as $receiver) {
                                                             if ($receiver->receiver_id == auth()->id()) {
                                                                 $isRead = $receiver->is_read;

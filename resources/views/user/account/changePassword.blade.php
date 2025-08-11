@@ -1,7 +1,7 @@
 @extends('user.account.layout')
 
 @section('account-content')
-    <div class="bg-white p-6 rounded shadow max-w-md mx-auto relative z-10">
+    <div class="bg-white p-6 rounded shadow max-w-md mx-auto relative">
         <h2 class="text-xl font-semibold mb-4">Đổi mật khẩu</h2>
 
         @if (session('password_success'))

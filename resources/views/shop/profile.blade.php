@@ -95,7 +95,7 @@
                     <button
                         class="flex items-center gap-1 border border-white rounded text-white text-[13px] px-3 py-[5px] hover:bg-white hover:text-[#5a4a1a] transition"
                         onclick="window.location.href='/chat?shop_id={{ $shop->id }}&product_id={{ $shop->id }}'">
-                        <i class="far fa-comment-alt text-[13px]"></i> Chat
+                        <i class="far fa-comment-alt text-[13px]"></i> Nhắn tin
                     </button>
                 </div>
             </div>

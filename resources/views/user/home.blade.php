@@ -1075,31 +1075,25 @@
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
-                                                        @if ($product->variants->isNotEmpty())
-                                                            @php
-                                                                $minPrice =
-                                                                    $product->variants->min('sale_price') ?:
-                                                                    $product->variants->min('price');
-                                                                $minOriginalPrice = $product->variants->min('price');
-                                                            @endphp
-                                                            @if ($minOriginalPrice > 0 && $minPrice < $minOriginalPrice)
+                                                        @if ($product->is_variant && $product->variants->isNotEmpty())
+                                                            @if ($product->display_price < $product->display_original_price)
                                                                 <p class="price">
-                                                                    {{ number_format($minPrice) }}₫
+                                                                    {{ number_format($product->display_price) }}₫
                                                                 </p>
-                                                                <del>{{ number_format($minOriginalPrice) }}₫</del>
+                                                                <del>{{ number_format($product->display_original_price) }}₫</del>
                                                             @else
                                                                 <p class="price">
-                                                                    {{ number_format($minPrice) }}₫</p>
+                                                                    {{ number_format($product->display_price) }}₫</p>
                                                             @endif
                                                         @else
-                                                            @if ($product->price > 0 && $product->sale_price < $product->price)
+                                                            @if ($product->display_price < $product->display_original_price)
                                                                 <p class="price">
-                                                                    {{ number_format($product->sale_price) }}₫
+                                                                    {{ number_format($product->display_price) }}₫
                                                                 </p>
-                                                                <del>{{ number_format($product->price) }}₫</del>
+                                                                <del>{{ number_format($product->display_original_price) }}₫</del>
                                                             @else
                                                                 <p class="price">
-                                                                    {{ number_format($product->sale_price) }}₫</p>
+                                                                    {{ number_format($product->display_price) }}₫</p>
                                                             @endif
                                                         @endif
                                                     </div>
@@ -1125,31 +1119,25 @@
                                                         {{ $product->categories->first()->name ?? 'Không có danh mục' }}
                                                     </a>
                                                     <div class="price-box">
-                                                        @if ($product->variants->isNotEmpty())
-                                                            @php
-                                                                $minPrice =
-                                                                    $product->variants->min('sale_price') ?:
-                                                                    $product->variants->min('price');
-                                                                $minOriginalPrice = $product->variants->min('price');
-                                                            @endphp
-                                                            @if ($minOriginalPrice > 0 && $minPrice < $minOriginalPrice)
+                                                        @if ($product->is_variant && $product->variants->isNotEmpty())
+                                                            @if ($product->display_price < $product->display_original_price)
                                                                 <p class="price">
-                                                                    {{ number_format($minPrice) }}₫
+                                                                    {{ number_format($product->display_price) }}₫
                                                                 </p>
-                                                                <del>{{ number_format($minOriginalPrice) }}₫</del>
+                                                                <del>{{ number_format($product->display_original_price) }}₫</del>
                                                             @else
                                                                 <p class="price">
-                                                                    {{ number_format($minPrice) }}₫</p>
+                                                                    {{ number_format($product->display_price) }}₫</p>
                                                             @endif
                                                         @else
-                                                            @if ($product->price > 0 && $product->sale_price < $product->price)
+                                                            @if ($product->display_price < $product->display_original_price)
                                                                 <p class="price">
-                                                                    {{ number_format($product->sale_price) }}₫
+                                                                    {{ number_format($product->display_price) }}₫
                                                                 </p>
-                                                                <del>{{ number_format($product->price) }}₫</del>
+                                                                <del>{{ number_format($product->display_original_price) }}₫</del>
                                                             @else
                                                                 <p class="price">
-                                                                    {{ number_format($product->sale_price) }}₫</p>
+                                                                    {{ number_format($product->display_price) }}₫</p>
                                                             @endif
                                                         @endif
                                                     </div>

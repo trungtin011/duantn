@@ -10,20 +10,71 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Lấy thông báo của user với logic gộp order notifications
+     */
+    public static function getUserNotificationsForHeader($userId, $limit = 10)
     {
-        $query = Notification::query();
-        
-        if ($request->has('type') && $request->type) {
-            $query->where('type', $request->type);
-        }
-        
         // Lấy tất cả notifications
-        $allNotifications = $query->whereHas('receiver', function($q) {
-            $q->where('receiver_id', Auth::id())
+        $allNotifications = Notification::whereHas('receiver', function($q) use ($userId) {
+            $q->where('receiver_id', $userId)
               ->where('receiver_type', 'user');
         })
         ->orWhere('receiver_type', 'all')
+        ->with(['receiver' => function($query) use ($userId) {
+            $query->where('receiver_id', $userId);
+        }])
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        // Gộp notifications order theo order_code
+        $groupedNotifications = collect();
+        
+        foreach ($allNotifications as $notification) {
+            if ($notification->type === 'order' && $notification->order_code) {
+                // Kiểm tra xem đã có notification cho order_code này chưa
+                $existingNotification = $groupedNotifications->first(function($item) use ($notification) {
+                    return $item->type === 'order' && $item->order_code === $notification->order_code;
+                });
+                
+                if (!$existingNotification) {
+                    // Thêm notification đầu tiên cho order_code này
+                    $groupedNotifications->push($notification);
+                } else {
+                    // Nếu notification mới hơn, thay thế notification cũ
+                    if ($notification->created_at->gt($existingNotification->created_at)) {
+                        $groupedNotifications = $groupedNotifications->map(function($item) use ($notification, $existingNotification) {
+                            if ($item->id === $existingNotification->id) {
+                                return $notification;
+                            }
+                            return $item;
+                        });
+                    }
+                }
+            } else {
+                // Với các notification không phải order, thêm bình thường
+                $groupedNotifications->push($notification);
+            }
+        }
+
+        // Sắp xếp lại theo thời gian tạo mới nhất và lấy limit
+        return $groupedNotifications->sortByDesc('created_at')->take($limit);
+    }
+
+    /**
+     * Lấy thông báo của user với logic gộp order notifications
+     */
+    private function getUserNotifications($userId, $limit = null)
+    {
+        // Lấy tất cả notifications
+        $allNotifications = Notification::whereHas('receiver', function($q) use ($userId) {
+            $q->where('receiver_id', $userId)
+              ->where('receiver_type', 'user');
+        })
+        ->orWhere('receiver_type', 'all')
+        ->with(['receiver' => function($query) use ($userId) {
+            $query->where('receiver_id', $userId);
+        }])
         ->orderBy('created_at', 'desc')
         ->get();
 
@@ -58,7 +109,27 @@ class NotificationController extends Controller
         }
 
         // Sắp xếp lại theo thời gian tạo mới nhất
-        $groupedNotifications = $groupedNotifications->sortByDesc('created_at');
+        $result = $groupedNotifications->sortByDesc('created_at');
+        
+        // Giới hạn số lượng nếu có
+        if ($limit) {
+            $result = $result->take($limit);
+        }
+        
+        return $result;
+    }
+
+    public function index(Request $request)
+    {
+        // Lấy tất cả thông báo của user
+        $allNotifications = $this->getUserNotifications(Auth::id());
+        
+        // Lọc theo type nếu có
+        if ($request->has('type') && $request->type) {
+            $allNotifications = $allNotifications->filter(function($notification) use ($request) {
+                return $notification->type === $request->type;
+            });
+        }
         
         // Tạo pagination cho collection
         $perPage = 15;
@@ -66,8 +137,8 @@ class NotificationController extends Controller
         $offset = ($currentPage - 1) * $perPage;
         
         $notifications = new \Illuminate\Pagination\LengthAwarePaginator(
-            $groupedNotifications->slice($offset, $perPage),
-            $groupedNotifications->count(),
+            $allNotifications->slice($offset, $perPage),
+            $allNotifications->count(),
             $perPage,
             $currentPage,
             ['path' => $request->url(), 'query' => $request->query()]
@@ -132,6 +203,9 @@ class NotificationController extends Controller
             }
         }
         
+        // Clear cache để cập nhật số thông báo
+        cache()->forget('user_notifications_' . Auth::user()->id);
+        
         return response()->json(['success' => true]);
     }
 
@@ -144,6 +218,9 @@ class NotificationController extends Controller
                 'is_read' => true,
                 'read_at' => now()
             ]);
+
+        // Clear cache để cập nhật số thông báo
+        cache()->forget('user_notifications_' . Auth::id());
 
         return response()->json(['success' => true]);
     }

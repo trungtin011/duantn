@@ -83,7 +83,8 @@
 
                         <!-- Form thêm vào giỏ hàng -->
                         @if ($combo->products->isNotEmpty())
-                            <form action="{{ route('cart.addCombo') }}" method="POST" class="mt-4">
+                            <div id="combo-add-alert" class="hidden mt-2"></div>
+                            <form id="add-combo-form" action="{{ route('cart.addCombo') }}" method="POST" class="mt-4">
                                 @csrf
                                 <input type="hidden" name="combo_id" value="{{ $combo->id }}">
                                 <div class="flex items-center gap-4">
@@ -181,42 +182,123 @@
             <!-- Cột bên phải (Thông tin shop) -->
             <div class="lg:col-span-1">
                 <div class="sticky top-5">
-                    <div class="bg-white rounded-lg p-6 shadow">
-                        <h2 class="text-xl font-semibold mb-4 border-b pb-2 text-gray-800">Cửa hàng</h2>
-                        @if (isset($combo->shop))
-                            <div class="flex items-center gap-4 mb-4">
-                                <img src="{{ $combo->shop ? ($combo->shop->shop_logo ? Storage::url($combo->shop->shop_logo) : Storage::url('shop_logos/default_shop_logo.png')) : Storage::url('shop_logos/default_shop_logo.png') }}"
-                                    alt="Logo Shop" class="w-16 h-16 rounded-full object-cover border" loading="lazy">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">{{ $combo->shop->name ?? 'Cửa hàng' }}
-                                    </h3>
-                                    <p class="text-sm text-gray-600">
-                                        @if ($combo->shop->created_at)
-                                            Hoạt động từ: {{ $combo->shop->created_at->diffForHumans() }}
-                                        @else
-                                            Cửa hàng mới
-                                        @endif
-                                    </p>
-                                </div>
+                    <div class="bg-white rounded-lg p-3 sm:p-6 shadow">
+                        <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 border-b pb-2 text-gray-800">Cửa hàng</h2>
+                        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                            <img src="{{ $combo->shop ? ($combo->shop->shop_logo ? Storage::url($combo->shop->shop_logo) : Storage::url('shop_logos/default_shop_logo.png')) : Storage::url('shop_logos/default_shop_logo.png') }}"
+                                alt="Logo Shop"
+                                class="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border flex-shrink-0"
+                                loading="lazy">
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                    {{ $combo->shop ? $combo->shop->shop_name : 'Tên Shop Không Xác Định' }}
+                                </h3>
+                                <p class="text-xs sm:text-sm text-gray-600">
+                                    @if ($combo->shop)
+                                        @php
+                                            $lastActivity = DB::table('sessions')
+                                                ->where('user_id', $combo->shop->ownerID)
+                                                ->max('last_activity');
+                                            $lastOnline = $lastActivity
+                                                ? \Carbon\Carbon::createFromTimestamp($lastActivity)
+                                                    ->locale('vi')
+                                                    ->diffForHumans()
+                                                : 'Không xác định';
+                                        @endphp
+                                        {{ $lastActivity ? "Online $lastOnline" : 'Hoạt động từ: ' . \Carbon\Carbon::parse($combo->shop->created_at)->locale('vi')->diffForHumans() }}
+                                    @else
+                                        Chưa có thông tin
+                                    @endif
+                                </p>
                             </div>
-                            <div class="flex justify-center gap-3">
-                                <button
-                                    class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2 transition-colors duration-200">
-                                    <i class="fa-solid fa-comment"></i> Nhắn tin
-                                </button>
-                                <a href="{{ route('shop.profile', $combo->shop->id) }}"
-                                    class="border border-gray-300 px-5 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">Xem
-                                    cửa hàng
-                                </a>
-                            </div>
-                        @else
-                            <div class="text-center py-4">
-                                <p class="text-gray-500 text-sm">Thông tin cửa hàng không khả dụng</p>
-                            </div>
-                        @endif
+                        </div>
+                        <div class="flex flex-col justify-center gap-2 sm:gap-3">
+                            <button
+                                class="bg-red-600 text-white px-4 sm:px-5 py-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap" onclick="window.location.href='/chat?shop_id={{ $combo->shop->id }}&combo_id={{ $combo->id }}'">
+                                <i class="fa-solid fa-comment"></i> Nhắn tin
+                            </button>
+                            <a href="{{ route('shop.profile', $combo->shop->id) }}"
+                                class="border border-gray-300 px-4 sm:px-5 py-2 rounded-lg hover:bg-gray-100 text-center text-sm sm:text-base whitespace-nowrap">Xem
+                                cửa hàng</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('add-combo-form');
+    if (!form) return;
+
+    const alertBox = document.getElementById('combo-add-alert');
+    const cartQuantityUrl = "{{ route('cart.quantity') }}";
+    const cartPageUrl = "{{ route('cart') }}";
+
+    function showAlert(type, message) {
+      if (!alertBox) return;
+      const base = 'mt-2 p-3 rounded text-sm border '; 
+      const classes = type === 'success' 
+        ? base + 'bg-green-50 text-green-700 border-green-200' 
+        : base + 'bg-red-50 text-red-700 border-red-200';
+      alertBox.className = classes;
+      alertBox.innerHTML = message;
+      alertBox.classList.remove('hidden');
+    }
+
+    async function updateCartBadge() {
+      try {
+        const res = await fetch(cartQuantityUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+        if (!res.ok) return;
+        const data = await res.json();
+        const qty = data.quantity ?? 0;
+        const candidates = [
+          document.querySelector('#cart-quantity'),
+          document.querySelector('[data-cart-quantity]'),
+          document.querySelector('.cart-quantity')
+        ].filter(Boolean);
+        candidates.forEach(el => { el.textContent = qty; });
+      } catch (_) {}
+    }
+
+    form.addEventListener('submit', async function (e) {
+      // Progressive enhancement: try AJAX first, fall back to normal submit if it fails
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          body: formData
+        });
+
+        if (res.status === 401) {
+          // Not logged in -> redirect to login via normal submit
+          window.location.href = "{{ route('login') }}";
+          return;
+        }
+
+        const isJson = (res.headers.get('content-type') || '').includes('application/json');
+        const data = isJson ? await res.json() : {};
+
+        if (res.ok) {
+          showAlert('success', (data.message || 'Đã thêm combo vào giỏ hàng!') + ' <a href="' + cartPageUrl + '" class="underline ml-1">Xem giỏ hàng</a>');
+          await updateCartBadge();
+          return;
+        }
+
+        // Handle validation/stock errors
+        const message = (data && data.message) ? data.message : 'Không thể thêm combo vào giỏ hàng.';
+        showAlert('error', message);
+      } catch (err) {
+        // On network error, fallback to normal submit to keep UX working
+        form.submit();
+      }
+    });
+  });
+</script>
+@endpush

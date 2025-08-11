@@ -65,6 +65,60 @@ class CheckoutController extends Controller
         return max(0, $discountedPrice);
     }
 
+    /**
+     * Lấy giá hiển thị an toàn cho sản phẩm
+     */
+    private function getSafeProductPrice($product, $variant = null)
+    {
+        if ($product->is_variant && $variant) {
+            // Sản phẩm có biến thể và có variant được chọn
+            return $variant->sale_price ?? $variant->price ?? 0;
+        } elseif ($product->is_variant && $product->variants->isNotEmpty()) {
+            // Sản phẩm có biến thể nhưng không có variant được chọn, lấy giá thấp nhất
+            $minPrice = $product->variants->min('price') ?? 0;
+            $minSalePrice = $product->variants->min('sale_price') ?? 0;
+            return $minSalePrice > 0 && $minSalePrice < $minPrice ? $minSalePrice : $minPrice;
+        } else {
+            // Sản phẩm đơn
+            return $product->sale_price ?? $product->price ?? 0;
+        }
+    }
+
+    /**
+     * Lấy giá gốc an toàn cho sản phẩm
+     */
+    private function getSafeProductOriginalPrice($product, $variant = null)
+    {
+        if ($product->is_variant && $variant) {
+            // Sản phẩm có biến thể và có variant được chọn
+            return $variant->price ?? 0;
+        } elseif ($product->is_variant && $product->variants->isNotEmpty()) {
+            // Sản phẩm có biến thể nhưng không có variant được chọn, lấy giá gốc thấp nhất
+            return $product->variants->min('price') ?? 0;
+        } else {
+            // Sản phẩm đơn
+            return $product->price ?? 0;
+        }
+    }
+
+    /**
+     * Kiểm tra tồn kho an toàn
+     */
+    private function checkSafeStock($product, $variant = null, $quantity = 1)
+    {
+        if ($product->is_variant && $variant) {
+            // Kiểm tra tồn kho của variant
+            return $variant->stock >= $quantity;
+        } elseif ($product->is_variant) {
+            // Kiểm tra tồn kho tổng của tất cả variants
+            $totalVariantStock = $product->variants->sum('stock');
+            return $totalVariantStock >= $quantity;
+        } else {
+            // Kiểm tra tồn kho của sản phẩm đơn
+            return $product->stock_total >= $quantity;
+        }
+    }
+
     public function getItems()
     {
         $items = [];
@@ -72,6 +126,7 @@ class CheckoutController extends Controller
         if (empty($selected_products)) {
             return false;
         }
+
         foreach ($selected_products as $selected) {
             if (!empty($selected['combo_id'])) {
                 $combo = Combo::with('products.product.variants')->find($selected['combo_id']);
@@ -83,11 +138,12 @@ class CheckoutController extends Controller
                         $product = $comboProduct->product;
                         $variant = null;
                         $basePrice = null;
+
                         if ($product->is_variant == 1) {
                             $variant = $comboProduct->variant ?? null;
-                            $basePrice = $variant ? ($variant->sale_price ?? $variant->price) : null;
+                            $basePrice = $this->getSafeProductPrice($product, $variant);
                         } else {
-                            $basePrice = $product->sale_price ?? $product->price;
+                            $basePrice = $this->getSafeProductPrice($product);
                         }
 
                         $discountedPrice = $this->calculateComboDiscountedPrice($combo, $basePrice, $comboProduct);
@@ -111,13 +167,15 @@ class CheckoutController extends Controller
                     }
                 }
             } else if (!empty($selected['product_id'])) {
-                $item = Product::find($selected['product_id']);
+                $item = Product::with('variants')->find($selected['product_id']);
                 $quantity = isset($selected['quantity']) ? $selected['quantity'] : 1;
+
                 if ($item) {
                     $variant = null;
                     if ($item->is_variant && !empty($selected['variant_id'])) {
                         $variant = $item->variants()->where('id', $selected['variant_id'])->first();
                     }
+
                     $items[] = [
                         'product' => $item,
                         'quantity' => $quantity,
@@ -152,10 +210,12 @@ class CheckoutController extends Controller
             if (!empty($item['is_combo']) && $item['is_combo'] && isset($item['combo_info']['price_in_combo'])) {
                 $subtotal += $item['combo_info']['price_in_combo'] * $item['quantity'];
             } elseif (isset($item['product']->is_variant) && $item['product']->is_variant == 1) {
-                $variant = $item['product']->variants->where('id', $item['variant_id'])->first();
-                $subtotal += $variant->sale_price * $item['quantity'];
+                $variant = $item['variant'] ?? null;
+                $unitPrice = $this->getSafeProductPrice($item['product'], $variant);
+                $subtotal += $unitPrice * $item['quantity'];
             } else {
-                $subtotal += $item['product']->price * $item['quantity'];
+                $unitPrice = $this->getSafeProductPrice($item['product']);
+                $subtotal += $unitPrice * $item['quantity'];
             }
         }
         $shop_ids = array_unique($shop_ids);
@@ -180,21 +240,22 @@ class CheckoutController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy sản phẩm');
         }
 
-        $product = Product::find($product_id);
+        $product = Product::with('variants')->find($product_id);
         if (!$product) {
             return redirect()->back()->with('error', 'Sản phẩm không tồn tại');
         }
 
-        // Kiểm tra tồn kho
+        // Kiểm tra tồn kho an toàn
+        $variant = null;
         if ($variant_id) {
             $variant = $product->variants()->where('id', $variant_id)->first();
-            if (!$variant || $variant->stock < $quantity) {
-                return redirect()->back()->with('error', 'Sản phẩm không đủ tồn kho');
+            if (!$variant) {
+                return redirect()->back()->with('error', 'Biến thể sản phẩm không tồn tại');
             }
-        } else {
-            if ($product->stock_total < $quantity) {
-                return redirect()->back()->with('error', 'Sản phẩm không đủ tồn kho');
-            }
+        }
+
+        if (!$this->checkSafeStock($product, $variant, $quantity)) {
+            return redirect()->back()->with('error', 'Sản phẩm không đủ tồn kho');
         }
 
         // Tạo session cho sản phẩm mua ngay
@@ -372,13 +433,14 @@ class CheckoutController extends Controller
                 foreach ($items as $item) {
                     $product = $item['product'];
                     $quantity = (int) $item['quantity'];
-                    $unit_price = $product->sale_price ?? $product->price ?? 0;
+                    $variant = $item['variant'] ?? null;
+
                     if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
                         $unit_price = $item['combo_info']['price_in_combo'];
-                    } elseif ($product->is_variant ?? false) {
-                        $variant = $product->variants->where('id', $item['variant_id'])->first();
-                        $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
+                    } else {
+                        $unit_price = $this->getSafeProductPrice($product, $variant);
                     }
+
                     $shop_total += $unit_price * $quantity;
                 }
                 $shopTotalMap[$shop_id] = $shop_total;
@@ -464,18 +526,21 @@ class CheckoutController extends Controller
                     $quantity = (int) $item['quantity'];
                     $variant_id = null;
                     $variant_name = null;
-                    $unit_price = $product->sale_price ?? $product->price ?? 0;
+                    $variant = $item['variant'] ?? null;
+                    $unit_price = 0;
                     $combo_id = null;
                     $combo_quantity = null;
+
                     if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
                         $combo_id = $item['combo_info']['combo_id'];
                         $unit_price = $item['combo_info']['price_in_combo'];
                         $combo_quantity = $item['combo_info']['combo_quantity'];
-                    } elseif ($product->is_variant ?? false) {
-                        $variant = $product->variants->where('id', $item['variant_id'])->first();
-                        $variant_id = $variant->id ?? null;
-                        $variant_name = $variant->variant_name ?? null;
-                        $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
+                    } else {
+                        $unit_price = $this->getSafeProductPrice($product, $variant);
+                        if ($variant) {
+                            $variant_id = $variant->id;
+                            $variant_name = $variant->variant_name;
+                        }
                     }
 
                     $item_total_price = $unit_price * $quantity;
@@ -580,16 +645,18 @@ class CheckoutController extends Controller
                     $updatedCombos[] = $item->combo_id;
                 }
             } else {
-                $product = Product::find($item->productID);
-                if ($product && $product->is_variant == 1 && !empty($item->variantID)) {
-                    $variant = $product->variants()->where('id', $item->variantID)->first();
-                    if ($variant) {
-                        $newStock = max(0, $variant->stock - $item->quantity);
-                        $variant->update(['stock' => $newStock]);
+                $product = Product::with('variants')->find($item->productID);
+                if ($product) {
+                    if ($product->is_variant == 1 && !empty($item->variantID)) {
+                        $variant = $product->variants()->where('id', $item->variantID)->first();
+                        if ($variant) {
+                            $newStock = max(0, $variant->stock - $item->quantity);
+                            $variant->update(['stock' => $newStock]);
+                        }
+                    } elseif ($product->is_variant == 0) {
+                        $newStock = max(0, $product->stock_total - $item->quantity);
+                        $product->update(['stock_total' => $newStock]);
                     }
-                } elseif ($product && $product->is_variant == 0) {
-                    $newStock = max(0, $product->stock_total - $item->quantity);
-                    $product->update(['stock_total' => $newStock]);
                 }
             }
         }

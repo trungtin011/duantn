@@ -7,11 +7,11 @@
                 <div style="display:flex; flex-direction:column; gap:16px;">
                     <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                         <input type="radio" name="payment_method" value="vnpay" style="accent-color:#1a73e8;">
-                        <img src="/images/payment/vnpay.png" alt="VNPAY" style="height:28px;"> VNPAY
+                        <img src="{{ asset('images/payments/vnpay.png') }}" alt="VNPAY" style="height:28px;"> VNPAY
                     </label>
                     <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                         <input type="radio" name="payment_method" value="momo" style="accent-color:#a50064;">
-                        <img src="/images/payment/momo.png" alt="Momo" style="height:28px;"> Momo
+                        <img src="{{ asset('images/payments/momo.png') }}" alt="Momo" style="height:28px;"> Momo
                     </label>
                 </div>
                 <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:10px;">
