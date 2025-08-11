@@ -11,6 +11,102 @@ use App\Models\Customer;
 
 class CouponController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $status = $request->get('status', 'available');
+
+        $publicCoupons = Coupon::with(['shop'])
+            ->where('is_public', true)
+            ->where('status', 'active')
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->where(function ($q) {
+                $q->where('max_uses_total', null)
+                  ->orWhereRaw('used_count < max_uses_total');
+            })
+            ->get();
+
+        $savedCoupons = CouponUser::with(['coupon.shop'])
+            ->where('user_id', $user->id)
+            ->when($status !== 'all', function ($q) use ($status) {
+                return $q->where('status', $status);
+            })
+            ->get();
+
+        $allCoupons = collect();
+        
+        foreach ($publicCoupons as $coupon) {
+            $allCoupons->push([
+                'id' => $coupon->id,
+                'coupon' => $coupon,
+                'is_public' => true,
+                'user_status' => null,
+                'saved_at' => null,
+                'used_at' => null,
+                'order_id' => null,
+                'discount_amount' => null
+            ]);
+        }
+        
+        // Thêm các coupon đã lưu
+        foreach ($savedCoupons as $savedCoupon) {
+            $allCoupons->push([
+                'id' => $savedCoupon->id,
+                'coupon' => $savedCoupon->coupon,
+                'is_public' => false,
+                'user_status' => $savedCoupon->status,
+                'saved_at' => $savedCoupon->created_at,
+                'used_at' => $savedCoupon->used_at,
+                'order_id' => $savedCoupon->order_id,
+                'discount_amount' => $savedCoupon->discount_amount
+            ]);
+        }
+
+        // Lọc theo status nếu cần
+        if ($status !== 'all') {
+            $allCoupons = $allCoupons->filter(function ($item) use ($status) {
+                if ($item['is_public']) {
+                    // Với coupon public, chỉ hiển thị nếu status là 'available'
+                    return $status === 'available';
+                } else {
+                    // Với coupon đã lưu, kiểm tra user_status
+                    return $item['user_status'] === $status;
+                }
+            });
+        }
+
+        // Sắp xếp và phân trang
+        $allCoupons = $allCoupons->sortByDesc('id')->values();
+        $perPage = 12;
+        $currentPage = $request->get('page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        $paginatedCoupons = $allCoupons->slice($offset, $perPage);
+        
+        $saved = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedCoupons,
+            $allCoupons->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        if ($request->ajax()) {
+            $html = view('user.account.coupons.partials.list', [
+                'saved' => $saved,
+                'status' => $status,
+            ])->render();
+
+            return response()->json(['html' => $html]);
+        }
+
+        return view('user.account.coupons.index', [
+            'saved' => $saved,
+            'status' => $status,
+            'user' => $user,
+        ]);
+    }
+
     public function applyAppDiscount(Request $request)
     {
         $user = Auth::user();
@@ -23,7 +119,6 @@ class CouponController extends Controller
             return response()->json(['error' => 'Mã giảm giá không hợp lệ.' . $discountCode]);
         }
 
-        // Kiểm tra trạng thái hoạt động
         if ($coupon->status == 'inactive' ) {
             return response()->json(['error' => 'Mã giảm giá đã bị vô hiệu hóa.']);
         }else if($coupon->status == 'expired'){
@@ -33,12 +128,10 @@ class CouponController extends Controller
         }
         
 
-        // Kiểm tra thời gian hiệu lực
         if ($coupon->start_date > now() || $coupon->end_date < now()) {
             return response()->json(['error' => 'Mã giảm giá đã hết hạn.']);
         }
 
-        // Kiểm tra hạn mức rank
         if ($coupon->rank_limit && $coupon->rank_limit !== 'all') {
             $customer = Customer::where('userID', $user->id)->first();
                 if (!$customer || !$customer->hasRankAtLeast($coupon->rank_limit)) {
@@ -46,17 +139,14 @@ class CouponController extends Controller
                 }
         }
 
-        // Kiểm tra số lần sử dụng tối đa toàn hệ thốn
         if ($coupon->max_uses_total > 0 && $coupon->used_count >= $coupon->max_uses_total) {
             return response()->json(['error' => 'Mã giảm giá đã đạt số lần sử dụng tối đa.']);
         }
 
-        // Kiểm tra giá trị đơn hàng tối thiểu
-        // if ($coupon->min_order_amount > 0 && $subtotal < $coupon->min_order_amount) {
-        //     return response()->json(['error' => 'Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã giảm giá.']);
-        // }
+        if ($coupon->min_order_amount > 0 && $subtotal < $coupon->min_order_amount) {
+            return response()->json(['error' => 'Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã giảm giá.']);
+        }
 
-        // Kiểm tra số lần sử dụng tối đa cho mỗi user
         $couponUser = CouponUser::where('coupon_id', $coupon->id)
             ->where('user_id', $user->id)
             ->first();
@@ -67,7 +157,6 @@ class CouponController extends Controller
         }
 
         $discountAmount = 0;
-        // Tính toán số tiền giảm giá
         if ($coupon->discount_type === 'fixed') {
             $discountAmount = $coupon->discount_value;
         } else {

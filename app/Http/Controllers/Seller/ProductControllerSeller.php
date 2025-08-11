@@ -58,6 +58,7 @@ class ProductControllerSeller extends Controller
                 case 'scheduled':
                 case 'active':
                 case 'inactive':
+                case 'pending':
                     $query->where('status', $request->status);
                     break;
             }
@@ -1252,23 +1253,10 @@ class ProductControllerSeller extends Controller
     public function checkProductName(Request $request)
     {
         $name = $request->input('name');
-        $productId = $request->input('product_id'); // Cho trường hợp edit
-        
-        if (empty($name)) {
-            return response()->json(['exists' => false, 'message' => '']);
-        }
+        $productId = $request->input('product_id');
 
-        $seller = Auth::user()->seller;
-        $shop = $seller->shops->first();
-        
-        if (!$shop) {
-            return response()->json(['exists' => false, 'message' => 'Bạn chưa có shop.']);
-        }
+        $query = Product::where('name', $name);
 
-        $query = Product::where('name', $name)
-            ->where('shopID', $shop->id);
-        
-        // Nếu đang edit, loại trừ sản phẩm hiện tại
         if ($productId) {
             $query->where('id', '!=', $productId);
         }
@@ -1277,7 +1265,55 @@ class ProductControllerSeller extends Controller
 
         return response()->json([
             'exists' => $exists,
-            'message' => $exists ? 'Tên sản phẩm này đã tồn tại trong shop của bạn.' : ''
+            'message' => $exists ? 'Tên sản phẩm đã tồn tại' : 'Tên sản phẩm có thể sử dụng'
         ]);
+    }
+
+    /**
+     * AJAX: Return products table body based on filters for the current seller shop
+     */
+    public function ajaxList(Request $request)
+    {
+        $seller = Auth::user()->seller;
+        $shop = $seller->shops->first();
+
+        if (!$shop) {
+            $products = collect([]);
+            return view('seller.products._table_body', compact('products'))->render();
+        }
+
+        $query = Product::with(['variants', 'images'])
+            ->where('shopID', $shop->id);
+
+        // Tìm kiếm
+        if ($request->filled('search')) {
+            $searchTerm = trim($request->search);
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                    ->orWhere('sku', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Lọc trạng thái
+        if ($request->filled('status')) {
+            switch ($request->status) {
+                case 'low_stock':
+                    $query->where('stock_total', '<=', 5)->where('stock_total', '>', 0);
+                    break;
+                case 'out_of_stock':
+                    $query->where('stock_total', 0);
+                    break;
+                case 'scheduled':
+                case 'active':
+                case 'inactive':
+                case 'pending':
+                    $query->where('status', $request->status);
+                    break;
+            }
+        }
+
+        $products = $query->latest()->paginate(10);
+
+        return view('seller.products._table_body', compact('products'))->render();
     }
 }

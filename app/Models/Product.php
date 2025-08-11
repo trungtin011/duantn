@@ -48,6 +48,26 @@ class Product extends Model
         'flash_sale_end_at' => 'datetime',
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope('shopVisible', function ($builder) {
+            // Chỉ áp dụng cho frontend, không áp dụng cho admin
+            if (!app()->runningInConsole() && !request()->is('admin/*')) {
+                $builder->whereHas('shop', function ($q) {
+                    $q->where('shop_status', '!=', 'banned');
+                });
+            }
+        });
+
+        // Thêm global scope để chỉ hiển thị sản phẩm active ở frontend
+        static::addGlobalScope('frontendActive', function ($builder) {
+            // Chỉ áp dụng cho frontend, không áp dụng cho admin và seller
+            if (!app()->runningInConsole() && !request()->is('admin/*') && !request()->is('seller/*')) {
+                $builder->where('status', 'active');
+            }
+        });
+    }
+
     // Relationships
     public function shop()
     {
@@ -245,6 +265,11 @@ class Product extends Model
     public function viewHistory()
     {
         return $this->hasMany(ViewHistory::class, 'productID');
+    }
+
+    public function adClicks()
+    {
+        return $this->hasMany(AdClick::class, 'product_id');
     }
 
     public function getDisplayPriceAttribute()

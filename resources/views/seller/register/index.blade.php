@@ -1,66 +1,222 @@
 <!DOCTYPE html>
-<html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>ZynoxMall Seller Registration</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-  <style>
-   /* Custom scrollbar for right vertical icons */
-    ::-webkit-scrollbar {
-      display: none;
-    }
-  </style>
- </head>
- <body class="bg-[#f5f5f7] min-h-screen flex flex-col">
-  <!-- Top bar -->
-  <header class="flex justify-between items-center bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 h-12">
-   <div class="flex items-center space-x-1">
-    <img alt="ZynoxMall logo, orange square with white S letter" class="w-5 h-5" height="20" src="https://storage.googleapis.com/a1aa/image/56011200-bb98-42ff-92be-38b7224af1e7.jpg" width="20"/>
-    <span class="text-sm font-normal text-[#ee4d2d]">Zynox</span>
-    <span class="text-sm font-normal text-black">Đăng ký trở thành Người bán Zynox</span>
-   </div>
-   <div class="flex items-center space-x-2 text-base text-gray-700 cursor-pointer select-none">
-    @auth
-      <img alt="User profile picture" class="w-10 h-10 rounded-full" height="40" width="40" src="{{ Auth::user()->avatar_url ?? 'https://storage.googleapis.com/a1aa/image/661de284-8af8-4675-a870-9b3a3edf56c5.jpg' }}" />
-      <span class="font-semibold">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
-    @else
-      <img alt="User profile picture, grayscale circular photo" class="w-10 h-10 rounded-full" height="40" width="40" src="https://storage.googleapis.com/a1aa/image/661de284-8af8-4675-a870-9b3a3edf56c5.jpg" />
-      <span>Khách</span>
-    @endauth
-    <i class="fas fa-chevron-down text-base"></i>
-   </div>
-  </header>
-  <!-- Main content -->
-  <main class="flex-grow flex justify-center items-center px-4 py-10">
-   <div class="bg-white rounded-md shadow-sm max-w-2xl w-full p-12 flex flex-col items-center">
-    <img alt="Illustration of a webpage with orange notification boxes and icons, circular background in light orange" class="mb-8" height="140" src="https://storage.googleapis.com/a1aa/image/89b54820-1ec5-4b42-a62c-497751536c8a.jpg" width="140"/>
-    <h2 class="text-2xl font-semibold mb-3">Chào mừng đến với Zynox!</h2>
-    <p class="text-base text-gray-500 mb-8 text-center max-w-md leading-tight">
-      Vui lòng cung cấp thông tin để thành lập tài khoản người bán trên Zynox
-    </p>
-    <a href="{{ route('seller.register') }}" class="bg-[#ee4d2d] text-white text-base rounded px-6 py-2 hover:bg-[#d43f22] transition block text-center font-semibold">Bắt đầu đăng ký</a>
-   </div>
-  </main>
-  <!-- Right vertical icons -->
-  <aside class="fixed right-0 top-1/3 flex flex-col space-y-6 pr-2 z-10">
-   <button aria-label="Notification bell" class="text-[#ee4d2d] hover:text-[#d43f22] transition text-lg" type="button">
-    <i class="fas fa-bell"></i>
-   </button>
-   <button aria-label="Customer support headset" class="text-[#ee4d2d] hover:text-[#d43f22] transition text-lg" type="button">
-    <i class="fas fa-headset"></i>
-   </button>
-   <button aria-label="Chat messages with 1 new message" class="relative text-[#ee4d2d] hover:text-[#d43f22] transition text-lg" type="button">
-    <i class="fas fa-comment-alt"></i>
-    <span class="absolute -top-2 -right-2 bg-[#ee4d2d] text-white text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center leading-none">1</span>
-   </button>
-  </aside>
-  @php
-    if (!auth()->check()) {
-      header('Location: '.route('login'));
-      exit;
-    }
-  @endphp
- </body>
+<html lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Đăng ký trở thành Người bán - ZynoxMall</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">Z</span>
+                    </div>
+                    <div class="hidden sm:block">
+                        <span class="text-xl font-bold bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
+                            ZynoxMall
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="{{ route('home') }}" class="text-gray-600 hover:text-orange-500 transition-colors">
+                        Trang chủ
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-orange-500 transition-colors">
+                        Hỗ trợ
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-orange-500 transition-colors">
+                        Liên hệ
+                    </a>
+                </nav>
+
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    @auth
+                        <div class="flex items-center space-x-3">
+                            <img class="w-8 h-8 rounded-full object-cover" 
+                                 src="{{ Auth::user()->avatar_url ?? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' }}" 
+                                 alt="Avatar">
+                            <span class="hidden sm:block font-medium text-gray-700">
+                                {{ Auth::user()->fullname ?? Auth::user()->username }}
+                            </span>
+                        </div>
+                    @else
+                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-orange-500 transition-colors">
+                            Đăng nhập
+                        </a>
+                    @endauth
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center px-4 py-12">
+        <div class="max-w-6xl mx-auto w-full">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Left Content -->
+                <div class="space-y-8">
+                    <!-- Welcome Section -->
+                    <div class="space-y-4">
+                        <div class="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                            <i class="fas fa-star mr-2"></i>
+                            Chào mừng đến với ZynoxMall
+                        </div>
+                        <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                            Bắt đầu hành trình
+                            <span class="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
+                                kinh doanh online
+                            </span>
+                        </h1>
+                        <p class="text-xl text-gray-600 leading-relaxed">
+                            Tham gia cộng đồng người bán hàng đầu Việt Nam. 
+                            Tạo shop của riêng bạn chỉ trong vài phút.
+                        </p>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-rocket text-green-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Khởi tạo nhanh chóng</h3>
+                                <p class="text-gray-600 text-sm">Đăng ký và thiết lập shop trong 5 phút</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Bảo mật tuyệt đối</h3>
+                                <p class="text-gray-600 text-sm">Thông tin được mã hóa và bảo vệ</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Tăng trưởng bền vững</h3>
+                                <p class="text-gray-600 text-sm">Công cụ marketing và phân tích chuyên nghiệp</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-headset text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Hỗ trợ 24/7</h3>
+                                <p class="text-gray-600 text-sm">Đội ngũ hỗ trợ chuyên nghiệp</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <div class="pt-4">
+                        <a href="{{ route('seller.register') }}" 
+                           class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-400 to-red-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+                            <i class="fas fa-store mr-3"></i>
+                            Bắt đầu đăng ký ngay
+                            <i class="fas fa-arrow-right ml-3"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Content - Illustration -->
+                <div class="relative hidden lg:block">
+                    <div class="relative z-10">
+                        <!-- Main Illustration -->
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-red-500/20 rounded-3xl blur-3xl"></div>
+                            <div class="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20">
+                                <div class="text-center space-y-6">
+                                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center floating-animation">
+                                        <i class="fas fa-store text-white text-3xl"></i>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <h3 class="text-2xl font-bold text-gray-900">Tạo Shop Online</h3>
+                                        <p class="text-gray-600">Thiết lập shop chuyên nghiệp với đầy đủ tính năng</p>
+                                    </div>
+                                    
+                                    <!-- Progress Steps -->
+                                    <div class="flex justify-center space-x-4">
+                                        <div class="flex flex-col items-center space-y-2">
+                                            <div class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                                                1
+                                            </div>
+                                            <span class="text-xs text-gray-600">Thông tin Shop</span>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2">
+                                            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                                                2
+                                            </div>
+                                            <span class="text-xs text-gray-600">Thông tin Thuế</span>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2">
+                                            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                                                3
+                                            </div>
+                                            <span class="text-xs text-gray-600">Định danh</span>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2">
+                                            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                                                4
+                                            </div>
+                                            <span class="text-xs text-gray-600">Hoàn tất</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-gray-600">
+                <p>&copy; 2024 ZynoxMall. Tất cả quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </footer>
+
+    @php
+        if (!auth()->check()) {
+            header('Location: '.route('login'));
+            exit;
+        }
+    @endphp
+</body>
 </html>

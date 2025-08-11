@@ -106,8 +106,7 @@
                 @foreach ($products as $product)
                     <tr data-product-id="{{ $product->id }}">
                         <td class="py-4 pr-6">
-                            <input class="select-item w-[18px] h-[18px]" aria-label="Chọn {{ $product->name }}"
-                                type="checkbox" />
+                            <input class="select-item w-[18px] h-[18px]" aria-label="Chọn {{ $product->name }}" type="checkbox" />
                         </td>
                         <td class="py-4 flex items-center gap-4">
                             <img alt="{{ $product->name }} product image" class="w-10 h-10 rounded-md object-cover"

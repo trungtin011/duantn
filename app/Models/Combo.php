@@ -21,6 +21,18 @@ class Combo extends Model
         'updated_at',
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope('shopNotBanned', function ($builder) {
+            // Chỉ áp dụng cho frontend, không áp dụng cho admin
+            if (!app()->runningInConsole() && !request()->is('admin/*')) {
+                $builder->whereHas('shop', function ($q) {
+                    $q->where('shop_status', '!=', 'banned');
+                });
+            }
+        });
+    }
+
     public function shop()
     {
         return $this->belongsTo(Shop::class, 'shopID');

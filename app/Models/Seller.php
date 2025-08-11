@@ -14,6 +14,7 @@ class Seller extends Model
 
     protected $fillable = [
         'userID',
+        'shop_id',
         'status',
         'identity_card',
         'identity_card_date',
@@ -30,7 +31,6 @@ class Seller extends Model
         'identity_card_holding_image',
         'privacy_policy_agreed',
         'identity_card_type',
-        'dac_diem_nhan_dang',
     ];
 
     protected $casts = [

@@ -25,7 +25,7 @@ class RegisterShopController extends Controller
     private function checkAlreadySeller()
     {
         if (\App\Models\Seller::where('userID', Auth::id())->exists()) {
-            return redirect()->route('seller.home')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
+            return redirect()->route('seller.dashboard')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
         }
         return null;
     }

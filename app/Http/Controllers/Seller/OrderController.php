@@ -385,4 +385,59 @@ class OrderController extends Controller
             return redirect()->back()->with('order', $status_order);
         }
     }
+
+    /**
+     * AJAX: Return orders table body based on filters for the current seller shop
+     */
+    public function ajaxList(Request $request)
+    {
+        // Resolve current shop id similar to index()
+        $shopID = session()->get('current_shop_id');
+        if (!$shopID) {
+            $shop = Shop::where('ownerID', Auth::id())->first();
+            if (!$shop) {
+                $orders = collect([]);
+                return view('seller.order._table_body', compact('orders'))->render();
+            }
+            $shopID = $shop->id;
+            session()->put('current_shop_id', $shopID);
+        }
+
+        $query = ShopOrder::where('shopID', $shopID)
+            ->whereHas('order', function ($q) {
+                $q->whereIn('payment_status', ['cod_paid', 'paid']);
+            })
+            ->with([
+                'order.address',
+                'items.product.images',
+                'items.variant',
+                'shop'
+            ]);
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhereHas('order', function ($sub) use ($search) {
+                        $sub->where('order_code', 'like', "%{$search}%")
+                            ->orWhereHas('address', function ($addr) use ($search) {
+                                $addr->where('receiver_name', 'like', "%{$search}%")
+                                     ->orWhere('receiver_phone', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('filter_date')) {
+            $query->whereDate('created_at', $request->filter_date);
+        }
+
+        $orders = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('seller.order._table_body', compact('orders'))->render();
+    }
 }

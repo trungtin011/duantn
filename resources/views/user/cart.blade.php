@@ -1,8 +1,8 @@
-@extends('user.account.profile')
+@extends('layouts.app')
 
 @section('title', 'Giỏ hàng')
 
-@section('account-content')
+@section('content')
     <div class="container mx-auto py-5">
         <!-- Tiêu đề -->
         <div class="mb-6">

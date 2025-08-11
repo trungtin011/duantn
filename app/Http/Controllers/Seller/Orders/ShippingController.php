@@ -50,6 +50,7 @@ class ShippingController extends Controller
         }
         
         $shop_address = ShopAddress::where('id', $id_shop_address)->first();
+        
         $shop_province_name = $shop_address->shop_province;
         $shop_district_name = $shop_address->shop_district;
         $shop_ward_name = $shop_address->shop_ward;
@@ -102,12 +103,8 @@ class ShippingController extends Controller
             ],      
         ]);
         $responseData = $response->json();
+        Log::info('Response data: ' . json_encode($responseData));
         if ($response->status() == 200) {
-            Log::info('Cập nhật trạng thái đơn hàng sang ready_to_pick', [
-                'shop_order_id' => $shop_order->id,
-                'mã đơn hàng' => $shop_order->code,
-                'thời gian' => now()->toDateTimeString(),
-            ]);
             $shop_order->update(['status' => 'ready_to_pick']);
 
             $expectedDateTime = $responseData['data']['expected_delivery_time']; 
@@ -117,12 +114,7 @@ class ShippingController extends Controller
                 'expected_delivery_date' => $expectedDate,
                 'shipping_fee' => $responseData['data']['fee']['main_service'],
             ];
-            Log::info('Cập nhật thông tin vận chuyển cho đơn hàng', [
-                'shop_order_id' => $shop_order->id,
-                'tracking_code' => $data['tracking_code'],
-                'ngày giao dự kiến' => $data['expected_delivery_date'],
-                'phí vận chuyển' => $data['shipping_fee'],
-            ]);
+           
             $shop_order->update($data);
 
             $shop_order_history = new ShopOrderHistory();
@@ -141,7 +133,7 @@ class ShippingController extends Controller
             event(new OrderStatusUpdate($shop_order, 'ready_to_pick'));
             return true;
         } else {
-            return false;
+            return redirect()->back()->with('error', 'Tạo đơn hàng vận chuyển thất bại');
         }
     }
 

@@ -555,38 +555,91 @@
         <div class="banner">
             <div class="container">
                 <div class="slider-container has-scrollbar">
-                    <div class="slider-item">
-                        <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="women's latest fashion sale"
-                            class="banner-img">
-                        <div class="banner-content">
-                            <p class="banner-subtitle">Sản phẩm thịnh hành</p>
-                            <h2 class="banner-title">Thời trang nữ mới nhất</h2>
-                            <p class="banner-text">bắt đầu từ <b>20</b>.000₫</p>
-                            <a href="#" class="banner-btn">Mua ngay</a>
+                    @if ($banners->count() > 0)
+                        @foreach ($banners as $banner)
+                            <div class="slider-item">
+                                <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="banner-img">
+                                <div class="banner-content"
+                                    style="
+                                        @if ($banner->content_position == 'center') display: flex; align-items: center; justify-content: center;
+                                        @elseif($banner->content_position == 'left')
+                                            display: flex; align-items: center; justify-content: flex-start;
+                                        @elseif($banner->content_position == 'right')
+                                            display: flex; align-items: center; justify-content: flex-end;
+                                        @elseif($banner->content_position == 'top-left')
+                                            display: flex; align-items: flex-start; justify-content: flex-start;
+                                        @elseif($banner->content_position == 'top-right')
+                                            display: flex; align-items: flex-start; justify-content: flex-end;
+                                        @elseif($banner->content_position == 'bottom-left')
+                                            display: flex; align-items: flex-end; justify-content: flex-start;
+                                        @elseif($banner->content_position == 'bottom-right')
+                                            display: flex; align-items: flex-end; justify-content: flex-end; @endif
+                                     ">
+                                    <div
+                                        style="
+                                        text-align: {{ $banner->text_align ?? 'center' }};
+                                        @if ($banner->title_color) color: {{ $banner->title_color }}; @endif
+                                    ">
+                                        @if ($banner->description)
+                                            <p class="banner-subtitle"
+                                                style="@if ($banner->subtitle_color) color: {{ $banner->subtitle_color }}; @endif @if ($banner->subtitle_font_size) font-size: {{ $banner->subtitle_font_size }}; @endif">
+                                                {{ $banner->description }}
+                                            </p>
+                                        @endif
+                                        <h2 class="banner-title"
+                                            style="@if ($banner->title_color) color: {{ $banner->title_color }}; @endif @if ($banner->title_font_size) font-size: {{ $banner->title_font_size }}; @endif">
+                                            {{ $banner->title }}
+                                        </h2>
+                                        @if ($banner->link_url)
+                                            <a href="{{ $banner->link_url }}" 
+                                               data-banner-ad="{{ $banner->id }}"
+                                               data-shop-id="0"
+                                               class="banner-btn">Xem chi tiết</a>
+                                        @else
+                                            <a href="#" 
+                                               data-banner-ad="{{ $banner->id }}"
+                                               data-shop-id="0"
+                                               class="banner-btn">Xem chi tiết</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <!-- Fallback banners nếu không có banner nào từ database -->
+                        <div class="slider-item">
+                            <img src="{{ asset('assets/images/banner-1.jpg') }}" alt="women's latest fashion sale"
+                                class="banner-img">
+                            <div class="banner-content">
+                                <p class="banner-subtitle">Sản phẩm thịnh hành</p>
+                                <h2 class="banner-title">Thời trang nữ mới nhất</h2>
+                                <p class="banner-text">bắt đầu từ <b>20</b>.000₫</p>
+                                <a href="#" class="banner-btn">Mua ngay</a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="slider-item">
-                        <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses" class="banner-img">
-                        <div class="banner-content">
-                            <p class="banner-subtitle">Phụ kiện thịnh hành</p>
-                            <h2 class="banner-title">Kính mát hiện đại</h2>
-                            <p class="banner-text">bắt đầu từ <b>15</b>.000₫</p>
-                            <a href="#" class="banner-btn">Mua ngay</a>
+                        <div class="slider-item">
+                            <img src="{{ asset('assets/images/banner-2.jpg') }}" alt="modern sunglasses"
+                                class="banner-img">
+                            <div class="banner-content">
+                                <p class="banner-subtitle">Phụ kiện thịnh hành</p>
+                                <h2 class="banner-title">Kính mát hiện đại</h2>
+                                <p class="banner-text">bắt đầu từ <b>15</b>.000₫</p>
+                                <a href="#" class="banner-btn">Mua ngay</a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="slider-item">
-                        <img src="{{ asset('assets/images/banner-3.jpg') }}" alt="new fashion summer sale"
-                            class="banner-img">
-                        <div class="banner-content">
-                            <p class="banner-subtitle">Ưu đãi giảm giá</p>
-                            <h2 class="banner-title">Thời trang hè mới</h2>
-                            <p class="banner-text">bắt đầu từ <b>29</b>.990₫</p>
-                            <a href="#" class="banner-btn">Mua ngay</a>
+                        <div class="slider-item">
+                            <img src="{{ asset('assets/images/banner-3.jpg') }}" alt="new fashion summer sale"
+                                class="banner-img">
+                            <div class="banner-content">
+                                <p class="banner-subtitle">Ưu đãi giảm giá</p>
+                                <h2 class="banner-title">Thời trang hè mới</h2>
+                                <p class="banner-text">bắt đầu từ <b>29</b>.990₫</p>
+                                <a href="#" class="banner-btn">Mua ngay</a>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
-        </div>
         </div>
 
         <div class="category">
@@ -628,14 +681,14 @@
         <div class="product-container">
             <div class="container">
                 <div class="sidebar has-scrollbar relative" data-mobile-menu>
-                    <button class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-2.5"
+                    <button
+                        class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-5 right-2.5"
                         data-mobile-menu-close-btn>
                         <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
                     </button>
                     <div class="shop-container-bg rounded-xl border border-orange-200 p-6 mb-8 mt-10 lg:mt-0">
                         <div class="flex items-center justify-between mb-4">
-                            <h2
-                                class="text-lg font-bold flex items-center justify-between gap-2 w-full shop-title">
+                            <h2 class="text-lg font-bold flex items-center justify-between gap-2 w-full shop-title">
                                 Shop Bán Chạy
                                 <ion-icon name="flame"
                                     class="text-orange-500 text-xl bg-white rounded-full p-2"></ion-icon>
@@ -921,7 +974,7 @@
                         <div class="product-showcase">
                             <h2 class="title">Sản phẩm nổi bật</h2>
                             @if ($featuredProducts->isEmpty())
-                                <p>Hiện chưa có sản phẩm nổi bật nào.</p>
+                                <p>Không có sản phẩm nào.</p>
                             @else
                                 @php
                                     $featuredProducts = $featuredProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
@@ -1079,7 +1132,7 @@
                         <div class="product-showcase">
                             <h2 class="title">Đánh giá cao</h2>
                             @if ($topRatedProducts->isEmpty())
-                                <p>Chưa có sản phẩm nào được đánh giá.</p>
+                                <p>Không có sản phẩm nào.</p>
                             @else
                                 @php
                                     $topRatedProducts = $topRatedProducts->take(8); // Giới hạn tổng cộng 8 sản phẩm
@@ -1254,7 +1307,6 @@
             <div class="container flex gap-[30px]">
                 <div class="testimonial">
                     <h2 class="title">Đánh giá khách hàng</h2>
-
                     @foreach ($testimonials as $review)
                         <div class="testimonial-card">
                             <div class="flex items-center gap-2">
@@ -1674,7 +1726,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }
@@ -1846,96 +1898,8 @@
                 initQuickViewScripts();
             }
 
-            // Advertised Products Slider
-            function initAdvertisedSlider() {
-                const dots = document.querySelectorAll('.advertised-dot');
-                const slides = document.querySelectorAll('.advertised-slide');
-
-                if (dots.length === 0 || slides.length === 0) return;
-
-                let currentSlide = 0;
-                let isTransitioning = false;
-                let autoSlideInterval = null;
-
-                function goToSlide(slideIndex) {
-                    if (isTransitioning) return; // Prevent multiple transitions
-
-                    isTransitioning = true;
-
-                    // Remove active class from all slides and dots
-                    slides.forEach(slide => {
-                        slide.classList.remove('active', 'prev');
-                    });
-                    dots.forEach(dot => dot.classList.remove('active'));
-
-                    // Add active class to current slide and dot
-                    slides[slideIndex].classList.add('active');
-                    dots[slideIndex].classList.add('active');
-
-                    // Add prev class to previous slide for smooth transition
-                    if (slideIndex > 0) {
-                        slides[slideIndex - 1].classList.add('prev');
-                    }
-
-                    // Wait for transition to complete before allowing next transition
-                    setTimeout(() => {
-                        isTransitioning = false;
-                    }, 600); // Slightly longer than CSS transition (500ms)
-                }
-
-                function startAutoSlide() {
-                    if (autoSlideInterval) {
-                        clearInterval(autoSlideInterval);
-                    }
-
-                    autoSlideInterval = setInterval(() => {
-                        if (!isTransitioning) {
-                            currentSlide = (currentSlide + 1) % slides.length;
-                            goToSlide(currentSlide);
-                        }
-                    }, 4000); // 4 seconds between slides
-                }
-
-                function stopAutoSlide() {
-                    if (autoSlideInterval) {
-                        clearInterval(autoSlideInterval);
-                        autoSlideInterval = null;
-                    }
-                }
-
-                // Add click event to dots
-                dots.forEach((dot, index) => {
-                    dot.addEventListener('click', () => {
-                        if (!isTransitioning) {
-                            currentSlide = index;
-                            goToSlide(currentSlide);
-
-                            // Restart auto slide after manual click
-                            stopAutoSlide();
-                            startAutoSlide();
-                        }
-                    });
-                });
-
-                // Start auto slide
-                startAutoSlide();
-
-                // Pause auto slide on hover
-                const container = document.querySelector('.advertised-products-container');
-                if (container) {
-                    container.addEventListener('mouseenter', () => {
-                        stopAutoSlide();
-                    });
-
-                    container.addEventListener('mouseleave', () => {
-                        startAutoSlide();
-                    });
-                }
-            }
-
-            // Initialize advertised slider when DOM is loaded
+            // Initialize price handling when DOM is loaded
             document.addEventListener('DOMContentLoaded', function() {
-                initAdvertisedSlider();
                 initPriceHandling();
             });
 
@@ -1962,6 +1926,11 @@
                     }
                 });
             }
+
+            // Initialize price handling when DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                initPriceHandling();
+            });
         </script>
     @endpush
 @endsection

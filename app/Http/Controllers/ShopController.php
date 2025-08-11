@@ -7,12 +7,16 @@ use App\Models\Shop;
 use App\Models\ShopAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\ShopStatus;
 
 class ShopController extends Controller
 {
     public function show($id)
     {
         $shop = Shop::with([
+            'products' => function ($query) {
+                $query->where('status', 'active');
+            },
             'products.images', 
             'products.orderReviews',
             'combos.products.product.images',
@@ -22,6 +26,11 @@ class ShopController extends Controller
             'address', 
             'followers'
         ])->findOrFail($id);
+
+        // Nếu shop bị cấm thì trả về trang lỗi 404 tùy chỉnh
+        if ($shop->shop_status === ShopStatus::BANNED) {
+            return response()->view('error.404NotFound', [], 404);
+        }
 
         return view('shop.profile', compact('shop'));
     }
@@ -50,12 +59,16 @@ class ShopController extends Controller
         $query = $request->input('query');
 
         $products = $shop->products()
+            ->where('status', 'active')
             ->where('name', 'like', '%' . $query . '%')
             ->with(['images', 'orderReviews'])
             ->get();
 
         // Load all necessary relationships for the shop
         $shop->load([
+            'products' => function ($query) {
+                $query->where('status', 'active');
+            },
             'products.images', 
             'products.orderReviews',
             'combos.products.product.images',
@@ -72,6 +85,9 @@ class ShopController extends Controller
     public function productsByCategory($shopId, $categoryId)
     {
         $shop = Shop::with([
+            'products' => function ($query) {
+                $query->where('status', 'active');
+            },
             'products.images', 
             'products.orderReviews',
             'combos.products.product.images',
@@ -82,11 +98,17 @@ class ShopController extends Controller
             'followers'
         ])->findOrFail($shopId);
 
+        // Nếu shop bị cấm thì trả về trang lỗi 404 tùy chỉnh
+        if ($shop->shop_status === ShopStatus::BANNED) {
+            return response()->view('error.404NotFound', [], 404);
+        }
+
         $category = $shop->categories()->findOrFail($categoryId);
 
         // Lấy sản phẩm thuộc danh mục này trong shop
         $products = $category->products()
             ->where('shopID', $shop->id)
+            ->where('status', 'active')
             ->with(['images', 'orderReviews'])
             ->get();
 

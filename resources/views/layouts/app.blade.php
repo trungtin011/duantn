@@ -18,11 +18,14 @@
         }
     @endphp
 
+    <div id="laravel-bootstrap" data-csrf="{{ csrf_token() }}" data-user='@json($laravelUserData)'></div>
     <script>
-        window.Laravel = {
-            csrfToken: "{{ csrf_token() }}",
-            user: @json($laravelUserData)
-        };
+        (function(){
+            var el = document.getElementById('laravel-bootstrap');
+            var user = null;
+            try { user = JSON.parse(el.getAttribute('data-user') || 'null'); } catch(e) {}
+            window.Laravel = { csrfToken: el.getAttribute('data-csrf'), user: user };
+        })();
     </script>
 
     <!-- Font + Tailwind + Icons -->
@@ -204,18 +207,25 @@
     </style>
 
     @auth
+        <div id="session-beacon" data-user-id="{{ Auth::id() }}"></div>
         <script>
-            window.addEventListener('beforeunload', function() {
-                navigator.sendBeacon('/update-session', JSON.stringify({
-                    user_id: {{ Auth::id() }}
-                }));
-            });
+            (function(){
+                var el = document.getElementById('session-beacon');
+                var uid = el ? el.getAttribute('data-user-id') : null;
+                if (!uid) return;
+                window.addEventListener('beforeunload', function() {
+                    try { navigator.sendBeacon('/update-session', JSON.stringify({ user_id: uid })); } catch(e) {}
+                });
+            })();
         </script>
     @endauth
     @include('partials.repay_popup')
 </head>
 
 <body class="font-[Inter]">
+    <!-- Ad Click Notifications -->
+    @include('partials.ad_click_notifications')
+    
     <!-- Loader Fullscreen -->
     <div id="global-loader"
         style="position:fixed;z-index:99999;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;">
@@ -718,7 +728,7 @@
                                         Sản phẩm của tôi
                                     </a>
                                     <a href="{{ route('seller.order.index') }}"
-                                        class="flex items-center gap-2 px-4 py-2 text-white hover:bg-purple-600">
+                                        class="flex items-center gap-2 px-6 py-3 text-white hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -914,9 +924,7 @@
     </div>
     @stack('scripts')
     <script>
-        window.Laravel = {
-            user: @json(Auth::user())
-        };
+        // window.Laravel bootstrap đã được thiết lập ở đầu file
 
         document.addEventListener('DOMContentLoaded', function() {
             // Notification Dropdown
@@ -1012,7 +1020,7 @@
             }
 
             function updateCartCount() {
-                fetch('{{ route('cart.quantity') }}')
+                fetch(String.raw`{{ route('cart.quantity') }}`)
                     .then(response => response.json())
                     .then(data => {
                         const cartCountElement = document.getElementById('cart-count');
@@ -1033,7 +1041,7 @@
                 if (loadingCartItems) loadingCartItems.classList.remove('hidden');
                 if (emptyCartMessage) emptyCartMessage.classList.add('hidden');
                 cartItemsContainer.innerHTML = '';
-                fetch('{{ route('cart.items') }}')
+                fetch(String.raw`{{ route('cart.items') }}`)
                     .then(response => {
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         return response.json();
@@ -1205,7 +1213,10 @@
             }
         });
     </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        
+        
 </body>
 
 </html>

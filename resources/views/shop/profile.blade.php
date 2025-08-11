@@ -93,7 +93,8 @@
                         @endif
                     @endauth
                     <button
-                        class="flex items-center gap-1 border border-white rounded text-white text-[13px] px-3 py-[5px] hover:bg-white hover:text-[#5a4a1a] transition">
+                        class="flex items-center gap-1 border border-white rounded text-white text-[13px] px-3 py-[5px] hover:bg-white hover:text-[#5a4a1a] transition"
+                        onclick="window.location.href='/chat?shop_id={{ $shop->id }}&product_id={{ $shop->id }}'">
                         <i class="far fa-comment-alt text-[13px]"></i> Chat
                     </button>
                 </div>
@@ -143,7 +144,7 @@
         <!-- Danh sách sản phẩm -->
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Sản phẩm từ shop</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            @if(isset($products) && $products && $products->count() > 0)
+            @if (isset($products) && $products && $products->count() > 0)
                 @foreach ($products as $product)
                     <a href="{{ route('product.show', $product->slug) }}"
                         class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
@@ -181,7 +182,7 @@
         <!-- Danh sách combo -->
         <h2 class="text-lg font-semibold text-gray-800 mb-4 mt-10">Combo từ shop</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            @if($shop->combos && $shop->combos->count() > 0)
+            @if ($shop->combos && $shop->combos->count() > 0)
                 @foreach ($shop->combos as $combo)
                     <a href="{{ route('combo.show', $combo->id) }}"
                         class="bg-white border rounded-lg shadow-sm hover:shadow-md p-3 transition block">
@@ -190,14 +191,19 @@
                             if ($combo->products && $combo->products->count() > 0) {
                                 $firstComboProduct = $combo->products->first();
                                 if ($firstComboProduct && $firstComboProduct->product) {
-                                    if ($firstComboProduct->product->images && $firstComboProduct->product->images->count() > 0) {
-                                        $comboImage = asset('storage/' . $firstComboProduct->product->images->first()->image_path);
+                                    if (
+                                        $firstComboProduct->product->images &&
+                                        $firstComboProduct->product->images->count() > 0
+                                    ) {
+                                        $comboImage = asset(
+                                            'storage/' . $firstComboProduct->product->images->first()->image_path,
+                                        );
                                     }
                                 }
                             }
                         @endphp
-                        <img src="{{ $comboImage }}"
-                            class="rounded-md w-full h-36 object-cover mb-2" alt="{{ $combo->combo_name }}">
+                        <img src="{{ $comboImage }}" class="rounded-md w-full h-36 object-cover mb-2"
+                            alt="{{ $combo->combo_name }}">
                         <div class="font-semibold text-sm truncate">{{ $combo->combo_name }}</div>
                         <div class="text-[#e03e2f] font-bold text-sm">
                             {{ number_format($combo->total_price, 0, ',', '.') }}đ</div>
@@ -213,6 +219,29 @@
         </div>
     </div>
 
+    @if(($shop->shop_status instanceof \App\Enums\ShopStatus ? $shop->shop_status->value : $shop->shop_status) === 'suspended')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Shop đang tạm ngưng bán',
+                    text: 'Cửa hàng này đang tạm ngưng hoạt động. Bạn không thể mua sản phẩm này vào lúc này.',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                    backdrop: true,
+                    didOpen: () => {
+                        document.querySelectorAll('button, a, input, select, textarea').forEach(el => {
+                            el.disabled = true;
+                            el.style.pointerEvents = 'none';
+                        });
+                    }
+                });
+            });
+        </script>
+    @endif
 </body>
 
 </html>

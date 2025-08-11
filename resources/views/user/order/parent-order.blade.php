@@ -399,6 +399,7 @@
                 // Logic cho các tab trạng thái đơn hàng
                 const tabButtons = document.querySelectorAll('#orderStatusTabs button');
                 const tabPanes = document.querySelectorAll('.tab-pane');
+                let currentActiveTab = 'paid'; // Track current active tab
 
                 // Active tab paid mặc định
                 const paidTab = document.getElementById('paid-tab');
@@ -409,6 +410,14 @@
 
                 tabButtons.forEach(button => {
                     button.addEventListener('click', function() {
+                        const targetPaneId = this.getAttribute('data-target');
+                        const targetStatus = targetPaneId.replace('#', '');
+                        
+                        // Don't reload if already on the same tab
+                        if (targetStatus === currentActiveTab) {
+                            return;
+                        }
+                        
                         // Xóa trạng thái active khỏi tất cả các nút
                         tabButtons.forEach(btn => {
                             btn.classList.remove('text-black');
@@ -425,14 +434,13 @@
                         });
 
                         // Hiển thị tab pane tương ứng
-                        const targetPaneId = this.getAttribute('data-target');
                         const targetPane = document.querySelector(targetPaneId);
                         if (targetPane) {
                             targetPane.classList.remove('hidden');
                             
                             // Load dữ liệu cho tab được chọn
-                            const status = targetPaneId.replace('#', '');
-                            loadOrders(status);
+                            loadOrders(targetStatus);
+                            currentActiveTab = targetStatus;
                         }
                     });
                 });
@@ -440,7 +448,11 @@
                 function loadOrders(status, page = 1) {
                     const container = document.getElementById(status + '-orders-container');
                     const paginationContainer = document.getElementById(status + '-pagination');
-                    const orderCountEl = document.getElementById('order-count');
+                    
+                    if (!container || !paginationContainer) {
+                        console.error('Container not found for status:', status);
+                        return;
+                    }
                     
                     // Hiển thị loading
                     container.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
@@ -448,21 +460,42 @@
                     const url = "{{ route('user.order.ajax', ':status') }}".replace(':status', status);
                     const fullUrl = page > 1 ? url + '?page=' + page : url;
 
+                    // Add timeout to prevent hanging requests
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
                     fetch(fullUrl, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json',
+                        },
+                        signal: controller.signal
+                    })
+                    .then(response => {
+                        clearTimeout(timeoutId);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.html) {
+                            container.innerHTML = data.html;
+                        }
+                        if (data.pagination) {
+                            paginationContainer.innerHTML = data.pagination;
+                            attachPaginationListeners(status);
                         }
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        container.innerHTML = data.html;
-                        paginationContainer.innerHTML = data.pagination;
-                        attachPaginationListeners(status);
-                    })
                     .catch(error => {
-                        console.error('Lỗi khi tải đơn hàng');
-                        container.innerHTML = '<div class="text-center py-8 text-red-500">Có lỗi xảy ra khi tải dữ liệu</div>';
+                        clearTimeout(timeoutId);
+                        console.error('Lỗi khi tải đơn hàng:', error);
+                        
+                        if (error.name === 'AbortError') {
+                            container.innerHTML = '<div class="text-center py-8 text-orange-500">Yêu cầu bị timeout. Vui lòng thử lại.</div>';
+                        } else {
+                            container.innerHTML = '<div class="text-center py-8 text-red-500">Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.</div>';
+                        }
                     });
                 }
 
@@ -498,6 +531,14 @@
                 const imageCountSpan = document.getElementById('imageCount');
                 const videoCountSpan = document.getElementById('videoCount');
 
+                // Modal variables
+                const cancelModal = document.getElementById('cancelModal');
+                const cancelForm = document.getElementById('cancelForm');
+                const orderIdInputCancel = document.getElementById('modalOrderIdCancel');
+                const refundModal = document.getElementById('refundModal');
+                const refundForm = document.getElementById('refundForm');
+                const orderIdInputRefund = document.getElementById('modalOrderIdRefund');
+
                 // Instruction toggle
                 const instructionToggle = document.getElementById('instructionToggle');
                 const instructionContent = document.getElementById('instructionContent');
@@ -510,24 +551,29 @@
                     });
                 }
 
-                document.getElementById('orderStatusTabsContent').addEventListener('click', function(e) {
-                    if (e.target.classList.contains('open-review-modal')) {
+                // Sử dụng event delegation hiệu quả hơn
+                const orderStatusTabsContent = document.getElementById('orderStatusTabsContent');
+                
+                orderStatusTabsContent.addEventListener('click', function(e) {
+                    const target = e.target;
+                    
+                    // Handle review modal
+                    if (target.classList.contains('open-review-modal')) {
                         e.preventDefault();
-                        orderIdInput.value = e.target.dataset.orderId;
-                        shopIdInput.value = e.target.dataset.shopId;
-                        productIdInput.value = e.target.dataset.productId;
+                        e.stopPropagation();
+                        
+                        orderIdInput.value = target.dataset.orderId;
+                        shopIdInput.value = target.dataset.shopId;
+                        productIdInput.value = target.dataset.productId;
                         productNameEl.innerText = `Đánh Giá Sản Phẩm`;
 
                         // Set product info
-                        document.getElementById('modalProductImage').src = e.target.dataset.productImage;
-                        document.getElementById('modalProductDisplayName').innerText = e.target.dataset
-                            .productName;
-                        const modalProductVariantName = e.target.dataset.productVariantName;
+                        document.getElementById('modalProductImage').src = target.dataset.productImage;
+                        document.getElementById('modalProductDisplayName').innerText = target.dataset.productName;
+                        const modalProductVariantName = target.dataset.productVariantName;
                         if (modalProductVariantName) {
-                            document.getElementById('modalProductVariantNameLabel').innerText =
-                                'Phân loại hàng:';
-                            document.getElementById('modalProductVariantName').innerText =
-                                modalProductVariantName;
+                            document.getElementById('modalProductVariantNameLabel').innerText = 'Phân loại hàng:';
+                            document.getElementById('modalProductVariantName').innerText = modalProductVariantName;
                         } else {
                             document.getElementById('modalProductVariantNameLabel').innerText = '';
                             document.getElementById('modalProductVariantName').innerText = '';
@@ -536,7 +582,7 @@
                         ratingInput.value = 0;
                         stars.forEach(s => {
                             s.classList.remove('text-yellow-500');
-                            s.classList.add('text-gray-300'); // Use text-gray-300 for unselected stars
+                            s.classList.add('text-gray-300');
                         });
                         starRatingText.innerText = 'Chọn sao';
 
@@ -544,135 +590,59 @@
                         imagesUploadInput.value = '';
                         videoUploadInput.value = '';
                         reviewForm.reset();
-                        commentCharCount.innerText = '0'; // Reset character count
-                        imageCountSpan.innerText = '0'; // Reset image count
-                        videoCountSpan.innerText = '0'; // Reset video count
+                        commentCharCount.innerText = '0';
+                        imageCountSpan.innerText = '0';
+                        videoCountSpan.innerText = '0';
 
                         reviewModal.classList.remove('hidden');
                         reviewModal.classList.add('flex');
-                        console.log('Mở modal đánh giá cho đơn hàng ID:', e.target.dataset.orderId,
-                            'Sản phẩm ID:', e.target.dataset.productId, 'Shop ID:', e.target.dataset.shopId);
-                    }
-                });
-
-                document.getElementById('closeModalBtn').addEventListener('click', function() {
-                    reviewModal.classList.add('hidden');
-                    reviewModal.classList.remove('flex');
-                    console.log('Đóng modal đánh giá.');
-                });
-
-                // Logic cho hủy đơn
-                const cancelModal = document.getElementById('cancelModal');
-                const cancelForm = document.getElementById('cancelForm');
-                const orderIdInputCancel = document.getElementById('modalOrderIdCancel');
-
-                document.getElementById('orderStatusTabsContent').addEventListener('click', function(e) {
-                    if (e.target.classList.contains('open-cancel-modal')) {
-                        e.preventDefault();
-                        orderIdInputCancel.value = e.target.dataset.orderId;
-                        const actionUrl = "{{ route('user.order.cancel', ':id') }}".replace(':id', e.target
-                            .dataset.orderId);
-                        cancelForm.setAttribute('action', actionUrl);
-                        cancelModal.classList.remove('hidden');
-                        cancelModal.classList.add('flex');
-                    }
-                });
-
-                document.querySelectorAll('#closeCancelModalBtn, #closeCancelModalBtnSubmit').forEach(button => {
-                    button.addEventListener('click', function() {
-                        cancelModal.classList.add('hidden');
-                        cancelModal.classList.remove('flex');
-                    });
-                });
-
-                // Logic cho trả hàng
-                const refundModal = document.getElementById('refundModal');
-                const refundForm = document.getElementById('refundForm');
-                const orderIdInputRefund = document.getElementById('modalOrderIdRefund');
-
-                document.getElementById('orderStatusTabsContent').addEventListener('click', function(e) {
-                    if (e.target.classList.contains('open-refund-modal')) {
-                        e.preventDefault();
-                        orderIdInputRefund.value = e.target.dataset.orderId;
-                        
-                        // Cập nhật action URL cho form
-                        // Kiểm tra URL đúng chưa
-                        const actionUrl = "{{ route('user.order.refund', ':id') }}".replace(':id', e.target.dataset.orderId);
-                        refundForm.setAttribute('action', actionUrl);
-                        
-                        refundForm.reset();
-                        
-                        refundModal.classList.remove('hidden');
-                        refundModal.classList.add('flex');
-                    }
-                });
-
-                // Xử lý submit form refund
-                refundForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const formData = new FormData(this);
-                    const orderId = orderIdInputRefund.value;
-                    const refundReason = formData.get('refund_reason');
-                    
-                    // Validation
-                    if (!refundReason || refundReason.trim().length < 10) {
-                        showNotification('error', 'Vui lòng nhập lý do trả hàng (ít nhất 10 ký tự)');
                         return;
                     }
                     
-                    // Hiển thị loading
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.textContent;
-                    submitBtn.textContent = 'Đang xử lý...';
-                    submitBtn.disabled = true;
-                    
-                    fetch(this.action, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                            'Accept': 'application/json',
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            showNotification('success', 'Yêu cầu trả hàng đã được gửi thành công!');
-                            refundModal.classList.add('hidden');
-                            refundModal.classList.remove('flex');
-                            
-                            // Reload trang để cập nhật trạng thái
-                            location.reload();
-                        } else {
-                            showNotification('error', 'Có lỗi xảy ra');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Lỗi khi gửi yêu cầu trả hàng:', error);
-                        showNotification('error', 'Có lỗi xảy ra khi gửi yêu cầu trả hàng');
-                    })
-                    .finally(() => {
-                        // Khôi phục nút submit
-                        submitBtn.textContent = originalText;
-                        submitBtn.disabled = false;
-                    });
-                });
-
-                document.querySelectorAll('#closeRefundModalBtn, #closeRefundModalBtnSubmit').forEach(button => {
-                    button.addEventListener('click', function() {
-                        refundModal.classList.add('hidden');
-                        refundModal.classList.remove('flex');
-                    });
-                });
-
-                // Logic cho xác nhận đã nhận
-                document.getElementById('orderStatusTabsContent').addEventListener('click', function(e) {
-                    if (e.target.classList.contains('confirm-received')) {
+                    // Handle cancel modal
+                    if (target.classList.contains('open-cancel-modal')) {
                         e.preventDefault();
+                        e.stopPropagation();
+                        
+                        orderIdInputCancel.value = target.dataset.orderId;
+                        const actionUrl = "{{ route('user.order.cancel', ':id') }}".replace(':id', target.dataset.orderId);
+                        cancelForm.setAttribute('action', actionUrl);
+                        cancelModal.classList.remove('hidden');
+                        cancelModal.classList.add('flex');
+                        return;
+                    }
+                    
+                    // Handle refund modal
+                    if (target.classList.contains('open-refund-modal')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        orderIdInputRefund.value = target.dataset.orderId;
+                        const actionUrl = "{{ route('user.order.refund', ':id') }}".replace(':id', target.dataset.orderId);
+                        refundForm.setAttribute('action', actionUrl);
+                        refundForm.reset();
+                        refundModal.classList.remove('hidden');
+                        refundModal.classList.add('flex');
+                        return;
+                    }
+                    
+                    // Handle confirm received
+                    if (target.classList.contains('confirm-received')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Prevent multiple clicks
+                        if (target.disabled) return;
+                        
+                        const orderId = target.dataset.orderId;
+                        const originalText = target.textContent;
+                        
+                        // Add loading state
+                        target.disabled = true;
+                        target.textContent = 'Đang xử lý...';
+                        target.classList.add('opacity-50', 'cursor-not-allowed');
+                        
                         if (confirm('Bạn có chắc chắn đã nhận được đơn hàng này?')) {
-                            const orderId = e.target.dataset.orderId;
                             fetch(`/customer/user/order/${orderId}/confirm-received`, {
                                 method: 'POST',
                                 headers: {
@@ -681,19 +651,42 @@
                                     'Accept': 'application/json',
                                 }
                             })
-                            .then(response => response.json())
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
                             .then(data => {
                                 if (data.success) {
                                     showNotification('success', 'Đã xác nhận nhận hàng thành công!');
-                                    location.reload();
+                                    // Reload only the current tab content instead of full page
+                                    const activeTab = document.querySelector('.tab-pane:not(.hidden)');
+                                    if (activeTab) {
+                                        const status = activeTab.id;
+                                        loadOrders(status);
+                                    }
                                 } else {
-                                    showNotification('error', 'Có lỗi xảy ra: ');
+                                    showNotification('error', data.message || 'Có lỗi xảy ra khi xác nhận nhận hàng');
                                 }
                             })
                             .catch(error => {
+                                console.error('Lỗi khi xác nhận nhận hàng:', error);
                                 showNotification('error', 'Có lỗi xảy ra khi xác nhận nhận hàng');
+                            })
+                            .finally(() => {
+                                // Restore button state
+                                target.disabled = false;
+                                target.textContent = originalText;
+                                target.classList.remove('opacity-50', 'cursor-not-allowed');
                             });
+                        } else {
+                            // Restore button state if user cancels
+                            target.disabled = false;
+                            target.textContent = originalText;
+                            target.classList.remove('opacity-50', 'cursor-not-allowed');
                         }
+                        return;
                     }
                 });
 
@@ -756,6 +749,85 @@
                     reviewModal.classList.add('hidden');
                     reviewModal.classList.remove('flex');
                     console.log('Đóng modal đánh giá và trở lại.');
+                });
+
+                // Modal close button event listeners
+                document.getElementById('closeModalBtn').addEventListener('click', function() {
+                    reviewModal.classList.add('hidden');
+                    reviewModal.classList.remove('flex');
+                });
+
+                // Cancel modal close buttons
+                document.querySelectorAll('#closeCancelModalBtn, #closeCancelModalBtnSubmit').forEach(button => {
+                    button.addEventListener('click', function() {
+                        cancelModal.classList.add('hidden');
+                        cancelModal.classList.remove('flex');
+                    });
+                });
+
+                // Refund modal close buttons
+                document.querySelectorAll('#closeRefundModalBtn, #closeRefundModalBtnSubmit').forEach(button => {
+                    button.addEventListener('click', function() {
+                        refundModal.classList.add('hidden');
+                        refundModal.classList.remove('flex');
+                    });
+                });
+
+                // Refund form submission
+                refundForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const orderId = orderIdInputRefund.value;
+                    const refundReason = formData.get('refund_reason');
+                    
+                    // Validation
+                    if (!refundReason || refundReason.trim().length < 10) {
+                        showNotification('error', 'Vui lòng nhập lý do trả hàng (ít nhất 10 ký tự)');
+                        return;
+                    }
+                    
+                    // Hiển thị loading
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Đang xử lý...';
+                    submitBtn.disabled = true;
+                    
+                    fetch(this.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                            'Accept': 'application/json',
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('success', 'Yêu cầu trả hàng đã được gửi thành công!');
+                            refundModal.classList.add('hidden');
+                            refundModal.classList.remove('flex');
+                            
+                            // Reload current tab instead of full page
+                            const activeTab = document.querySelector('.tab-pane:not(.hidden)');
+                            if (activeTab) {
+                                const status = activeTab.id;
+                                loadOrders(status);
+                            }
+                        } else {
+                            showNotification('error', data.message || 'Có lỗi xảy ra');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi gửi yêu cầu trả hàng:', error);
+                        showNotification('error', 'Có lỗi xảy ra khi gửi yêu cầu trả hàng');
+                    })
+                    .finally(() => {
+                        // Khôi phục nút submit
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    });
                 });
             });
         </script>

@@ -829,7 +829,7 @@
                 btn.addEventListener('click', () => {
                     discountInput.value = btn.getAttribute('data-code');
                     modal.classList.add('hidden');
-                    showSuccess('Mã đã sẵn sàng, bạn chỉ cần nhấn "Áp dụng" để nhận ưu đãi');
+                    showSuccess('Vui lòng nhấn áp dụng');
                 });
             });
 

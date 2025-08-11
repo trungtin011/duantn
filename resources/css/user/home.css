@@ -42,13 +42,6 @@
     transition: all 0.3s ease;
 }
 
-/* CSS cho slider */
-.slider-container {
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-}
-
 .slides {
     display: flex;
     width: 1152px;
@@ -473,7 +466,7 @@
 }
 
 .container-header {
-    max-width: 1536px;
+    max-width: 1200px;
     height: 69.469px;
 }
 

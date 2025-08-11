@@ -241,8 +241,6 @@ class WalletController extends Controller
         ));
     }
 
-
-
     public function processWithdraw(Request $request)
     {
         $request->validate([
