@@ -476,8 +476,8 @@
                                 <div class="text-center border-2 border-dashed border-gray-300 rounded-md p-4">
                                     @php
                                         $mainImage = $product->images
-                                            ->whereNull('variant_id')
                                             ->where('is_default', 1)
+                                            ->whereNull('variantID')
                                             ->first();
                                     @endphp
                                     <img id="uploadIcon1" class="w-24 h-auto mx-auto mb-2"
@@ -502,7 +502,7 @@
                                 <label class="block text-gray-700 font-medium mb-1">Ảnh phụ</label>
                                 <div class="text-center border-2 border-dashed border-gray-300 rounded-md p-4">
                                     <div id="additionalImagesPreview" class="mt-2 flex flex-wrap gap-2">
-                                        @foreach ($product->images->whereNull('variant_id')->where('is_default', 0) as $image)
+                                        @foreach ($product->images->whereNull('variantID')->where('is_default', 0)->sortBy('display_order') as $image)
                                             <div class="relative existing-image">
                                                 <img src="{{ asset('storage/' . $image->image_path) }}"
                                                     class="w-24 h-24 object-cover rounded-md border">
@@ -514,7 +514,7 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                    <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh nhỏ hơn 5Mb</span>
+                                    <span class="text-sm text-sm text-gray-500 block mb-3">Kích thước ảnh nhỏ hơn 5Mb</span>
                                     <label for="additionalImages"
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                         ảnh phụ</label>
@@ -873,7 +873,7 @@
                                                         onchange="previewVariantImage(event, {{ $index }})">
                                                     <div id="preview-images-{{ $index }}"
                                                         class="mt-2 flex flex-wrap gap-2">
-                                                        @foreach ($variant->images as $image)
+                                                        @foreach ($variant->images->sortBy('display_order') as $image)
                                                             <div class="relative">
                                                                 <img src="{{ asset('storage/' . $image->image_path) }}"
                                                                     class="w-24 h-24 object-cover rounded-md border border-gray-300">

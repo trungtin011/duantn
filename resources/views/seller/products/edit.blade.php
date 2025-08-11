@@ -63,11 +63,27 @@
                 <div class="text-sm text-gray-500">
                     <a href="{{ route('seller.dashboard') }}" class="hover:underline">Trang chủ</a> / Chỉnh sửa sản phẩm
                 </div>
+                @if($product->status === 'active')
+                    <div class="mt-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-md">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Sản phẩm đã được admin duyệt. Khi cập nhật, trạng thái sẽ được giữ nguyên.
+                    </div>
+                @elseif($product->status === 'pending')
+                    <div class="mt-2 text-sm text-yellow-600 bg-yellow-50 px-3 py-2 rounded-md">
+                        <i class="fas fa-clock mr-2"></i>
+                        Sản phẩm đang chờ admin duyệt.
+                    </div>
+                @elseif($product->status === 'draft')
+                    <div class="mt-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md">
+                        <i class="fas fa-edit mr-2"></i>
+                        Sản phẩm đang ở chế độ bản nháp.
+                    </div>
+                @endif
             </div>
             <div class="flex space-x-3">
                 <button type="submit" form="product-form"
                     class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và cập nhật</button>
-                <a href="{{ route('seller.products.index') }}"
+                <a href="{{ route('seller.dashboard') }}"
                     class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Huỷ</a>
             </div>
         </div>
@@ -445,14 +461,14 @@
                                         class="text-red-500">*</span></label>
                                 <div class="text-center border-2 border-dashed border-gray-300 rounded-md p-4">
                                     <img id="uploadIcon1" class="w-24 h-auto mx-auto mb-2"
-                                        src="{{ $product->images->first() ? asset('storage/' . $product->images->first()->image_path) : 'https://html.hixstudio.net/ebazer/assets/img/icons/upload.png' }}"
-                                        alt="{{ $product->images->first() ? 'Uploaded Image' : 'Upload Icon' }}">
+                                        src="{{ $product->images->where('is_default', 1)->whereNull('variantID')->first() ? asset('storage/' . $product->images->where('is_default', 1)->whereNull('variantID')->first()->image_path) : 'https://html.hixstudio.net/ebazer/assets/img/icons/upload.png' }}"
+                                        alt="{{ $product->images->where('is_default', 1)->whereNull('variantID')->first() ? 'Uploaded Image' : 'Upload Icon' }}">
                                     <span class="text-sm text-gray-500 block mb-3">Kích thước ảnh nhỏ hơn 5Mb</span>
                                     <label for="mainImage"
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                         ảnh chính</label>
                                     <input type="hidden" name="existing_main_image"
-                                        value="{{ $product->images->first()->image_path ?? '' }}">
+                                        value="{{ $product->images->where('is_default', 1)->whereNull('variantID')->first()->image_path ?? '' }}">
                                     <input type="file" id="mainImage" name="main_image" class="hidden"
                                         accept="image/*" data-original-required="true">
                                     @error('main_image')
@@ -466,7 +482,7 @@
                                 <label class="block text-gray-700 font-medium mb-1">Ảnh phụ</label>
                                 <div class="text-center border-2 border-dashed border-gray-300 rounded-md p-4">
                                     <div id="additionalImagesPreview" class="mt-2 flex flex-wrap gap-2">
-                                        @foreach ($product->images->whereNull('variant_id') as $image)
+                                        @foreach ($product->images->whereNull('variantID')->where('is_default', 0)->sortBy('display_order') as $image)
                                             <div class="relative existing-image">
                                                 <img src="{{ asset('storage/' . $image->image_path) }}"
                                                     class="w-24 h-24 object-cover rounded-md border">
