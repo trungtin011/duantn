@@ -335,18 +335,6 @@
                             </ul>
                         </div>
                     </li>
-                    @foreach ($fashionSub as $subCategory)
-                        <li class="menu-category">
-                            <a href="#" class="menu-title">{{ $subCategory->name }}</a>
-                            <ul class="dropdown-list">
-                                @foreach ($subCategory->subCategories as $child)
-                                    <li class="dropdown-item">
-                                        <a href="#">{{ $child->name }}</a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </li>
-                    @endforeach
                     <li class="menu-category">
                         <a href="#" class="menu-title">Trang sức</a>
                         <ul class="dropdown-list">
