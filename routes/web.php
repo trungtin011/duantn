@@ -160,7 +160,6 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::post('admin/users/{id}/ban', [UserControllerAdmin::class, 'ban'])->name('admin.users.ban');
     Route::post('admin/users/{id}/unban', [UserControllerAdmin::class, 'unban'])->name('admin.users.unban');
 
-
     //quản lý review
     Route::get('/report', [AdminReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/report/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
@@ -250,6 +249,8 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('/{comment}', [CommentController::class, 'show'])->name('admin.comments.show');
         Route::put('/{comment}', [CommentController::class, 'update'])->name('admin.comments.update');
         Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('admin.comments.destroy');
+        Route::post('/{comment}/approve', [CommentController::class, 'approve'])->name('admin.comments.approve');
+        Route::post('/{comment}/reject', [CommentController::class, 'reject'])->name('admin.comments.reject');
     });
 
     // settings
