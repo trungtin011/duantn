@@ -38,11 +38,6 @@
         gap: 2rem;
     }
     
-    /* Product image sizing */
-    .product-main-image {
-        height: 600px;
-    }
-    
     .product-thumbnails {
         gap: 1rem;
     }

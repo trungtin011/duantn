@@ -73,5 +73,13 @@ class WishlistController extends Controller
         return redirect()->back()->with('success', 'Product removed from wishlist successfully');
     }
 
-    
+    public function getWishlistQuantity()
+    {
+        if (!Auth::check()) {
+            return response()->json(['quantity' => 0]);
+        }
+
+        $quantity = Wishlist::where('userID', Auth::user()->id)->count();
+        return response()->json(['quantity' => $quantity]);
+    }
 }

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
     <title>@yield('title', 'Default Title')</title>
@@ -33,32 +33,26 @@
         })();
     </script>
 
+    @stack('styles')
     <!-- Font + Tailwind + Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <!-- Fonts & Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-    @stack('styles')
     @vite('resources/css/user/home.css')
     @vite('resources/css/user/orderDetail.css')
     @vite('resources/css/user/notifications.css')
     @vite('resources/css/user/cart-sidebar.css')
     <link rel="stylesheet" href="{{ asset('css/snow-animation.css') }}">
-
-    <!-- Scripts -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/snow-animation.js') }}"></script>
     @vite('resources/js/echo.js')
     <style>
@@ -104,6 +98,99 @@
 
         .support-icon.zalo {
             border-color: #008fe5;
+        }
+
+        /* Cart Sidebar Slow Motion Effect */
+        .cart-sidebar {
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .cart-sidebar.open {
+            transform: translateX(0) !important;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .cart-sidebar:not(.open) {
+            transform: translateX(100%) !important;
+        }
+
+        /* Mobile Bottom Navigation Styles */
+        .mobile-bottom-navigation {
+            background: #ffffff;
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .mobile-bottom-navigation .action-btn {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            height: 40px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .mobile-bottom-navigation .action-btn:hover {
+            color: #000;
+        }
+
+        .mobile-bottom-navigation .action-btn ion-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .mobile-bottom-navigation .count {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #ef3248;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: bold;
+            min-width: 16px;
+        }
+
+        /* Hide on desktop */
+        @media (min-width: 768px) {
+            .mobile-bottom-navigation {
+                display: none;
+            }
+        }
+
+
+
+        /* Add padding to body for mobile bottom navigation */
+        @media (max-width: 767px) {
+            body {
+                padding-bottom: 70px;
+            }
         }
 
         .support-icon.messenger {
@@ -785,8 +872,7 @@
                                 <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST"
                                     class="inline">
                                     @csrf
-                                    <button type="submit"
-                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                    <button type="submit" class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -957,7 +1043,68 @@
             </svg>
         </a>
     </div>
+
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar"
+        class="cart-sidebar fixed top-0 md:top-0 top-24 right-0 w-full md:w-[500px] h-[calc(100vh-6rem)] md:h-full bg-white shadow-lg transform translate-x-full transition-all duration-1000 ease-in-out z-[1000]">
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 class="text-lg font-semibold">Giỏ hàng của bạn</h3>
+            <button id="close-cart-sidebar" class="text-gray-500 hover:text-gray-700">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-4 flex-grow overflow-y-auto"> {{-- This div will now handle scrolling --}}
+            <div id="cart-items-container">
+                <!-- Cart items will be loaded here by JavaScript -->
+                <div class="text-center text-gray-500 py-4" id="loading-cart-items">Đang tải sản phẩm...</div>
+                <div class="text-center text-gray-500 py-4 hidden" id="empty-cart-message">Giỏ hàng trống.</div>
+            </div>
+        </div>
+        <div class="p-4 border-t mb-[57px] lg:mb-0">
+            <div class="flex justify-between items-center mt-4 pt-3">
+                <span class="text-md font-semibold">Tổng phụ:</span>
+                <span class="text-md font-bold" id="cart-total-price">0 ₫</span>
+            </div>
+            <a href="{{ route('cart') }}"
+                class="block w-full text-center border border-transparent bg-transparent text-black py-2 mt-4 border hover:border-[#EF3248] hover:text-[#EF3248] transition duration-300">
+                Xem giỏ hàng
+            </a>
+            <a href="{{ route('checkout') }}"
+                class="block w-full text-center bg-black text-white py-2 mt-2 hover:border-[#EF3248] hover:bg-[#EF3248] transition duration-300">
+                Thanh toán ngay
+            </a>
+        </div>
+    </div>
+
+    <!-- Overlay for sidebar -->
+    <div id="cart-sidebar-overlay" class="fixed inset-0 bg-black opacity-50 hidden z-[999]"></div>
+
+    <!-- Mobile Bottom Navigation -->
+    @if (!request()->routeIs('home'))
+        <div class="mobile-bottom-navigation md:hidden" id="global-mobile-nav">
+            <button class="action-btn" onclick="window.location.href='{{ route('home') }}'">
+                <ion-icon name="home-outline"></ion-icon>
+            </button>
+            <button class="action-btn" onclick="window.location.href='{{ route('search') }}'">
+                <ion-icon name="search-outline"></ion-icon>
+            </button>
+            <button class="action-btn" onclick="openCartSidebar()">
+                <ion-icon name="bag-handle-outline"></ion-icon>
+                <span class="count" id="mobile-cart-count">0</span>
+            </button>
+            <button class="action-btn" onclick="window.location.href='{{ route('wishlist') }}'">
+                <ion-icon name="heart-outline"></ion-icon>
+                <span class="count" id="mobile-wishlist-count">0</span>
+            </button>
+            <button class="action-btn" onclick="window.location.href='{{ route('account.profile') }}'">
+                <ion-icon name="person-outline"></ion-icon>
+            </button>
+        </div>
+    @endif
+
     @stack('scripts')
+    @yield('script')
     <script>
         // window.Laravel bootstrap đã được thiết lập ở đầu file
 
@@ -1059,13 +1206,34 @@
                     .then(response => response.json())
                     .then(data => {
                         const cartCountElement = document.getElementById('cart-count');
+                        const mobileCartCountElement = document.getElementById('mobile-cart-count');
+
                         if (cartCountElement) {
                             cartCountElement.textContent = data.quantity;
                             cartCountElement.classList.toggle('hidden', data.quantity <= 0);
                         }
+
+                        if (mobileCartCountElement) {
+                            mobileCartCountElement.textContent = data.quantity;
+                            mobileCartCountElement.classList.toggle('hidden', data.quantity <= 0);
+                        }
                     })
                     .catch(error => console.error('Error fetching cart quantity:', error));
 
+            }
+
+            function updateWishlistCount() {
+                fetch(String.raw`{{ route('wishlist.quantity') }}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const mobileWishlistCountElement = document.getElementById('mobile-wishlist-count');
+
+                        if (mobileWishlistCountElement) {
+                            mobileWishlistCountElement.textContent = data.quantity;
+                            mobileWishlistCountElement.classList.toggle('hidden', data.quantity <= 0);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching wishlist quantity:', error));
             }
 
             function fetchCartItems() {
@@ -1161,7 +1329,24 @@
                     }, 700);
                 });
             }
+
+            // Mobile bottom navigation is now controlled by Blade directive
+
+            // Function to open cart sidebar (for mobile bottom navigation)
+            window.openCartSidebar = function() {
+                if (cartSidebar && cartSidebarOverlay) {
+                    fetchCartItems(); // Fetch items when sidebar is opened
+                    cartSidebar.classList.remove('hidden'); // Ensure it's visible before transforming
+                    // Remove 'open' first to reset transition, then add it immediately
+                    cartSidebar.classList.remove('open');
+                    void cartSidebar.offsetWidth; // Trigger reflow to apply 'open' after removal
+                    cartSidebar.classList.add('open');
+                    cartSidebarOverlay.classList.remove('hidden');
+                }
+            };
+
             updateCartCount();
+            updateWishlistCount();
             document.addEventListener('cartUpdated', () => {
                 updateCartCount();
                 cartItemsCache = [];
@@ -1169,44 +1354,6 @@
             });
         });
     </script>
-
-    <!-- Cart Sidebar -->
-    <div id="cart-sidebar"
-        class="cart-sidebar fixed top-0 right-0 w-[500px] h-full bg-white shadow-lg transform translate-x-full transition-transform duration-700 ease-in-out z-[1000]">
-        <div class="flex justify-between items-center p-4 border-b">
-            <h3 class="text-lg font-semibold">Giỏ hàng của bạn</h3>
-            <button id="close-cart-sidebar" class="text-gray-500 hover:text-gray-700">
-                <i class="fa fa-times text-xl"></i>
-            </button>
-        </div>
-        <div class="p-4 flex-grow overflow-y-auto"> {{-- This div will now handle scrolling --}}
-            <div id="cart-items-container">
-                <!-- Cart items will be loaded here by JavaScript -->
-                <div class="text-center text-gray-500 py-4" id="loading-cart-items">Đang tải sản phẩm...</div>
-                <div class="text-center text-gray-500 py-4 hidden" id="empty-cart-message">Giỏ hàng trống.</div>
-            </div>
-        </div>
-        <div class="p-4 border-t"> {{-- This div will be the fixed footer --}}
-            <div class="flex justify-between items-center mt-4 pt-3">
-                <span class="text-md font-semibold">Tổng phụ:</span>
-                <span class="text-md font-bold" id="cart-total-price">0 ₫</span>
-            </div>
-            <a href="{{ route('cart') }}"
-                class="block w-full text-center border border-transparent bg-transparent text-black py-2 mt-4 border hover:border-[#EF3248] hover:text-[#EF3248] transition duration-300">
-                Xem giỏ hàng
-            </a>
-            <a href="{{ route('checkout') }}"
-                class="block w-full text-center bg-black text-white py-2 mt-2 hover:border-[#EF3248] hover:bg-[#EF3248] transition duration-300">
-                Thanh toán ngay
-            </a>
-        </div>
-    </div>
-
-    <!-- Overlay for sidebar -->
-    <div id="cart-sidebar-overlay" class="fixed inset-0 bg-black opacity-50 hidden z-[999]"></div>
-
-    @stack('script')
-    @yield('script')
     <script>
         function showGlobalPopup($order_code) {
             window.repay_order_code = $order_code;

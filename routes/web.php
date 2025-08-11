@@ -582,6 +582,7 @@ Route::prefix('customer')->group(function () {
 
         // Trang yêu thích
         Route::get('/user/account/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+        Route::get('/wishlist/quantity', [WishlistController::class, 'getWishlistQuantity'])->name('wishlist.quantity');
 
         // Trang giỏ hàng
         Route::prefix('cart')->group(function () {

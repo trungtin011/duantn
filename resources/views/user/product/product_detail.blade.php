@@ -3,10 +3,42 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/user/product_detail.css') }}">
+<style>
+    /* Custom scrollbar styles for variant options */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+        transition: background 0.2s ease;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+    
+    /* Firefox scrollbar */
+    .scrollbar-thin {
+        scrollbar-width: thin;
+        scrollbar-color: #d1d5db #f3f4f6;
+    }
+    
+    /* Hide scrollbar when not needed */
+    .overflow-y-auto:not(:hover)::-webkit-scrollbar-thumb {
+        background: transparent;
+    }
+</style>
 @endpush
 
 @section('content')
-    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+    <div class="container mx-auto px-2 sm:px-0 py-4 sm:py-8">
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 mb-4 sm:mb-6 text-xs sm:text-sm font-medium overflow-x-auto">
             <a href="{{ route('home') }}" class="text-blue-600 hover:text-blue-800 whitespace-nowrap">Trang chủ</a>
@@ -141,8 +173,8 @@
                             @foreach ($attributes as $attributeName => $values)
                                 @if ($values->isNotEmpty())
                                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4" id="{{ Str::slug($attributeName, '-') }}-options">
-                                        <span class="text-gray-800 font-medium text-sm sm:text-base">{{ $attributeName }}:</span>
-                                        <div class="flex gap-2 flex-wrap">
+                                        <span class="text-gray-800 font-medium text-sm sm:text-base sm:w-40">{{ $attributeName }}:</span>
+                                        <div class="flex gap-2 flex-wrap max-h-20 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
                                             @foreach ($values as $value)
                                                 @php
                                                     $variant = $product->variants->firstWhere(function ($v) use (
@@ -160,7 +192,7 @@
                                                         : $defaultStock;
                                                 @endphp
                                                 <button
-                                                    class="border border-gray-300 rounded-lg px-2 sm:px-4 py-2 flex items-center gap-2 hover:bg-gray-100 transition-colors text-sm sm:text-base"
+                                                    class="border border-gray-300 rounded-lg px-2 sm:px-4 py-2 flex items-center gap-2 hover:bg-gray-100 transition-colors text-sm sm:text-base flex-shrink-0"
                                                     data-value="{{ $value }}"
                                                     data-price="{{ $variantId ? $variantData[$variantId]['price'] : $product->sale_price }}"
                                                     data-stock="{{ $stock }}" data-variant-id="{{ $variantId }}"
@@ -181,20 +213,22 @@
                         </div>
 
                         <!-- Số lượng và biến thể được chọn -->
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mt-4">
-                            <span class="text-gray-800 font-medium text-sm sm:text-base">Số lượng:</span>
-                            <form action="{{ route('cart.add') }}" method="POST" class="flex items-center">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="variant_id" id="selected_variant_id"
-                                    value="{{ $selectedVariant ? $selectedVariant->id : ($product->variants->isEmpty() ? 'default' : '') }}">
-                                <button type="button" id="decreaseQty"
-                                    class="border border-gray-300 px-3 sm:px-4 py-2 rounded-l-lg hover:bg-gray-100 text-base sm:text-lg">-</button>
-                                <input type="text" name="quantity" id="quantity" value="1"
-                                    class="w-16 sm:w-20 text-center px-2 sm:px-3 py-2 border-t border-b border-gray-300 focus:outline-none text-base sm:text-lg">
-                                <button type="button" id="increaseQty"
-                                    class="border border-gray-300 px-3 sm:px-4 py-2 rounded-r-lg hover:bg-gray-100 text-base sm:text-lg">+</button>
-                            </form>
+                        <div class="flex flex-col gap-3 sm:gap-3 mt-4">
+                            <div class="flex items-center">
+                                <span class="text-gray-800 font-medium text-sm sm:text-base sm:w-[100px]">Số lượng:</span>
+                                <form action="{{ route('cart.add') }}" method="POST" class="flex items-center">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <input type="hidden" name="variant_id" id="selected_variant_id"
+                                        value="{{ $selectedVariant ? $selectedVariant->id : ($product->variants->isEmpty() ? 'default' : '') }}">
+                                    <button type="button" id="decreaseQty"
+                                        class="border border-gray-300 px-3 sm:px-4 py-2 rounded-l-lg hover:bg-gray-100 text-base sm:text-lg">-</button>
+                                    <input type="text" name="quantity" id="quantity" value="1"
+                                        class="w-16 sm:w-20 text-center px-2 sm:px-3 py-2 border-t border-b border-gray-300 focus:outline-none text-base sm:text-lg">
+                                    <button type="button" id="increaseQty"
+                                        class="border border-gray-300 px-3 sm:px-4 py-2 rounded-r-lg hover:bg-gray-100 text-base sm:text-lg">+</button>
+                                </form>
+                            </div>
                             <span class="text-xs sm:text-sm text-gray-600" id="stock_info">
                                 {{ $defaultStock }} sản phẩm có sẵn
                             </span>
@@ -307,7 +341,7 @@
                         @endphp
                         
                         @forelse($mostViewedProducts as $viewedProduct)
-                            <div class="group cursor-pointer" onclick="window.location.href='{{ route('product.detail', $viewedProduct->slug) }}'">
+                            <div class="group cursor-pointer" onclick="window.location.href='{{ route('product.show', $viewedProduct->slug) }}'">
                                 <div class="relative overflow-hidden rounded-lg bg-gray-100">
                                     <img src="{{ $viewedProduct->images->where('is_default', 1)->first() ? asset('storage/' . $viewedProduct->images->where('is_default', 1)->first()->image_path) : ($viewedProduct->images->first() ? asset('storage/' . $viewedProduct->images->first()->image_path) : asset('storage/product_images/default.jpg')) }}"
                                         alt="{{ $viewedProduct->name }}"
@@ -375,15 +409,13 @@
                                 </p>
                             </div>
                         </div>
-                        <div class="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
+                        <div class="flex flex-col justify-center gap-2 sm:gap-3">
                             <button
-                                class="bg-red-600 text-white px-4 sm:px-5 py-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 text-sm sm:text-base">
+                                class="bg-red-600 text-white px-4 sm:px-5 py-2 rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap">
                                 <i class="fa-solid fa-comment"></i> Nhắn tin
                             </button>
                             <a href="{{ route('shop.profile', $product->shop->id) }}"
-                                class="border border-gray-300 px-4 sm:px-5 py-2 rounded-lg hover:bg-gray-100 text-center text-sm sm:text-base">Xem
-                                cửa hàng
-                            </a>
+                                class="border border-gray-300 px-4 sm:px-5 py-2 rounded-lg hover:bg-gray-100 text-center text-sm sm:text-base whitespace-nowrap">Xem cửa hàng</a>
                         </div>
                     </div>
 
@@ -572,7 +604,6 @@
     </div>
 
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const variantButtons = document.querySelectorAll('button[data-value]');

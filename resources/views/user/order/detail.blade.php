@@ -227,7 +227,7 @@
                                         <tbody class="bg-white divide-y divide-gray-200">
                                             @foreach ($items as $item)
                                                 <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                                    <td class="px-4 py-4">
+                                                    <td class="px-4 py-4 w-[180px]">
                                                         <div class="flex items-center">
                                                             @php
                                                                 $variantId = $item->variantID ?? null;
@@ -244,7 +244,7 @@
                                                                 data-product-id="{{ $item->productID }}">
 
                                                             <div>
-                                                                <div class="font-medium text-gray-900">{{ e($item->product_name) }}</div>
+                                                                <div class="font-medium text-gray-900 truncate w-10">{{ e($item->product_name) }}</div>
                                                                 @if ($item->variant)
                                                                     <div class="text-sm text-gray-500">Biến thể: {{ e($item->variant->variant_name) }}</div>
                                                                 @elseif($item->combo && $item->combo->products)
