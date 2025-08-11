@@ -84,7 +84,7 @@
                                 </span>
                                 @if($product->getDiscountPercentageAttribute() > 0)
                                     <span class="text-gray-400 line-through text-xs">
-                                        ₫{{ number_format($product->price) }}
+                                        ₫{{ number_format($product->getOriginalPriceAttribute()) }}
                                     </span>
                                 @endif
                             </div>

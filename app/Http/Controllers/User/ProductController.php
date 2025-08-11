@@ -38,245 +38,96 @@ class ProductController extends Controller
 
     public function search(Request $request)
     {
-        $query = $request->input('query');
-        $categoryIds = $request->input('category', []);
-        $brandIds = $request->input('brand', []);
-        $priceMin = $request->input('price_min');
-        $priceMax = $request->input('price_max');
-        $sort = $request->input('sort', 'relevance');
+        try {
+            $query = $request->input('query');
+            $categoryIds = $request->input('category', []);
+            $brandIds = $request->input('brand', []);
+            $priceMin = $request->input('price_min');
+            $priceMax = $request->input('price_max');
+            $sort = $request->input('sort', 'relevance');
 
-        // Log số lượng danh mục/thương hiệu trong database
-        Log::info('Tổng số danh mục trong database:', ['số lượng' => Category::count()]);
-        Log::info('Tổng số thương hiệu trong database:', ['số lượng' => Brand::count()]);
+            // Validate inputs
+            $this->validateSearchInputs($request);
 
-        // Log yêu cầu
-        Log::info('Yêu cầu bộ lọc nhận được:', [
-            'từ khóa tìm kiếm' => $query,
-            'danh mục đã chọn' => $categoryIds,
-            'thương hiệu đã chọn' => $brandIds,
-            'giá tối thiểu' => $priceMin,
-            'giá tối đa' => $priceMax,
-            'sắp xếp' => $sort
-        ]);
-
-        // Xóa cache khi không có bộ lọc
-        if (empty($categoryIds) && empty($brandIds) && !$priceMin && !$priceMax) {
-            Cache::forget('all_categories');
-            Cache::forget('all_brands');
-        }
-
-        // Truy vấn sản phẩm trước để lấy danh mục và thương hiệu liên quan
-        $baseProductQuery = Product::query()
-            ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
-            ->when($categoryIds, fn($q) => $q->whereHas('categories', fn($q2) => $q2->whereIn('categories.id', $categoryIds)))
-            ->when($brandIds, fn($q) => $q->whereHas('brands', fn($q2) => $q2->whereIn('brands.id', $brandIds)))
-            ->when($priceMin, fn($q) => $q->where('sale_price', '>=', $priceMin))
-            ->when($priceMax, fn($q) => $q->where('sale_price', '<=', $priceMax))
-            ->where('status', 'active');
-
-        // Lấy danh mục và thương hiệu từ kết quả tìm kiếm
-        $relevantCategories = collect();
-        $relevantBrands = collect();
-
-        // Lấy sản phẩm để xác định danh mục và thương hiệu liên quan
-        $sampleProducts = (clone $baseProductQuery)->with(['categories', 'brands'])->limit(1000)->get();
-        
-        // Thu thập danh mục từ sản phẩm
-        foreach ($sampleProducts as $product) {
-            foreach ($product->categories as $category) {
-                $relevantCategories->put($category->id, $category);
-            }
-            foreach ($product->brands as $brand) {
-                $relevantBrands->put($brand->id, $brand);
-            }
-        }
-
-        // Lấy danh mục cha và con từ danh mục liên quan
-        $categories = collect();
-        foreach ($relevantCategories as $category) {
-            // Lấy danh mục cha
-            $parentCategory = Category::with(['subCategories.subCategories'])
-                ->where('id', $category->parent_id)
-                ->orWhere('id', $category->id)
-                ->first();
-            
-            if ($parentCategory && !$categories->has($parentCategory->id)) {
-                $categories->put($parentCategory->id, $parentCategory);
-            }
-        }
-
-        // Lấy thương hiệu cha từ thương hiệu liên quan
-        $brands = collect();
-        foreach ($relevantBrands as $brand) {
-            $parentBrand = Brand::with(['subBrands'])
-                ->where('id', $brand->parent_id)
-                ->orWhere('id', $brand->id)
-                ->first();
-            
-            if ($parentBrand && !$brands->has($parentBrand->id)) {
-                $brands->put($parentBrand->id, $parentBrand);
-            }
-        }
-
-        // Tính số lượng sản phẩm cho mỗi danh mục và thương hiệu
-        $categories = $categories->map(function ($cat) use ($sampleProducts) {
-            $cat->product_count = $sampleProducts->filter(function ($product) use ($cat) {
-                return $product->categories->contains('id', $cat->id) ||
-                       $product->categories->any(function ($productCat) use ($cat) {
-                           return $productCat->parent_id === $cat->id;
-                       });
-            })->count();
-            
-            if ($cat->subCategories) {
-                foreach ($cat->subCategories as $sub) {
-                    $sub->product_count = $sampleProducts->filter(function ($product) use ($sub) {
-                        return $product->categories->contains('id', $sub->id);
-                    })->count();
-                    
-                    if ($sub->subCategories) {
-                        foreach ($sub->subCategories as $sub2) {
-                            $sub2->product_count = $sampleProducts->filter(function ($product) use ($sub2) {
-                                return $product->categories->contains('id', $sub2->id);
-                            })->count();
-                            $sub->product_count += $sub2->product_count;
-                        }
-                    }
-                    $cat->product_count += $sub->product_count;
-                }
-            }
-            return $cat;
-        });
-
-        $brands = $brands->map(function ($brand) use ($sampleProducts) {
-            $brand->product_count = $sampleProducts->filter(function ($product) use ($brand) {
-                return $product->brands->contains('id', $brand->id) ||
-                       $product->brands->any(function ($productBrand) use ($brand) {
-                           return $productBrand->parent_id === $brand->id;
-                       });
-            })->count();
-            
-            if ($brand->subBrands) {
-                foreach ($brand->subBrands as $sub) {
-                    $sub->product_count = $sampleProducts->filter(function ($product) use ($sub) {
-                        return $product->brands->contains('id', $sub->id);
-                    })->count();
-                    $brand->product_count += $sub->product_count;
-                }
-            }
-            return $brand;
-        });
-
-        // Sắp xếp theo số lượng sản phẩm giảm dần
-        $categories = $categories->sortByDesc('product_count')->values();
-        $brands = $brands->sortByDesc('product_count')->values();
-
-        // Sử dụng truy vấn cơ bản đã tạo trước đó
-        $productQuery = clone $baseProductQuery;
-
-        // Lấy các sản phẩm quảng cáo
-        $advertisedProductsByShop = collect();
-        
-        // Luôn lấy sản phẩm quảng cáo, không chỉ khi có từ khóa tìm kiếm
-        $advertisedCampaigns = AdsCampaign::where('status', 'active')
-            ->whereDate('start_date', '<=', now())
-            ->whereDate('end_date', '>=', now())
-            ->when($query, function ($q) use ($query) {
-                $q->whereHas('adsCampaignItems.product', function ($productQuery) use ($query) {
-                    $productQuery->where('name', 'like', "%$query%");
-                });
-            })
-            ->with([
-                'adsCampaignItems.product.images', 
-                'adsCampaignItems.product.shop' => function($query) {
-                    $query->withCount('followers')
-                          ->withCount('orderReviews')
-                          ->withAvg('orderReviews', 'rating');
-                }
-            ])
-            ->get();
-
-        // Nhóm sản phẩm quảng cáo theo shop
-        foreach ($advertisedCampaigns as $campaign) {
-            foreach ($campaign->adsCampaignItems as $item) {
-                // Nếu có từ khóa tìm kiếm, chỉ thêm sản phẩm phù hợp
-                if ($query) {
-                    if ($item->product && Str::contains(strtolower($item->product->name), strtolower($query))) {
-                        $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
-                    }
-                } else {
-                    // Nếu không có từ khóa tìm kiếm, thêm tất cả sản phẩm quảng cáo
-                    if ($item->product) {
-                        $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
-                    }
-                }
-            }
-        }
-        // Sắp xếp shop quảng cáo theo giá thầu cao nhất (bid_amount) giảm dần
-        $advertisedProductsByShop = $advertisedProductsByShop
-            ->sortByDesc(function ($entry) {
-                return $entry['max_bid_amount'] ?? 0;
-            })
-            ->values();
-
-        // Áp dụng sắp xếp cho các sản phẩm không quảng cáo
-        $productQuery->when($sort, fn($q) => match ($sort) {
-            'price_asc' => $q->orderBy('sale_price', 'asc'),
-            'price_desc' => $q->orderBy('sale_price', 'desc'),
-            'sold' => $q->orderBy('sold_quantity', 'desc'),
-            'newest' => $q->orderBy('created_at', 'desc'),
-            default => $q->orderBy('id', 'desc'),
-        })
-        ->where('status', 'active')
-        ->with(['categories', 'brands', 'images']);
-
-        // Lấy ID của các sản phẩm quảng cáo để loại trừ khỏi kết quả tìm kiếm thông thường
-        $advertisedProductIds = collect();
-        if ($advertisedProductsByShop->isNotEmpty()) {
-            foreach ($advertisedProductsByShop as $shopAds) {
-                $advertisedProductIds = $advertisedProductIds->merge($shopAds['products']->pluck('id'));
-            }
-        }
-        $advertisedProductIds = $advertisedProductIds->toArray();
-
-        // Loại trừ các sản phẩm quảng cáo khỏi truy vấn chính
-        if (!empty($advertisedProductIds)) {
-            $productQuery->whereNotIn('id', $advertisedProductIds);
-        }
-
-        $products = $productQuery->paginate(50); // Tăng số lượng sản phẩm trên mỗi trang
-
-        Log::info('✅ Tổng số sản phẩm khớp:', ['số lượng' => $products->total()]);
-        Log::info('✅ Số sản phẩm trên trang hiện tại:', ['số lượng' => $products->count()]);
-        Log::info('✅ Danh mục và thương hiệu đã lấy:', ['danh mục' => $categories->count(), 'thương hiệu' => $brands->count()]);
-        Log::info('✅ Sản phẩm quảng cáo:', ['số lượng' => $advertisedProductsByShop->count()]);
-        Log::info('✅ ID sản phẩm quảng cáo bị loại trừ:', ['ids' => $advertisedProductIds]);
-        Log::info('✅ Query parameters:', [
-            'query' => $query,
-            'categoryIds' => $categoryIds,
-            'brandIds' => $brandIds,
-            'priceMin' => $priceMin,
-            'priceMax' => $priceMax,
-            'sort' => $sort
-        ]);
-
-        // Xử lý AJAX request - trả về HTML cho product_list và cập nhật bộ lọc
-        if ($request->ajax()) {
-            // Trả về cả danh sách sản phẩm và bộ lọc cập nhật
-            $productListHtml = view('partials.product_list', compact('products', 'advertisedProductsByShop'))->render();
-            $categoryFiltersHtml = view('partials.category_filters', compact('categories', 'categoryIds'))->render();
-            $brandFiltersHtml = view('partials.brand_filters', compact('brands', 'brandIds'))->render();
-            
-            return response()->json([
-                'productList' => $productListHtml,
-                'categoryFilters' => $categoryFiltersHtml,
-                'brandFilters' => $brandFiltersHtml,
-                'totalProducts' => $products->total(),
-                'currentPage' => $products->currentPage(),
-                'lastPage' => $products->lastPage()
+            // Log request for debugging
+            Log::info('Search request received:', [
+                'query' => $query,
+                'categoryIds' => $categoryIds,
+                'brandIds' => $brandIds,
+                'priceMin' => $priceMin,
+                'priceMax' => $priceMax,
+                'sort' => $sort
             ]);
-        }
 
-        return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'advertisedProductsByShop')); // Truyền sản phẩm quảng cáo
+            // Clear cache when no filters
+            if (empty($categoryIds) && empty($brandIds) && !$priceMin && !$priceMax) {
+                Cache::forget('all_categories');
+                Cache::forget('all_brands');
+            }
+
+            // Build base product query
+            $baseProductQuery = $this->buildBaseProductQuery($query, $categoryIds, $brandIds, $priceMin, $priceMax);
+            
+            // Debug: Log the SQL query for price filter
+            if ($priceMin || $priceMax) {
+                Log::info('Price filter debug:', [
+                    'priceMin' => $priceMin,
+                    'priceMax' => $priceMax,
+                    'sql' => $baseProductQuery->toSql(),
+                    'bindings' => $baseProductQuery->getBindings()
+                ]);
+            }
+
+            // Get relevant categories and brands
+            [$relevantCategories, $relevantBrands, $sampleProducts] = $this->getRelevantCategoriesAndBrands($baseProductQuery);
+
+            // Process categories and brands
+            $categories = $this->processCategories($relevantCategories, $sampleProducts);
+            $brands = $this->processBrands($relevantBrands, $sampleProducts);
+
+            // Get advertised products
+            $advertisedProductsByShop = $this->getAdvertisedProducts($query);
+
+            // Build final product query
+            $productQuery = clone $baseProductQuery;
+            $productQuery = $this->applySorting($productQuery, $sort);
+            $productQuery = $this->excludeAdvertisedProducts($productQuery, $advertisedProductsByShop);
+
+            // Get paginated results
+            $products = $productQuery->paginate(50);
+
+            // Log results
+            Log::info('Search results:', [
+                'total_products' => $products->total(),
+                'current_page_products' => $products->count(),
+                'categories_count' => $categories->count(),
+                'brands_count' => $brands->count(),
+                'advertised_products_count' => $advertisedProductsByShop->count()
+            ]);
+
+            // Handle AJAX request
+            if ($request->ajax()) {
+                return $this->handleAjaxResponse($products, $categories, $brands, $advertisedProductsByShop, $categoryIds, $brandIds);
+            }
+
+            return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'advertisedProductsByShop'));
+
+        } catch (\Exception $e) {
+            Log::error('Search error:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'error' => 'Có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại.',
+                    'details' => config('app.debug') ? $e->getMessage() : null
+                ], 500);
+            }
+
+            return back()->with('error', 'Có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại.');
+        }
     }
 
     private function addProductToShopAds($advertisedProductsByShop, $item, $campaign)
@@ -1318,6 +1169,377 @@ class ProductController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi thích đánh giá!'
+            ], 500);
+        }
+    }
+
+    /**
+     * Validate search inputs
+     */
+    private function validateSearchInputs(Request $request)
+    {
+        $request->validate([
+            'query' => 'nullable|string|max:255',
+            'category' => 'nullable|array',
+            'category.*' => 'integer|exists:categories,id',
+            'brand' => 'nullable|array',
+            'brand.*' => 'integer|exists:brands,id',
+            'price_min' => 'nullable|numeric|min:0',
+            'price_max' => 'nullable|numeric|min:0|gte:price_min',
+            'sort' => 'nullable|string|in:relevance,newest,sold,price_asc,price_desc'
+        ]);
+    }
+
+    /**
+     * Build base product query
+     */
+    private function buildBaseProductQuery($query, $categoryIds, $brandIds, $priceMin, $priceMax)
+    {
+        return Product::query()
+            ->when($query, function($q) use ($query) {
+                $q->where(function($q2) use ($query) {
+                    $q2->where('name', 'like', "%{$query}%")
+                       ->orWhere('description', 'like', "%{$query}%");
+                });
+            })
+            ->when($categoryIds, function($q) use ($categoryIds) {
+                $q->whereHas('categories', function($q2) use ($categoryIds) {
+                    $q2->whereIn('categories.id', $categoryIds);
+                });
+            })
+            ->when($brandIds, function($q) use ($brandIds) {
+                $q->whereHas('brands', function($q2) use ($brandIds) {
+                    $q2->whereIn('brands.id', $brandIds);
+                });
+            })
+            ->when($priceMin || $priceMax, function($q) use ($priceMin, $priceMax) {
+                $q->where(function($q2) use ($priceMin, $priceMax) {
+                    // Xử lý price range cho cả simple products và variant products
+                    if ($priceMin && $priceMax) {
+                        // Có cả min và max
+                        $q2->where(function($q3) use ($priceMin, $priceMax) {
+                            // Simple products: sale_price hoặc price trong khoảng
+                            $q3->where(function($q4) use ($priceMin, $priceMax) {
+                                $q4->where('sale_price', '>=', $priceMin)
+                                   ->where('sale_price', '<=', $priceMax);
+                            })->orWhere(function($q4) use ($priceMin, $priceMax) {
+                                $q4->where('price', '>=', $priceMin)
+                                   ->where('price', '<=', $priceMax);
+                            });
+                        })->orWhereHas('variants', function($q3) use ($priceMin, $priceMax) {
+                            // Variant products: có variant trong khoảng giá
+                            $q3->where(function($q4) use ($priceMin, $priceMax) {
+                                $q4->where('sale_price', '>=', $priceMin)
+                                   ->where('sale_price', '<=', $priceMax);
+                            })->orWhere(function($q4) use ($priceMin, $priceMax) {
+                                $q4->where('price', '>=', $priceMin)
+                                   ->where('price', '<=', $priceMax);
+                            });
+                        });
+                    } elseif ($priceMin) {
+                        // Chỉ có min
+                        $q2->where(function($q3) use ($priceMin) {
+                            $q3->where('sale_price', '>=', $priceMin)
+                               ->orWhere('price', '>=', $priceMin)
+                               ->orWhereHas('variants', function($q4) use ($priceMin) {
+                                   $q4->where('sale_price', '>=', $priceMin)
+                                      ->orWhere('price', '>=', $priceMin);
+                               });
+                        });
+                    } elseif ($priceMax) {
+                        // Chỉ có max
+                        $q2->where(function($q3) use ($priceMax) {
+                            $q3->where('sale_price', '<=', $priceMax)
+                               ->orWhere('price', '<=', $priceMax)
+                               ->orWhereHas('variants', function($q4) use ($priceMax) {
+                                   $q4->where('sale_price', '<=', $priceMax)
+                                      ->orWhere('price', '<=', $priceMax);
+                               });
+                        });
+                    }
+                });
+            })
+            ->where('status', 'active');
+    }
+
+    /**
+     * Get relevant categories and brands from search results
+     */
+    private function getRelevantCategoriesAndBrands($baseProductQuery)
+    {
+        $sampleProducts = (clone $baseProductQuery)
+            ->with(['categories', 'brands'])
+            ->limit(1000)
+            ->get();
+
+        $relevantCategories = collect();
+        $relevantBrands = collect();
+
+        foreach ($sampleProducts as $product) {
+            if ($product->categories && $product->categories->isNotEmpty()) {
+                foreach ($product->categories as $category) {
+                    if ($category) {
+                        $relevantCategories->put($category->id, $category);
+                    }
+                }
+            }
+            
+            if ($product->brands && $product->brands->isNotEmpty()) {
+                foreach ($product->brands as $brand) {
+                    if ($brand) {
+                        $relevantBrands->put($brand->id, $brand);
+                    }
+                }
+            }
+        }
+
+        return [$relevantCategories, $relevantBrands, $sampleProducts];
+    }
+
+    /**
+     * Process categories with product counts
+     */
+    private function processCategories($relevantCategories, $sampleProducts)
+    {
+        $categories = collect();
+        
+        foreach ($relevantCategories as $category) {
+            // Tìm danh mục cha hoặc chính nó
+            $parentCategory = null;
+            if ($category->parent_id) {
+                $parentCategory = Category::with(['subCategories.subCategories'])
+                    ->where('id', $category->parent_id)
+                    ->first();
+            } else {
+                $parentCategory = Category::with(['subCategories.subCategories'])
+                    ->where('id', $category->id)
+                    ->first();
+            }
+            
+            if ($parentCategory && !$categories->has($parentCategory->id)) {
+                $categories->put($parentCategory->id, $parentCategory);
+            }
+        }
+
+        return $categories->map(function ($cat) use ($sampleProducts) {
+            $cat->product_count = $this->calculateCategoryProductCount($cat, $sampleProducts);
+            
+            if ($cat->subCategories && $cat->subCategories->isNotEmpty()) {
+                foreach ($cat->subCategories as $sub) {
+                    $sub->product_count = $this->calculateCategoryProductCount($sub, $sampleProducts);
+                    
+                    if ($sub->subCategories && $sub->subCategories->isNotEmpty()) {
+                        foreach ($sub->subCategories as $sub2) {
+                            $sub2->product_count = $this->calculateCategoryProductCount($sub2, $sampleProducts);
+                            $sub->product_count += $sub2->product_count;
+                        }
+                    }
+                    $cat->product_count += $sub->product_count;
+                }
+            }
+            return $cat;
+        })->sortByDesc('product_count')->values();
+    }
+
+    /**
+     * Process brands with product counts
+     */
+    private function processBrands($relevantBrands, $sampleProducts)
+    {
+        $brands = collect();
+        
+        foreach ($relevantBrands as $brand) {
+            // Tìm thương hiệu cha hoặc chính nó
+            $parentBrand = null;
+            if ($brand->parent_id) {
+                $parentBrand = Brand::with(['subBrands'])
+                    ->where('id', $brand->parent_id)
+                    ->first();
+            } else {
+                $parentBrand = Brand::with(['subBrands'])
+                    ->where('id', $brand->id)
+                    ->first();
+            }
+            
+            if ($parentBrand && !$brands->has($parentBrand->id)) {
+                $brands->put($parentBrand->id, $parentBrand);
+            }
+        }
+
+        return $brands->map(function ($brand) use ($sampleProducts) {
+            $brand->product_count = $this->calculateBrandProductCount($brand, $sampleProducts);
+            
+            if ($brand->subBrands && $brand->subBrands->isNotEmpty()) {
+                foreach ($brand->subBrands as $sub) {
+                    $sub->product_count = $this->calculateBrandProductCount($sub, $sampleProducts);
+                    $brand->product_count += $sub->product_count;
+                }
+            }
+            return $brand;
+        })->sortByDesc('product_count')->values();
+    }
+
+    /**
+     * Calculate product count for category
+     */
+    private function calculateCategoryProductCount($category, $sampleProducts)
+    {
+        if (!$category || !$sampleProducts) {
+            return 0;
+        }
+
+        return $sampleProducts->filter(function ($product) use ($category) {
+            if (!$product->categories) {
+                return false;
+            }
+            
+            return $product->categories->contains('id', $category->id) ||
+                   $product->categories->filter(function ($productCat) use ($category) {
+                       return $productCat && $productCat->parent_id === $category->id;
+                   })->isNotEmpty();
+        })->count();
+    }
+
+    /**
+     * Calculate product count for brand
+     */
+    private function calculateBrandProductCount($brand, $sampleProducts)
+    {
+        if (!$brand || !$sampleProducts) {
+            return 0;
+        }
+
+        return $sampleProducts->filter(function ($product) use ($brand) {
+            if (!$product->brands) {
+                return false;
+            }
+            
+            return $product->brands->contains('id', $brand->id) ||
+                   $product->brands->filter(function ($productBrand) use ($brand) {
+                       return $productBrand && $productBrand->parent_id === $brand->id;
+                   })->isNotEmpty();
+        })->count();
+    }
+
+    /**
+     * Get advertised products
+     */
+    private function getAdvertisedProducts($query)
+    {
+        $advertisedCampaigns = AdsCampaign::where('status', 'active')
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->when($query, function ($q) use ($query) {
+                $q->whereHas('adsCampaignItems.product', function ($productQuery) use ($query) {
+                    $productQuery->where('name', 'like', "%{$query}%");
+                });
+            })
+            ->with([
+                'adsCampaignItems.product.images', 
+                'adsCampaignItems.product.variants',
+                'adsCampaignItems.product.shop' => function($query) {
+                    $query->withCount('followers')
+                          ->withCount('orderReviews')
+                          ->withAvg('orderReviews', 'rating');
+                }
+            ])
+            ->get();
+
+        $advertisedProductsByShop = collect();
+
+        foreach ($advertisedCampaigns as $campaign) {
+            foreach ($campaign->adsCampaignItems as $item) {
+                if ($query) {
+                    if ($item->product && Str::contains(strtolower($item->product->name), strtolower($query))) {
+                        $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
+                    }
+                } else {
+                    if ($item->product) {
+                        $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
+                    }
+                }
+            }
+        }
+
+        return $advertisedProductsByShop->sortByDesc(function ($entry) {
+            return $entry['max_bid_amount'] ?? 0;
+        })->values();
+    }
+
+    /**
+     * Apply sorting to product query
+     */
+    private function applySorting($query, $sort)
+    {
+        return $query->when($sort, function($q) use ($sort) {
+            return match ($sort) {
+                'price_asc' => $q->orderBy('sale_price', 'asc'),
+                'price_desc' => $q->orderBy('sale_price', 'desc'),
+                'sold' => $q->orderBy('sold_quantity', 'desc'),
+                'newest' => $q->orderBy('created_at', 'desc'),
+                default => $q->orderBy('id', 'desc'),
+            };
+        })->where('status', 'active')
+          ->with(['categories', 'brands', 'images', 'variants']);
+    }
+
+    /**
+     * Exclude advertised products from main query
+     */
+    private function excludeAdvertisedProducts($query, $advertisedProductsByShop)
+    {
+        $advertisedProductIds = collect();
+        
+        if ($advertisedProductsByShop->isNotEmpty()) {
+            foreach ($advertisedProductsByShop as $shopAds) {
+                $advertisedProductIds = $advertisedProductIds->merge($shopAds['products']->pluck('id'));
+            }
+        }
+
+        if (!empty($advertisedProductIds->toArray())) {
+            $query->whereNotIn('id', $advertisedProductIds->toArray());
+        }
+
+        return $query;
+    }
+
+    /**
+     * Handle AJAX response
+     */
+    private function handleAjaxResponse($products, $categories, $brands, $advertisedProductsByShop, $categoryIds, $brandIds)
+    {
+        try {
+            $productListHtml = view('partials.product_list', compact('products', 'advertisedProductsByShop'))->render();
+            
+            // Render category filters with proper data
+            $categoryFiltersHtml = '';
+            if ($categories && $categories->isNotEmpty()) {
+                $categoryFiltersHtml = view('partials.category_filters', compact('categories'))->render();
+            }
+            
+            // Render brand filters with proper data
+            $brandFiltersHtml = '';
+            if ($brands && $brands->isNotEmpty()) {
+                $brandFiltersHtml = view('partials.brand_filters', compact('brands'))->render();
+            }
+            
+            return response()->json([
+                'productList' => $productListHtml,
+                'categoryFilters' => $categoryFiltersHtml,
+                'brandFilters' => $brandFiltersHtml,
+                'totalProducts' => $products->total(),
+                'currentPage' => $products->currentPage(),
+                'lastPage' => $products->lastPage()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error rendering AJAX response:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Có lỗi xảy ra khi tải kết quả.',
+                'details' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }

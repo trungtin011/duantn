@@ -60,6 +60,50 @@ class HomeController extends Controller
         }
     }
 
+    /**
+     * Xử lý danh mục với kiểm tra danh mục cha/con
+     */
+    private function processCategoryWithSubCategories($categoryName): array
+    {
+        $category = Category::where('name', $categoryName)->first();
+        
+        if (!$category) {
+            return [
+                'category' => null,
+                'subCategories' => collect(),
+                'isParent' => false,
+                'parentCategory' => null
+            ];
+        }
+
+        if ($category->parent_id === null) {
+            // Nếu là danh mục cha, lấy các danh mục con
+            $subCategories = $category->subCategories()->with(['products' => function ($query) {
+                $query->where('status', 'active');
+            }])->get();
+            
+            return [
+                'category' => $category,
+                'subCategories' => $subCategories,
+                'isParent' => true,
+                'parentCategory' => null
+            ];
+        } else {
+            // Nếu là danh mục con, lấy danh mục cha và các danh mục con khác
+            $parentCategory = Category::find($category->parent_id);
+            $subCategories = $parentCategory ? $parentCategory->subCategories()->with(['products' => function ($query) {
+                $query->where('status', 'active');
+            }])->get() : collect();
+            
+            return [
+                'category' => $category,
+                'subCategories' => $subCategories,
+                'isParent' => false,
+                'parentCategory' => $parentCategory
+            ];
+        }
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -88,17 +132,12 @@ class HomeController extends Controller
             $query->where('status', 'active');
         }])->get() : collect();
 
-        // Danh mục "Trang sức" và các danh mục con
-        $jewelry = Category::where('name', 'Trang sức')->first();
-        $jewelrySub = $jewelry ? $jewelry->subCategories()->with(['products' => function ($query) {
-            $query->where('status', 'active');
-        }])->get() : collect();
-
-        // Danh mục "Nước hoa" và các danh mục con
-        $perfume = Category::where('name', 'Nước hoa')->first();
-        $perfumeSub = $perfume ? $perfume->subCategories()->with(['products' => function ($query) {
-            $query->where('status', 'active');
-        }])->get() : collect();
+        // Xử lý danh mục "Trang sức" với kiểm tra danh mục cha/con
+        $jewelryData = $this->processCategoryWithSubCategories('Trang sức');
+        $jewelry = $jewelryData['category'];
+        $jewelrySub = $jewelryData['subCategories'];
+        $jewelryIsParent = $jewelryData['isParent'];
+        $jewelryParent = $jewelryData['parentCategory'];
 
         // Hiển thị 8 danh mục cha
         $homeCategories = Category::whereNull('parent_id')
@@ -330,8 +369,10 @@ class HomeController extends Controller
             'filteredSubCategories',
             'homeCategories',
             'sidebarCategories',
+            'jewelry',
             'jewelrySub',
-            'perfumeSub',
+            'jewelryIsParent',
+            'jewelryParent',
             'purchasedProducts',
             'bestSellers',
             'trendingProducts',

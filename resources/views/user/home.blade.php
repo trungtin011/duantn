@@ -260,14 +260,14 @@
                                         <li class="panel-list-item">
                                             <a href="#" class="overflow-hidden">
                                                 <img src="{{ asset('storage/' . $parentCategory->image_path) }}"
-                                                    alt="{{ $parentCategory->name }} banner" class="object-cover">
+                                                    alt="{{ $parentCategory->name }} banner" class="object-cover w-10">
                                             </a>
                                         </li>
                                     @else
                                         <li class="panel-list-item">
                                             <a href="#">
                                                 <img src="{{ asset('assets/images/electronics-banner-1.jpg') }}"
-                                                    alt="headphone collection" width="250" height="119">
+                                                    alt="headphone collection" width="100" height="100">
                                             </a>
                                         </li>
                                     @endif
@@ -288,7 +288,7 @@
                                         <li class="panel-list-item">
                                             <a href="#" class="overflow-hidden">
                                                 <img src="{{ asset('storage/' . $subCategory->image_path) }}"
-                                                    alt="{{ $subCategory->name }} banner" class="object-cover">
+                                                    alt="{{ $subCategory->name }} banner" class="object-cover w-10">
                                             </a>
                                         </li>
                                     @else
@@ -335,26 +335,22 @@
                             </ul>
                         </div>
                     </li>
-                    <li class="menu-category">
-                        <a href="#" class="menu-title">Trang sức</a>
-                        <ul class="dropdown-list">
-                            @foreach ($jewelrySub as $item)
-                                <li class="dropdown-item">
-                                    <a href="#">{{ $item->name }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </li>
-                    <li class="menu-category">
-                        <a href="#" class="menu-title">Nước hoa</a>
-                        <ul class="dropdown-list">
-                            @foreach ($perfumeSub as $item)
-                                <li class="dropdown-item">
-                                    <a href="#">{{ $item->name }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </li>
+                    
+                    @if ($jewelrySub->isNotEmpty())
+                        <li class="menu-category">
+                            <a href="{{ route('search', ['category' => [$jewelryIsParent ? $jewelry->id : ($jewelryParent ? $jewelryParent->id : null)]]) }}" class="menu-title">
+                                {{ $jewelryIsParent ? 'Trang sức' : ($jewelryParent ? $jewelryParent->name : 'Trang sức') }}
+                            </a>
+                            <ul class="dropdown-list">
+                                @foreach ($jewelrySub as $item)
+                                    <li class="dropdown-item">
+                                        <a href="{{ route('search', ['category' => [$item->id]]) }}">{{ $item->name }}</a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </li>
+                    @endif
+
                     <li class="menu-category">
                         <a href="{{ route('blog') }}" class="menu-title">BÀI VIẾT</a>
                     </li>
@@ -495,47 +491,6 @@
                     <a href="#" class="menu-title">Ưu đãi hấp dẫn</a>
                 </li>
             </ul>
-            <div class="menu-bottom">
-                <ul class="menu-category-list">
-                    <li class="menu-category">
-                        <button class="accordion-menu" data-accordion-btn>
-                            <p class="menu-title">Ngôn ngữ</p>
-                            <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
-                        </button>
-                        <ul class="submenu-category-list" data-accordion>
-                            <li class="submenu-category">
-                                <a href="#" class="submenu-title">Tiếng Việt</a>
-                            </li>
-                            <li class="submenu-category">
-                                <a href="#" class="submenu-title">English</a>
-                            </li>
-                            <li class="submenu-category">
-                                <a href="#" class="submenu-title">Español</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="menu-category">
-                        <button class="accordion-menu" data-accordion-btn>
-                            <p class="menu-title">Tiền tệ</p>
-                            <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
-                        </button>
-                        <ul class="submenu-category-list" data-accordion>
-                            <li class="submenu-category">
-                                <a href="#" class="submenu-title">VND ₫</a>
-                            </li>
-                            <li class="submenu-category">
-                                <a href="#" class="submenu-title">USD $</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                <ul class="menu-social-container">
-                    <li><a href="#" class="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
-                    <li><a href="#" class="social-link"><ion-icon name="logo-twitter"></ion-icon></a></li>
-                    <li><a href="#" class="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
-                    <li><a href="#" class="social-link"><ion-icon name="logo-linkedin"></ion-icon></a></li>
-                </ul>
-            </div>
         </nav>
     </header>
 
@@ -1465,34 +1420,42 @@
                 <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     @forelse ($blogs as $blog)
                         @php
-                            $photo = $blog->photo ?? $blog->image_path ?? null;
-                            $img = $photo && file_exists(public_path($photo))
-                                ? asset($photo)
-                                : ($photo && filter_var($photo, FILTER_VALIDATE_URL)
-                                    ? $photo
-                                    : asset('frontend/img/default.jpg'));
-                            $catTitle = $blog->cat_info->title ?? $blog->category ?? null;
-                            $catSlug = $blog->cat_info->slug ?? ($catTitle ? \Illuminate\Support\Str::slug($catTitle) : null);
-                            $author = $blog->author_info->username ?? $blog->author ?? 'Ẩn danh';
+                            $photo = $blog->photo ?? ($blog->image_path ?? null);
+                            $img =
+                                $photo && file_exists(public_path($photo))
+                                    ? asset($photo)
+                                    : ($photo && filter_var($photo, FILTER_VALIDATE_URL)
+                                        ? $photo
+                                        : asset('frontend/img/default.jpg'));
+                            $catTitle = $blog->cat_info->title ?? ($blog->category ?? null);
+                            $catSlug =
+                                $blog->cat_info->slug ?? ($catTitle ? \Illuminate\Support\Str::slug($catTitle) : null);
+                            $author = $blog->author_info->username ?? ($blog->author ?? 'Ẩn danh');
                         @endphp
 
-                        <article class="group rounded-xl overflow-hidden border border-gray-100 bg-white shadow-sm hover:shadow-md transition">
-                            <a href="{{ route('blog.detail', $blog->slug) }}" class="block aspect-[16/10] overflow-hidden bg-gray-50">
-                                <img src="{{ $img }}" alt="{{ $blog->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <article
+                            class="group rounded-xl overflow-hidden border border-gray-100 bg-white shadow-sm hover:shadow-md transition">
+                            <a href="{{ route('blog.detail', $blog->slug) }}"
+                                class="block aspect-[16/10] overflow-hidden bg-gray-50">
+                                <img src="{{ $img }}" alt="{{ $blog->title }}"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             </a>
                             <div class="p-4">
                                 @if ($catTitle)
-                                    <a href="{{ $catSlug ? route('blog.category', $catSlug) : '#' }}" class="inline-block text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-600">
+                                    <a href="{{ $catSlug ? route('blog.category', $catSlug) : '#' }}"
+                                        class="inline-block text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-600">
                                         {{ $catTitle }}
                                     </a>
                                 @endif
-                                <a href="{{ route('blog.detail', $blog->slug) }}" class="block mt-2 text-base font-semibold text-gray-900 line-clamp-2">
+                                <a href="{{ route('blog.detail', $blog->slug) }}"
+                                    class="block mt-2 text-base font-semibold text-gray-900 line-clamp-2">
                                     {{ $blog->title }}
                                 </a>
                                 <div class="mt-2 text-xs text-gray-500 flex items-center gap-2">
                                     <span>{{ $author }}</span>
                                     <span>•</span>
-                                    <time datetime="{{ $blog->created_at->format('Y-m-d') }}">{{ $blog->created_at->format('d M, Y') }}</time>
+                                    <time
+                                        datetime="{{ $blog->created_at->format('Y-m-d') }}">{{ $blog->created_at->format('d M, Y') }}</time>
                                 </div>
                             </div>
                         </article>
@@ -1752,7 +1715,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }

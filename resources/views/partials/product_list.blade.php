@@ -29,10 +29,31 @@
                 <div class="p-3 text-sm">
                     <h3 class="line-clamp-2 font-medium text-gray-800 min-h-[40px]">{{ $product->name }}</h3>
                     <div class="flex items-center gap-3 mt-2">
-                        <span class="text-red-500 font-bold">{{ number_format($product->sale_price) }}đ</span>
-                        @if ($product->price > $product->sale_price)
+                        @php
+                            // Tính toán giá hiển thị cho sản phẩm
+                            if ($product->is_variant && $product->variants->isNotEmpty()) {
+                                // Lấy giá thấp nhất từ các biến thể
+                                $minPrice = $product->variants->min('price') ?? 0;
+                                $minSalePrice = $product->variants->min('sale_price') ?? 0;
+                                
+                                // Nếu có sale_price và nhỏ hơn price thì dùng sale_price
+                                if ($minSalePrice > 0 && $minSalePrice < $minPrice) {
+                                    $displayPrice = $minSalePrice;
+                                    $displayOriginalPrice = $minPrice;
+                                } else {
+                                    $displayPrice = $minPrice;
+                                    $displayOriginalPrice = $minPrice;
+                                }
+                            } else {
+                                // Sản phẩm đơn
+                                $displayPrice = $product->sale_price > 0 ? $product->sale_price : $product->price;
+                                $displayOriginalPrice = $product->price;
+                            }
+                        @endphp
+                        <span class="text-red-500 font-bold">{{ number_format($displayPrice) }}đ</span>
+                        @if ($displayOriginalPrice > $displayPrice)
                             <span
-                                class="text-gray-400 text-xs line-through">{{ number_format($product->price) }}đ</span>
+                                class="text-gray-400 text-xs line-through">{{ number_format($displayOriginalPrice) }}đ</span>
                         @endif
                     </div>
                     <div class="text-xs text-gray-500 mt-1">Đã bán {{ $product->sold_quantity }}</div>

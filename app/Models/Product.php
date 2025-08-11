@@ -216,7 +216,21 @@ class Product extends Model
 
     public function getCurrentPriceAttribute()
     {
-        return $this->sale_price ?? $this->price;
+        if ($this->is_variant && $this->variants->isNotEmpty()) {
+            // Lấy giá thấp nhất từ các biến thể
+            $minPrice = $this->variants->min('price') ?? 0;
+            $minSalePrice = $this->variants->min('sale_price') ?? 0;
+            
+            // Nếu có sale_price và nhỏ hơn price thì dùng sale_price
+            if ($minSalePrice > 0 && $minSalePrice < $minPrice) {
+                return $minSalePrice;
+            } else {
+                return $minPrice;
+            }
+        } else {
+            // Sản phẩm đơn
+            return $this->sale_price ?? $this->price;
+        }
     }
 
     public function hasDiscount()
@@ -226,10 +240,42 @@ class Product extends Model
 
     public function getDiscountPercentageAttribute()
     {
-        if ($this->hasDiscount()) {
-            return round((($this->price - $this->sale_price) / $this->price) * 100);
+        if ($this->is_variant && $this->variants->isNotEmpty()) {
+            // Lấy giá thấp nhất từ các biến thể
+            $minPrice = $this->variants->min('price') ?? 0;
+            $minSalePrice = $this->variants->min('sale_price') ?? 0;
+            
+            // Nếu có sale_price và nhỏ hơn price thì tính phần trăm giảm
+            if ($minSalePrice > 0 && $minSalePrice < $minPrice) {
+                return round((($minPrice - $minSalePrice) / $minPrice) * 100);
+            }
+            return 0;
+        } else {
+            // Sản phẩm đơn
+            if ($this->hasDiscount()) {
+                return round((($this->price - $this->sale_price) / $this->price) * 100);
+            }
+            return 0;
         }
-        return 0;
+    }
+
+    public function getOriginalPriceAttribute()
+    {
+        if ($this->is_variant && $this->variants->isNotEmpty()) {
+            // Lấy giá thấp nhất từ các biến thể
+            $minPrice = $this->variants->min('price') ?? 0;
+            $minSalePrice = $this->variants->min('sale_price') ?? 0;
+            
+            // Nếu có sale_price và nhỏ hơn price thì trả về price gốc
+            if ($minSalePrice > 0 && $minSalePrice < $minPrice) {
+                return $minPrice;
+            } else {
+                return $minPrice;
+            }
+        } else {
+            // Sản phẩm đơn
+            return $this->price;
+        }
     }
 
     public function isOutOfStock()
