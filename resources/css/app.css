@@ -37,3 +37,78 @@
         opacity: 1;
     }
 } 
+
+/* Rating Filter Styles */
+.rating-group {
+    transition: all 0.2s ease;
+}
+
+.rating-group:hover {
+    transform: translateY(-1px);
+}
+
+.filter-radio {
+    @apply mr-2;
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+}
+
+.filter-radio:checked + div {
+    @apply text-blue-600;
+}
+
+.rating-group input[type="radio"]:checked + div .text-gray-800 {
+    @apply text-blue-600 font-medium;
+}
+
+/* Star rating styles */
+.rating-stars {
+    display: inline-flex;
+    align-items: center;
+}
+
+.rating-stars svg {
+    width: 16px;
+    height: 16px;
+}
+
+.rating-stars .text-yellow-400 {
+    color: #fbbf24;
+}
+
+.rating-stars .text-gray-300 {
+    color: #d1d5db;
+}
+
+/* Radio button custom styling */
+.filter-radio {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    background: white;
+}
+
+.filter-radio:checked {
+    border-color: #3b82f6;
+    background: #3b82f6;
+}
+
+.filter-radio:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: white;
+} 

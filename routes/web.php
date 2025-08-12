@@ -505,6 +505,9 @@ Route::prefix('customer')->group(function () {
     Route::get('/products/{slug}/quick-view', [ProductController::class, 'quickView'])->name('product.quickView');
     // Route tìm kiếm sản phẩm
     Route::get('/search', [ProductController::class, 'search'])->name('search');
+    Route::get('/search/test', [ProductController::class, 'testSearch'])->name('search.test');
+    Route::get('/debug/shop-relationships', [ProductController::class, 'debugShopRelationships'])->name('debug.shop-relationships');
+    Route::get('/test/rating-filter', [ProductController::class, 'testRatingFilter'])->name('test.rating-filter');
     // Route hiển thị tất cả quảng cáo của shop
     Route::get('/shop/{shopId}/ads', [ProductController::class, 'showShopAds'])->name('shop.ads');
     // Route Hồ sơ shop

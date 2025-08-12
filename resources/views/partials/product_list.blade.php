@@ -4,9 +4,9 @@
     ])
 @endif
 
-<div class="flex flex-wrap gap-4">
+<div class="flex flex-wrap gap-4 justify-center">
     @forelse ($products as $index => $product)
-        <div class="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 min-w-[200px]">
+        <div class="w-[45%] sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 lg:min-w-[211px] lg:max-w-[211px]">
             <div
                 class="border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-lg transition duration-200 overflow-hidden relative">
                 @if ($product->is_featured)
@@ -27,6 +27,7 @@
                     @endif
                 </a>
                 <div class="p-3 text-sm">
+                    <!-- hiện sao ở đây -->
                     <h3 class="line-clamp-2 font-medium text-gray-800 min-h-[40px]">{{ $product->name }}</h3>
                     <div class="flex items-center gap-3 mt-2">
                         @php
@@ -60,6 +61,16 @@
                     @if ($product->stock_total < 10 && $product->stock_total > 0)
                         <div class="text-xs text-red-500 mt-1">Chỉ còn {{ $product->stock_total }} sản phẩm</div>
                     @endif
+                    <div class="flex items-center">
+                        <div class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-store mr-1"></i>
+                        </div>
+                        @if ($product->shop && isset($product->shop->name))
+                            <div class="text-xs mt-1 font-medium">{{ $product->shop->name }}</div>
+                        @else
+                            <div class="text-xs text-gray-500 mt-1">Không có thông tin cửa hàng</div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

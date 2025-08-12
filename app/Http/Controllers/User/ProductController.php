@@ -42,59 +42,179 @@ class ProductController extends Controller
             $query = $request->input('query');
             $categoryIds = $request->input('category', []);
             $brandIds = $request->input('brand', []);
+            $shopIds = $request->input('shop', []);
             $priceMin = $request->input('price_min');
             $priceMax = $request->input('price_max');
+            $rating = $request->input('rating'); // Thêm filter đánh giá
             $sort = $request->input('sort', 'relevance');
 
-            // Validate inputs
-            $this->validateSearchInputs($request);
+            // Ensure arrays are properly handled
+            if (!is_array($categoryIds)) {
+                $categoryIds = $categoryIds ? [$categoryIds] : [];
+            }
+            if (!is_array($brandIds)) {
+                $brandIds = $brandIds ? [$brandIds] : [];
+            }
+            if (!is_array($shopIds)) {
+                $shopIds = $shopIds ? [$shopIds] : [];
+            }
 
             // Log request for debugging
             Log::info('Search request received:', [
                 'query' => $query,
                 'categoryIds' => $categoryIds,
                 'brandIds' => $brandIds,
+                'shopIds' => $shopIds,
                 'priceMin' => $priceMin,
                 'priceMax' => $priceMax,
+                'rating' => $rating,
                 'sort' => $sort
             ]);
 
-            // Clear cache when no filters
-            if (empty($categoryIds) && empty($brandIds) && !$priceMin && !$priceMax) {
-                Cache::forget('all_categories');
-                Cache::forget('all_brands');
-            }
+            // Validate inputs
+            $this->validateSearchInputs($request);
 
-            // Build base product query
-            $baseProductQuery = $this->buildBaseProductQuery($query, $categoryIds, $brandIds, $priceMin, $priceMax);
+            // Build simple product query
+            $productQuery = Product::where('status', 'active');
             
-            // Debug: Log the SQL query for price filter
-            if ($priceMin || $priceMax) {
-                Log::info('Price filter debug:', [
-                    'priceMin' => $priceMin,
-                    'priceMax' => $priceMax,
-                    'sql' => $baseProductQuery->toSql(),
-                    'bindings' => $baseProductQuery->getBindings()
-                ]);
+            // Text search
+            if ($query) {
+                $productQuery->where(function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                       ->orWhere('description', 'like', "%{$query}%");
+                });
             }
-
-            // Get relevant categories and brands
-            [$relevantCategories, $relevantBrands, $sampleProducts] = $this->getRelevantCategoriesAndBrands($baseProductQuery);
-
-            // Process categories and brands
-            $categories = $this->processCategories($relevantCategories, $sampleProducts);
-            $brands = $this->processBrands($relevantBrands, $sampleProducts);
-
-            // Get advertised products
-            $advertisedProductsByShop = $this->getAdvertisedProducts($query);
-
-            // Build final product query
-            $productQuery = clone $baseProductQuery;
-            $productQuery = $this->applySorting($productQuery, $sort);
-            $productQuery = $this->excludeAdvertisedProducts($productQuery, $advertisedProductsByShop);
-
+            
+            // Category filter
+            if ($categoryIds && !empty($categoryIds)) {
+                $productQuery->whereHas('categories', function($q) use ($categoryIds) {
+                    $q->whereIn('categories.id', $categoryIds);
+                });
+            }
+            
+            // Brand filter
+            if ($brandIds && !empty($brandIds)) {
+                $productQuery->whereHas('brands', function($q) use ($brandIds) {
+                    $q->whereIn('brands.id', $brandIds);
+                });
+            }
+            
+            // Shop filter
+            if ($shopIds && !empty($shopIds)) {
+                $productQuery->whereHas('shop', function($q) use ($shopIds) {
+                    $q->whereIn('shops.id', $shopIds);
+                });
+            }
+            
+            // Price filter
+            if ($priceMin || $priceMax) {
+                $productQuery->where(function($q) use ($priceMin, $priceMax) {
+                    if ($priceMin && $priceMax) {
+                        $q->where(function($q2) use ($priceMin, $priceMax) {
+                            $q2->where('sale_price', '>=', $priceMin)
+                               ->where('sale_price', '<=', $priceMax);
+                        })->orWhere(function($q2) use ($priceMin, $priceMax) {
+                            $q2->where('price', '>=', $priceMin)
+                               ->where('price', '<=', $priceMax);
+                        });
+                    } elseif ($priceMin) {
+                        $q->where('sale_price', '>=', $priceMin)
+                           ->orWhere('price', '>=', $priceMin);
+                    } elseif ($priceMax) {
+                        $q->where('sale_price', '<=', $priceMax)
+                           ->orWhere('price', '<=', $priceMax);
+                    }
+                });
+            }
+            
+            // Rating filter
+            if ($rating && $rating > 0) {
+                Log::info('Applying rating filter:', ['rating' => $rating]);
+                $productQuery->whereHas('orderReviews', function($q) use ($rating) {
+                    $q->where('rating', '>=', $rating);
+                });
+            }
+            
+            // Debug: Log product count before pagination
+            $productCountBeforePagination = $productQuery->count();
+            Log::info('Product count before pagination:', ['count' => $productCountBeforePagination]);
+            
+            // Apply sorting
+            switch ($sort) {
+                case 'price_asc':
+                    $productQuery->orderBy('sale_price', 'asc');
+                    break;
+                case 'price_desc':
+                    $productQuery->orderBy('sale_price', 'desc');
+                    break;
+                case 'sold':
+                    $productQuery->orderBy('sold_quantity', 'desc');
+                    break;
+                case 'newest':
+                    $productQuery->orderBy('created_at', 'desc');
+                    break;
+                default:
+                    $productQuery->orderBy('id', 'desc');
+            }
+            
+            // Load relationships
+            $productQuery->with([
+                'categories', 
+                'brands', 
+                'images', 
+                'variants', 
+                'shop',
+                'orderReviews' // Thêm orderReviews để rating filter hoạt động
+            ]);
+            
             // Get paginated results
             $products = $productQuery->paginate(50);
+            
+            // Ensure shop relationship is loaded for each product
+            $products->getCollection()->each(function($product) {
+                if (!$product->relationLoaded('shop')) {
+                    $product->load('shop');
+                }
+            });
+            
+            // Debug: Log shop information for products
+            Log::info('Products with shop info:', [
+                'total_products' => $products->count(),
+                'products_with_shop' => $products->filter(function($p) { return $p->shop; })->count(),
+                'sample_product_shop' => $products->first() ? ($products->first()->shop ? $products->first()->shop->name : 'NO SHOP') : 'NO PRODUCTS'
+            ]);
+            
+            // Get simple categories and brands
+            $categories = Category::withCount('products')->get();
+            $brands = Brand::withCount('products')->get();
+            
+            // Get shops with proper products count
+            $shops = Shop::whereHas('products', function($query) {
+                $query->where('status', 'active');
+            })->withCount(['products' => function($query) {
+                $query->where('status', 'active');
+            }])->get();
+            
+            // Debug: Log shop data
+            Log::info('Shops data:', [
+                'shops_count' => $shops->count(),
+                'shops_with_products' => $shops->filter(function($s) { return ($s->products_count ?? 0) > 0; })->count(),
+                'sample_shop' => $shops->first() ? [
+                    'id' => $shops->first()->id,
+                    'name' => $shops->first()->name,
+                    'products_count' => $shops->first()->products_count
+                ] : 'NO SHOPS',
+                'all_shops' => $shops->map(function($s) {
+                    return [
+                        'id' => $s->id,
+                        'name' => $s->name,
+                        'products_count' => $s->products_count
+                    ];
+                })->toArray()
+            ]);
+            
+            // Get advertised products (simplified)
+            $advertisedProductsByShop = collect();
 
             // Log results
             Log::info('Search results:', [
@@ -102,15 +222,15 @@ class ProductController extends Controller
                 'current_page_products' => $products->count(),
                 'categories_count' => $categories->count(),
                 'brands_count' => $brands->count(),
-                'advertised_products_count' => $advertisedProductsByShop->count()
+                'shops_count' => $shops->count()
             ]);
 
             // Handle AJAX request
             if ($request->ajax()) {
-                return $this->handleAjaxResponse($products, $categories, $brands, $advertisedProductsByShop, $categoryIds, $brandIds);
+                return $this->handleAjaxResponse($products, $categories, $brands, $shops, $advertisedProductsByShop, $categoryIds, $brandIds, $shopIds, $rating);
             }
 
-            return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'advertisedProductsByShop'));
+            return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'shops', 'advertisedProductsByShop'));
 
         } catch (\Exception $e) {
             Log::error('Search error:', [
@@ -127,6 +247,92 @@ class ProductController extends Controller
             }
 
             return back()->with('error', 'Có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại.');
+        }
+    }
+
+    /**
+     * Simple test method for debugging
+     */
+    public function testSearch(Request $request)
+    {
+        try {
+            // Simple search without complex filters
+            $query = $request->input('query');
+            
+            $products = Product::where('status', 'active')
+                ->when($query, function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%");
+                })
+                ->with(['images', 'shop'])
+                ->take(5)
+                ->get();
+                
+            // Debug shop relationships
+            $products->each(function($product) {
+                Log::info('Product shop debug:', [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'shopID' => $product->shopID,
+                    'shop_loaded' => $product->relationLoaded('shop'),
+                    'shop_data' => $product->shop ? [
+                        'id' => $product->shop->id,
+                        'name' => $product->shop->shop_name
+                    ] : 'NO SHOP'
+                ]);
+            });
+                
+            $categories = Category::withCount('products')->get();
+            $brands = Brand::withCount('products')->get();
+            $shops = Shop::withCount('products')->get();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'products' => $products->items(),
+                    'total' => $products->count(),
+                    'categories' => $categories,
+                    'brands' => $brands,
+                    'shops' => $shops
+                ]);
+            }
+            
+            return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'shops'));
+            
+        } catch (\Exception $e) {
+            Log::error('Test search error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Debug method for shop relationships
+     */
+    public function debugShopRelationships()
+    {
+        try {
+            $products = Product::with('shop')->take(5)->get();
+            
+            $debugData = [];
+            foreach ($products as $product) {
+                $debugData[] = [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'shopID' => $product->shopID,
+                    'shop_loaded' => $product->relationLoaded('shop'),
+                    'shop_data' => $product->shop ? [
+                        'id' => $product->shop->id,
+                        'name' => $product->shop->shop_name
+                    ] : 'NO SHOP'
+                ];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'debug_data' => $debugData
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -1178,122 +1384,173 @@ class ProductController extends Controller
      */
     private function validateSearchInputs(Request $request)
     {
-        $request->validate([
-            'query' => 'nullable|string|max:255',
-            'category' => 'nullable|array',
-            'category.*' => 'integer|exists:categories,id',
-            'brand' => 'nullable|array',
-            'brand.*' => 'integer|exists:brands,id',
-            'price_min' => 'nullable|numeric|min:0',
-            'price_max' => 'nullable|numeric|min:0|gte:price_min',
-            'sort' => 'nullable|string|in:relevance,newest,sold,price_asc,price_desc'
-        ]);
+        try {
+            $rules = [
+                'query' => 'nullable|string|max:255',
+                'category' => 'nullable|array',
+                'category.*' => 'integer|exists:categories,id',
+                'brand' => 'nullable|array',
+                'brand.*' => 'integer|exists:brands,id',
+                'shop' => 'nullable|array',
+                'shop.*' => 'integer|exists:shops,id',
+                'price_min' => 'nullable|numeric|min:0',
+                'price_max' => 'nullable|numeric|min:0',
+                'rating' => 'nullable|integer|min:1|max:5', // Thêm validation cho rating
+                'sort' => 'nullable|string|in:relevance,price_asc,price_desc,sold,newest'
+            ];
+            $request->validate($rules);
+        } catch (\Exception $e) {
+            Log::warning('Validation error in search: ' . $e->getMessage());
+            // Continue without validation if there's an error
+        }
     }
 
     /**
      * Build base product query
      */
-    private function buildBaseProductQuery($query, $categoryIds, $brandIds, $priceMin, $priceMax)
+    private function buildBaseProductQuery($query, $categoryIds, $brandIds, $shopIds, $priceMin, $priceMax)
     {
-        return Product::query()
-            ->when($query, function($q) use ($query) {
-                $q->where(function($q2) use ($query) {
-                    $q2->where('name', 'like', "%{$query}%")
+        try {
+            $productQuery = Product::query();
+            
+            // Text search
+            if ($query) {
+                $productQuery->where(function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
                        ->orWhere('description', 'like', "%{$query}%");
                 });
-            })
-            ->when($categoryIds, function($q) use ($categoryIds) {
-                $q->whereHas('categories', function($q2) use ($categoryIds) {
-                    $q2->whereIn('categories.id', $categoryIds);
+            }
+            
+            // Category filter
+            if ($categoryIds && is_array($categoryIds) && !empty($categoryIds)) {
+                $productQuery->whereHas('categories', function($q) use ($categoryIds) {
+                    $q->whereIn('categories.id', $categoryIds);
                 });
-            })
-            ->when($brandIds, function($q) use ($brandIds) {
-                $q->whereHas('brands', function($q2) use ($brandIds) {
-                    $q2->whereIn('brands.id', $brandIds);
+            }
+            
+            // Brand filter
+            if ($brandIds && is_array($brandIds) && !empty($brandIds)) {
+                $productQuery->whereHas('brands', function($q) use ($brandIds) {
+                    $q->whereIn('brands.id', $brandIds);
                 });
-            })
-            ->when($priceMin || $priceMax, function($q) use ($priceMin, $priceMax) {
-                $q->where(function($q2) use ($priceMin, $priceMax) {
+            }
+            
+            // Shop filter
+            if ($shopIds && is_array($shopIds) && !empty($shopIds)) {
+                $productQuery->whereHas('shop', function($q) use ($shopIds) {
+                    $q->whereIn('shops.id', $shopIds);
+                });
+            }
+            
+            // Price filter
+            if ($priceMin || $priceMax) {
+                $productQuery->where(function($q) use ($priceMin, $priceMax) {
                     // Xử lý price range cho cả simple products và variant products
                     if ($priceMin && $priceMax) {
                         // Có cả min và max
-                        $q2->where(function($q3) use ($priceMin, $priceMax) {
+                        $q->where(function($q2) use ($priceMin, $priceMax) {
                             // Simple products: sale_price hoặc price trong khoảng
-                            $q3->where(function($q4) use ($priceMin, $priceMax) {
-                                $q4->where('sale_price', '>=', $priceMin)
+                            $q2->where(function($q3) use ($priceMin, $priceMax) {
+                                $q3->where('sale_price', '>=', $priceMin)
                                    ->where('sale_price', '<=', $priceMax);
-                            })->orWhere(function($q4) use ($priceMin, $priceMax) {
-                                $q4->where('price', '>=', $priceMin)
+                            })->orWhere(function($q3) use ($priceMin, $priceMax) {
+                                $q3->where('price', '>=', $priceMin)
                                    ->where('price', '<=', $priceMax);
                             });
-                        })->orWhereHas('variants', function($q3) use ($priceMin, $priceMax) {
+                        })->orWhereHas('variants', function($q2) use ($priceMin, $priceMax) {
                             // Variant products: có variant trong khoảng giá
-                            $q3->where(function($q4) use ($priceMin, $priceMax) {
-                                $q4->where('sale_price', '>=', $priceMin)
+                            $q2->where(function($q3) use ($priceMin, $priceMax) {
+                                $q3->where('sale_price', '>=', $priceMin)
                                    ->where('sale_price', '<=', $priceMax);
-                            })->orWhere(function($q4) use ($priceMin, $priceMax) {
-                                $q4->where('price', '>=', $priceMin)
+                            })->orWhere(function($q3) use ($priceMin, $priceMax) {
+                                $q3->where('price', '>=', $priceMin)
                                    ->where('price', '<=', $priceMax);
                             });
                         });
                     } elseif ($priceMin) {
                         // Chỉ có min
-                        $q2->where(function($q3) use ($priceMin) {
-                            $q3->where('sale_price', '>=', $priceMin)
+                        $q->where(function($q2) use ($priceMin) {
+                            $q2->where('sale_price', '>=', $priceMin)
                                ->orWhere('price', '>=', $priceMin)
-                               ->orWhereHas('variants', function($q4) use ($priceMin) {
-                                   $q4->where('sale_price', '>=', $priceMin)
+                               ->orWhereHas('variants', function($q3) use ($priceMin) {
+                                   $q3->where('sale_price', '>=', $priceMin)
                                       ->orWhere('price', '>=', $priceMin);
                                });
                         });
                     } elseif ($priceMax) {
                         // Chỉ có max
-                        $q2->where(function($q3) use ($priceMax) {
-                            $q3->where('sale_price', '<=', $priceMax)
+                        $q->where(function($q2) use ($priceMax) {
+                            $q2->where('sale_price', '<=', $priceMax)
                                ->orWhere('price', '<=', $priceMax)
-                               ->orWhereHas('variants', function($q4) use ($priceMax) {
-                                   $q4->where('sale_price', '<=', $priceMax)
+                               ->orWhereHas('variants', function($q3) use ($priceMax) {
+                                   $q3->where('sale_price', '<=', $priceMax)
                                       ->orWhere('price', '<=', $priceMax);
                                });
                         });
                     }
                 });
-            })
-            ->where('status', 'active');
+            }
+            
+            // Status filter
+            $productQuery->where('status', 'active');
+            
+            // Load relationships
+            $productQuery->with(['shop']);
+            
+            return $productQuery;
+            
+        } catch (\Exception $e) {
+            Log::error('Error in buildBaseProductQuery: ' . $e->getMessage());
+            // Return a basic query if there's an error
+            return Product::where('status', 'active')->with(['shop']);
+        }
     }
 
     /**
-     * Get relevant categories and brands from search results
+     * Get relevant categories, brands, and shops from search results
      */
-    private function getRelevantCategoriesAndBrands($baseProductQuery)
+    private function getRelevantCategoriesBrandsAndShops($baseProductQuery)
     {
-        $sampleProducts = (clone $baseProductQuery)
-            ->with(['categories', 'brands'])
-            ->limit(1000)
-            ->get();
+        try {
+            $sampleProducts = (clone $baseProductQuery)
+                ->with(['categories', 'brands', 'shop'])
+                ->limit(1000)
+                ->get();
 
-        $relevantCategories = collect();
-        $relevantBrands = collect();
+            $relevantCategories = collect();
+            $relevantBrands = collect();
+            $relevantShops = collect();
 
-        foreach ($sampleProducts as $product) {
-            if ($product->categories && $product->categories->isNotEmpty()) {
-                foreach ($product->categories as $category) {
-                    if ($category) {
-                        $relevantCategories->put($category->id, $category);
+            foreach ($sampleProducts as $product) {
+                if (!$product) continue;
+                
+                if ($product->categories && $product->categories->isNotEmpty()) {
+                    foreach ($product->categories as $category) {
+                        if ($category) {
+                            $relevantCategories->put($category->id, $category);
+                        }
                     }
                 }
-            }
-            
-            if ($product->brands && $product->brands->isNotEmpty()) {
-                foreach ($product->brands as $brand) {
-                    if ($brand) {
-                        $relevantBrands->put($brand->id, $brand);
+                
+                if ($product->brands && $product->brands->isNotEmpty()) {
+                    foreach ($product->brands as $brand) {
+                        if ($brand) {
+                            $relevantBrands->put($brand->id, $brand);
+                        }
                     }
                 }
+
+                if ($product->shop) {
+                    $relevantShops->put($product->shop->id, $product->shop);
+                }
             }
+
+            return [$relevantCategories, $relevantBrands, $relevantShops, $sampleProducts];
+        } catch (\Exception $e) {
+            Log::error('Error in getRelevantCategoriesBrandsAndShops: ' . $e->getMessage());
+            // Return empty collections if there's an error
+            return [collect(), collect(), collect(), collect()];
         }
-
-        return [$relevantCategories, $relevantBrands, $sampleProducts];
     }
 
     /**
@@ -1380,6 +1637,59 @@ class ProductController extends Controller
     }
 
     /**
+     * Process shops with product counts
+     */
+    private function processShops($relevantShops, $sampleProducts)
+    {
+        $shops = collect();
+
+        foreach ($relevantShops as $shop) {
+            if (!$shop) continue;
+            
+            // Tìm shop cha hoặc chính nó
+            $parentShop = null;
+            try {
+                if (isset($shop->parent_id) && $shop->parent_id) {
+                    $parentShop = Shop::with(['subShops'])
+                        ->where('id', $shop->parent_id)
+                        ->first();
+                } else {
+                    $parentShop = Shop::with(['subShops'])
+                        ->where('id', $shop->id)
+                        ->first();
+                }
+
+                if ($parentShop && !$shops->has($parentShop->id)) {
+                    $shops->put($parentShop->id, $parentShop);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Error processing shop: ' . $e->getMessage(), ['shop_id' => $shop->id ?? 'unknown']);
+                continue;
+            }
+        }
+
+        return $shops->map(function ($shop) use ($sampleProducts) {
+            try {
+                $shop->product_count = $this->calculateShopProductCount($shop, $sampleProducts);
+
+                if (isset($shop->subShops) && $shop->subShops && $shop->subShops->isNotEmpty()) {
+                    foreach ($shop->subShops as $sub) {
+                        if ($sub) {
+                            $sub->product_count = $this->calculateShopProductCount($sub, $sampleProducts);
+                            $shop->product_count += $sub->product_count;
+                        }
+                    }
+                }
+                return $shop;
+            } catch (\Exception $e) {
+                Log::warning('Error calculating shop product count: ' . $e->getMessage(), ['shop_id' => $shop->id ?? 'unknown']);
+                $shop->product_count = 0;
+                return $shop;
+            }
+        })->sortByDesc('product_count')->values();
+    }
+
+    /**
      * Calculate product count for category
      */
     private function calculateCategoryProductCount($category, $sampleProducts)
@@ -1419,6 +1729,30 @@ class ProductController extends Controller
                        return $productBrand && $productBrand->parent_id === $brand->id;
                    })->isNotEmpty();
         })->count();
+    }
+
+    /**
+     * Calculate product count for shop
+     */
+    private function calculateShopProductCount($shop, $sampleProducts)
+    {
+        if (!$shop || !$sampleProducts) {
+            return 0;
+        }
+
+        try {
+            return $sampleProducts->filter(function ($product) use ($shop) {
+                if (!$product || !$product->shop) {
+                    return false;
+                }
+                
+                return $product->shop->id === $shop->id ||
+                       (isset($product->shop->parent_id) && $product->shop->parent_id === $shop->id);
+            })->count();
+        } catch (\Exception $e) {
+            Log::warning('Error calculating shop product count: ' . $e->getMessage(), ['shop_id' => $shop->id ?? 'unknown']);
+            return 0;
+        }
     }
 
     /**
@@ -1471,16 +1805,26 @@ class ProductController extends Controller
      */
     private function applySorting($query, $sort)
     {
-        return $query->when($sort, function($q) use ($sort) {
-            return match ($sort) {
-                'price_asc' => $q->orderBy('sale_price', 'asc'),
-                'price_desc' => $q->orderBy('sale_price', 'desc'),
-                'sold' => $q->orderBy('sold_quantity', 'desc'),
-                'newest' => $q->orderBy('created_at', 'desc'),
-                default => $q->orderBy('id', 'desc'),
-            };
-        })->where('status', 'active')
-          ->with(['categories', 'brands', 'images', 'variants']);
+        try {
+            $query = $query->when($sort, function($q) use ($sort) {
+                return match ($sort) {
+                    'price_asc' => $q->orderBy('sale_price', 'asc'),
+                    'price_desc' => $q->orderBy('sale_price', 'desc'),
+                    'sold' => $q->orderBy('sold_quantity', 'desc'),
+                    'newest' => $q->orderBy('created_at', 'desc'),
+                    default => $q->orderBy('id', 'desc'),
+                };
+            })->where('status', 'active')
+              ->with(['categories', 'brands', 'images', 'variants', 'shop']); // Thêm shop relationship
+              
+            return $query;
+        } catch (\Exception $e) {
+            Log::error('Error in applySorting: ' . $e->getMessage());
+            // Return a basic sorted query if there's an error
+            return $query->where('status', 'active')
+                        ->with(['categories', 'brands', 'images', 'variants', 'shop'])
+                        ->orderBy('id', 'desc');
+        }
     }
 
     /**
@@ -1506,7 +1850,7 @@ class ProductController extends Controller
     /**
      * Handle AJAX response
      */
-    private function handleAjaxResponse($products, $categories, $brands, $advertisedProductsByShop, $categoryIds, $brandIds)
+    private function handleAjaxResponse($products, $categories, $brands, $shops, $advertisedProductsByShop, $categoryIds, $brandIds, $shopIds, $rating)
     {
         try {
             $productListHtml = view('partials.product_list', compact('products', 'advertisedProductsByShop'))->render();
@@ -1514,19 +1858,51 @@ class ProductController extends Controller
             // Render category filters with proper data
             $categoryFiltersHtml = '';
             if ($categories && $categories->isNotEmpty()) {
-                $categoryFiltersHtml = view('partials.category_filters', compact('categories'))->render();
+                try {
+                    $categoryFiltersHtml = view('partials.category_filters', compact('categories'))->render();
+                } catch (\Exception $e) {
+                    Log::warning('Error rendering category filters: ' . $e->getMessage());
+                    $categoryFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc danh mục</div>';
+                }
             }
             
             // Render brand filters with proper data
             $brandFiltersHtml = '';
             if ($brands && $brands->isNotEmpty()) {
-                $brandFiltersHtml = view('partials.brand_filters', compact('brands'))->render();
+                try {
+                    $brandFiltersHtml = view('partials.brand_filters', compact('brands'))->render();
+                } catch (\Exception $e) {
+                    Log::warning('Error rendering brand filters: ' . $e->getMessage());
+                    $brandFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc thương hiệu</div>';
+                }
+            }
+            
+            // Render shop filters with proper data
+            $shopFiltersHtml = '';
+            if ($shops && $shops->isNotEmpty()) {
+                try {
+                    $shopFiltersHtml = view('partials.shop_filters', compact('shops'))->render();
+                } catch (\Exception $e) {
+                    Log::warning('Error rendering shop filters: ' . $e->getMessage());
+                    $shopFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc cửa hàng</div>';
+                }
+            }
+            
+            // Render rating filters
+            $ratingFiltersHtml = '';
+            try {
+                $ratingFiltersHtml = view('partials.rating_filters')->render();
+            } catch (\Exception $e) {
+                Log::warning('Error rendering rating filters: ' . $e->getMessage());
+                $ratingFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc đánh giá</div>';
             }
             
             return response()->json([
                 'productList' => $productListHtml,
                 'categoryFilters' => $categoryFiltersHtml,
                 'brandFilters' => $brandFiltersHtml,
+                'shopFilters' => $shopFiltersHtml,
+                'ratingFilters' => $ratingFiltersHtml, // Thêm rating filters vào response
                 'totalProducts' => $products->total(),
                 'currentPage' => $products->currentPage(),
                 'lastPage' => $products->lastPage()
@@ -1541,6 +1917,53 @@ class ProductController extends Controller
                 'error' => 'Có lỗi xảy ra khi tải kết quả.',
                 'details' => config('app.debug') ? $e->getMessage() : null
             ], 500);
+        }
+    }
+
+    /**
+     * Test method for rating filter
+     */
+    public function testRatingFilter(Request $request)
+    {
+        try {
+            $rating = $request->input('rating', 4);
+            
+            // Test rating filter
+            $products = Product::where('status', 'active')
+                ->whereHas('orderReviews', function($q) use ($rating) {
+                    $q->where('rating', '>=', $rating);
+                })
+                ->with(['images', 'shop', 'orderReviews'])
+                ->take(5)
+                ->get();
+                
+            // Debug orderReviews
+            $products->each(function($product) {
+                Log::info('Product rating debug:', [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'orderReviews_count' => $product->orderReviews->count(),
+                    'orderReviews_ratings' => $product->orderReviews->pluck('rating')->toArray()
+                ]);
+            });
+                
+            return response()->json([
+                'success' => true,
+                'rating_filter' => $rating,
+                'products_count' => $products->count(),
+                'products' => $products->map(function($p) {
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->name,
+                        'reviews_count' => $p->orderReviews->count(),
+                        'avg_rating' => $p->orderReviews->avg('rating')
+                    ];
+                })
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Test rating filter error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

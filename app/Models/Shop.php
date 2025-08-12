@@ -124,7 +124,15 @@ class Shop extends Model
     {
         return $this->hasMany(\App\Models\ShopCategory::class);
     }
-
+    
+    /**
+     * Get the shop name attribute
+     */
+    public function getNameAttribute()
+    {
+        return $this->shop_name;
+    }
+    
     public function combos()
     {
         return $this->hasMany(Combo::class, 'shopID', 'id');
