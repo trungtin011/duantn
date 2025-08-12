@@ -16,37 +16,41 @@
                 @endif
                 <a href="{{ route('product.show', $product->slug) }}">
                     @if ($product->images && $product->images->isNotEmpty())
-                        <img src="{{ asset('storage/' . $product->images->first()->image_path) }}" 
-                             class="w-full h-40 object-cover rounded-t-lg"
-                             alt="{{ $product->name }}"
-                             onerror="this.src='{{ asset('images/avatar.png') }}'">
+                        <img src="{{ asset('storage/' . $product->images->first()->image_path) }}"
+                            class="w-full h-40 object-cover rounded-t-lg" alt="{{ $product->name }}"
+                            onerror="this.src='{{ asset('images/avatar.png') }}'">
                     @else
-                        <img src="{{ asset('images/avatar.png') }}" 
-                             class="w-full h-40 object-cover rounded-t-lg"
-                             alt="{{ $product->name }}">
+                        <img src="{{ asset('images/avatar.png') }}" class="w-full h-40 object-cover rounded-t-lg"
+                            alt="{{ $product->name }}">
                     @endif
                 </a>
                 <div class="p-3 text-sm">
                     <!-- Hiển thị trung bình sao và số lượng đánh giá -->
                     @php
-                        $avgRating = round(($product->orderReviews->avg('rating') ?? 0), 1);
-                        $avgRounded = round($avgRating);
                         $reviewsCount = $product->orderReviews->count();
+                        $avgRating = $reviewsCount > 0 ? round($product->orderReviews->avg('rating'), 1) : 0;
+                        $avgRounded = $reviewsCount > 0 ? round($avgRating) : 0;
                     @endphp
+                    
                     <div class="flex items-center gap-1 mt-1">
                         @for ($i = 1; $i <= 5; $i++)
-                            @if ($i <= $avgRounded)
+                            @if ($reviewsCount > 0 && $i <= $avgRounded)
                                 <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    <path
+                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                             @else
                                 <svg class="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    <path
+                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                             @endif
                         @endfor
-                        <span class="text-xs text-gray-600 ml-1">{{ number_format($avgRating, 1) }}</span>
-                        <span class="text-xs text-gray-500 ml-1">({{ $reviewsCount }})</span>
+                        @if ($reviewsCount > 0)
+                            <span class="text-xs text-gray-600 ml-1">{{ number_format($avgRating, 1) }}</span>
+                            <span class="text-xs text-gray-500 ml-1">({{ $reviewsCount }})</span>
+                        @else
+                        @endif
                     </div>
                     <h3 class="line-clamp-2 font-medium text-gray-800 min-h-[40px]">{{ $product->name }}</h3>
                     <div class="flex items-center gap-3 mt-2">
@@ -56,7 +60,7 @@
                                 // Lấy giá thấp nhất từ các biến thể
                                 $minPrice = $product->variants->min('price') ?? 0;
                                 $minSalePrice = $product->variants->min('sale_price') ?? 0;
-                                
+
                                 // Nếu có sale_price và nhỏ hơn price thì dùng sale_price
                                 if ($minSalePrice > 0 && $minSalePrice < $minPrice) {
                                     $displayPrice = $minSalePrice;
@@ -96,7 +100,7 @@
         </div>
     @empty
         <div class="w-full text-center text-gray-500 py-10">
-            @if(request('query'))
+            @if (request('query'))
                 Không tìm thấy sản phẩm phù hợp với từ khóa "{{ request('query') }}".
             @else
                 Không tìm thấy sản phẩm phù hợp.

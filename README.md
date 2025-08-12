@@ -16,7 +16,6 @@ php artisan key:generate --ansi
 php artisan migrate
 ```
 
-
 composer require laravel/socialite
 
 Chuyển sang nhánh của mình  

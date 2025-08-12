@@ -81,6 +81,23 @@
     <form id="chat-form" class="bg-white border-t border-gray-200 p-3 shadow-lg" style="display:none" enctype="multipart/form-data">
         @csrf
         
+        <!-- Image preview area -->
+        <div id="image-preview-area" class="hidden mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700">Hình ảnh đã chọn:</span>
+                <button type="button" id="remove-image" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex items-center space-x-3">
+                <img id="preview-image" src="" alt="Preview" class="w-16 h-16 object-cover rounded border border-gray-300">
+                <div class="flex-1">
+                    <p id="image-name" class="text-sm text-gray-600"></p>
+                    <p class="text-xs text-gray-500">Bạn có thể gửi ảnh kèm tin nhắn hoặc chỉ gửi ảnh</p>
+                </div>
+            </div>
+        </div>
+        
         <!-- Message input area -->
         <div class="flex items-center space-x-2">
             <!-- Emoji and actions -->
@@ -94,7 +111,7 @@
             <div class="flex-1 relative h-[38px]">
                 <textarea id="chat-input" 
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ef3248] focus:border-transparent resize-none message-input" 
-                          placeholder="Nhập tin nhắn..."
+                          placeholder="Nhập tin nhắn... (không bắt buộc khi gửi ảnh)"
                           rows="1"></textarea>
                 
                 <!-- File upload button -->
@@ -113,29 +130,6 @@
         <!-- Hidden file input -->
         <input type="file" id="image-input" accept="image/*" style="display: none;">
     </form>
-    
-    <!-- Image preview modal -->
-    <div id="image-preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-4 max-w-sm w-full mx-4 shadow-xl">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-sm font-semibold text-gray-800">Xem trước ảnh</h3>
-                <button id="close-preview" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors">
-                    <i class="fas fa-times text-xs"></i>
-                </button>
-            </div>
-            <div class="mb-3">
-                <img id="preview-image" src="" alt="Preview" class="w-full h-48 object-cover rounded-lg border border-gray-200">
-            </div>
-            <div class="flex justify-end space-x-2">
-                <button id="cancel-upload" class="px-3 py-1.5 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-xs">
-                    Hủy
-                </button>
-                <button id="confirm-upload" class="px-3 py-1.5 bg-[#ef3248] text-white rounded-lg hover:bg-[#d91f35] transition-colors text-xs">
-                    Gửi ảnh
-                </button>
-            </div>
-        </div>
-    </div>
 </main>
 
 <script>
@@ -155,26 +149,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 document.getElementById('chat-form').dispatchEvent(new Event('submit'));
             }
-        });
-    }
-    
-    // File upload preview
-    const imageInput = document.getElementById('image-input');
-    const fileName = document.getElementById('file-name');
-    const removeFile = document.getElementById('remove-file');
-    
-    if (imageInput && filePreview) {
-        imageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                fileName.textContent = file.name;
-                filePreview.classList.remove('hidden');
-            }
-        });
-        
-        removeFile.addEventListener('click', function() {
-            imageInput.value = '';
-            filePreview.classList.add('hidden');
         });
     }
 });

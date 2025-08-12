@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png" />
+    <link rel="icon" href="{{ asset('images/about.png') }}" type="image/png" />
     <title>@yield('title', 'Default Title')</title>
 
     @php
@@ -50,6 +50,7 @@
     @vite('resources/css/user/home.css')
     @vite('resources/css/user/orderDetail.css')
     @vite('resources/css/user/notifications.css')
+    @vite('resources/css/user/cart-sidebar.css')
     @vite('resources/css/user/cart-sidebar.css')
     <link rel="stylesheet" href="{{ asset('css/snow-animation.css') }}">
     <script src="{{ asset('js/snow-animation.js') }}"></script>

@@ -158,7 +158,7 @@ class SearchFilterManager {
             checkboxes.forEach(cb => {
                 cb.checked = false;
             });
-            
+
             // Reset rating filter
             const ratingRadios = this.form.querySelectorAll('input[name="rating"]');
             ratingRadios.forEach(radio => {
@@ -295,7 +295,7 @@ class SearchFilterManager {
             shopContainer.innerHTML = data.shopFilters;
             this.attachCheckboxListeners('input[name="shop[]"]');
         }
-        
+
         // Update rating filters
         const ratingContainer = document.getElementById('rating-filters-container');
         if (ratingContainer && data && data.ratingFilters) {
@@ -384,13 +384,17 @@ class SearchFilterManager {
     updateResetButtonVisibility() {
         const resetBtn = document.getElementById('reset-filters');
         if (!resetBtn) return;
+        
+        // Kiểm tra các filter có giá trị
         const hasActiveFilters =
             document.querySelectorAll('input[name="category[]"]:checked').length > 0 ||
             document.querySelectorAll('input[name="brand[]"]:checked').length > 0 ||
             document.querySelectorAll('input[name="shop[]"]:checked').length > 0 ||
-            document.querySelector('input[name="rating"]:checked') !== null ||
-            (document.getElementById('price_min') && document.getElementById('price_min').value) ||
-            (document.getElementById('price_max') && document.getElementById('price_max').value);
+            // Kiểm tra rating filter: chỉ coi là active nếu giá trị khác rỗng
+            (document.querySelector('input[name="rating"]:checked') && document.querySelector('input[name="rating"]:checked').value !== '') ||
+            (document.getElementById('price_min') && document.getElementById('price_min').value && document.getElementById('price_min').value.trim() !== '') ||
+            (document.getElementById('price_max') && document.getElementById('price_max').value && document.getElementById('price_max').value.trim() !== '');
+            
         if (hasActiveFilters) {
             resetBtn.classList.remove('hidden');
         } else {

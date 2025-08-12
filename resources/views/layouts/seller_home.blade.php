@@ -13,7 +13,6 @@
     <script src="https://cdn.tiny.cloud/1/qcg1t5tgcxrd5t849fhl74dsm4w81nsyuhwtao66g7e1aw31/tinymce/7/tinymce.min.js"
         referrerpolicy="origin"></script>
     @vite('resources/css/seller/seller-products.css')
-    @vite('resources/js/echo.js')
     @stack('styles')
     @yield('styles')
     <style>
@@ -181,6 +180,20 @@
 </head>
 
 <body class="bg-[#f5f5f7] text-[#222222] text-sm leading-relaxed font-[Inter]" x-data="{ notificationDropdownOpen: false }">
+
+    <!-- Bootstrap Laravel data early so Echo can use it -->
+    <div id="laravel-data" data-user='@json(Auth::user())' data-shop='@json(optional(Auth::user()->shop)->id)'></div>
+    <script>
+        (function () {
+            var el = document.getElementById('laravel-data');
+            var user = null;
+            var shop = null;
+            try { user = el ? JSON.parse(el.getAttribute('data-user') || 'null') : null; } catch (e) {}
+            try { shop = el ? JSON.parse(el.getAttribute('data-shop') || 'null') : null; } catch (e) {}
+            window.Laravel = { user: user, shop: shop };
+        })();
+    </script>
+    @vite('resources/js/echo.js')
 
     <div class="flex">
         <div class="sticky top-0 h-[calc(100vh-53px)]">
@@ -536,18 +549,7 @@
             }
         });
     </script>
-    <div id="laravel-data" data-user='@json(Auth::user())' data-shop='@json(optional(Auth::user()->shop)->id)'></div>
-    <script>
-        (function () {
-            var el = document.getElementById('laravel-data');
-            var user = null;
-            var shop = null;
-            try { user = el ? JSON.parse(el.getAttribute('data-user') || 'null') : null; } catch (e) {}
-            try { shop = el ? JSON.parse(el.getAttribute('data-shop') || 'null') : null; } catch (e) {}
-            window.Laravel = { user: user, shop: shop };
-        })();
-    </script>
-    @vite('resources/js/echo.js')
+    
 </body>
 
 </html>

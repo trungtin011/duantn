@@ -21,6 +21,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -57,8 +58,6 @@
             opacity: 0.5;
             pointer-events: none;
         }
-
-
     </style>
 @endpush
 @php
@@ -66,7 +65,8 @@
         request()->has('category') ||
         request()->has('brand') ||
         request()->filled('price_min') ||
-        request()->filled('price_max');
+        request()->filled('price_max') ||
+        request()->has('rating'); // Thêm điều kiện cho bộ lọc đánh giá
 @endphp
 @section('content')
     <div class="container mx-auto py-6">
@@ -101,16 +101,18 @@
                         <!-- Danh mục và Thương hiệu -->
                         <div class="mb-4">
                             <!-- Danh mục -->
-                            @if($categories && $categories->isNotEmpty())
+                            @if ($categories && $categories->isNotEmpty())
                                 <div class="mb-4">
                                     <div id="category-filters-container">
-                                        @include('partials.category_filters', ['categories' => $categories])
+                                        @include('partials.category_filters', [
+                                            'categories' => $categories,
+                                        ])
                                     </div>
                                 </div>
                             @endif
 
                             <!-- Thương hiệu -->
-                            @if($brands && $brands->isNotEmpty())
+                            @if ($brands && $brands->isNotEmpty())
                                 <div class="mb-4">
                                     <div id="brand-filters-container">
                                         @include('partials.brand_filters', ['brands' => $brands])
@@ -119,14 +121,14 @@
                             @endif
 
                             <!-- Cửa hàng -->
-                            @if($shops && $shops->isNotEmpty())
+                            @if ($shops && $shops->isNotEmpty())
                                 <div class="mb-4">
                                     <div id="shop-filters-container">
                                         @include('partials.shop_filters', ['shops' => $shops])
                                     </div>
                                 </div>
                             @endif
-                            
+
                             <!-- Rating Filter -->
                             <div class="mb-4">
                                 <div id="rating-filters-container">
@@ -139,8 +141,10 @@
                         <div class="mb-4">
                             <h3 class="font-semibold text-sm mb-2 text-gray-700">Khoảng Giá</h3>
                             <div class="mt-2 flex flex-col gap-2">
-                                <input type="range" id="price-range-min" min="0" max="100000000" step="1000" value="{{ request('price_min') ? (int) request('price_min') : 0 }}">
-                                <input type="range" id="price-range-max" min="0" max="100000000" step="1000" value="{{ request('price_max') ? (int) request('price_max') : 100000000 }}">
+                                <input type="range" id="price-range-min" min="0" max="100000000" step="1000"
+                                    value="{{ request('price_min') ? (int) request('price_min') : 0 }}">
+                                <input type="range" id="price-range-max" min="0" max="100000000" step="1000"
+                                    value="{{ request('price_max') ? (int) request('price_max') : 100000000 }}">
                             </div>
                             <div class="flex items-center justify-between mt-2">
                                 <span id="price-min-display" class="text-sm text-gray-700"></span>
@@ -296,8 +300,10 @@
                 // Price suggestion buttons bind to ranges
                 document.querySelectorAll('.price-suggestion').forEach(btn => {
                     btn.addEventListener('click', function() {
-                        const min = this.dataset.min === '' ? ABS_MIN : parseInt(this.dataset.min || ABS_MIN, 10);
-                        const max = this.dataset.max === '' ? ABS_MAX : parseInt(this.dataset.max || ABS_MAX, 10);
+                        const min = this.dataset.min === '' ? ABS_MIN : parseInt(this.dataset.min ||
+                            ABS_MIN, 10);
+                        const max = this.dataset.max === '' ? ABS_MAX : parseInt(this.dataset.max ||
+                            ABS_MAX, 10);
                         rangeMin.value = min;
                         rangeMax.value = max;
                         hiddenMin.value = min === ABS_MIN ? '' : min;

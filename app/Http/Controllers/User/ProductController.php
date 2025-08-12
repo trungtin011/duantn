@@ -76,96 +76,120 @@ class ProductController extends Controller
 
             // Build simple product query
             $productQuery = Product::where('status', 'active');
-            
+
             // Text search
             if ($query) {
-                $productQuery->where(function($q) use ($query) {
+                $productQuery->where(function ($q) use ($query) {
                     $q->where('name', 'like', "%{$query}%")
-                       ->orWhere('description', 'like', "%{$query}%");
+                        ->orWhere('description', 'like', "%{$query}%");
                 });
             }
-            
+
             // Category filter
             if ($categoryIds && !empty($categoryIds)) {
-                $productQuery->whereHas('categories', function($q) use ($categoryIds) {
+                $productQuery->whereHas('categories', function ($q) use ($categoryIds) {
                     $q->whereIn('categories.id', $categoryIds);
                 });
             }
-            
+
             // Brand filter
             if ($brandIds && !empty($brandIds)) {
-                $productQuery->whereHas('brands', function($q) use ($brandIds) {
+                $productQuery->whereHas('brands', function ($q) use ($brandIds) {
                     $q->whereIn('brands.id', $brandIds);
                 });
             }
-            
+
             // Shop filter
             if ($shopIds && !empty($shopIds)) {
-                $productQuery->whereHas('shop', function($q) use ($shopIds) {
+                $productQuery->whereHas('shop', function ($q) use ($shopIds) {
                     $q->whereIn('shops.id', $shopIds);
                 });
             }
-            
+
             // Price filter (include both simple products and variants)
             if ($priceMin || $priceMax) {
-                $productQuery->where(function($q) use ($priceMin, $priceMax) {
+                $productQuery->where(function ($q) use ($priceMin, $priceMax) {
                     if ($priceMin && $priceMax) {
                         // Simple products
-                        $q->where(function($q2) use ($priceMin, $priceMax) {
-                            $q2->where(function($q3) use ($priceMin, $priceMax) {
+                        $q->where(function ($q2) use ($priceMin, $priceMax) {
+                            $q2->where(function ($q3) use ($priceMin, $priceMax) {
                                 $q3->where('sale_price', '>=', $priceMin)
-                                   ->where('sale_price', '<=', $priceMax);
-                            })->orWhere(function($q3) use ($priceMin, $priceMax) {
+                                    ->where('sale_price', '<=', $priceMax);
+                            })->orWhere(function ($q3) use ($priceMin, $priceMax) {
                                 $q3->where('price', '>=', $priceMin)
-                                   ->where('price', '<=', $priceMax);
+                                    ->where('price', '<=', $priceMax);
                             });
                         })
-                        // Variants
-                        ->orWhereHas('variants', function($q2) use ($priceMin, $priceMax) {
-                            $q2->where(function($q3) use ($priceMin, $priceMax) {
-                                $q3->where('sale_price', '>=', $priceMin)
-                                   ->where('sale_price', '<=', $priceMax);
-                            })->orWhere(function($q3) use ($priceMin, $priceMax) {
-                                $q3->where('price', '>=', $priceMin)
-                                   ->where('price', '<=', $priceMax);
+                            // Variants
+                            ->orWhereHas('variants', function ($q2) use ($priceMin, $priceMax) {
+                                $q2->where(function ($q3) use ($priceMin, $priceMax) {
+                                    $q3->where('sale_price', '>=', $priceMin)
+                                        ->where('sale_price', '<=', $priceMax);
+                                })->orWhere(function ($q3) use ($priceMin, $priceMax) {
+                                    $q3->where('price', '>=', $priceMin)
+                                        ->where('price', '<=', $priceMax);
+                                });
                             });
-                        });
                     } elseif ($priceMin) {
                         // Min only
-                        $q->where(function($q2) use ($priceMin) {
+                        $q->where(function ($q2) use ($priceMin) {
                             $q2->where('sale_price', '>=', $priceMin)
-                               ->orWhere('price', '>=', $priceMin);
+                                ->orWhere('price', '>=', $priceMin);
                         })
-                        ->orWhereHas('variants', function($q3) use ($priceMin) {
-                            $q3->where('sale_price', '>=', $priceMin)
-                               ->orWhere('price', '>=', $priceMin);
-                        });
+                            ->orWhereHas('variants', function ($q3) use ($priceMin) {
+                                $q3->where('sale_price', '>=', $priceMin)
+                                    ->orWhere('price', '>=', $priceMin);
+                            });
                     } elseif ($priceMax) {
                         // Max only
-                        $q->where(function($q2) use ($priceMax) {
+                        $q->where(function ($q2) use ($priceMax) {
                             $q2->where('sale_price', '<=', $priceMax)
-                               ->orWhere('price', '<=', $priceMax);
+                                ->orWhere('price', '<=', $priceMax);
                         })
-                        ->orWhereHas('variants', function($q3) use ($priceMax) {
-                            $q3->where('sale_price', '<=', $priceMax)
-                               ->orWhere('price', '<=', $priceMax);
-                        });
+                            ->orWhereHas('variants', function ($q3) use ($priceMax) {
+                                $q3->where('sale_price', '<=', $priceMax)
+                                    ->orWhere('price', '<=', $priceMax);
+                            });
                     }
                 });
             }
-            
-            // Rating filter
+
+            // Tạo một bản sao của productQuery TẠI ĐÂY để tính toán rating counts TRƯỚC KHI áp dụng filter rating
+            $productsForRatingCount = (clone $productQuery)->with('orderReviews')->get();
+
+            $calculatedRatingCounts = [];
+            for ($i = 5; $i >= 1; $i--) {
+                $count = 0;
+                foreach ($productsForRatingCount as $p) {
+                    if ($p->orderReviews->isNotEmpty()) {
+                        $avgRating = $p->orderReviews->avg('rating');
+                        if ($avgRating !== null) {
+                            $avgRounded = round($avgRating);
+                            if ($avgRounded == $i) {
+                                $count++;
+                            }
+                        }
+                    }
+                }
+                $calculatedRatingCounts[$i] = $count;
+            }
+
+            // Rating filter (chỉ áp dụng sau khi đã tính toán total rating counts)
             if ($rating && $rating > 0) {
                 Log::info('Applying rating filter:', ['rating' => $rating]);
-                $productQuery->whereHas('orderReviews', function($q) use ($rating) {
-                    $q->where('rating', '>=', $rating);
+                // Lọc sản phẩm dựa trên rating trung bình đã làm tròn
+                $productQuery->whereHas('orderReviews', function ($q) use ($rating) {
+                    // Lấy tất cả các đánh giá và tính trung bình cho từng sản phẩm
+                    $q->select(DB::raw('product_id, ROUND(AVG(rating)) as avg_rating'))
+                      ->groupBy('product_id')
+                      ->having('avg_rating', (int) $rating);
                 });
             }
-            
+
             // Debug: Log product count before pagination
             $productCountBeforePagination = $productQuery->count();
             Log::info('Product count before pagination:', ['count' => $productCountBeforePagination]);
-            
+
             // Apply sorting
             switch ($sort) {
                 case 'price_asc':
@@ -183,55 +207,59 @@ class ProductController extends Controller
                 default:
                     $productQuery->orderBy('id', 'desc');
             }
-            
+
             // Load relationships
             $productQuery->with([
-                'categories', 
-                'brands', 
-                'images', 
-                'variants', 
+                'categories',
+                'brands',
+                'images',
+                'variants',
                 'shop',
                 'orderReviews' // Thêm orderReviews để rating filter hoạt động
             ]);
-            
+
             // Get paginated results
             $products = $productQuery->paginate(50);
-            
+
             // Ensure shop relationship is loaded for each product
-            $products->getCollection()->each(function($product) {
+            $products->getCollection()->each(function ($product) {
                 if (!$product->relationLoaded('shop')) {
                     $product->load('shop');
                 }
             });
-            
+
             // Debug: Log shop information for products
             Log::info('Products with shop info:', [
                 'total_products' => $products->count(),
-                'products_with_shop' => $products->filter(function($p) { return $p->shop; })->count(),
+                'products_with_shop' => $products->filter(function ($p) {
+                    return $p->shop;
+                })->count(),
                 'sample_product_shop' => $products->first() ? ($products->first()->shop ? $products->first()->shop->name : 'NO SHOP') : 'NO PRODUCTS'
             ]);
-            
+
             // Get simple categories and brands
             $categories = Category::withCount('products')->get();
             $brands = Brand::withCount('products')->get();
-            
+
             // Get shops with proper products count
-            $shops = Shop::whereHas('products', function($query) {
+            $shops = Shop::whereHas('products', function ($query) {
                 $query->where('status', 'active');
-            })->withCount(['products' => function($query) {
+            })->withCount(['products' => function ($query) {
                 $query->where('status', 'active');
             }])->get();
-            
+
             // Debug: Log shop data
             Log::info('Shops data:', [
                 'shops_count' => $shops->count(),
-                'shops_with_products' => $shops->filter(function($s) { return ($s->products_count ?? 0) > 0; })->count(),
+                'shops_with_products' => $shops->filter(function ($s) {
+                    return ($s->products_count ?? 0) > 0;
+                })->count(),
                 'sample_shop' => $shops->first() ? [
                     'id' => $shops->first()->id,
                     'name' => $shops->first()->name,
                     'products_count' => $shops->first()->products_count
                 ] : 'NO SHOPS',
-                'all_shops' => $shops->map(function($s) {
+                'all_shops' => $shops->map(function ($s) {
                     return [
                         'id' => $s->id,
                         'name' => $s->name,
@@ -239,7 +267,7 @@ class ProductController extends Controller
                     ];
                 })->toArray()
             ]);
-            
+
             // Get advertised products (simplified)
             $advertisedProductsByShop = collect();
 
@@ -254,11 +282,10 @@ class ProductController extends Controller
 
             // Handle AJAX request (explicit param to prevent wrong detection on normal navigation)
             if ($request->boolean('ajax')) {
-                return $this->handleAjaxResponse($products, $categories, $brands, $shops, $advertisedProductsByShop, $categoryIds, $brandIds, $shopIds, $rating);
+                return $this->handleAjaxResponse($products, $categories, $brands, $shops, $advertisedProductsByShop, $categoryIds, $brandIds, $shopIds, $rating, $calculatedRatingCounts);
             }
 
-            return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'shops', 'advertisedProductsByShop'));
-
+            return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'shops', 'advertisedProductsByShop', 'calculatedRatingCounts'));
         } catch (\Exception $e) {
             Log::error('Search error:', [
                 'error' => $e->getMessage(),
@@ -285,17 +312,17 @@ class ProductController extends Controller
         try {
             // Simple search without complex filters
             $query = $request->input('query');
-            
+
             $products = Product::where('status', 'active')
-                ->when($query, function($q) use ($query) {
+                ->when($query, function ($q) use ($query) {
                     $q->where('name', 'like', "%{$query}%");
                 })
                 ->with(['images', 'shop'])
                 ->take(5)
                 ->get();
-                
+
             // Debug shop relationships
-            $products->each(function($product) {
+            $products->each(function ($product) {
                 Log::info('Product shop debug:', [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
@@ -307,11 +334,11 @@ class ProductController extends Controller
                     ] : 'NO SHOP'
                 ]);
             });
-                
+
             $categories = Category::withCount('products')->get();
             $brands = Brand::withCount('products')->get();
             $shops = Shop::withCount('products')->get();
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -322,9 +349,8 @@ class ProductController extends Controller
                     'shops' => $shops
                 ]);
             }
-            
+
             return view('user.search.results', compact('products', 'query', 'categories', 'brands', 'shops'));
-            
         } catch (\Exception $e) {
             Log::error('Test search error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
@@ -338,7 +364,7 @@ class ProductController extends Controller
     {
         try {
             $products = Product::with('shop')->take(5)->get();
-            
+
             $debugData = [];
             foreach ($products as $product) {
                 $debugData[] = [
@@ -352,12 +378,11 @@ class ProductController extends Controller
                     ] : 'NO SHOP'
                 ];
             }
-            
+
             return response()->json([
                 'success' => true,
                 'debug_data' => $debugData
             ]);
-            
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -366,18 +391,18 @@ class ProductController extends Controller
     private function addProductToShopAds($advertisedProductsByShop, $item, $campaign)
     {
         $shopId = $item->product->shop->id;
-        
+
         if (!$advertisedProductsByShop->has($shopId)) {
             $shop = $item->product->shop;
-            
+
             // Tính toán thông tin shop từ các bảng riêng biệt
             $actualRating = $shop->order_reviews_avg_rating ?? 0;
             $actualFollowers = $shop->followers_count ?? 0;
-            
+
             // Gán thông tin thực tế vào shop object
             $shop->shop_rating = round($actualRating, 1);
             $shop->total_followers = $actualFollowers;
-            
+
             $advertisedProductsByShop->put($shopId, [
                 'shop' => $shop,
                 'products' => collect(),
@@ -388,11 +413,11 @@ class ProductController extends Controller
                 'top_campaign_id' => $campaign->id,
             ]);
         }
-        
+
         // Gán tên chiến dịch vào thuộc tính mới của sản phẩm
         $item->product->ads_campaign_name = $campaign->name;
         $advertisedProductsByShop->get($shopId)['products']->push($item->product);
-        
+
         // Lưu thông tin chiến dịch
         $advertisedProductsByShop->get($shopId)['all_campaigns']->push([
             'campaign' => $campaign,
@@ -431,7 +456,7 @@ class ProductController extends Controller
             'categories',
             'brands'
         ])->where('slug', $slug)->where('status', 'active')->firstOrFail();
-        
+
         $averageRating = Cache::remember("product_{$product->id}_average_rating", 3600, function () use ($product) {
             return $product->orderReviews()->avg('rating') ?? 0;
         });
@@ -455,11 +480,9 @@ class ProductController extends Controller
             $query->where(function ($q) {
                 $q->whereHas('images')->orWhereHas('videos');
             });
-        } 
-        elseif ($filter === 'comments') {
+        } elseif ($filter === 'comments') {
             $query->whereNotNull('comment');
-        } 
-        elseif (Str::startsWith($filter, 'star-')) {
+        } elseif (Str::startsWith($filter, 'star-')) {
             $rating = (int) Str::after($filter, 'star-');
             $query->where('rating', $rating);
         }
@@ -480,10 +503,10 @@ class ProductController extends Controller
             if (!$review->relationLoaded('likes')) {
                 $review->load('likes');
             }
-            
+
             $review->likes_count = $review->likes ? $review->likes->count() : 0;
             $review->liked_by_auth = $authId && $review->likes ? $review->likes->where('user_id', $authId)->isNotEmpty() : false;
-            
+
             Log::info('Main Review like info:', [
                 'review_id' => $review->id,
                 'likes_count' => $review->likes_count,
@@ -618,10 +641,10 @@ class ProductController extends Controller
                 if (!$review->relationLoaded('likes')) {
                     $review->load('likes');
                 }
-                
+
                 $review->likes_count = $review->likes ? $review->likes->count() : 0;
                 $review->liked_by_auth = $authId && $review->likes ? $review->likes->where('user_id', $authId)->isNotEmpty() : false;
-                
+
                 Log::info('AJAX Review like info:', [
                     'review_id' => $review->id,
                     'likes_count' => $review->likes_count,
@@ -642,10 +665,10 @@ class ProductController extends Controller
             if (!$review->relationLoaded('likes')) {
                 $review->load('likes');
             }
-            
+
             $review->likes_count = $review->likes ? $review->likes->count() : 0;
             $review->liked_by_auth = $authId && $review->likes ? $review->likes->where('user_id', $authId)->isNotEmpty() : false;
-            
+
             Log::info('Main Review like info:', [
                 'review_id' => $review->id,
                 'likes_count' => $review->likes_count,
@@ -684,17 +707,17 @@ class ProductController extends Controller
     public function showShopAds(Request $request, $shopId)
     {
         $query = $request->get('query');
-        
+
         // Lấy tất cả quảng cáo của shop có liên quan đến từ khóa tìm kiếm
         $shopAds = AdsCampaignItem::with(['product.defaultImage', 'product.shop', 'adsCampaign.shop'])
             ->whereHas('adsCampaign', function ($query) {
                 $query->where('status', 'active')
-                      ->where('start_date', '<=', now())
-                      ->where('end_date', '>=', now());
+                    ->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now());
             })
             ->whereHas('product', function ($query) use ($shopId) {
                 $query->where('shopID', $shopId)
-                      ->where('status', 'active');
+                    ->where('status', 'active');
             })
             ->when($query, function ($q) use ($query) {
                 $q->whereHas('product', function ($productQuery) use ($query) {
@@ -715,7 +738,7 @@ class ProductController extends Controller
             });
 
         $shop = \App\Models\Shop::findOrFail($shopId);
-        
+
         return view('user.shop.ads', compact('shopAds', 'shop', 'query'));
     }
 
@@ -763,7 +786,7 @@ class ProductController extends Controller
         }
 
         $reviews = $query->paginate(10);
-        
+
         // Đảm bảo quan hệ likes được load cho từng review
         $authId = Auth::id();
         foreach ($reviews as $review) {
@@ -772,7 +795,7 @@ class ProductController extends Controller
             }
             $review->likes_count = $review->likes ? $review->likes->count() : 0;
             $review->liked_by_auth = $authId && $review->likes ? $review->likes->where('user_id', $authId)->isNotEmpty() : false;
-            
+
             Log::info('Filtered Review like info:', [
                 'review_id' => $review->id,
                 'likes_count' => $review->likes_count,
@@ -782,7 +805,7 @@ class ProductController extends Controller
                 'likes_count_actual' => $review->likes ? $review->likes->count() : 'null'
             ]);
         }
-        
+
         return $reviews;
     }
 
@@ -1398,7 +1421,7 @@ class ProductController extends Controller
                 'review_id' => $reviewId,
                 'user_id' => Auth::id()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi thích đánh giá!'
@@ -1439,93 +1462,92 @@ class ProductController extends Controller
     {
         try {
             $productQuery = Product::query();
-            
+
             // Text search
             if ($query) {
-                $productQuery->where(function($q) use ($query) {
+                $productQuery->where(function ($q) use ($query) {
                     $q->where('name', 'like', "%{$query}%")
-                       ->orWhere('description', 'like', "%{$query}%");
+                        ->orWhere('description', 'like', "%{$query}%");
                 });
             }
-            
+
             // Category filter
             if ($categoryIds && is_array($categoryIds) && !empty($categoryIds)) {
-                $productQuery->whereHas('categories', function($q) use ($categoryIds) {
+                $productQuery->whereHas('categories', function ($q) use ($categoryIds) {
                     $q->whereIn('categories.id', $categoryIds);
                 });
             }
-            
+
             // Brand filter
             if ($brandIds && is_array($brandIds) && !empty($brandIds)) {
-                $productQuery->whereHas('brands', function($q) use ($brandIds) {
+                $productQuery->whereHas('brands', function ($q) use ($brandIds) {
                     $q->whereIn('brands.id', $brandIds);
                 });
             }
-            
+
             // Shop filter
             if ($shopIds && is_array($shopIds) && !empty($shopIds)) {
-                $productQuery->whereHas('shop', function($q) use ($shopIds) {
+                $productQuery->whereHas('shop', function ($q) use ($shopIds) {
                     $q->whereIn('shops.id', $shopIds);
                 });
             }
-            
+
             // Price filter
             if ($priceMin || $priceMax) {
-                $productQuery->where(function($q) use ($priceMin, $priceMax) {
+                $productQuery->where(function ($q) use ($priceMin, $priceMax) {
                     // Xử lý price range cho cả simple products và variant products
                     if ($priceMin && $priceMax) {
                         // Có cả min và max
-                        $q->where(function($q2) use ($priceMin, $priceMax) {
+                        $q->where(function ($q2) use ($priceMin, $priceMax) {
                             // Simple products: sale_price hoặc price trong khoảng
-                            $q2->where(function($q3) use ($priceMin, $priceMax) {
+                            $q2->where(function ($q3) use ($priceMin, $priceMax) {
                                 $q3->where('sale_price', '>=', $priceMin)
-                                   ->where('sale_price', '<=', $priceMax);
-                            })->orWhere(function($q3) use ($priceMin, $priceMax) {
+                                    ->where('sale_price', '<=', $priceMax);
+                            })->orWhere(function ($q3) use ($priceMin, $priceMax) {
                                 $q3->where('price', '>=', $priceMin)
-                                   ->where('price', '<=', $priceMax);
+                                    ->where('price', '<=', $priceMax);
                             });
-                        })->orWhereHas('variants', function($q2) use ($priceMin, $priceMax) {
+                        })->orWhereHas('variants', function ($q2) use ($priceMin, $priceMax) {
                             // Variant products: có variant trong khoảng giá
-                            $q2->where(function($q3) use ($priceMin, $priceMax) {
+                            $q2->where(function ($q3) use ($priceMin, $priceMax) {
                                 $q3->where('sale_price', '>=', $priceMin)
-                                   ->where('sale_price', '<=', $priceMax);
-                            })->orWhere(function($q3) use ($priceMin, $priceMax) {
+                                    ->where('sale_price', '<=', $priceMax);
+                            })->orWhere(function ($q3) use ($priceMin, $priceMax) {
                                 $q3->where('price', '>=', $priceMin)
-                                   ->where('price', '<=', $priceMax);
+                                    ->where('price', '<=', $priceMax);
                             });
                         });
                     } elseif ($priceMin) {
                         // Chỉ có min
-                        $q->where(function($q2) use ($priceMin) {
+                        $q->where(function ($q2) use ($priceMin) {
                             $q2->where('sale_price', '>=', $priceMin)
-                               ->orWhere('price', '>=', $priceMin)
-                               ->orWhereHas('variants', function($q3) use ($priceMin) {
-                                   $q3->where('sale_price', '>=', $priceMin)
-                                      ->orWhere('price', '>=', $priceMin);
-                               });
+                                ->orWhere('price', '>=', $priceMin)
+                                ->orWhereHas('variants', function ($q3) use ($priceMin) {
+                                    $q3->where('sale_price', '>=', $priceMin)
+                                        ->orWhere('price', '>=', $priceMin);
+                                });
                         });
                     } elseif ($priceMax) {
                         // Chỉ có max
-                        $q->where(function($q2) use ($priceMax) {
+                        $q->where(function ($q2) use ($priceMax) {
                             $q2->where('sale_price', '<=', $priceMax)
-                               ->orWhere('price', '<=', $priceMax)
-                               ->orWhereHas('variants', function($q3) use ($priceMax) {
-                                   $q3->where('sale_price', '<=', $priceMax)
-                                      ->orWhere('price', '<=', $priceMax);
-                               });
+                                ->orWhere('price', '<=', $priceMax)
+                                ->orWhereHas('variants', function ($q3) use ($priceMax) {
+                                    $q3->where('sale_price', '<=', $priceMax)
+                                        ->orWhere('price', '<=', $priceMax);
+                                });
                         });
                     }
                 });
             }
-            
+
             // Status filter
             $productQuery->where('status', 'active');
-            
+
             // Load relationships
             $productQuery->with(['shop']);
-            
+
             return $productQuery;
-            
         } catch (\Exception $e) {
             Log::error('Error in buildBaseProductQuery: ' . $e->getMessage());
             // Return a basic query if there's an error
@@ -1550,7 +1572,7 @@ class ProductController extends Controller
 
             foreach ($sampleProducts as $product) {
                 if (!$product) continue;
-                
+
                 if ($product->categories && $product->categories->isNotEmpty()) {
                     foreach ($product->categories as $category) {
                         if ($category) {
@@ -1558,7 +1580,7 @@ class ProductController extends Controller
                         }
                     }
                 }
-                
+
                 if ($product->brands && $product->brands->isNotEmpty()) {
                     foreach ($product->brands as $brand) {
                         if ($brand) {
@@ -1586,7 +1608,7 @@ class ProductController extends Controller
     private function processCategories($relevantCategories, $sampleProducts)
     {
         $categories = collect();
-        
+
         foreach ($relevantCategories as $category) {
             // Tìm danh mục cha hoặc chính nó
             $parentCategory = null;
@@ -1599,7 +1621,7 @@ class ProductController extends Controller
                     ->where('id', $category->id)
                     ->first();
             }
-            
+
             if ($parentCategory && !$categories->has($parentCategory->id)) {
                 $categories->put($parentCategory->id, $parentCategory);
             }
@@ -1607,11 +1629,11 @@ class ProductController extends Controller
 
         return $categories->map(function ($cat) use ($sampleProducts) {
             $cat->product_count = $this->calculateCategoryProductCount($cat, $sampleProducts);
-            
+
             if ($cat->subCategories && $cat->subCategories->isNotEmpty()) {
                 foreach ($cat->subCategories as $sub) {
                     $sub->product_count = $this->calculateCategoryProductCount($sub, $sampleProducts);
-                    
+
                     if ($sub->subCategories && $sub->subCategories->isNotEmpty()) {
                         foreach ($sub->subCategories as $sub2) {
                             $sub2->product_count = $this->calculateCategoryProductCount($sub2, $sampleProducts);
@@ -1631,7 +1653,7 @@ class ProductController extends Controller
     private function processBrands($relevantBrands, $sampleProducts)
     {
         $brands = collect();
-        
+
         foreach ($relevantBrands as $brand) {
             // Tìm thương hiệu cha hoặc chính nó
             $parentBrand = null;
@@ -1644,7 +1666,7 @@ class ProductController extends Controller
                     ->where('id', $brand->id)
                     ->first();
             }
-            
+
             if ($parentBrand && !$brands->has($parentBrand->id)) {
                 $brands->put($parentBrand->id, $parentBrand);
             }
@@ -1652,7 +1674,7 @@ class ProductController extends Controller
 
         return $brands->map(function ($brand) use ($sampleProducts) {
             $brand->product_count = $this->calculateBrandProductCount($brand, $sampleProducts);
-            
+
             if ($brand->subBrands && $brand->subBrands->isNotEmpty()) {
                 foreach ($brand->subBrands as $sub) {
                     $sub->product_count = $this->calculateBrandProductCount($sub, $sampleProducts);
@@ -1672,7 +1694,7 @@ class ProductController extends Controller
 
         foreach ($relevantShops as $shop) {
             if (!$shop) continue;
-            
+
             // Tìm shop cha hoặc chính nó
             $parentShop = null;
             try {
@@ -1729,11 +1751,11 @@ class ProductController extends Controller
             if (!$product->categories) {
                 return false;
             }
-            
+
             return $product->categories->contains('id', $category->id) ||
-                   $product->categories->filter(function ($productCat) use ($category) {
-                       return $productCat && $productCat->parent_id === $category->id;
-                   })->isNotEmpty();
+                $product->categories->filter(function ($productCat) use ($category) {
+                    return $productCat && $productCat->parent_id === $category->id;
+                })->isNotEmpty();
         })->count();
     }
 
@@ -1750,11 +1772,11 @@ class ProductController extends Controller
             if (!$product->brands) {
                 return false;
             }
-            
+
             return $product->brands->contains('id', $brand->id) ||
-                   $product->brands->filter(function ($productBrand) use ($brand) {
-                       return $productBrand && $productBrand->parent_id === $brand->id;
-                   })->isNotEmpty();
+                $product->brands->filter(function ($productBrand) use ($brand) {
+                    return $productBrand && $productBrand->parent_id === $brand->id;
+                })->isNotEmpty();
         })->count();
     }
 
@@ -1772,9 +1794,9 @@ class ProductController extends Controller
                 if (!$product || !$product->shop) {
                     return false;
                 }
-                
+
                 return $product->shop->id === $shop->id ||
-                       (isset($product->shop->parent_id) && $product->shop->parent_id === $shop->id);
+                    (isset($product->shop->parent_id) && $product->shop->parent_id === $shop->id);
             })->count();
         } catch (\Exception $e) {
             Log::warning('Error calculating shop product count: ' . $e->getMessage(), ['shop_id' => $shop->id ?? 'unknown']);
@@ -1796,12 +1818,12 @@ class ProductController extends Controller
                 });
             })
             ->with([
-                'adsCampaignItems.product.images', 
+                'adsCampaignItems.product.images',
                 'adsCampaignItems.product.variants',
-                'adsCampaignItems.product.shop' => function($query) {
+                'adsCampaignItems.product.shop' => function ($query) {
                     $query->withCount('followers')
-                          ->withCount('orderReviews')
-                          ->withAvg('orderReviews', 'rating');
+                        ->withCount('orderReviews')
+                        ->withAvg('orderReviews', 'rating');
                 }
             ])
             ->get();
@@ -1833,7 +1855,7 @@ class ProductController extends Controller
     private function applySorting($query, $sort)
     {
         try {
-            $query = $query->when($sort, function($q) use ($sort) {
+            $query = $query->when($sort, function ($q) use ($sort) {
                 return match ($sort) {
                     'price_asc' => $q->orderBy('sale_price', 'asc'),
                     'price_desc' => $q->orderBy('sale_price', 'desc'),
@@ -1842,15 +1864,15 @@ class ProductController extends Controller
                     default => $q->orderBy('id', 'desc'),
                 };
             })->where('status', 'active')
-              ->with(['categories', 'brands', 'images', 'variants', 'shop']); // Thêm shop relationship
-              
+                ->with(['categories', 'brands', 'images', 'variants', 'shop']); // Thêm shop relationship
+
             return $query;
         } catch (\Exception $e) {
             Log::error('Error in applySorting: ' . $e->getMessage());
             // Return a basic sorted query if there's an error
             return $query->where('status', 'active')
-                        ->with(['categories', 'brands', 'images', 'variants', 'shop'])
-                        ->orderBy('id', 'desc');
+                ->with(['categories', 'brands', 'images', 'variants', 'shop'])
+                ->orderBy('id', 'desc');
         }
     }
 
@@ -1860,7 +1882,7 @@ class ProductController extends Controller
     private function excludeAdvertisedProducts($query, $advertisedProductsByShop)
     {
         $advertisedProductIds = collect();
-        
+
         if ($advertisedProductsByShop->isNotEmpty()) {
             foreach ($advertisedProductsByShop as $shopAds) {
                 $advertisedProductIds = $advertisedProductIds->merge($shopAds['products']->pluck('id'));
@@ -1877,11 +1899,11 @@ class ProductController extends Controller
     /**
      * Handle AJAX response
      */
-    private function handleAjaxResponse($products, $categories, $brands, $shops, $advertisedProductsByShop, $categoryIds, $brandIds, $shopIds, $rating)
+    private function handleAjaxResponse($products, $categories, $brands, $shops, $advertisedProductsByShop, $categoryIds, $brandIds, $shopIds, $rating, $calculatedRatingCounts)
     {
         try {
             $productListHtml = view('partials.product_list', compact('products', 'advertisedProductsByShop'))->render();
-            
+
             // Render category filters with proper data
             $categoryFiltersHtml = '';
             if ($categories && $categories->isNotEmpty()) {
@@ -1892,7 +1914,7 @@ class ProductController extends Controller
                     $categoryFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc danh mục</div>';
                 }
             }
-            
+
             // Render brand filters with proper data
             $brandFiltersHtml = '';
             if ($brands && $brands->isNotEmpty()) {
@@ -1903,7 +1925,7 @@ class ProductController extends Controller
                     $brandFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc thương hiệu</div>';
                 }
             }
-            
+
             // Render shop filters with proper data
             $shopFiltersHtml = '';
             if ($shops && $shops->isNotEmpty()) {
@@ -1914,18 +1936,19 @@ class ProductController extends Controller
                     $shopFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc cửa hàng</div>';
                 }
             }
-            
+
             // Render rating filters
             $ratingFiltersHtml = '';
             try {
                 $ratingFiltersHtml = view('partials.rating_filters', [
                     'products' => $products,
+                    'ratingCounts' => $calculatedRatingCounts, // Truyền ratingCounts đã tính toán
                 ])->render();
             } catch (\Exception $e) {
                 Log::warning('Error rendering rating filters: ' . $e->getMessage());
                 $ratingFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc đánh giá</div>';
             }
-            
+
             return response()->json([
                 'productList' => $productListHtml,
                 'categoryFilters' => $categoryFiltersHtml,
@@ -1956,18 +1979,18 @@ class ProductController extends Controller
     {
         try {
             $rating = $request->input('rating', 4);
-            
+
             // Test rating filter
             $products = Product::where('status', 'active')
-                ->whereHas('orderReviews', function($q) use ($rating) {
+                ->whereHas('orderReviews', function ($q) use ($rating) {
                     $q->where('rating', '>=', $rating);
                 })
                 ->with(['images', 'shop', 'orderReviews'])
                 ->take(5)
                 ->get();
-                
+
             // Debug orderReviews
-            $products->each(function($product) {
+            $products->each(function ($product) {
                 Log::info('Product rating debug:', [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
@@ -1975,12 +1998,12 @@ class ProductController extends Controller
                     'orderReviews_ratings' => $product->orderReviews->pluck('rating')->toArray()
                 ]);
             });
-                
+
             return response()->json([
                 'success' => true,
                 'rating_filter' => $rating,
                 'products_count' => $products->count(),
-                'products' => $products->map(function($p) {
+                'products' => $products->map(function ($p) {
                     return [
                         'id' => $p->id,
                         'name' => $p->name,
@@ -1989,7 +2012,6 @@ class ProductController extends Controller
                     ];
                 })
             ]);
-            
         } catch (\Exception $e) {
             Log::error('Test rating filter error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);

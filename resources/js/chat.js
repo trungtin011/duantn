@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     let currentShopId = null;
     let currentShopName = '';
     let lastMessageId = 0; // Track last message ID for auto-refresh
@@ -14,11 +14,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Image upload elements
     var imageUploadBtn = document.getElementById('image-upload-btn');
     var imageInput = document.getElementById('image-input');
-    var imagePreviewModal = document.getElementById('image-preview-modal');
+    var imagePreviewArea = document.getElementById('image-preview-area');
     var previewImage = document.getElementById('preview-image');
-    var closePreview = document.getElementById('close-preview');
-    var cancelUpload = document.getElementById('cancel-upload');
-    var confirmUpload = document.getElementById('confirm-upload');
+    var imageName = document.getElementById('image-name');
+    var removeImage = document.getElementById('remove-image');
     var selectedImageFile = null;
 
     if (shopBtns && chatForm && chatMessages && chatHeader) {
@@ -314,84 +313,179 @@ document.addEventListener('DOMContentLoaded', function() {
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         previewImage.src = e.target.result;
-                        imagePreviewModal.classList.remove('hidden');
+                        imagePreviewArea.classList.remove('hidden');
+                        imageName.textContent = file.name;
                     };
                     reader.readAsDataURL(file);
                 }
             });
 
-            closePreview.addEventListener('click', function() {
-                imagePreviewModal.classList.add('hidden');
+            removeImage.addEventListener('click', function() {
+                imagePreviewArea.classList.add('hidden');
                 imageInput.value = '';
                 selectedImageFile = null;
+                imageName.textContent = '';
             });
 
-            cancelUpload.addEventListener('click', function() {
-                imagePreviewModal.classList.add('hidden');
-                imageInput.value = '';
-                selectedImageFile = null;
-            });
-
-            confirmUpload.addEventListener('click', function() {
-                if (selectedImageFile && currentShopId && !isSubmitting) {
-                    sendImage(selectedImageFile);
-                }
-            });
-        }
-
-        function sendImage(imageFile) {
-            if (isSubmitting) return; // Prevent double submission
-            
-            isSubmitting = true;
-            const formData = new FormData();
-            formData.append('image', imageFile);
-            formData.append('_token', chatForm.querySelector('input[name=_token]').value);
-            
-            const productId = productContextDiv && productContextDiv.style.display !== 'none' ? productContextDiv.dataset.productId : null;
-            if (productId) {
-                formData.append('product_id', productId);
-            }
-
-            fetch('/chat/send/' + currentShopId, {
-                method: 'POST',
-                body: formData
-            })
-            .then(function(res) {
-                if (!res.ok) {
-                    return res.json().then(err => { throw new Error(err.message || 'Error sending image'); });
-                }
-                return res.json();
-            })
-            .then(function(response) {
-                console.log('Image send response:', response);
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                // Use response directly since it's already in the correct format
-                const msg = {
-                    id: response.id,
-                    sender_type: response.sender_type,
-                    message: response.message || '',
-                    image_url: response.image_url,
-                    created_at: response.created_at
+                if (isSubmitting) return; // Prevent double submission
+                
+                var input = document.getElementById('chat-input');
+                var productId = productContextDiv && productContextDiv.style.display !== 'none' ? productContextDiv.dataset.productId : null;
+
+                if (!input.value.trim() && !selectedImageFile) return; // Require text or image
+
+                isSubmitting = true;
+                const messageText = input.value.trim();
+                
+                // Clear input immediately for better UX
+                input.value = '';
+                input.style.height = 'auto';
+
+                // Create temporary message for immediate display
+                const tempMessage = {
+                    id: 'temp_' + Date.now(),
+                    sender_type: 'user',
+                    message: messageText,
+                    image_url: selectedImageFile ? URL.createObjectURL(selectedImageFile) : null,
+                    created_at: new Date().toISOString()
                 };
                 
-                // Track sent message to prevent duplicates
-                sentMessageIds.add(msg.id);
-                
-                // Append the new message immediately
-                appendMessage(msg, currentShopName);
-                lastMessageId = Math.max(lastMessageId, msg.id); // Update last message ID
-                
-                imagePreviewModal.classList.add('hidden');
-                imageInput.value = '';
-                selectedImageFile = null;
-                if (productContextDiv) productContextDiv.style.display = 'none';
-            })
-            .catch(function(error) {
-                console.error('Fetch error:', error);
-                alert('Không thể gửi ảnh: ' + error.message);
-            })
-            .finally(function() {
-                isSubmitting = false; // Reset submission flag
+                // Append temporary message immediately
+                appendMessage(tempMessage, currentShopName);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                if (selectedImageFile) {
+                    // Send image with optional message
+                    const formData = new FormData();
+                    formData.append('image', selectedImageFile);
+                    if (messageText) {
+                        formData.append('message', messageText);
+                    }
+                    formData.append('_token', chatForm.querySelector('input[name=_token]').value);
+                    
+                    if (productId) {
+                        formData.append('product_id', productId);
+                    }
+
+                    fetch('/chat/send/' + currentShopId, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(function(res) {
+                        if (!res.ok) {
+                            return res.json().then(err => { throw new Error(err.message || 'Error sending image'); });
+                        }
+                        return res.json();
+                    })
+                    .then(function(response) {
+                        console.log('Image send response:', response);
+                        
+                        // Remove temporary message
+                        const tempMessageEl = document.querySelector(`[data-message-id="${tempMessage.id}"]`);
+                        if (tempMessageEl) {
+                            tempMessageEl.remove();
+                        }
+                        
+                        // Use response directly since it's already in the correct format
+                        const msg = {
+                            id: response.id,
+                            sender_type: response.sender_type,
+                            message: response.message || '',
+                            image_url: response.image_url,
+                            created_at: response.created_at
+                        };
+                        
+                        // Track sent message to prevent duplicates
+                        sentMessageIds.add(msg.id);
+                        
+                        // Append the new message immediately
+                        appendMessage(msg, currentShopName);
+                        lastMessageId = Math.max(lastMessageId, msg.id); // Update last message ID
+                        
+                        // Clear image preview
+                        imagePreviewArea.classList.add('hidden');
+                        imageInput.value = '';
+                        selectedImageFile = null;
+                        
+                        if (productContextDiv) productContextDiv.style.display = 'none';
+                    })
+                    .catch(function(error) {
+                        console.error('Fetch error:', error);
+                        alert('Không thể gửi ảnh: ' + error.message);
+                        
+                        // Remove temporary message on error
+                        const tempMessageEl = document.querySelector(`[data-message-id="${tempMessage.id}"]`);
+                        if (tempMessageEl) {
+                            tempMessageEl.remove();
+                        }
+                    })
+                    .finally(function() {
+                        isSubmitting = false; // Reset submission flag
+                    });
+                } else {
+                    // Send text message only
+                    fetch('/chat/send/' + currentShopId, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': chatForm.querySelector('input[name=_token]').value
+                        },
+                        body: JSON.stringify({ message: messageText, product_id: productId })
+                    })
+                    .then(function(res) {
+                        if (!res.ok) {
+                            console.error('Error sending message:', res.statusText);
+                            return res.json().then(err => { throw new Error(err.message || 'Error sending message'); });
+                        }
+                        return res.json();
+                    })
+                    .then(function(response) {
+                        console.log('Message send response:', response);
+                        
+                        // Remove temporary message
+                        const tempMessageEl = document.querySelector(`[data-message-id="${tempMessage.id}"]`);
+                        if (tempMessageEl) {
+                            tempMessageEl.remove();
+                        }
+                        
+                        // Use response directly since it's already in the correct format
+                        const msg = {
+                            id: response.id,
+                            sender_type: response.sender_type,
+                            message: response.message,
+                            image_url: response.image_url,
+                            created_at: response.created_at
+                        };
+                        
+                        // Track sent message to prevent duplicates
+                        sentMessageIds.add(msg.id);
+                        
+                        // Append the new message immediately
+                        appendMessage(msg, currentShopName);
+                        lastMessageId = Math.max(lastMessageId, msg.id); // Update last message ID
+                        
+                        if (productContextDiv) productContextDiv.style.display = 'none';
+                    })
+                    .catch(function(error) {
+                        console.error('Fetch error:', error);
+                        alert('Không thể gửi tin nhắn: ' + error.message);
+                        
+                        // Remove temporary message on error
+                        const tempMessageEl = document.querySelector(`[data-message-id="${tempMessage.id}"]`);
+                        if (tempMessageEl) {
+                            tempMessageEl.remove();
+                        }
+                        
+                        // Restore input value if send failed
+                        input.value = messageText;
+                    })
+                    .finally(function() {
+                        isSubmitting = false; // Reset submission flag
+                    });
+                }
             });
         }
 
@@ -413,70 +507,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-
-        chatForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (isSubmitting) return; // Prevent double submission
-            
-            var input = document.getElementById('chat-input');
-            var productId = productContextDiv && productContextDiv.style.display !== 'none' ? productContextDiv.dataset.productId : null;
-
-            if (!input.value.trim() || !currentShopId) return;
-
-            isSubmitting = true;
-            const messageText = input.value.trim();
-            
-            // Clear input immediately for better UX
-            input.value = '';
-            input.style.height = 'auto';
-
-            fetch('/chat/send/' + currentShopId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': chatForm.querySelector('input[name=_token]').value
-                },
-                body: JSON.stringify({ message: messageText, product_id: productId })
-            })
-            .then(function(res) {
-                if (!res.ok) {
-                    console.error('Error sending message:', res.statusText);
-                    return res.json().then(err => { throw new Error(err.message || 'Error sending message'); });
-                }
-                return res.json();
-            })
-            .then(function(response) {
-                console.log('Message send response:', response);
-                
-                // Use response directly since it's already in the correct format
-                const msg = {
-                    id: response.id,
-                    sender_type: response.sender_type,
-                    message: response.message,
-                    image_url: response.image_url,
-                    created_at: response.created_at
-                };
-                
-                // Track sent message to prevent duplicates
-                sentMessageIds.add(msg.id);
-                
-                // Append the new message immediately
-                appendMessage(msg, currentShopName);
-                lastMessageId = Math.max(lastMessageId, msg.id); // Update last message ID
-                
-                if (productContextDiv) productContextDiv.style.display = 'none';
-            })
-            .catch(function(error) {
-                console.error('Fetch error:', error);
-                alert('Không thể gửi tin nhắn: ' + error.message);
-                // Restore input value if send failed
-                input.value = messageText;
-            })
-            .finally(function() {
-                isSubmitting = false; // Reset submission flag
-            });
-        });
 
         // Remove product context
         var removeProductBtn = document.getElementById('remove-product-context');
@@ -527,23 +557,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         playNotificationSound();
                         
                     } else if (isMessageForCurrentShop && isMessageFromCurrentUser) {
-                        // Handle own message confirmation
+                        // Handle own message confirmation - this should rarely happen since we append immediately
                         console.log('Own message confirmed...');
-                        const newMessage = {
-                            id: e.id || Date.now(),
-                            sender_type: 'user',
-                            message: e.message || '',
-                            image_url: e.image_url || null,
-                            created_at: new Date().toISOString()
-                        };
+                        // Don't append again if we already have it
                         
-                        // Only append if not already sent by current user
-                        if (!sentMessageIds.has(newMessage.id)) {
-                            appendMessage(newMessage, currentShopName);
-                            lastMessageId = Math.max(lastMessageId, newMessage.id);
-                        }
-                        
-                    } else if (isMessageFromOtherUser && e.shop_id && e.shop_id != currentShopId) {
+                    } else if (e.shop_id && e.shop_id != currentShopId) {
                         // Message from other shop - update unread badge
                         console.log('New message from other shop, updating unread badge...');
                         
