@@ -138,7 +138,17 @@
                         <!-- Khoảng giá -->
                         <div class="mb-4">
                             <h3 class="font-semibold text-sm mb-2 text-gray-700">Khoảng Giá</h3>
-                            <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="mt-2 flex flex-col gap-2">
+                                <input type="range" id="price-range-min" min="0" max="100000000" step="1000" value="{{ request('price_min') ? (int) request('price_min') : 0 }}">
+                                <input type="range" id="price-range-max" min="0" max="100000000" step="1000" value="{{ request('price_max') ? (int) request('price_max') : 100000000 }}">
+                            </div>
+                            <div class="flex items-center justify-between mt-2">
+                                <span id="price-min-display" class="text-sm text-gray-700"></span>
+                                <span id="price-max-display" class="text-sm text-gray-700"></span>
+                            </div>
+                            <input type="hidden" name="price_min" id="price_min" value="{{ request('price_min') }}">
+                            <input type="hidden" name="price_max" id="price_max" value="{{ request('price_max') }}">
+                            <div class="grid grid-cols-2 gap-2 mt-3">
                                 <button type="button"
                                     class="price-suggestion border border-gray-300 rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100"
                                     data-min="0" data-max="500000">Dưới 500K</button>
@@ -151,14 +161,6 @@
                                 <button type="button"
                                     class="price-suggestion border border-gray-300 rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100"
                                     data-min="3000000" data-max="">Trên 3 triệu</button>
-                            </div>
-                            <div class="flex gap-2">
-                                <input type="number" name="price_min" id="price_min" placeholder="Từ"
-                                    value="{{ request('price_min') }}"
-                                    class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <input type="number" name="price_max" id="price_max" placeholder="Đến"
-                                    value="{{ request('price_max') }}"
-                                    class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                         </div>
 
@@ -243,7 +245,68 @@
 
 
     @push('scripts')
-        <script src="{{ asset('js/search-filter-manager.js') }}"></script>
+        <script>
+            (function() {
+                const currencyFormat = (value) => {
+                    if (!value && value !== 0) return '';
+                    return new Intl.NumberFormat('vi-VN').format(Math.round(value)) + 'đ';
+                };
 
+                const hiddenMin = document.getElementById('price_min');
+                const hiddenMax = document.getElementById('price_max');
+                const displayMin = document.getElementById('price-min-display');
+                const displayMax = document.getElementById('price-max-display');
+
+                const rangeMin = document.getElementById('price-range-min');
+                const rangeMax = document.getElementById('price-range-max');
+
+                const ABS_MIN = parseInt(rangeMin.min, 10) || 0;
+                const ABS_MAX = parseInt(rangeMax.max, 10) || 100000000;
+
+                const syncDisplays = () => {
+                    const minV = parseInt(rangeMin.value, 10);
+                    const maxV = parseInt(rangeMax.value, 10);
+                    displayMin.textContent = 'Từ: ' + currencyFormat(minV);
+                    displayMax.textContent = 'Đến: ' + (maxV >= ABS_MAX ? 'Không giới hạn' : currencyFormat(maxV));
+                };
+
+                const normalizeRanges = () => {
+                    if (parseInt(rangeMin.value, 10) > parseInt(rangeMax.value, 10)) {
+                        rangeMin.value = rangeMax.value;
+                    }
+                };
+
+                // Initialize from hidden inputs if present
+                if (hiddenMin.value) rangeMin.value = hiddenMin.value;
+                if (hiddenMax.value) rangeMax.value = hiddenMax.value;
+                normalizeRanges();
+                syncDisplays();
+
+                rangeMin.addEventListener('input', () => {
+                    normalizeRanges();
+                    hiddenMin.value = parseInt(rangeMin.value, 10) === ABS_MIN ? '' : rangeMin.value;
+                    syncDisplays();
+                });
+                rangeMax.addEventListener('input', () => {
+                    normalizeRanges();
+                    hiddenMax.value = parseInt(rangeMax.value, 10) >= ABS_MAX ? '' : rangeMax.value;
+                    syncDisplays();
+                });
+
+                // Price suggestion buttons bind to ranges
+                document.querySelectorAll('.price-suggestion').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const min = this.dataset.min === '' ? ABS_MIN : parseInt(this.dataset.min || ABS_MIN, 10);
+                        const max = this.dataset.max === '' ? ABS_MAX : parseInt(this.dataset.max || ABS_MAX, 10);
+                        rangeMin.value = min;
+                        rangeMax.value = max;
+                        hiddenMin.value = min === ABS_MIN ? '' : min;
+                        hiddenMax.value = max >= ABS_MAX ? '' : max;
+                        syncDisplays();
+                    });
+                });
+            })();
+        </script>
+        <script src="{{ asset('js/search-filter-manager.js') }}"></script>
     @endpush
 @endsection

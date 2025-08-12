@@ -1033,8 +1033,7 @@
                             ký</a>
                         <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ
                             hàng</a>
-                        <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Danh
-                            sách ước</a>
+                        <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Sản phẩm yêu thích</a>
                         <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
                     @endif
                 @endauth

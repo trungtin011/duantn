@@ -106,23 +106,50 @@ class ProductController extends Controller
                 });
             }
             
-            // Price filter
+            // Price filter (include both simple products and variants)
             if ($priceMin || $priceMax) {
                 $productQuery->where(function($q) use ($priceMin, $priceMax) {
                     if ($priceMin && $priceMax) {
+                        // Simple products
                         $q->where(function($q2) use ($priceMin, $priceMax) {
-                            $q2->where('sale_price', '>=', $priceMin)
-                               ->where('sale_price', '<=', $priceMax);
-                        })->orWhere(function($q2) use ($priceMin, $priceMax) {
-                            $q2->where('price', '>=', $priceMin)
-                               ->where('price', '<=', $priceMax);
+                            $q2->where(function($q3) use ($priceMin, $priceMax) {
+                                $q3->where('sale_price', '>=', $priceMin)
+                                   ->where('sale_price', '<=', $priceMax);
+                            })->orWhere(function($q3) use ($priceMin, $priceMax) {
+                                $q3->where('price', '>=', $priceMin)
+                                   ->where('price', '<=', $priceMax);
+                            });
+                        })
+                        // Variants
+                        ->orWhereHas('variants', function($q2) use ($priceMin, $priceMax) {
+                            $q2->where(function($q3) use ($priceMin, $priceMax) {
+                                $q3->where('sale_price', '>=', $priceMin)
+                                   ->where('sale_price', '<=', $priceMax);
+                            })->orWhere(function($q3) use ($priceMin, $priceMax) {
+                                $q3->where('price', '>=', $priceMin)
+                                   ->where('price', '<=', $priceMax);
+                            });
                         });
                     } elseif ($priceMin) {
-                        $q->where('sale_price', '>=', $priceMin)
-                           ->orWhere('price', '>=', $priceMin);
+                        // Min only
+                        $q->where(function($q2) use ($priceMin) {
+                            $q2->where('sale_price', '>=', $priceMin)
+                               ->orWhere('price', '>=', $priceMin);
+                        })
+                        ->orWhereHas('variants', function($q3) use ($priceMin) {
+                            $q3->where('sale_price', '>=', $priceMin)
+                               ->orWhere('price', '>=', $priceMin);
+                        });
                     } elseif ($priceMax) {
-                        $q->where('sale_price', '<=', $priceMax)
-                           ->orWhere('price', '<=', $priceMax);
+                        // Max only
+                        $q->where(function($q2) use ($priceMax) {
+                            $q2->where('sale_price', '<=', $priceMax)
+                               ->orWhere('price', '<=', $priceMax);
+                        })
+                        ->orWhereHas('variants', function($q3) use ($priceMax) {
+                            $q3->where('sale_price', '<=', $priceMax)
+                               ->orWhere('price', '<=', $priceMax);
+                        });
                     }
                 });
             }
@@ -225,8 +252,8 @@ class ProductController extends Controller
                 'shops_count' => $shops->count()
             ]);
 
-            // Handle AJAX request
-            if ($request->ajax()) {
+            // Handle AJAX request (explicit param to prevent wrong detection on normal navigation)
+            if ($request->boolean('ajax')) {
                 return $this->handleAjaxResponse($products, $categories, $brands, $shops, $advertisedProductsByShop, $categoryIds, $brandIds, $shopIds, $rating);
             }
 
@@ -239,7 +266,7 @@ class ProductController extends Controller
                 'request' => $request->all()
             ]);
 
-            if ($request->ajax()) {
+            if ($request->boolean('ajax')) {
                 return response()->json([
                     'error' => 'Có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại.',
                     'details' => config('app.debug') ? $e->getMessage() : null
@@ -1891,7 +1918,9 @@ class ProductController extends Controller
             // Render rating filters
             $ratingFiltersHtml = '';
             try {
-                $ratingFiltersHtml = view('partials.rating_filters')->render();
+                $ratingFiltersHtml = view('partials.rating_filters', [
+                    'products' => $products,
+                ])->render();
             } catch (\Exception $e) {
                 Log::warning('Error rendering rating filters: ' . $e->getMessage());
                 $ratingFiltersHtml = '<div class="text-gray-500">Không thể tải bộ lọc đánh giá</div>';

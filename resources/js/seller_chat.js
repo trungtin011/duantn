@@ -15,12 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Image upload elements
     var imageUploadBtn = document.getElementById('image-upload-btn');
     var imageInput = document.getElementById('image-input');
-    var imagePreviewModal = document.getElementById('image-preview-modal');
-    var previewImage = document.getElementById('preview-image');
-    var closePreview = document.getElementById('close-preview');
-    var cancelUpload = document.getElementById('cancel-upload');
-    var confirmUpload = document.getElementById('confirm-upload');
-    var selectedImageFile = null;
+    // Preview modal removed — send immediately on choose
 
     if (customerBtns && chatForm && chatMessages && chatHeader && allChatsTab && unreadChatsTab && customerListContainer) {
         // Function to render customer list based on filter
@@ -178,44 +173,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
             imageInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
-                if (file) {
-                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                        alert('Kích thước ảnh không được vượt quá 2MB');
-                        return;
-                    }
-                    
-                    selectedImageFile = file;
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        previewImage.src = e.target.result;
-                        imagePreviewModal.classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
+                if (!file || !currentCustomerId) return;
+                const isWebm = file.type === 'video/webm' || file.name.toLowerCase().endsWith('.webm');
+                const maxSize = isWebm ? 10 * 1024 * 1024 : 2 * 1024 * 1024; // 10MB for webm, 2MB for images
+                if (file.size > maxSize) {
+                    alert(isWebm ? 'Kích thước webm không được vượt quá 10MB' : 'Kích thước ảnh không được vượt quá 2MB');
+                    this.value = '';
+                    return;
                 }
-            });
-
-            closePreview.addEventListener('click', function() {
-                imagePreviewModal.classList.add('hidden');
-                imageInput.value = '';
-                selectedImageFile = null;
-            });
-
-            cancelUpload.addEventListener('click', function() {
-                imagePreviewModal.classList.add('hidden');
-                imageInput.value = '';
-                selectedImageFile = null;
-            });
-
-            confirmUpload.addEventListener('click', function() {
-                if (selectedImageFile && currentCustomerId) {
-                    sendImage(selectedImageFile);
-                }
+                sendMedia(file);
             });
         }
 
-        function sendImage(imageFile) {
+        function sendMedia(file) {
             const formData = new FormData();
-            formData.append('image', imageFile);
+            const isWebm = file.type === 'video/webm' || file.name.toLowerCase().endsWith('.webm');
+            formData.append(isWebm ? 'video' : 'image', file);
             formData.append('_token', chatForm.querySelector('input[name=_token]').value);
 
             fetch('/seller/chat/send/' + currentCustomerId, {
@@ -223,20 +196,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             })
             .then(function(res) {
+                const ct = res.headers.get('content-type') || '';
                 if (!res.ok) {
-                    return res.json().then(err => { throw new Error(err.message || 'Error sending image'); });
+                    if (ct.includes('application/json')) {
+                        return res.json().then(err => { throw new Error(err.message || 'Error sending media'); });
+                    }
+                    throw new Error('HTTP ' + res.status);
                 }
-                return res.json();
+                return ct.includes('application/json') ? res.json() : res.text();
             })
             .then(function(msg) {
                 loadMessages(currentCustomerId, currentCustomerName);
-                imagePreviewModal.classList.add('hidden');
                 imageInput.value = '';
-                selectedImageFile = null;
             })
             .catch(function(error) {
                 console.error('Fetch error:', error);
-                alert('Không thể gửi ảnh: ' + error.message);
+                alert('Không thể gửi: ' + error.message);
             });
         }
 

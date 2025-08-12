@@ -1476,6 +1476,9 @@
                     <button class="close-btn text-2xl">×</button>
                 </div>
                 <div class="quick-view-body"></div>
+                <div class="p-4 border-t border-gray-200 flex justify-end">
+                    <a data-login-link href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}" class="hidden"></a>
+                </div>
             </div>
         </div>
     </div>
@@ -1813,9 +1816,25 @@
                     });
                 });
 
+                const isAuthenticated = {{ Auth::check() ? 'true' : 'false' }};
+
                 // Xử lý thêm vào giỏ hàng
                 addToCartButtons.forEach(button => {
                     button.addEventListener('click', () => {
+                        // Nếu chưa đăng nhập → mở Quick View (nếu đang đóng) và focus vùng chọn biến thể/CTA đăng nhập
+                        if (!isAuthenticated) {
+                            const modal = document.getElementById('quick-view-modal');
+                            if (modal && !modal.classList.contains('active')) {
+                                modal.classList.add('active');
+                            }
+                            const loginLink = document.querySelector('[data-login-link]');
+                            if (loginLink) {
+                                loginLink.click();
+                            } else {
+                                window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(window.location.href);
+                            }
+                            return;
+                        }
                         if (!selectedVariantId && hasVariants) {
                             Swal.fire({
                                 position: 'top-end',
@@ -1856,7 +1875,17 @@
                                     quantity: quantity
                                 })
                             })
-                            .then(res => res.json())
+                            .then(res => {
+                                if (res.status === 401) {
+                                    const loginLink = document.querySelector('[data-login-link]');
+                                    if (loginLink) loginLink.click();
+                                    return Promise.reject('unauthenticated');
+                                }
+                                if (!res.ok) {
+                                    return res.json().catch(() => ({})).then(err => Promise.reject(err.message || 'REQUEST_FAILED'));
+                                }
+                                return res.json();
+                            })
                             .then(data => {
                                 Swal.fire({
                                     position: 'top-end',
@@ -1868,12 +1897,13 @@
                                 });
                             })
                             .catch(error => {
+                                if (error === 'unauthenticated') return;
                                 Swal.fire({
                                     position: 'top-end',
                                     toast: true,
                                     icon: 'error',
                                     title: 'Lỗi',
-                                    text: 'Không thể thêm sản phẩm vào giỏ!',
+                                    text: (typeof error === 'string' ? error : 'Không thể thêm sản phẩm vào giỏ!'),
                                     timer: 1500,
                                     showConfirmButton: false
                                 });

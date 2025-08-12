@@ -273,6 +273,17 @@
                             x-transition>Người dùng</span>
                     </a>
 
+                    <a href="{{ route('admin.tickets.index') }}"
+                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.tickets.*') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}"
+                        :title="mobileCollapsed ? 'Hỗ trợ khách hàng' : ''">
+                        <i class="fas fa-headset w-5 h-5 mr-3 text-lg"></i>
+                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                            x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
+                            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Hỗ trợ khách
+                            hàng</span>
+                    </a>
+
                     <!-- Shop Management -->
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open"

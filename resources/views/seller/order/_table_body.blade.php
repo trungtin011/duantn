@@ -47,7 +47,20 @@
             <div class="space-y-2">
                 @foreach ($order->items as $item)
                     <div class="flex items-center gap-3">
-                        <img src="{{ $item->product_image }}" alt="{{ $item->product_name }}" class="w-8 h-8 object-cover rounded">
+                        @php
+                            $productId = $item->productID ?? $item->product_id ?? null;
+                            $variantId = $item->variantID ?? $item->variant_id ?? null;
+                            $imgPath = null;
+
+                            if ($variantId) {
+                                $imgPath = \App\Models\ProductImage::where('variantID', $variantId)->value('image_path');
+                            }
+                            if (!$imgPath && $productId) {
+                                $imgPath = \App\Models\ProductImage::where('productID', $productId)->where('is_default', true)->value('image_path')
+                                    ?? \App\Models\ProductImage::where('productID', $productId)->orderBy('display_order')->value('image_path');
+                            }
+                        @endphp
+                        <img src="{{ $imgPath ? asset('storage/' . $imgPath) : asset('images/avatar.png') }}" alt="{{ $item->product_name }}" class="w-8 h-8 object-cover rounded" onerror="this.src='{{ asset('images/avatar.png') }}'">
                         <div class="text-[11px]">
                             <p class="font-semibold">{{ $item->product_name }}</p>
                             <p class="text-gray-500">{{ $item->quantity }} x ₫{{ number_format($item->unit_price, 0, ',', '.') }}</p>

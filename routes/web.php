@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\NotificationsControllers as AdminNotificationsCon
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\AdsCampaignAdminController;
+use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 
 // seller
 use App\Http\Controllers\Admin\AdminReviewController;
@@ -57,7 +58,6 @@ use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
-use App\Http\Controllers\OrderReviewController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\User\WishlistController;
@@ -71,6 +71,8 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\VNPayController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\User\ComboController as UserComboController;
+use App\Http\Controllers\User\TicketController as UserTicketController;
+
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\MessageController;
@@ -296,7 +298,7 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::get('admin/reports/ajax', [AdminReportController::class, 'ajaxList'])->name('admin.reports.ajax');
     });
 
-    // Admin Coupon Routes (scoped to avoid conflicts)
+    // Admin Coupon
     Route::prefix('coupon')->group(function () {
         Route::get('/', [CouponController::class, 'index'])->name('admin.coupon.index');
         Route::get('/create', [CouponController::class, 'create'])->name('admin.coupon.create');
@@ -318,19 +320,21 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('admin.brands.edit');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('admin.brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('admin.brands.destroy');
+
     // Post Category
     Route::resource('post-categories', PostCategoryController::class);
     // Post Tag
     Route::resource('post-tags', PostTagController::class);
     // Post
     Route::resource('post', PostController::class);
+
     // Help
-    // HelpCategory AJAX must be defined BEFORE resource to avoid being captured by {id}
+    // HelpCategory
     Route::get('help-category/ajax', [HelpCategoryController::class, 'ajaxList'])->name('help-category.ajax');
     Route::resource('help-category', HelpCategoryController::class);
     Route::resource('help-article', HelpArticleController::class);
 
-    // Shop Management (Admin)
+    // Shop Management
     Route::prefix('shops')->group(function () {
         Route::get('/', [AdminShopController::class, 'index'])->name('admin.shops.index');
         Route::get('/pending', [AdminShopController::class, 'pending'])->name('admin.shops.pending');
@@ -349,6 +353,19 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
         Route::put('/{shop}', [AdminShopController::class, 'update'])->name('admin.shops.update');
         Route::delete('/{shop}', [AdminShopController::class, 'destroy'])->name('admin.shops.destroy');
         Route::post('/test-role-update', [AdminShopController::class, 'testRoleUpdate'])->name('admin.shops.test-role-update');
+    });
+
+    // Admin Ticket Routes
+    Route::prefix('tickets')->name('admin.tickets.')->group(function () {
+        Route::get('/', [AdminTicketController::class, 'index'])->name('index');
+        Route::get('/{ticket}', [AdminTicketController::class, 'show'])->name('show');
+        Route::post('/{ticket}/assign', [AdminTicketController::class, 'assign'])->name('assign');
+        Route::post('/{ticket}/reply', [AdminTicketController::class, 'reply'])->name('reply');
+        Route::post('/{ticket}/status', [AdminTicketController::class, 'updateStatus'])->name('update.status');
+        Route::post('/{ticket}/close', [AdminTicketController::class, 'close'])->name('close');
+        Route::delete('/{ticket}', [AdminTicketController::class, 'destroy'])->name('destroy');
+        Route::get('/attachment/{filename}', [AdminTicketController::class, 'downloadAttachment'])->name('download.attachment');
+        Route::get('/reply-attachment/{filename}', [AdminTicketController::class, 'downloadReplyAttachment'])->name('download.reply.attachment');
     });
 });
 
@@ -602,14 +619,14 @@ Route::prefix('customer')->group(function () {
         });
 
         //checkout
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-Route::post('/checkout/submit', [CheckoutController::class, 'store'])->name('checkout.store');
-Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
-Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
-Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('failed_payment');
+        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+        Route::post('/checkout/submit', [CheckoutController::class, 'store'])->name('checkout.store');
+        Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+        Route::get('/checkout/success/{order_code}', [CheckoutController::class, 'successPayment'])->name('checkout.success');
+        Route::get('/checkout/failed/{order_code}', [CheckoutController::class, 'failedPayment'])->name('failed_payment');
 
-// Mua ngay trực tiếp
-Route::get('/direct-checkout', [CheckoutController::class, 'directCheckout'])->name('customer.direct.checkout');
+        // Mua ngay trực tiếp
+        Route::get('/direct-checkout', [CheckoutController::class, 'directCheckout'])->name('customer.direct.checkout');
 
         Route::get('/checkout/momo/return', [MomoPaymentController::class, 'momoReturn'])->name('payment.momo.return');
         Route::post('/checkout/momo/ipn', [MomoPaymentController::class, 'momoIpn'])->name('payment.momo.ipn');
@@ -631,6 +648,18 @@ Route::get('/direct-checkout', [CheckoutController::class, 'directCheckout'])->n
             Route::post('/{orderID}/confirm-received', [OrderController::class, 'confirmReceived'])->name('user.order.confirm-received');
             Route::post('/reviews', [OrderController::class, 'storeReview'])->name('reviews.store');
         });
+
+        // User Ticket Routes
+        Route::prefix('tickets')->name('user.tickets.')->group(function () {
+            Route::get('/', [UserTicketController::class, 'index'])->name('index');
+            Route::get('/create', [UserTicketController::class, 'create'])->name('create');
+            Route::post('/', [UserTicketController::class, 'store'])->name('store');
+            Route::get('/{ticket}', [UserTicketController::class, 'show'])->name('show');
+            Route::post('/{ticket}/reply', [UserTicketController::class, 'reply'])->name('reply');
+            Route::post('/{ticket}/close', [UserTicketController::class, 'close'])->name('close');
+            Route::get('/attachment/{filename}', [UserTicketController::class, 'downloadAttachment'])->name('download.attachment');
+            Route::get('/reply-attachment/{filename}', [UserTicketController::class, 'downloadReplyAttachment'])->name('download.reply.attachment');
+        });
     });
 });
 
@@ -646,7 +675,7 @@ Route::get('/danh-muc/{slug}', function ($slug) {
 // Blog
 Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
 Route::get('/blog-detail/{slug}', [FrontendController::class, 'blogDetail'])->name('blog.detail');
-Route::post('/blog/{post}/comment', function(\App\Models\Post $post, \Illuminate\Http\Request $request) {
+Route::post('/blog/{post}/comment', function (\App\Models\Post $post, \Illuminate\Http\Request $request) {
     $request->validate([
         'content' => 'required|string|min:5|max:2000',
     ], [
@@ -873,22 +902,22 @@ Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.
 });
 
 // Route upload ảnh CCCD tạm thời
-Route::post('/api/upload-cccd-temp', function(Request $request) {
+Route::post('/api/upload-cccd-temp', function (Request $request) {
     if ($request->hasFile('file')) {
         $file = $request->file('file');
         $type = $request->input('type', 'cccd_front');
-        
+
         // Validate file
         $request->validate([
             'file' => 'required|image|mimes:jpeg,png,jpg|max:5120', // 5MB
         ]);
-        
+
         // Tạo tên file unique
         $fileName = time() . '_' . $type . '.' . $file->getClientOriginalExtension();
-        
+
         // Lưu vào thư mục tạm
         $path = $file->storeAs('temp/cccd', $fileName, 'public');
-        
+
         return response()->json([
             'success' => true,
             'path' => 'storage/' . $path,
@@ -896,7 +925,7 @@ Route::post('/api/upload-cccd-temp', function(Request $request) {
             'filename' => $fileName
         ]);
     }
-    
+
     return response()->json([
         'success' => false,
         'message' => 'Không có file được upload'
@@ -904,7 +933,7 @@ Route::post('/api/upload-cccd-temp', function(Request $request) {
 })->middleware('web');
 
 // Temp upload for product images
-Route::post('/api/upload-product-temp', function(Request $request) {
+Route::post('/api/upload-product-temp', function (Request $request) {
     if ($request->hasFile('file')) {
         $file = $request->file('file');
         // Validate file
@@ -940,18 +969,18 @@ Route::delete('/admin/reviews/{review}', [AdminReviewController::class, 'destroy
 Route::post('/admin/reviews/{shop}/ban', [AdminReviewController::class, 'banSeller'])->name('admin.reviews.banSeller');
 
 // Test route để kiểm tra thông tin shop
-Route::get('/test-shop-info/{shopId}', function($shopId) {
+Route::get('/test-shop-info/{shopId}', function ($shopId) {
     $shop = \App\Models\Shop::withCount('followers')
         ->withCount('orderReviews')
         ->withAvg('orderReviews', 'rating')
         ->findOrFail($shopId);
-    
+
     $actualRating = $shop->order_reviews_avg_rating ?? 0;
     $actualFollowers = $shop->followers_count ?? 0;
-    
+
     $shop->shop_rating = round($actualRating, 1);
     $shop->total_followers = $actualFollowers;
-    
+
     return response()->json([
         'shop' => [
             'id' => $shop->id,
@@ -972,7 +1001,7 @@ Route::prefix('ad')->name('ad.')->group(function () {
     Route::get('/cost', [App\Http\Controllers\AdClickController::class, 'getAdCost'])->name('cost');
     Route::get('/status', [App\Http\Controllers\AdClickController::class, 'checkStatus'])->name('status');
     Route::post('/reset', [App\Http\Controllers\AdClickController::class, 'resetStatus'])->name('reset')->middleware('auth');
-    
+
     // API cho seller để xem thống kê
     Route::prefix('api')->name('api.')->middleware(['auth', 'CheckRole:seller'])->group(function () {
         Route::get('/stats', [App\Http\Controllers\AdClickController::class, 'getShopStats'])->name('stats');
@@ -990,4 +1019,3 @@ Route::prefix('simple-ad')->name('simple.ad.')->group(function () {
     Route::get('/reset', [App\Http\Controllers\SimpleAdClickController::class, 'resetTestData'])->name('reset');
     Route::get('/debug', [App\Http\Controllers\SimpleAdClickController::class, 'debugClicks'])->name('debug');
 });
-

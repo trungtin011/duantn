@@ -1,5 +1,30 @@
 <div class="mb-4">
     <h3 class="font-semibold text-sm mb-2 text-gray-700">Đánh giá</h3>
+    @php
+        $computedRatingCounts = [];
+        if (isset($ratingCounts) && is_array($ratingCounts) && !empty($ratingCounts)) {
+            // Ưu tiên sử dụng dữ liệu đã tính sẵn nếu được truyền vào
+            for ($i = 5; $i >= 1; $i--) {
+                $computedRatingCounts[$i] = (int) ($ratingCounts[$i] ?? 0);
+            }
+        } elseif (isset($products)) {
+            // Tính số lượng đánh giá theo ngưỡng từ danh sách sản phẩm hiện có
+            for ($i = 5; $i >= 1; $i--) {
+                $count = 0;
+                foreach ($products as $p) {
+                    if (isset($p->orderReviews)) {
+                        $count += $p->orderReviews->where('rating', '>=', $i)->count();
+                    }
+                }
+                $computedRatingCounts[$i] = $count;
+            }
+        } else {
+            // Mặc định 0 nếu không có dữ liệu
+            for ($i = 5; $i >= 1; $i--) {
+                $computedRatingCounts[$i] = 0;
+            }
+        }
+    @endphp
     <div class="space-y-2">
         @for($i = 5; $i >= 1; $i--)
             <div class="rating-group">
@@ -20,7 +45,7 @@
                                     </svg>
                                 @endif
                             @endfor
-                            <span class="text-sm text-gray-800 ml-1">trở lên</span>
+                            <span class="text-sm text-gray-800 ml-1">({{ $computedRatingCounts[$i] ?? 0 }})</span>
                         </div>
                     </label>
                 </div>

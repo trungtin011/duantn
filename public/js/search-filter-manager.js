@@ -207,7 +207,10 @@ class SearchFilterManager {
             });
 
             const urlParams = new URLSearchParams(formData);
-            const url = `${window.location.pathname}?${urlParams.toString()}`;
+            // Build fetch URL with ajax=1
+            const fetchParams = new URLSearchParams(urlParams);
+            fetchParams.set('ajax', '1');
+            const url = `${window.location.pathname}?${fetchParams.toString()}`;
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => {
@@ -239,7 +242,11 @@ class SearchFilterManager {
                 throw new Error(data.error);
             }
 
-            window.history.pushState({}, '', url);
+            // Push clean URL to history (without ajax=1)
+            const displayParams = new URLSearchParams(urlParams);
+            displayParams.delete('ajax');
+            const displayUrl = `${window.location.pathname}?${displayParams.toString()}`;
+            window.history.pushState({}, '', displayUrl);
 
             this.updateProductResults(data);
             this.updateFilters(data);
