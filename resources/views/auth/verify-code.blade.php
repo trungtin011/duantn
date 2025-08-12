@@ -62,7 +62,6 @@
         (function() {
             const inputs = Array.from(document.querySelectorAll('input[name="code_digits[]"]'));
             const hidden = document.getElementById('full-code');
-
             function updateHidden() {
                 hidden.value = inputs.map(i => i.value).join('');
             }
