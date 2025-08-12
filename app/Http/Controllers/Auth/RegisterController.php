@@ -30,25 +30,35 @@ class RegisterController extends Controller
                 if ($value) {
                     $age = Carbon::parse($value)->age;
                     if ($age < 12) {
-                        $fail('Người dùng phải từ 12 tuổi trở lên.');
+                        $fail('Người dùng phải từ 12 tuổi trở lên để đăng ký tài khoản.');
                     }
                 }
             }],
             'password' => 'required|string|min:8|confirmed',
         ], [
-            'username.required' => 'Tên đăng nhập là bắt buộc.',
-            'username.unique' => 'Tên đăng nhập đã tồn tại.',
-            'fullname.required' => 'Họ và tên là bắt buộc.',
-            'phone.required' => 'Số điện thoại là bắt buộc.',
-            'phone.max' => 'Số điện thoại không được quá 10 số.',
-            'phone.regex' => 'Số điện thoại không hợp lệ. Phải là 10 chữ số.',
-            'phone.unique' => 'Số điện thoại đã tồn tại.',
-            'email.required' => 'Email là bắt buộc.',
-            'email.unique' => 'Email đã tồn tại.',
-            'password.required' => 'Mật khẩu là bắt buộc.',
+            'username.required' => 'Vui lòng nhập tên đăng nhập.',
+            'username.string' => 'Tên đăng nhập phải là chuỗi ký tự.',
+            'username.max' => 'Tên đăng nhập không được quá 50 ký tự.',
+            'username.unique' => 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.',
+            'fullname.required' => 'Vui lòng nhập họ và tên.',
+            'fullname.string' => 'Họ và tên phải là chuỗi ký tự.',
+            'fullname.max' => 'Họ và tên không được quá 100 ký tự.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.string' => 'Số điện thoại phải là chuỗi ký tự.',
+            'phone.max' => 'Số điện thoại không được quá 10 chữ số.',
+            'phone.regex' => 'Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng 10 chữ số.',
+            'phone.unique' => 'Số điện thoại này đã được đăng ký. Vui lòng sử dụng số khác.',
+            'email.required' => 'Vui lòng nhập địa chỉ email.',
+            'email.email' => 'Địa chỉ email không hợp lệ.',
+            'email.max' => 'Địa chỉ email không được quá 100 ký tự.',
+            'email.unique' => 'Email này đã được đăng ký. Vui lòng sử dụng email khác.',
+            'gender.required' => 'Vui lòng chọn giới tính.',
+            'gender.in' => 'Giá trị giới tính không hợp lệ.',
+            'birthday.date' => 'Ngày sinh không hợp lệ.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.string' => 'Mật khẩu phải là chuỗi ký tự.',
             'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
-            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
-            'gender.required' => 'Giới tính là bắt buộc.',
+            'password.confirmed' => 'Xác nhận mật khẩu không khớp. Vui lòng nhập lại.',
         ]);
 
         try {
@@ -79,10 +89,10 @@ class RegisterController extends Controller
 
             DB::commit();
 
-            return redirect()->route('login')->with('success', 'Đăng ký thành công! Mời bạn đăng nhập.');
+            return redirect()->route('login')->with('success', 'Đăng ký tài khoản thành công! Vui lòng đăng nhập để tiếp tục.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.');
+            return back()->withInput()->with('error', 'Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại sau.');
         }
     }
 }

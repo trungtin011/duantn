@@ -1,41 +1,52 @@
 @extends('layouts.app')
 
+@section('title', 'Đặt lại mật khẩu')
+
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
-    <div class="bg-white shadow-md rounded-lg w-full max-w-md p-6">
-        <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">Đặt lại mật khẩu</h2>
-
-        @if (session('error'))
-            <div class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        <form method="POST" action="{{ route('password.reset') }}">
-            @csrf
-
-            <div class="mb-4">
-                <label for="password" class="block text-gray-600 mb-1">Mật khẩu mới</label>
-                <input type="password" name="password" id="password"
-                    class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Nhập mật khẩu mới">
-                @error('password')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
+    <div class="flex items-center justify-center px-4 pt-8">
+        <div class="flex flex-col md:flex-row w-full max-w-6xl shadow-xl rounded-xl overflow-hidden">
+            <div class="w-full md:w-1/2 bg-cover bg-center min-h-[200px] md:min-h-[500px]"
+                style="background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');">
             </div>
 
-            <div class="mb-6">
-                <label for="password_confirmation" class="block text-gray-600 mb-1">Xác nhận mật khẩu</label>
-                <input type="password" name="password_confirmation" id="password_confirmation"
-                    class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Xác nhận lại mật khẩu">
-            </div>
+            <div class="w-full md:w-1/2 bg-white p-4 md:p-12">
+                <h2 class="text-2xl md:text-3xl font-bold mb-3">Đặt lại mật khẩu</h2>
+                <p class="text-gray-600 mb-6 text-sm md:text-base">Nhập mật khẩu mới cho tài khoản của bạn.</p>
 
-            <button type="submit"
-                class="w-full bg-[#ef4444] hover:bg-[#dc2626] text-white py-2 rounded font-medium transition">
-                Đặt lại mật khẩu
-            </button>
-        </form>
+                @if (session('error'))
+                    <div class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('password.reset') }}">
+                    @csrf
+
+                    <div class="mb-4">
+                        <input type="password" name="password" id="password"
+                            class="text-sm md:text-base w-full border rounded px-3 py-2 placeholder-gray-400 @error('password') border-red-500 @enderror"
+                            placeholder="Mật khẩu mới" required>
+                        @error('password')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-6">
+                        <input type="password" name="password_confirmation" id="password_confirmation"
+                            class="text-sm md:text-base w-full border rounded px-3 py-2 placeholder-gray-400"
+                            placeholder="Nhập lại mật khẩu" required>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-black hover:bg-gray-800 text-white py-2 text-sm md:text-base rounded">
+                        Đặt lại mật khẩu
+                    </button>
+
+                    <div class="flex mt-4 text-xs flex-wrap gap-2">
+                        <a href="{{ route('login') }}" class="text-gray-600 hover:underline">Quay lại đăng nhập</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-</div>
 @endsection
