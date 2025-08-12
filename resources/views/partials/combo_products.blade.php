@@ -1,5 +1,5 @@
 @if (!$comboProducts->isEmpty())
-    <div class="product-featured pt-5 snow-container">
+    <div class="product-featured snow-container">
         <div class="flex items-center justify-between title">
             <h2 class="">Combo Sản Phẩm</h2>
             <ion-icon name="gift-outline" class="text-2xl text-[#ef3248]"></ion-icon>

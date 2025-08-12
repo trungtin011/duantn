@@ -48,6 +48,11 @@ class ProductController extends Controller
             $rating = $request->input('rating'); // Thêm filter đánh giá
             $sort = $request->input('sort', 'relevance');
 
+            // Lưu lịch sử tìm kiếm nếu có query
+            if ($query && !$request->boolean('ajax')) {
+                $this->saveSearchHistory($query);
+            }
+
             // Ensure arrays are properly handled
             if (!is_array($categoryIds)) {
                 $categoryIds = $categoryIds ? [$categoryIds] : [];
@@ -2015,6 +2020,33 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             Log::error('Test rating filter error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Lưu lịch sử tìm kiếm vào session
+     */
+    private function saveSearchHistory($query)
+    {
+        try {
+            $searchHistory = session('search_history', []);
+            
+            // Loại bỏ query trùng lặp và thêm query mới vào đầu
+            $searchHistory = array_filter($searchHistory, function($item) use ($query) {
+                return strtolower($item) !== strtolower($query);
+            });
+            
+            // Thêm query mới vào đầu mảng
+            array_unshift($searchHistory, $query);
+            
+            // Giới hạn chỉ lưu 10 lịch sử gần nhất
+            $searchHistory = array_slice($searchHistory, 0, 10);
+            
+            // Lưu vào session
+            session(['search_history' => $searchHistory]);
+            
+        } catch (\Exception $e) {
+            Log::warning('Không thể lưu lịch sử tìm kiếm: ' . $e->getMessage());
         }
     }
 }

@@ -53,6 +53,7 @@
     @vite('resources/css/user/cart-sidebar.css')
     @vite('resources/css/user/cart-sidebar.css')
     <link rel="stylesheet" href="{{ asset('css/snow-animation.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/search-suggestions.css') }}">
     <script src="{{ asset('js/snow-animation.js') }}"></script>
     @vite('resources/js/echo.js')
     <style>
@@ -812,7 +813,7 @@
 
                     <!-- Gợi ý tìm kiếm -->
                     <div id="searchSuggestions"
-                        class="absolute top-full left-0 bg-white border w-full mt-1 shadow-lg rounded-md hidden z-50">
+                        class="absolute top-full left-0 bg-white border border-gray-200 w-full mt-1 shadow-xl rounded-lg hidden z-50 max-h-80 overflow-y-auto">
                     </div>
                 </form>
 
@@ -1475,6 +1476,7 @@
         });
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="{{ asset('js/search-history.js') }}"></script>
 </body>
 
 </html>

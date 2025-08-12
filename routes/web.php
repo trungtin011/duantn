@@ -805,6 +805,16 @@ Route::get('/api/ghn/provinces', [App\Http\Controllers\Service\DeliveryProvider\
 Route::get('/api/ghn/districts', [App\Http\Controllers\Service\DeliveryProvider\GHNController::class, 'getDistricts'])->name('api.ghn.districts');
 Route::get('/api/ghn/wards', [App\Http\Controllers\Service\DeliveryProvider\GHNController::class, 'getWards'])->name('api.ghn.wards');
 
+// API Search History - Lịch sử tìm kiếm
+Route::prefix('api/search-history')->name('api.search-history.')->group(function () {
+    Route::post('/store', [App\Http\Controllers\SearchHistoryController::class, 'store'])->name('store');
+    Route::get('/', [App\Http\Controllers\SearchHistoryController::class, 'index'])->name('index');
+    Route::delete('/destroy', [App\Http\Controllers\SearchHistoryController::class, 'destroy'])->name('destroy');
+    Route::delete('/clear', [App\Http\Controllers\SearchHistoryController::class, 'clear'])->name('clear');
+    Route::get('/suggestions', [App\Http\Controllers\SearchHistoryController::class, 'suggestions'])->name('suggestions');
+    Route::get('/quick-search', [App\Http\Controllers\SearchHistoryController::class, 'quickSearch'])->name('quick-search');
+});
+
 
 
 Route::resource('wishlist', WishlistController::class)->only(['store', 'destroy']);

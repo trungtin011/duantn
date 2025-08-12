@@ -1608,9 +1608,8 @@ body::-webkit-scrollbar-thumb:hover {
 .product-main,
 .product-featured,
 .product-grid {
-    min-height: 400px;
     padding: 0;
-    margin: 2.5rem 0;
+    margin: 0 0 2.5rem 0;
 }
 
 /* Standardize section titles */
@@ -2330,10 +2329,6 @@ body::-webkit-scrollbar-thumb:hover {
 .showcase-container {
     width: 200px;
     flex-shrink: 0;
-}
-
-.product-featured {
-    margin-bottom: 30px;
 }
 
 .product-featured .showcase-wrapper {
