@@ -30,12 +30,6 @@
         
         <!-- Input controls -->
         <div class="flex items-center space-x-2">
-            <button aria-label="Emoji" class="text-gray-500 hover:text-gray-700 text-xl">
-                <i class="far fa-smile"></i>
-            </button>
-            <button aria-label="Like" class="text-gray-500 hover:text-gray-700 text-xl">
-                <i class="fas fa-thumbs-up"></i>
-            </button>
             <input type="text" id="chat-input" class="flex-1 h-10 px-3 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Nhập tin nhắn... (không bắt buộc khi gửi ảnh)"/>
             <div class="flex space-x-3 ml-3 text-gray-500">
                 <button type="button" id="image-upload-btn" aria-label="Insert image" class="hover:text-gray-700 text-xl">

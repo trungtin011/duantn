@@ -100,13 +100,6 @@
         
         <!-- Message input area -->
         <div class="flex items-center space-x-2">
-            <!-- Emoji and actions -->
-            <div class="flex items-center space-x-1">
-                <button type="button" aria-label="Emoji" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors">
-                    <i class="far fa-smile text-sm"></i>
-                </button>
-            </div>
-            
             <!-- Text input -->
             <div class="flex-1 relative h-[38px]">
                 <textarea id="chat-input" 

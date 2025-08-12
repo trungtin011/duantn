@@ -21,6 +21,10 @@ class ForgotPasswordController extends Controller
     {
         $request->validate([
             'email' => 'required|email|exists:users,email'
+        ], [
+            'email.required' => 'Vui lòng nhập địa chỉ email.',
+            'email.email' => 'Địa chỉ email không hợp lệ.',
+            'email.exists' => 'Email này chưa được đăng ký trong hệ thống.'
         ]);
 
         $code = random_int(100000, 999999);
@@ -37,7 +41,7 @@ class ForgotPasswordController extends Controller
 
         session(['reset_email' => $user->email]);
 
-        return redirect()->route('password.code.verify.form')->with('success', 'Mã xác nhận đã được gửi tới email.');
+        return redirect()->route('password.code.verify.form')->with('success', 'Mã xác nhận đã được gửi tới email của bạn.');
     }
 
     // Hiển thị form nhập mã
@@ -50,21 +54,23 @@ class ForgotPasswordController extends Controller
     public function verifyCode(Request $request)
     {
         $request->merge([
-    'code' => implode('', $request->input('code_digits', []))
-]);
+            'code' => implode('', $request->input('code_digits', []))
+        ]);
 
-$request->validate([
-    'code' => 'required|digits:6',
-]);
-
+        $request->validate([
+            'code' => 'required|digits:6',
+        ], [
+            'code.required' => 'Vui lòng nhập mã xác nhận.',
+            'code.digits' => 'Mã xác nhận phải có đúng 6 chữ số.'
+        ]);
 
         $email = session('reset_email');
         $user = User::where('email', $email)
-                    ->where('reset_code', $request->code)
-                    ->first();
+            ->where('reset_code', $request->code)
+            ->first();
 
         if (!$user || $user->reset_code_expires_at < now()) {
-            return back()->withErrors(['code' => 'Mã không đúng hoặc đã hết hạn.']);
+            return back()->withErrors(['code' => 'Mã xác nhận không đúng hoặc đã hết hạn.']);
         }
 
         return redirect()->route('password.reset.form');
@@ -81,6 +87,10 @@ $request->validate([
     {
         $request->validate([
             'password' => 'required|min:6|confirmed'
+        ], [
+            'password.required' => 'Vui lòng nhập mật khẩu mới.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed' => 'Xác nhận mật khẩu không khớp.'
         ]);
 
         $email = session('reset_email');
