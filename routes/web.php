@@ -510,6 +510,13 @@ Route::prefix('seller')->middleware('auth')->group(function () {
     Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
     Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
     Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
+    // Seller password menu & flows (reuse user password controllers)
+    Route::get('/password', function () { return view('seller.password'); })->name('seller.password');
+    Route::post('/password/send-code', [UserController::class, 'requestChangePasswordWithCode'])->name('seller.password.request.code');
+    Route::get('/password/verify', [UserController::class, 'showVerifyCodeForm'])->name('seller.password.verify.form');
+    Route::post('/password/verify', [UserController::class, 'verifyPasswordCode'])->name('seller.password.verify.code');
+    Route::get('/password/reset', [UserController::class, 'showPasswordResetForm'])->name('seller.password.reset.form');
+    Route::post('/password/reset', [UserController::class, 'confirmNewPassword'])->name('seller.password.reset.confirm');
     Route::get('/profile', function () {
         return view('seller.profile');
     })->name('seller.profile');
