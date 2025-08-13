@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -250,8 +252,8 @@ class AdminSettingsController extends Controller
             'MAIL_ENCRYPTION' => $validated['mail_encryption'],
         ]);
         // Reload config cache để giá trị mới có hiệu lực ngay
-        \Artisan::call('config:clear');
-        \Artisan::call('config:cache');
+        Artisan::call('config:clear');
+        Artisan::call('config:cache');
         Session::flash('success', 'Cập nhật cài đặt email thành công!');
         return redirect()->route('admin.settings.emails');
     }
@@ -281,7 +283,7 @@ class AdminSettingsController extends Controller
     public function requestChangePasswordWithCode(Request $request)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             if (!$user) {
                 return redirect()->back()->withErrors(['error' => 'Không tìm thấy thông tin người dùng.']);

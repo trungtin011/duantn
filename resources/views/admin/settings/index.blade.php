@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Main content container -->
     <div class="pb-10 mx-auto">
         <div class="admin-page-header">
@@ -73,16 +74,10 @@
                                         onclick="confirmUpload('logo-input', 'logo')">
                                         Sửa
                                     </button>
-                                    <form action="{{ route('admin.settings.destroyLogo') }}"
-                                        class="flex items-center logo-delete-form" method="POST"
-                                        onsubmit="event.preventDefault();">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="text-xs hover:underline h-[24px] text-blue-600"
-                                            onclick="confirmDelete(this, 'logo')">
-                                            Xóa
-                                        </button>
-                                    </form>
+                                    <button type="button" class="text-xs hover:underline h-[24px] text-blue-600"
+                                        onclick="confirmDelete('logo')">
+                                        Xóa
+                                    </button>
                                 @else
                                     <button type="button"
                                         class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
@@ -113,15 +108,10 @@
                                         onclick="confirmUpload('banner-input', 'banner')">
                                         Sửa
                                     </button>
-                                    <form action="{{ route('admin.settings.destroyBanner') }}" class="flex items-center"
-                                        method="POST" onsubmit="event.preventDefault();">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="text-xs hover:underline h-[24px] text-blue-600"
-                                            onclick="confirmDelete(this, 'banner')">
-                                            Xóa
-                                        </button>
-                                    </form>
+                                    <button type="button" class="text-xs hover:underline h-[24px] text-blue-600"
+                                        onclick="confirmDelete('banner')">
+                                        Xóa
+                                    </button>
                                 @else
                                     <button type="button"
                                         class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
@@ -153,15 +143,10 @@
                                         onclick="confirmUpload('favicon-input', 'favicon')">
                                         Sửa
                                     </button>
-                                    <form action="{{ route('admin.settings.destroyFavicon') }}" class="flex items-center"
-                                        method="POST" onsubmit="event.preventDefault();">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="text-xs hover:underline h-[24px] text-blue-600"
-                                            onclick="confirmDelete(this, 'favicon')">
-                                            Xóa
-                                        </button>
-                                    </form>
+                                    <button type="button" class="text-xs hover:underline h-[24px] text-blue-600"
+                                        onclick="confirmDelete('favicon')">
+                                        Xóa
+                                    </button>
                                 @else
                                     <button type="button"
                                         class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
@@ -205,11 +190,22 @@
         }
 
         // SweetAlert xác nhận xóa
-        function confirmDelete(btn, type) {
+        function confirmDelete(type) {
             let text = '';
-            if (type === 'logo') text = 'Bạn có chắc chắn muốn xóa logo này?';
-            if (type === 'banner') text = 'Bạn có chắc chắn muốn xóa banner này?';
-            if (type === 'favicon') text = 'Bạn có chắc chắn muốn xóa favicon này?';
+            let route = '';
+            
+            if (type === 'logo') {
+                text = 'Bạn có chắc chắn muốn xóa logo này?';
+                route = '{{ route("admin.settings.destroyLogo") }}';
+            }
+            if (type === 'banner') {
+                text = 'Bạn có chắc chắn muốn xóa banner này?';
+                route = '{{ route("admin.settings.destroyBanner") }}';
+            }
+            if (type === 'favicon') {
+                text = 'Bạn có chắc chắn muốn xóa favicon này?';
+                route = '{{ route("admin.settings.destroyFavicon") }}';
+            }
 
             Swal.fire({
                 title: 'Xác nhận xóa',
@@ -222,7 +218,27 @@
                 cancelButtonText: 'Hủy'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    btn.closest('form').submit();
+                    // Tạo form ẩn để submit DELETE request
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = route;
+                    
+                    // Thêm CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
+                    // Thêm method DELETE
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+                    
+                    form.appendChild(csrfToken);
+                    form.appendChild(methodField);
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             });
         }

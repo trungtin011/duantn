@@ -65,60 +65,6 @@ class CheckoutController extends Controller
         return max(0, $discountedPrice);
     }
 
-    /**
-     * Lấy giá hiển thị an toàn cho sản phẩm
-     */
-    private function getSafeProductPrice($product, $variant = null)
-    {
-        if ($product->is_variant && $variant) {
-            // Sản phẩm có biến thể và có variant được chọn
-            return $variant->sale_price ?? $variant->price ?? 0;
-        } elseif ($product->is_variant && $product->variants->isNotEmpty()) {
-            // Sản phẩm có biến thể nhưng không có variant được chọn, lấy giá thấp nhất
-            $minPrice = $product->variants->min('price') ?? 0;
-            $minSalePrice = $product->variants->min('sale_price') ?? 0;
-            return $minSalePrice > 0 && $minSalePrice < $minPrice ? $minSalePrice : $minPrice;
-        } else {
-            // Sản phẩm đơn
-            return $product->sale_price ?? $product->price ?? 0;
-        }
-    }
-
-    /**
-     * Lấy giá gốc an toàn cho sản phẩm
-     */
-    private function getSafeProductOriginalPrice($product, $variant = null)
-    {
-        if ($product->is_variant && $variant) {
-            // Sản phẩm có biến thể và có variant được chọn
-            return $variant->price ?? 0;
-        } elseif ($product->is_variant && $product->variants->isNotEmpty()) {
-            // Sản phẩm có biến thể nhưng không có variant được chọn, lấy giá gốc thấp nhất
-            return $product->variants->min('price') ?? 0;
-        } else {
-            // Sản phẩm đơn
-            return $product->price ?? 0;
-        }
-    }
-
-    /**
-     * Kiểm tra tồn kho an toàn
-     */
-    private function checkSafeStock($product, $variant = null, $quantity = 1)
-    {
-        if ($product->is_variant && $variant) {
-            // Kiểm tra tồn kho của variant
-            return $variant->stock >= $quantity;
-        } elseif ($product->is_variant) {
-            // Kiểm tra tồn kho tổng của tất cả variants
-            $totalVariantStock = $product->variants->sum('stock');
-            return $totalVariantStock >= $quantity;
-        } else {
-            // Kiểm tra tồn kho của sản phẩm đơn
-            return $product->stock_total >= $quantity;
-        }
-    }
-
     public function getItems()
     {
         $items = [];
@@ -126,7 +72,6 @@ class CheckoutController extends Controller
         if (empty($selected_products)) {
             return false;
         }
-
         foreach ($selected_products as $selected) {
             if (!empty($selected['combo_id'])) {
                 $combo = Combo::with('products.product.variants')->find($selected['combo_id']);
@@ -138,12 +83,11 @@ class CheckoutController extends Controller
                         $product = $comboProduct->product;
                         $variant = null;
                         $basePrice = null;
-
                         if ($product->is_variant == 1) {
                             $variant = $comboProduct->variant ?? null;
-                            $basePrice = $this->getSafeProductPrice($product, $variant);
+                            $basePrice = $variant ? ($variant->sale_price ?? $variant->price) : null;
                         } else {
-                            $basePrice = $this->getSafeProductPrice($product);
+                            $basePrice = $product->sale_price ?? $product->price;
                         }
 
                         $discountedPrice = $this->calculateComboDiscountedPrice($combo, $basePrice, $comboProduct);
@@ -167,15 +111,13 @@ class CheckoutController extends Controller
                     }
                 }
             } else if (!empty($selected['product_id'])) {
-                $item = Product::with('variants')->find($selected['product_id']);
+                $item = Product::find($selected['product_id']);
                 $quantity = isset($selected['quantity']) ? $selected['quantity'] : 1;
-
                 if ($item) {
                     $variant = null;
                     if ($item->is_variant && !empty($selected['variant_id'])) {
                         $variant = $item->variants()->where('id', $selected['variant_id'])->first();
                     }
-
                     $items[] = [
                         'product' => $item,
                         'quantity' => $quantity,
@@ -193,10 +135,8 @@ class CheckoutController extends Controller
     {
         session()->forget('used_coupon_data');
         $customer = Customer::where('userID', Auth::user()->id)->first();
-        $user_coupon = CouponUser::where('user_id', Auth::user()->id)->first();
         $public_coupons = $this->getAvailableCoupons($customer);
-
-
+        
         $items = $this->getItems();
 
         if (!$items) {
@@ -211,26 +151,29 @@ class CheckoutController extends Controller
             if (!empty($item['is_combo']) && $item['is_combo'] && isset($item['combo_info']['price_in_combo'])) {
                 $subtotal += $item['combo_info']['price_in_combo'] * $item['quantity'];
             } elseif (isset($item['product']->is_variant) && $item['product']->is_variant == 1) {
-                $variant = $item['variant'] ?? null;
-                $unitPrice = $this->getSafeProductPrice($item['product'], $variant);
-                $subtotal += $unitPrice * $item['quantity'];
+                $variant = $item['product']->variants->where('id', $item['variant_id'])->first();
+                $subtotal += $variant->sale_price * $item['quantity'];
             } else {
-                $unitPrice = $this->getSafeProductPrice($item['product']);
-                $subtotal += $unitPrice * $item['quantity'];
+                $subtotal += $item['product']->price * $item['quantity'];
             }
         }
         $shop_ids = array_unique($shop_ids);
-        $shops = Shop::whereIn('id', $shop_ids)
-            ->with('coupons')
-            ->get();
+        $shops = Shop::whereIn('id', $shop_ids)->get();
+
+        $shop_coupons = [];
+        foreach ($shops as $shop) {
+            $coupons = $shop->coupons()
+                ->where('status', 'active')
+                ->where('is_public', true)
+                ->where('end_date', '>=', now())
+                ->get();
+            $shop_coupons[$shop->id] = $coupons;
+        }
         $user_addresses = UserAddress::where('userID', Auth::user()->id)->get();
         $user_points = Customer::where('userID', Auth::user()->id)->pluck('total_points')->first();
-        return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_coupon', 'user_points', 'public_coupons', 'subtotal'));
+        return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_points', 'public_coupons', 'subtotal', 'shop_coupons'));
     }
 
-    /**
-     * Xử lý mua ngay trực tiếp từ trang sản phẩm
-     */
     public function directCheckout(Request $request)
     {
         $product_id = $request->get('product_id');
@@ -241,22 +184,21 @@ class CheckoutController extends Controller
             return redirect()->back()->with('error', 'Không tìm thấy sản phẩm');
         }
 
-        $product = Product::with('variants')->find($product_id);
+        $product = Product::find($product_id);
         if (!$product) {
             return redirect()->back()->with('error', 'Sản phẩm không tồn tại');
         }
 
-        // Kiểm tra tồn kho an toàn
-        $variant = null;
+        // Kiểm tra tồn kho
         if ($variant_id) {
             $variant = $product->variants()->where('id', $variant_id)->first();
-            if (!$variant) {
-                return redirect()->back()->with('error', 'Biến thể sản phẩm không tồn tại');
+            if (!$variant || $variant->stock < $quantity) {
+                return redirect()->back()->with('error', 'Sản phẩm không đủ tồn kho');
             }
-        }
-
-        if (!$this->checkSafeStock($product, $variant, $quantity)) {
-            return redirect()->back()->with('error', 'Sản phẩm không đủ tồn kho');
+        } else {
+            if ($product->stock_total < $quantity) {
+                return redirect()->back()->with('error', 'Sản phẩm không đủ tồn kho');
+            }
         }
 
         // Tạo session cho sản phẩm mua ngay
@@ -284,22 +226,33 @@ class CheckoutController extends Controller
         $publicCoupons = Coupon::where('is_public', 1)
             ->where('shop_id', NULL)
             ->where('end_date', '>', now())
+            ->where('quantity', '!=', 0)
+            ->where(function($query) {
+                $query->whereNull('used_count')
+                      ->orWhereColumn('used_count', '<', 'quantity');
+            })
+            
             ->where(function ($query) use ($userRank, $ranks, $userRankValue) {
                 $query->where('rank_limit', 'all')
-                    ->orWhere(function ($subQuery) use ($ranks, $userRankValue) {
-                        foreach ($ranks as $rank => $value) {
-                            if ($value <= $userRankValue) {
-                                $subQuery->orWhere('rank_limit', $rank);
-                            }
-                        }
-                    });
+                      ->orWhere(function ($subQuery) use ($ranks, $userRankValue) {
+                          foreach ($ranks as $rank => $value) {
+                              if ($value <= $userRankValue) {
+                                  $subQuery->orWhere('rank_limit', $rank);
+                              }
+                          }
+                      });
             })
             ->where('status', 'active')
-            ->get()
-            ->filter(function ($coupon) use ($customer) {
-                return $coupon->isActive() && $coupon->canBeUsedByUser($customer->id);
-            });
-
+            ->get();
+        
+        $couponUsed = $customer->user->couponUsed()->get();
+        $publicCoupons = $publicCoupons->filter(function ($coupon) use ($couponUsed) {
+            $usedCount = $couponUsed->where('coupon_id', $coupon->id)->sum('used_count');
+            if ($coupon->max_uses_per_user <= 0) {
+                return true;
+            }
+            return $usedCount < $coupon->max_uses_per_user;
+        });
         return $publicCoupons;
     }
 
@@ -310,9 +263,9 @@ class CheckoutController extends Controller
             if (!empty($validate)) {
                 return response()->json(['success' => false, 'message' => $validate], 422);
             }
-            if (Order::isOrderSpam(Auth::id())) {
-                return response()->json(['success' => false, 'message' => 'Bạn đang spam đặt hàng, vui lòng thử lại sau 5p'], 422);
-            }
+            // if (Order::isOrderSpam(Auth::id())) {
+            //     return response()->json(['success' => false, 'message' => 'Bạn đang spam đặt hàng, vui lòng thử lại sau 5p'], 422);
+            // }
             $items = $this->getItems();
             $user = Auth::user();
             foreach ($items as $item) {
@@ -329,14 +282,14 @@ class CheckoutController extends Controller
                 return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm'], 400);
             }
 
-            if ($request->discount_code) {
-                $coupons_code = $request->coupons_code ?? [];
-                $coupons_code[] = [
-                    'code' => $request->discount_code,
-                    'shopId' => null
-                ];
-                $request->merge(['coupons_code' => $coupons_code]);
+            if ($request->platform_coupons_code) {
+                $mergedCoupons = array_merge(
+                    $request->coupons_code ?? [],
+                    $request->platform_coupons_code ?? []
+                );
+                $request->merge(['coupons_code' => $mergedCoupons]);
             }
+            
 
             $this->storeCouponsUsed($request->coupons_code);
             $user_address = UserAddress::where('id', $request->selected_address_id)->where('userID', $user->id)->first();
@@ -358,7 +311,7 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi server',
+                'message' => 'Lỗi server' . $e->getMessage(),
             ], 500);
         }
     }
@@ -434,14 +387,13 @@ class CheckoutController extends Controller
                 foreach ($items as $item) {
                     $product = $item['product'];
                     $quantity = (int) $item['quantity'];
-                    $variant = $item['variant'] ?? null;
-
+                    $unit_price = $product->sale_price ?? $product->price ?? 0;
                     if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
                         $unit_price = $item['combo_info']['price_in_combo'];
-                    } else {
-                        $unit_price = $this->getSafeProductPrice($product, $variant);
+                    } elseif ($product->is_variant ?? false) {
+                        $variant = $product->variants->where('id', $item['variant_id'])->first();
+                        $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
                     }
-
                     $shop_total += $unit_price * $quantity;
                 }
                 $shopTotalMap[$shop_id] = $shop_total;
@@ -527,21 +479,18 @@ class CheckoutController extends Controller
                     $quantity = (int) $item['quantity'];
                     $variant_id = null;
                     $variant_name = null;
-                    $variant = $item['variant'] ?? null;
-                    $unit_price = 0;
+                    $unit_price = $product->sale_price ?? $product->price ?? 0;
                     $combo_id = null;
                     $combo_quantity = null;
-
                     if (!empty($item['is_combo']) && !empty($item['combo_info'])) {
                         $combo_id = $item['combo_info']['combo_id'];
                         $unit_price = $item['combo_info']['price_in_combo'];
                         $combo_quantity = $item['combo_info']['combo_quantity'];
-                    } else {
-                        $unit_price = $this->getSafeProductPrice($product, $variant);
-                        if ($variant) {
-                            $variant_id = $variant->id;
-                            $variant_name = $variant->variant_name;
-                        }
+                    } elseif ($product->is_variant ?? false) {
+                        $variant = $product->variants->where('id', $item['variant_id'])->first();
+                        $variant_id = $variant->id ?? null;
+                        $variant_name = $variant->variant_name ?? null;
+                        $unit_price = $variant->sale_price ?? $variant->price ?? $unit_price;
                     }
 
                     $item_total_price = $unit_price * $quantity;
@@ -586,30 +535,36 @@ class CheckoutController extends Controller
 
     private function storeCouponsUsed($coupons_code)
     {
+        $usedCount = 0;
+        $usedCodes = [];
         foreach ($coupons_code as $coupon_code) {
-            $coupon = Coupon::where('code', $coupon_code['code'])->first();
-            if ($coupon) {
-                $coupon->increment('used_count');
+                $coupon = Coupon::where('code', $coupon_code['code'])->first();
+                if ($coupon) {
+                    $coupon->use();
+                    $coupon_used = UserCouponUsed::where('user_id', Auth::id())
+                        ->where('coupon_id', $coupon->id)
+                        ->first();
 
-                $coupon_used = UserCouponUsed::where('user_id', Auth::id())
-                    ->where('coupon_id', $coupon->id)
-                    ->first();
-
-                if ($coupon_used && $coupon_used->id) {
-                    $coupon_used->increment('used_count');
-                } elseif ($coupon_used) {
-                    UserCouponUsed::where('user_id', Auth::id())
+                    if ($coupon_used) {
+                        UserCouponUsed::where('user_id', Auth::id())
                         ->where('coupon_id', $coupon->id)
                         ->increment('used_count');
-                } else {
-                    UserCouponUsed::create([
-                        'user_id' => Auth::id(),
-                        'coupon_id' => $coupon->id,
-                        'used_count' => 1,
-                    ]);
+                        } else {
+                        UserCouponUsed::create([
+                            'user_id' => Auth::id(),
+                            'coupon_id' => $coupon->id,
+                            'used_count' => 1,
+                        ]);
+                    }
+                    $usedCount++;
+                    $usedCodes[] = $coupon->code;
                 }
-            }
         }
+        Log::info('Số coupon đã sử dụng trong đơn hàng: ' . $usedCount, [
+            'user_id' => Auth::id(),
+            'coupons_code' => $coupons_code,
+            'used_codes' => $usedCodes
+        ]);
     }
 
     public function successPayment($order_code)
@@ -646,18 +601,16 @@ class CheckoutController extends Controller
                     $updatedCombos[] = $item->combo_id;
                 }
             } else {
-                $product = Product::with('variants')->find($item->productID);
-                if ($product) {
-                    if ($product->is_variant == 1 && !empty($item->variantID)) {
-                        $variant = $product->variants()->where('id', $item->variantID)->first();
-                        if ($variant) {
-                            $newStock = max(0, $variant->stock - $item->quantity);
-                            $variant->update(['stock' => $newStock]);
-                        }
-                    } elseif ($product->is_variant == 0) {
-                        $newStock = max(0, $product->stock_total - $item->quantity);
-                        $product->update(['stock_total' => $newStock]);
+                $product = Product::find($item->productID);
+                if ($product && $product->is_variant == 1 && !empty($item->variantID)) {
+                    $variant = $product->variants()->where('id', $item->variantID)->first();
+                    if ($variant) {
+                        $newStock = max(0, $variant->stock - $item->quantity);
+                        $variant->update(['stock' => $newStock]);
                     }
+                } elseif ($product && $product->is_variant == 0) {
+                    $newStock = max(0, $product->stock_total - $item->quantity);
+                    $product->update(['stock_total' => $newStock]);
                 }
             }
         }
@@ -761,13 +714,7 @@ class CheckoutController extends Controller
 
     public function applyShopDiscount(Request $request)
     {
-        $used_coupon_already = session('used_coupon_data');
-        if ($used_coupon_already) {
-            if ($request->coupon_code == $used_coupon_already['code']) {
-                return response()->json(['error' => 'Bạn đã sử dụng mã giảm giá này, vui lòng chọn mã giảm giá khác'], 422);
-            }
-        }
-
+        
         $coupon = Coupon::where('code', $request->coupon_code)->first();
         if (!$coupon) {
             return response()->json(['error' => 'Mã giảm giá không hợp lệ'], 422);
@@ -820,9 +767,7 @@ class CheckoutController extends Controller
             }
         }
 
-
-
-        $discount_value_coupon = $coupon->calculateDiscount((int)$request->total_amount);
+        $discount_value_coupon = $coupon->calculateDiscount((int)$request->total_amount, (int)$request->shipping_fee, $coupon->type_coupon);
         if ($coupon->max_discount_amount !== null) {
             if ($discount_value_coupon > $coupon->max_discount_amount) {
                 $discount_value_coupon = $coupon->max_discount_amount;

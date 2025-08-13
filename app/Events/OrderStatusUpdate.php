@@ -50,7 +50,7 @@ class OrderStatusUpdate implements ShouldBroadcast
         return [
             'title' => 'Đơn hàng ' . $this->order->order->order_code . ' vừa có cập nhật',
             'content' => 'Trạng thái mới : ' . $this->stranlateToVietnamese($this->status),
-            'image_path' => 'images/notifications/default-order.png',
+            'image_path' => 'images/notifications/notification_bell.png',
             'receiver_type' => 'user',
             'type' => 'order',
             'priority' => 'normal',

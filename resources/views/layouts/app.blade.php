@@ -18,6 +18,7 @@
             $laravelUserData = [
                 'id' => Auth::user()->id,
                 'name' => Auth::user()->fullname ?? Auth::user()->username,
+                'role' => Auth::user()->role ?? Auth::user()->role,
             ];
         }
     @endphp
@@ -558,8 +559,40 @@
                                                                 }
                                                             }
                                                         }
+
+                                                        // Xác định màu sắc theo kiểu thông báo
+                                                        $typeColors = [
+                                                            'order' => [
+                                                                'bg_unread' => 'bg-blue-50 border-blue-500',
+                                                                'border' => 'border-l-4',
+                                                                'dot' => 'bg-blue-500',
+                                                            ],
+                                                            'promotion' => [
+                                                                'bg_unread' => 'bg-pink-50 border-pink-500',
+                                                                'border' => 'border-l-4',
+                                                                'dot' => 'bg-pink-500',
+                                                            ],
+                                                            'system' => [
+                                                                'bg_unread' => 'bg-purple-50 border-purple-500',
+                                                                'border' => 'border-l-4',
+                                                                'dot' => 'bg-purple-500',
+                                                            ],
+                                                            'security' => [
+                                                                'bg_unread' => 'bg-green-50 border-green-500',
+                                                                'border' => 'border-l-4',
+                                                                'dot' => 'bg-green-500',
+                                                            ],
+                                                            'default' => [
+                                                                'bg_unread' => 'bg-gray-50 border-gray-400',
+                                                                'border' => 'border-l-4',
+                                                                'dot' => 'bg-gray-400',
+                                                            ],
+                                                        ];
+                                                        $type = $notification->type ?? 'default';
+                                                        $colorSet = $typeColors[$type] ?? $typeColors['default'];
+                                                        $unreadClass = !$isRead ? "{$colorSet['bg_unread']} {$colorSet['border']}" : 'border-l-4 border-transparent';
                                                     @endphp
-                                                    <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ !$isRead ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
+                                                    <div class="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ $unreadClass }}"
                                                         data-notification-id="{{ $notification->id }}"
                                                         data-notification-type="{{ $notification->type }}">
                                                         <div class="flex-shrink-0">
@@ -572,19 +605,16 @@
                                                                 </div>
                                                             @else
                                                                 @php
-                                                                    $defaultImage = match ($notification->type) {
-                                                                        'order' => 'default-order.png',
-                                                                        'promotion' => 'default-promotion.png',
-                                                                        'system' => 'default-system.png',
-                                                                        'security' => 'default-security.png',
-                                                                        default => 'default.png',
+                                                                    $iconData = match ($notification->type) {
+                                                                        'order' => ['icon' => 'fa-solid fa-bell', 'color' => 'text-blue-500', 'bg' => 'bg-blue-100'],
+                                                                        'promotion' => ['icon' => 'fa-solid fa-gift', 'color' => 'text-pink-500', 'bg' => 'bg-pink-100'],
+                                                                        'system' => ['icon' => 'fa-solid fa-gear', 'color' => 'text-gray-600', 'bg' => 'bg-gray-200'],
+                                                                        'security' => ['icon' => 'fa-solid fa-shield-halved', 'color' => 'text-green-600', 'bg' => 'bg-green-100'],
+                                                                        default => ['icon' => 'fa-solid fa-info-circle', 'color' => 'text-gray-400', 'bg' => 'bg-gray-100'],
                                                                     };
                                                                 @endphp
-                                                                <div
-                                                                    class="w-10 h-10 rounded-full flex items-center justify-center">
-                                                                    <img src="{{ asset('images/notifications/' . $defaultImage) }}"
-                                                                        alt="Notification Default Image"
-                                                                        class="w-full h-full rounded-full">
+                                                                <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $iconData['bg'] }}">
+                                                                    <i class="{{ $iconData['icon'] }} text-xl {{ $iconData['color'] }}"></i>
                                                                 </div>
                                                             @endif
                                                         </div>
@@ -624,7 +654,7 @@
                                                                     }
                                                                 @endphp
                                                                 @if ($isRead === false)
-                                                                    <div class="w-2 h-2 bg-blue-500 rounded-full unread-dot"
+                                                                    <div class="w-2 h-2 {{ $colorSet['dot'] }} rounded-full unread-dot"
                                                                         data-notification-id="{{ $notification->id }}">
                                                                     </div>
                                                                 @endif
@@ -794,7 +824,7 @@
             <div class="container-header mx-auto sm:px-0 py-[10px] px-3 flex justify-between items-center">
                 <!-- Logo -->
                 @if (empty($settings->logo))
-                    <a class="w-20 md:w-[8%] lg:w-[8%]" href="/">
+                    <a class="w-20 md:w-[8%] lg:w-[10%]" href="/">
                         <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-full h-full">
                     </a>
                 @else
@@ -1001,7 +1031,7 @@
                 <h4 class="font-bold mb-2">
                     <!-- Logo -->
                     @if (empty($settings->logo))
-                        <a class="w-20 lg:w-[50%]" href="/">
+                        <a class="w-20 lg:w-[80%] bg-white p-2 rounded" href="/">
                             <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-full h-full">
                         </a>
                     @else
@@ -1204,6 +1234,11 @@
 
     @stack('scripts')
     @yield('script')
+    <script>
+       window.Laravel ={
+            user = Auth::user();
+       }
+    </script>
     <script>
         // window.Laravel bootstrap đã được thiết lập ở đầu file
 

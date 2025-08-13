@@ -45,12 +45,12 @@ function initializeCheckoutFormHandler() {
             discount_amount: collectDiscountAmount(),
             shipping_fee: document.getElementById('total_shipping_fee').textContent.replace(/[^\d]/g, '') || 0,
             total_amount: document.getElementById('total_amount').textContent.replace(/[^\d]/g, '') || 0,
-            discount_code: document.querySelector('input[name="discount_code"]')?.value || null,
             _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             used_points: document.getElementById('used_points').value || 0,
             shipping_shop_fee: collectShippingFee(),
             coupons_code: collectCouponsCode(),
-            recaptcha_token: token // Thêm token reCAPTCHA
+            platform_coupons_code: collectPlatformCouponsCode(),
+            recaptcha_token: token 
         };
     }
 
@@ -71,10 +71,23 @@ function initializeCheckoutFormHandler() {
         let codes = JSON.parse(localStorage.getItem('coupons_code') || '[]');
         codes.forEach(code => {
             couponCode.push({
-                code: code.couponData.code,
+                code: code.code,
                 shopId: code.shopId,
-                discount_value: code.couponData.discount_value,
-                coupon_type: code.couponData.type_coupon,
+                discount_value: code.discount_value,
+                coupon_type: code.coupon_type,
+            });
+        });
+        return couponCode;
+    }
+
+    function collectPlatformCouponsCode() {
+        let couponCode = [];
+        let codes = JSON.parse(localStorage.getItem('platform_coupons_code') || '[]');
+        codes.forEach(code => {
+            couponCode.push({
+                code: code.code,
+                discount_value: code.discount_value,
+                coupon_type: code.coupon_type,
             });
         });
         return couponCode;
@@ -120,11 +133,9 @@ function initializeCheckoutFormHandler() {
                 });
             });
 
-            // Thu thập dữ liệu form với token
             const formData = collectFormData(token);
             console.log('Dữ liệu gửi đi:', formData);
 
-            // Gán token vào input ẩn (dự phòng cho form HTML)
             const recaptchaInput = document.getElementById('recaptcha_token');
             if (recaptchaInput) {
                 recaptchaInput.value = token;
@@ -168,8 +179,9 @@ function initializeCheckoutFormHandler() {
 
     function showError(message) {
         const toast = document.createElement('div');
-        toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-down';
-        toast.innerHTML = `<div class="flex items-center"><i class="fas fa-exclamation-circle mr-2"></i><span>${message}</span></div>`;
+        toast.className = 'fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white px-8 py-4 rounded-lg shadow-lg animate-fade-in-down flex items-center';
+        toast.style.zIndex = '999999'; // Đảm bảo nổi lên trên tất cả
+        toast.innerHTML = `<i class="fas fa-exclamation-circle mr-3 text-2xl"></i><span class="text-lg">${message}</span>`;
         document.body.appendChild(toast);
         setTimeout(() => {
             toast.remove();
@@ -178,8 +190,9 @@ function initializeCheckoutFormHandler() {
 
     function showSuccess(message) {
         const toast = document.createElement('div');
-        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-down';
-        toast.innerHTML = `<div class="flex items-center"><i class="fas fa-check-circle mr-2"></i><span>${message}</span></div>`;
+        toast.className = 'fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white px-8 py-4 rounded-lg shadow-lg animate-fade-in-down flex items-center';
+        toast.style.zIndex = '999999'; // Đảm bảo nổi lên trên tất cả
+        toast.innerHTML = `<i class="fas fa-check-circle mr-3 text-2xl"></i><span class="text-lg">${message}</span>`;
         document.body.appendChild(toast);
         setTimeout(() => {
             toast.remove();

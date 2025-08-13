@@ -69,6 +69,11 @@ class User extends Authenticatable
         return $this->hasOne(Employee::class);
     }
 
+    public function couponUsed()
+    {
+        return $this->hasMany(UserCouponUsed::class, 'user_id');
+    }
+    
     public function seller()
     {
         // Sửa lại khóa ngoại thành 'userID' thay vì mặc định 'user_id'

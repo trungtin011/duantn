@@ -857,6 +857,7 @@ Route::get('/account/debug-reset_code', [UserController::class, 'debugResetCode'
 
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 Route::post('/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markReadAll');
 
 Route::get('/seller/reviews', [ReviewController::class, 'index'])->name('seller.reviews.index');
 Route::post('/seller/reviews/{review}/reply', [ReviewController::class, 'reply'])

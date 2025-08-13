@@ -96,7 +96,7 @@
                                                 </div>
                                             @else
                                                 <div class="w-10 h-10 rounded-full flex items-center justify-center">
-                                                    <img src="{{ asset('images/logo.jpg') }}" alt="Notification Image" class="w-full h-full rounded-full">
+                                                    <i class="fas fa-bell text-gray-500 text-2xl"></i>
                                                 </div>
                                             @endif
                                         </div>

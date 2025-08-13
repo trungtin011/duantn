@@ -79,62 +79,31 @@ class Coupon extends Model
             ->orWhere('rank_limit', $rank);
     }
 
-    // Methods
     public function isValid()
     {
         return $this->is_active &&
             $this->status === 'active' &&
             now()->between($this->start_date, $this->end_date) &&
+            $this->hasAvailableQuantity() &&
             ($this->max_uses_total === null || $this->used_count < $this->max_uses_total);
     }
 
     public function hasAvailableQuantity()
     {
-        // Nếu quantity = 0, coupon vô hạn
         if ($this->quantity == 0) {
             return true;
         }
         
-        // Nếu có giới hạn max_uses_total, ưu tiên kiểm tra này
-        if ($this->max_uses_total !== null) {
-            return $this->used_count < $this->max_uses_total;
-        }
-        
-        // Kiểm tra theo quantity
         return $this->used_count < $this->quantity;
     }
 
-    public function canBeUsedByUser($userId)
-    {
-        if (!$this->isValid()) {
-            return false;
-        }
 
-        if ($this->max_uses_per_user !== null) {
-            $userUsage = $this->users()
-                ->where('user_id', $userId)
-                ->first();
-            
-            if ($userUsage && $userUsage->used_count >= $this->max_uses_per_user) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Sử dụng coupon (tăng used_count)
-     */
     public function use()
     {
         $this->increment('used_count');
         return $this;
     }
 
-    /**
-     * Hoàn trả coupon (giảm used_count)
-     */
     public function refund()
     {
         if ($this->used_count > 0) {
@@ -143,33 +112,12 @@ class Coupon extends Model
         return $this;
     }
 
-    /**
-     * Lấy số lượng coupon còn lại
-     */
-    public function getRemainingQuantity()
-    {
-        if ($this->quantity == 0) {
-            return 'unlimited'; // Vô hạn
-        }
-        
-        if ($this->max_uses_total !== null) {
-            return max(0, $this->max_uses_total - $this->used_count);
-        }
-        
-        return max(0, $this->quantity - $this->used_count);
-    }
-
-    /**
-     * Kiểm tra xem coupon có còn hạn sử dụng không
-     */
     public function isExpired()
     {
         return now()->isAfter($this->end_date);
     }
 
-    /**
-     * Kiểm tra xem coupon có thể sử dụng chưa
-     */
+
     public function isActive()
     {
         return $this->is_active && 
@@ -178,11 +126,17 @@ class Coupon extends Model
                $this->hasAvailableQuantity();
     }
 
-    public function calculateDiscount($amount)
+    public function calculateDiscount($amount, $shipping_fee, $type_coupon)
     {
-        $discount = $this->discount_type === 'percentage'
-            ? ($amount * $this->discount_value / 100)
-            : $this->discount_value;
+        if ($type_coupon == 'shipping') {
+            $discount = $this->discount_type === 'percentage'
+                ? ($shipping_fee * $this->discount_value / 100)
+                : $this->discount_value;
+        } else {
+            $discount = $this->discount_type === 'percentage'
+                ? ($amount * $this->discount_value / 100)
+                : $this->discount_value;
+        }
 
         if ($this->max_discount_amount !== null) {
             $discount = min($discount, $this->max_discount_amount);

@@ -4,6 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if (!empty($settings?->favicon))
+        <link rel="icon" href="{{ asset('storage/' . $settings->favicon) }}" type="image/png" />
+    @else
+        <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png" />
+    @endif
     <title>@yield('title')</title>
     <!-- Quill CSS -->
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
