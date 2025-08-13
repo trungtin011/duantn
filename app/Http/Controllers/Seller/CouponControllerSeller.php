@@ -30,8 +30,37 @@ class CouponControllerSeller extends Controller
             });
         }
 
+        // Thêm filter theo trạng thái
+        if ($request->has('status') && $request->status) {
+            switch ($request->status) {
+                case 'active':
+                    $query->where('is_active', 1)->where('status', 'active');
+                    break;
+                case 'inactive':
+                    $query->where('is_active', 0);
+                    break;
+                case 'expired':
+                    $query->where('end_date', '<', now());
+                    break;
+                case 'out_of_stock':
+                    $query->whereRaw('(quantity > 0 AND used_count >= quantity) OR (max_uses_total > 0 AND used_count >= max_uses_total)');
+                    break;
+            }
+        }
+
         $coupons = $query->orderBy('created_at', 'desc')->paginate(10);
-        return view('seller.coupon.index', compact('coupons'));
+        
+        // Tính toán thống kê
+        $stats = [
+            'total' => Coupon::where('shop_id', $shop->id)->count(),
+            'active' => Coupon::where('shop_id', $shop->id)->where('is_active', 1)->where('status', 'active')->count(),
+            'expired' => Coupon::where('shop_id', $shop->id)->where('end_date', '<', now())->count(),
+            'out_of_stock' => Coupon::where('shop_id', $shop->id)
+                ->whereRaw('(quantity > 0 AND used_count >= quantity) OR (max_uses_total > 0 AND used_count >= max_uses_total)')
+                ->count(),
+        ];
+        
+        return view('seller.coupon.index', compact('coupons', 'stats'));
     }
 
     public function create()
@@ -179,6 +208,37 @@ class CouponControllerSeller extends Controller
             Log::error('Error creating coupon: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi tạo mã giảm giá.')->withInput();
         }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $shop = $this->getSellerShop();
+        if (!$shop) {
+            return redirect()->back()->with('error', 'Bạn chưa có shop để quản lý mã giảm giá.');
+        }
+
+        $coupon = Coupon::where('shop_id', $shop->id)->findOrFail($id);
+        
+        // Lấy thống kê sử dụng
+        $usageStats = [
+            'total_used' => $coupon->used_count,
+            'remaining_quantity' => $coupon->getRemainingQuantity(),
+            'usage_percentage' => $coupon->quantity > 0 ? round(($coupon->used_count / $coupon->quantity) * 100, 2) : 0,
+            'is_out_of_stock' => !$coupon->hasAvailableQuantity(),
+            'is_expired' => $coupon->isExpired(),
+            'is_active' => $coupon->isActive(),
+        ];
+
+        // Lấy danh sách user đã sử dụng
+        $usersUsed = $coupon->users()
+            ->with('user:id,name,email')
+            ->orderBy('used_count', 'desc')
+            ->paginate(10);
+
+        return view('seller.coupon.show', compact('coupon', 'usageStats', 'usersUsed'));
     }
 
     /**
@@ -333,6 +393,82 @@ class CouponControllerSeller extends Controller
             Log::error('Error deleting multiple coupons: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa mã giảm giá.');
         }
+    }
+
+    /**
+     * Hoàn trả coupon (giảm số lần sử dụng)
+     */
+    public function refundCoupon(Request $request, $id)
+    {
+        $shop = $this->getSellerShop();
+        if (!$shop) {
+            return redirect()->back()->with('error', 'Bạn chưa có shop để quản lý mã giảm giá.');
+        }
+
+        $coupon = Coupon::where('shop_id', $shop->id)->findOrFail($id);
+        
+        try {
+            $coupon->refund();
+            
+            return redirect()->back()->with('success', 'Đã hoàn trả coupon thành công.');
+        } catch (\Exception $e) {
+            Log::error('Error refunding coupon: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi hoàn trả coupon.');
+        }
+    }
+
+    /**
+     * Cập nhật trạng thái coupon
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $shop = $this->getSellerShop();
+        if (!$shop) {
+            return redirect()->back()->with('error', 'Bạn chưa có shop để quản lý mã giảm giá.');
+        }
+
+        $coupon = Coupon::where('shop_id', $shop->id)->findOrFail($id);
+        
+        $request->validate([
+            'status' => 'required|in:active,inactive,expired,deleted'
+        ]);
+
+        try {
+            $coupon->update(['status' => $request->status]);
+            
+            return redirect()->back()->with('success', 'Đã cập nhật trạng thái coupon thành công.');
+        } catch (\Exception $e) {
+            Log::error('Error updating coupon status: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật trạng thái coupon.');
+        }
+    }
+
+    /**
+     * Xem thống kê tổng quan về coupon
+     */
+    public function statistics()
+    {
+        $shop = $this->getSellerShop();
+        if (!$shop) {
+            return redirect()->back()->with('error', 'Bạn chưa có shop để xem thống kê.');
+        }
+
+        $coupons = Coupon::where('shop_id', $shop->id)->get();
+        
+        $stats = [
+            'total_coupons' => $coupons->count(),
+            'total_uses' => $coupons->sum('used_count'),
+            'active_coupons' => $coupons->where('is_active', 1)->where('status', 'active')->count(),
+            'expired_coupons' => $coupons->where('end_date', '<', now())->count(),
+            'out_of_stock_coupons' => $coupons->filter(function($coupon) {
+                return !$coupon->hasAvailableQuantity();
+            })->count(),
+            'total_discount_given' => $coupons->sum('discount_value'),
+            'most_used_coupon' => $coupons->sortByDesc('used_count')->first(),
+            'recent_coupons' => $coupons->sortByDesc('created_at')->take(5),
+        ];
+
+        return view('seller.coupon.statistics', compact('stats'));
     }
 
     /**

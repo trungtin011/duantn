@@ -135,9 +135,8 @@ class CheckoutController extends Controller
     {
         session()->forget('used_coupon_data');
         $customer = Customer::where('userID', Auth::user()->id)->first();
-        $user_coupon = CouponUser::where('user_id', Auth::user()->id)->first();
         $public_coupons = $this->getAvailableCoupons($customer);
-
+        
         $items = $this->getItems();
 
         if (!$items) {
@@ -159,12 +158,20 @@ class CheckoutController extends Controller
             }
         }
         $shop_ids = array_unique($shop_ids);
-        $shops = Shop::whereIn('id', $shop_ids)
-            ->with('coupons')
-            ->get();
+        $shops = Shop::whereIn('id', $shop_ids)->get();
+
+        $shop_coupons = [];
+        foreach ($shops as $shop) {
+            $coupons = $shop->coupons()
+                ->where('status', 'active')
+                ->where('is_public', true)
+                ->where('end_date', '>=', now())
+                ->get();
+            $shop_coupons[$shop->id] = $coupons;
+        }
         $user_addresses = UserAddress::where('userID', Auth::user()->id)->get();
         $user_points = Customer::where('userID', Auth::user()->id)->pluck('total_points')->first();
-        return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_coupon', 'user_points', 'public_coupons', 'subtotal'));
+        return view('client.checkout', compact('user_addresses', 'items', 'shops', 'user_points', 'public_coupons', 'subtotal', 'shop_coupons'));
     }
 
     public function directCheckout(Request $request)
@@ -210,31 +217,42 @@ class CheckoutController extends Controller
         return redirect()->route('checkout');
     }
 
-    protected function getAvailableCoupons($customer)
+    private function getAvailableCoupons($customer)
     {
         $userRank = $customer->ranking ?? 'bronze';
         $ranks = ['bronze' => 1, 'silver' => 2, 'gold' => 3, 'diamond' => 4];
         $userRankValue = $ranks[$userRank] ?? 1;
 
-        $isFirstOrder = Order::where('userID', Auth::user()->id)->count() == 0;
-
         $publicCoupons = Coupon::where('is_public', 1)
-            ->where('shop_id', null)
+            ->where('shop_id', NULL)
             ->where('end_date', '>', now())
-            ->where(function ($query) use ($userRank, $ranks, $userRankValue, $isFirstOrder) {
-                $query->where('rank_limit', 'all');
-                foreach ($ranks as $rank => $value) {
-                    if ($value <= $userRankValue) {
-                        $query->orWhere('rank_limit', $rank);
-                    }
-                }
-                if ($isFirstOrder) {
-                    $query->orWhere('type_coupon', 'first_order');
-                }
+            ->where('quantity', '!=', 0)
+            ->where(function($query) {
+                $query->whereNull('used_count')
+                      ->orWhereColumn('used_count', '<', 'quantity');
+            })
+            
+            ->where(function ($query) use ($userRank, $ranks, $userRankValue) {
+                $query->where('rank_limit', 'all')
+                      ->orWhere(function ($subQuery) use ($ranks, $userRankValue) {
+                          foreach ($ranks as $rank => $value) {
+                              if ($value <= $userRankValue) {
+                                  $subQuery->orWhere('rank_limit', $rank);
+                              }
+                          }
+                      });
             })
             ->where('status', 'active')
             ->get();
-
+        
+        $couponUsed = $customer->user->couponUsed()->get();
+        $publicCoupons = $publicCoupons->filter(function ($coupon) use ($couponUsed) {
+            $usedCount = $couponUsed->where('coupon_id', $coupon->id)->sum('used_count');
+            if ($coupon->max_uses_per_user <= 0) {
+                return true;
+            }
+            return $usedCount < $coupon->max_uses_per_user;
+        });
         return $publicCoupons;
     }
 
@@ -245,9 +263,9 @@ class CheckoutController extends Controller
             if (!empty($validate)) {
                 return response()->json(['success' => false, 'message' => $validate], 422);
             }
-            if (Order::isOrderSpam(Auth::id())) {
-                return response()->json(['success' => false, 'message' => 'Bạn đang spam đặt hàng, vui lòng thử lại sau 5p'], 422);
-            }
+            // if (Order::isOrderSpam(Auth::id())) {
+            //     return response()->json(['success' => false, 'message' => 'Bạn đang spam đặt hàng, vui lòng thử lại sau 5p'], 422);
+            // }
             $items = $this->getItems();
             $user = Auth::user();
             foreach ($items as $item) {
@@ -264,14 +282,14 @@ class CheckoutController extends Controller
                 return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm'], 400);
             }
 
-            if ($request->discount_code) {
-                $coupons_code = $request->coupons_code ?? [];
-                $coupons_code[] = [
-                    'code' => $request->discount_code,
-                    'shopId' => null
-                ];
-                $request->merge(['coupons_code' => $coupons_code]);
+            if ($request->platform_coupons_code) {
+                $mergedCoupons = array_merge(
+                    $request->coupons_code ?? [],
+                    $request->platform_coupons_code ?? []
+                );
+                $request->merge(['coupons_code' => $mergedCoupons]);
             }
+            
 
             $this->storeCouponsUsed($request->coupons_code);
             $user_address = UserAddress::where('id', $request->selected_address_id)->where('userID', $user->id)->first();
@@ -293,7 +311,7 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi server',
+                'message' => 'Lỗi server' . $e->getMessage(),
             ], 500);
         }
     }
@@ -517,30 +535,36 @@ class CheckoutController extends Controller
 
     private function storeCouponsUsed($coupons_code)
     {
+        $usedCount = 0;
+        $usedCodes = [];
         foreach ($coupons_code as $coupon_code) {
-            $coupon = Coupon::where('code', $coupon_code['code'])->first();
-            if ($coupon) {
-                $coupon->increment('used_count');
+                $coupon = Coupon::where('code', $coupon_code['code'])->first();
+                if ($coupon) {
+                    $coupon->use();
+                    $coupon_used = UserCouponUsed::where('user_id', Auth::id())
+                        ->where('coupon_id', $coupon->id)
+                        ->first();
 
-                $coupon_used = UserCouponUsed::where('user_id', Auth::id())
-                    ->where('coupon_id', $coupon->id)
-                    ->first();
-
-                if ($coupon_used && $coupon_used->id) {
-                    $coupon_used->increment('used_count');
-                } elseif ($coupon_used) {
-                    UserCouponUsed::where('user_id', Auth::id())
+                    if ($coupon_used) {
+                        UserCouponUsed::where('user_id', Auth::id())
                         ->where('coupon_id', $coupon->id)
                         ->increment('used_count');
-                } else {
-                    UserCouponUsed::create([
-                        'user_id' => Auth::id(),
-                        'coupon_id' => $coupon->id,
-                        'used_count' => 1,
-                    ]);
+                        } else {
+                        UserCouponUsed::create([
+                            'user_id' => Auth::id(),
+                            'coupon_id' => $coupon->id,
+                            'used_count' => 1,
+                        ]);
+                    }
+                    $usedCount++;
+                    $usedCodes[] = $coupon->code;
                 }
-            }
         }
+        Log::info('Số coupon đã sử dụng trong đơn hàng: ' . $usedCount, [
+            'user_id' => Auth::id(),
+            'coupons_code' => $coupons_code,
+            'used_codes' => $usedCodes
+        ]);
     }
 
     public function successPayment($order_code)
@@ -690,12 +714,6 @@ class CheckoutController extends Controller
 
     public function applyShopDiscount(Request $request)
     {
-        $used_coupon_already = session('used_coupon_data');
-        if ($used_coupon_already) {
-            if ($request->coupon_code == $used_coupon_already['code']) {
-                return response()->json(['error' => 'Bạn đã sử dụng mã giảm giá này, vui lòng chọn mã giảm giá khác'], 422);
-            }
-        }
 
         $coupon = Coupon::where('code', $request->coupon_code)->first();
         if (!$coupon) {
@@ -749,9 +767,7 @@ class CheckoutController extends Controller
             }
         }
 
-
-
-        $discount_value_coupon = $coupon->calculateDiscount((int)$request->total_amount);
+        $discount_value_coupon = $coupon->calculateDiscount((int)$request->total_amount, (int)$request->shipping_fee, $coupon->type_coupon);
         if ($coupon->max_discount_amount !== null) {
             if ($discount_value_coupon > $coupon->max_discount_amount) {
                 $discount_value_coupon = $coupon->max_discount_amount;

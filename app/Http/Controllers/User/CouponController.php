@@ -21,10 +21,7 @@ class CouponController extends Controller
             ->where('status', 'active')
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
-            ->where(function ($q) {
-                $q->where('max_uses_total', null)
-                  ->orWhereRaw('used_count < max_uses_total');
-            })
+            ->where('quantity','!=',0)
             ->get();
 
         $savedCoupons = CouponUser::with(['coupon.shop'])
@@ -49,7 +46,6 @@ class CouponController extends Controller
             ]);
         }
         
-        // Thêm các coupon đã lưu
         foreach ($savedCoupons as $savedCoupon) {
             $allCoupons->push([
                 'id' => $savedCoupon->id,

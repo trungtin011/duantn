@@ -79,20 +79,64 @@ class Coupon extends Model
             ->orWhere('rank_limit', $rank);
     }
 
-    // Methods
     public function isValid()
     {
         return $this->is_active &&
             $this->status === 'active' &&
             now()->between($this->start_date, $this->end_date) &&
+            $this->hasAvailableQuantity() &&
             ($this->max_uses_total === null || $this->used_count < $this->max_uses_total);
     }
 
-    public function calculateDiscount($amount)
+    public function hasAvailableQuantity()
     {
-        $discount = $this->discount_type === 'percentage'
-            ? ($amount * $this->discount_value / 100)
-            : $this->discount_value;
+        if ($this->quantity == 0) {
+            return true;
+        }
+        
+        return $this->used_count < $this->quantity;
+    }
+
+
+    public function use()
+    {
+        $this->increment('used_count');
+        return $this;
+    }
+
+    public function refund()
+    {
+        if ($this->used_count > 0) {
+            $this->decrement('used_count');
+        }
+        return $this;
+    }
+
+    public function isExpired()
+    {
+        return now()->isAfter($this->end_date);
+    }
+
+
+    public function isActive()
+    {
+        return $this->is_active && 
+               $this->status === 'active' && 
+               !$this->isExpired() && 
+               $this->hasAvailableQuantity();
+    }
+
+    public function calculateDiscount($amount, $shipping_fee, $type_coupon)
+    {
+        if ($type_coupon == 'shipping') {
+            $discount = $this->discount_type === 'percentage'
+                ? ($shipping_fee * $this->discount_value / 100)
+                : $this->discount_value;
+        } else {
+            $discount = $this->discount_type === 'percentage'
+                ? ($amount * $this->discount_value / 100)
+                : $this->discount_value;
+        }
 
         if ($this->max_discount_amount !== null) {
             $discount = min($discount, $this->max_discount_amount);

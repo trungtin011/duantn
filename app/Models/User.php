@@ -187,4 +187,9 @@ class User extends Authenticatable
             'id'         // khóa chính của shops
         );
     }
+
+    public function couponUsed()
+    {
+        return $this->hasMany(UserCouponUsed::class, 'user_id');
+    }
 }
