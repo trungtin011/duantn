@@ -512,11 +512,11 @@ Route::prefix('seller')->middleware('auth')->group(function () {
     Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
     // Seller password menu & flows (reuse user password controllers)
     Route::get('/password', function () { return view('seller.password'); })->name('seller.password');
-    Route::post('/password/send-code', [UserController::class, 'requestChangePasswordWithCode'])->name('seller.password.request.code');
-    Route::get('/password/verify', [UserController::class, 'showVerifyCodeForm'])->name('seller.password.verify.form');
-    Route::post('/password/verify', [UserController::class, 'verifyPasswordCode'])->name('seller.password.verify.code');
-    Route::get('/password/reset', [UserController::class, 'showPasswordResetForm'])->name('seller.password.reset.form');
-    Route::post('/password/reset', [UserController::class, 'confirmNewPassword'])->name('seller.password.reset.confirm');
+    Route::post('/password/send-code', [SellerSettingsController::class, 'requestChangePasswordWithCode'])->name('seller.password.request.code');
+    Route::get('/password/verify', [SellerSettingsController::class, 'showVerifyCodeForm'])->name('seller.password.verify.form');
+    Route::post('/password/verify', [SellerSettingsController::class, 'verifyPasswordCode'])->name('seller.password.verify.code');
+    Route::get('/password/reset', [SellerSettingsController::class, 'showPasswordResetForm'])->name('seller.password.reset.form');
+    Route::post('/password/reset', [SellerSettingsController::class, 'confirmNewPassword'])->name('seller.password.reset.confirm');
     Route::get('/profile', function () {
         return view('seller.profile');
     })->name('seller.profile');
@@ -778,23 +778,7 @@ Route::get('/help/article/{slug}', [FrontendController::class, 'helpDetail'])->n
 Route::get('/help/ajax/category/{slug}', [FrontendController::class, 'ajaxHelpByCategory'])->name('help.category.ajax');
 Route::get('/help/ajax/{slug}', [HelpCategoryController::class, 'ajaxDetail']);
 
-// seller registration routes
-Route::prefix('seller')->middleware('auth')->group(function () {
-    Route::get('/register', [RegisterShopController::class, 'showStep1'])->name('seller.register');
-    Route::post('/register', [RegisterShopController::class, 'step1'])->name('seller.register.step1');
-    // Route register1 đã bị xóa vì bỏ bước vận chuyển
-    Route::get('/register2', [RegisterShopController::class, 'showStep3'])->name('seller.register.step3');
-    Route::post('/register2', [RegisterShopController::class, 'step3'])->name('seller.register.step3.post');
-    Route::get('/register3', [RegisterShopController::class, 'showStep4'])->name('seller.register.step4');
-    Route::post('/register3', [RegisterShopController::class, 'step4'])->name('seller.register.step4.post');
-    Route::get('/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
-    Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
-    Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
-    Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
-    Route::get('/profile', function () {
-        return view('seller.profile');
-    })->name('seller.profile');
-});
+
 
 Route::get('/api/shops-to-chat', [ChatController::class, 'getShopsToChat']);
 Route::get('/api/chat/messages/{shopId}', [ChatController::class, 'getMessagesByShopId']);

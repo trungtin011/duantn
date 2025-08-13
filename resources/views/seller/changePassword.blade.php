@@ -1,7 +1,13 @@
 @extends('layouts.seller_home')
-@section('title', 'Đổi mật khẩu')
-@section('account-content')
-    <div class="bg-white p-6 rounded shadow max-w-md mx-auto relative">
+@section('title', 'Thay đổi mật khẩu')
+@section('content')
+    <div class="admin-page-header mb-5">
+        <h1 class="admin-page-title text-2xl">Thay đổi mật khẩu</h1>
+        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Cập nhật thông tin cửa</a> / Đổi mật khẩu
+        </div>
+    </div>
+    @include('seller.partials.account_submenu')
+    <div class="bg-white p-6 rounded shadow max-w-md mx-auto relative mb-6">
         <h2 class="text-xl font-semibold mb-4">Đổi mật khẩu</h2>
 
         @if (session('password_success'))
@@ -16,7 +22,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('account.password.request.code') }}" id="sendCodeForm">
+        <form method="POST" action="{{ route('seller.password.request.code') }}" id="sendCodeForm">
             @csrf
             <p class="mb-4">Chúng tôi sẽ gửi mã xác nhận tới email của bạn để tiếp tục đổi mật khẩu.</p>
 
