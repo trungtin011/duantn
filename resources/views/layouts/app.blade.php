@@ -425,24 +425,24 @@
         <!-- Top Header -->
         <div id="top-header-bar" class="bg-black text-white py-3 opacity-100 transition-all duration-700 ease-in-out">
             <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="hidden md:flex">
-                    @auth
-                        @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
+                @auth
+                    @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
+                        <div class="hidden md:flex">
                             <div class="flex items-center gap-1">
                                 <a href="{{ route('seller.index') }}"
                                     class="text-white text-sm capitalize hover:text-white transition-colors duration-200">
                                     <i class="fa-solid fa-shop mr-1"></i> Trở thành người bán
                                 </a>
                             </div>
-                        @endif
-                    @endauth
-                </div>
+                        </div>
+                    @endif
+                @endauth
                 <div
                     class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left text-sm hidden md:flex">
                     <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
                     <button class="text-white font-bold border-b border-white hover:text-orange-500">Mua ngay</button>
                 </div>
-                <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end px-3">
+                <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end px-3">
                     <!-- ticket -->
                     <a href="{{ route('user.tickets.index') }}" class="text-white flex items-center gap-2">
                         <svg class="size-5" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" stroke-width="3"

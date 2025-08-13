@@ -5,9 +5,8 @@
 @section('content')
     <div class="flex items-center justify-center px-4 pt-8">
         <div class="flex flex-col md:flex-row w-full max-w-6xl shadow-xl rounded-xl overflow-hidden">
-            <div class="w-full md:w-1/2 bg-cover bg-center min-h-[200px] md:min-h-[500px]"
-                style="background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');">
-            </div>
+            <img class="w-full md:w-1/2 bg-cover bg-center min-h-[200px] md:min-h-[500px]"
+                src="{{ asset('images/verifypw_image.avif') }}" alt="">
 
             <div class="w-full md:w-1/2 bg-white p-4 md:p-12">
                 <h2 class="text-2xl md:text-3xl font-bold mb-3">Xác nhận mã</h2>
@@ -62,6 +61,7 @@
         (function() {
             const inputs = Array.from(document.querySelectorAll('input[name="code_digits[]"]'));
             const hidden = document.getElementById('full-code');
+
             function updateHidden() {
                 hidden.value = inputs.map(i => i.value).join('');
             }
