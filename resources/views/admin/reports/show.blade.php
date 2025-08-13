@@ -172,14 +172,6 @@
                             {{ $report->resolvedBy ? $report->resolvedBy->fullname ?? 'Không có' : '-' }}
                         </span>
                     </div>
-                    <div class="flex flex-col">
-                        <span class="font-semibold text-gray-600">Ghi chú xử lý:</span>
-                        <span class="text-[13px]">
-                            <p class="bg-gray-100 p-1 rounded-md max-h-[50px] overflow-y-auto">
-                                {{ \Illuminate\Support\Str::limit($report->resolution_note, 50) }}
-                            </p>
-                        </span>
-                    </div>
                 </div>
             </div>
 
