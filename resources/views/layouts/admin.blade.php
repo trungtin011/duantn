@@ -65,17 +65,20 @@
             @click.away="mobileSidebarOpen = false">
 
             <!-- Sidebar Header -->
-            <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-                <div class="flex items-center space-x-3">
-                    <div
-                        class="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-shopping-bag text-white text-sm"></i>
-                    </div>
-                    <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                        x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
-                        x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
-                        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                        class="text-lg font-bold text-gray-900">eBazer</span>
+            <div class="flex items-center justify-end gap-10 h-16 px-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3 w-50">
+                    <h4 class="font-bold mb-2">
+                        <!-- Logo -->
+                        @if (empty($settings->logo))
+                            <a class="w-20 lg:w-[10%]" href="/">
+                                <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-full h-full">
+                            </a>
+                        @else
+                            <a href="{{ route('home') }}" class="flex items-center">
+                                <img src="{{ asset('storage/' . $settings->logo) }}" alt="logo" class="w-20">
+                            </a>
+                        @endif
+                    </h4>
                 </div>
                 <div class="flex items-center space-x-2">
                     <!-- Mobile collapse button -->
@@ -124,7 +127,8 @@
                     <a href="{{ route('admin.notifications.index') }}"
                         class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.notifications.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-5 5v-5z">
                             </path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
