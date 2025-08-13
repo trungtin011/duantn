@@ -13,13 +13,13 @@
                 <p class="text-gray-600 mb-6 text-sm md:text-base">Nhập email đã đăng ký để nhận mã xác nhận.</p>
 
                 @if (session('success'))
-                    <div class="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm">
+                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                         {{ session('error') }}
                     </div>
                 @endif
@@ -29,7 +29,7 @@
 
                     <div class="mb-4">
                         <input type="email" name="email" id="email" value="{{ old('email') }}"
-                            class="text-sm md:text-base w-full border rounded px-3 py-2 placeholder-gray-400 @error('email') border-red-500 @enderror"
+                            class="text-sm md:text-base w-full border border-gray-300 rounded px-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f42f46] focus:border-transparent @error('email') border-red-500 @enderror"
                             placeholder="Địa chỉ email" required>
                         @error('email')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -37,8 +37,8 @@
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-black hover:bg-gray-800 text-white py-2 text-sm md:text-base rounded">
-                        Gửi mã xác nhận
+                        class="w-full bg-[#f42f46] hover:bg-[#d91f35] text-white py-2 text-sm md:text-base rounded focus:outline-none focus:ring-2 focus:ring-[#f42f46] focus:ring-opacity-50">
+                        <i class="fas fa-paper-plane mr-2"></i> Gửi mã xác nhận
                     </button>
 
                     <div class="flex mt-4 text-xs flex-wrap gap-2">

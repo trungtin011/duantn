@@ -1,10 +1,29 @@
-@extends('user.account.layout')
+@extends('layouts.admin')
+@section('title', 'Đổi mật khẩu')
+@section('content')
+<div class="pb-10 mx-auto">
+    <div class="admin-page-header">
+        <h1 class="admin-page-title">Đổi mật khẩu</h1>
+        <div class="admin-breadcrumb">
+            <a href="#" class="admin-breadcrumb-link">Trang chủ</a> / 
+            <a href="{{ route('admin.settings.index') }}" class="admin-breadcrumb-link">Cài đặt</a> / 
+            Mật khẩu
+        </div>
+    </div>
 
-@section('account-content')
-    <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+    <!-- Menu -->
+    <div class="mb-6">
+        <ul class="flex flex-wrap gap-2 border-b border-gray-200">
+            <li><a href="{{ route('admin.settings.index') }}" class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600">Tổng quan</a></li>
+            <li><a href="{{ route('admin.settings.emails') }}" class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600">Emails</a></li>
+            <li><a href="{{ route('admin.password') }}" class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600 border-b-2 border-blue-600">Mật khẩu</a></li>
+        </ul>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl">
         <div class="mb-6">
             <h2 class="text-lg font-semibold text-gray-800">Đổi mật khẩu</h2>
-            <p class="text-sm text-gray-600">Thay đổi mật khẩu tài khoản của bạn.</p>
+            <p class="text-sm text-gray-600">Thay đổi mật khẩu tài khoản admin của bạn.</p>
         </div>
 
         @if (session('password_success'))
@@ -23,7 +42,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('account.password.request.code') }}" class="space-y-6">
+        <form method="POST" action="{{ route('admin.password.request.code') }}" class="space-y-6">
             @csrf
             <div class="space-y-4">
                 <div class="flex items-center space-x-4">
@@ -46,11 +65,5 @@
             </div>
         </form>
     </div>
-
-    {{-- JS test email --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Form handling code can be added here if needed
-        });
-    </script>
+</div>
 @endsection

@@ -5,7 +5,7 @@
 @section('content')
     <div class="admin-page-header mb-5">
         <h1 class="admin-page-title text-2xl">Đơn hàng</h1>
-        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Home</a> / Danh sách đơn hàng</div>
+        <div class="admin-breadcrumb"><a href="#" class="admin-breadcrumb-link">Trang chủ</a> / Danh sách đơn hàng</div>
     </div>
 
     @include('layouts.notification')

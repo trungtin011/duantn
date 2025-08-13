@@ -250,11 +250,11 @@
                             <ul class="dropdown-panel-list">
                                 @if ($parentCategory)
                                     <li class="menu-title">
-                                        <a href="#">{{ $parentCategory->name ?? 'Danh mục' }}</a>
+                                        <a href="{{ route('search', ['category' => $parentCategory->id ?? '']) }}">{{ $parentCategory->name ?? 'Danh mục' }}</a>
                                     </li>
                                     @foreach ($subCategories as $subcategory)
                                         <li class="panel-list-item">
-                                            <a href="#">{{ $subcategory->name }}</a>
+                                            <a href="{{ route('search', ['category' => $subcategory->id]) }}">{{ $subcategory->name }}</a>
                                         </li>
                                     @endforeach
                                     @if ($parentCategory->image_path)
@@ -278,11 +278,11 @@
                             @foreach ($fashionSub as $subCategory)
                                 <ul class="dropdown-panel-list">
                                     <li class="menu-title">
-                                        <a href="#">{{ $subCategory->name }}</a>
+                                        <a href="{{ route('search', ['category' => $subCategory->id]) }}">{{ $subCategory->name }}</a>
                                     </li>
                                     @foreach ($subCategory->subCategories as $child)
                                         <li class="panel-list-item">
-                                            <a href="#">{{ $child->name }}</a>
+                                            <a href="{{ route('search', ['category' => $child->id]) }}">{{ $child->name }}</a>
                                         </li>
                                     @endforeach
                                     @if ($subCategory->image_path)
@@ -294,7 +294,7 @@
                                         </li>
                                     @else
                                         <li class="panel-list-item">
-                                            <a href="#">
+                                            <a href="">
                                                 @if ($subCategory->name === 'Nam')
                                                     <img src="{{ asset('assets/images/mens-banner.jpg') }}"
                                                         alt="Men's Fashion" width="250" height="119">
@@ -312,10 +312,10 @@
                             @endforeach
 
                             <ul class="dropdown-panel-list">
-                                <li class="menu-title"><a href="#">{{ $parentCategory->name ?? 'Danh mục' }}</a></li>
+                                <li class="menu-title"><a href="{{ route('search', ['category' => $parentCategory->id ?? '']) }}">{{ $parentCategory->name ?? 'Danh mục' }}</a></li>
                                 @foreach ($filteredSubCategories as $child)
                                     <li class="panel-list-item">
-                                        <a href="#">{{ $child->name }}</a>
+                                        <a href="{{ route('search', ['category' => $child->id]) }}">{{ $child->name }}</a>
                                     </li>
                                 @endforeach
                                 @if (isset($parentCategory) && $parentCategory->image_path)
@@ -625,7 +625,7 @@
                 <div class="sidebar has-scrollbar relative" data-mobile-menu>
                     <div class="mt-[100px] lg:mt-0">
                         <button
-                            class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors absolute top-20 right-2.5"
+                            class="sidebar-close-btn p-2 hover:bg-orange-100 rounded-full transition-colors ml-auto my-3"
                             data-mobile-menu-close-btn>
                             <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
                         </button>
@@ -637,7 +637,7 @@
                                         class="text-orange-500 text-lg md:text-xl bg-white rounded-full p-1.5 md:p-2"></ion-icon>
                                 </h2>
                             </div>
-    
+
                             <!-- Header với legend -->
                             <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-2 md:p-3 mb-3 md:mb-4">
                                 <h3
@@ -668,7 +668,7 @@
                                     </span>
                                 </div>
                             </div>
-    
+
                             <!-- Danh sách shop -->
                             <div class="shop-ranking-container">
                                 <div class="grid grid-cols-1 gap-2 md:gap-3 pb-2 relative">
@@ -676,13 +676,13 @@
                                         @foreach ($rankingShops as $index => $shop)
                                             <div class="relative bg-white border border-gray-200 rounded-lg p-2 md:p-2.5 shop-ranking-card {{ $index < 3 ? 'ring-1 ring-opacity-30' : '' }} {{ $index === 0 ? 'ring-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : '' }} {{ $index === 1 ? 'ring-gray-400 bg-gradient-to-r from-gray-50 to-slate-50' : '' }} {{ $index === 2 ? 'ring-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50' : '' }}"
                                                 style="animation-delay: {{ $index * 0.1 }}s;">
-    
+
                                                 <!-- Badge xếp hạng -->
                                                 <div
                                                     class="absolute -top-1.5 -left-1.5 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-white font-bold text-[10px] md:text-xs shadow-md z-10 {{ $index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-400 to-slate-500' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-600 to-yellow-500' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-500 to-purple-600' : '' }}">
                                                     {{ $index + 1 }}
                                                 </div>
-    
+
                                                 <!-- Header shop -->
                                                 <div class="flex items-start justify-between mb-3 gap-2">
                                                     <div class="flex items-center gap-2 flex-1 min-w-0">
@@ -723,17 +723,18 @@
                                                             </div>
                                                         </div>
                                                     </div>
-    
+
                                                     <!-- Ranking badge -->
                                                     <span
                                                         class="ranking-badge inline-flex items-center px-1 py-0.5 md:px-1.5 md:py-0.5 rounded-full text-[11px] md:text-[12px] font-medium flex-shrink-0 {{ $index === 0 ? 'bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 border border-yellow-300' : '' }} {{ $index === 1 ? 'bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 border border-gray-300' : '' }} {{ $index === 2 ? 'bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 border border-amber-300' : '' }} {{ $index > 2 ? 'bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 border border-blue-300' : '' }}">
                                                         <ion-icon
                                                             name="{{ $index === 0 ? 'trophy' : ($index === 1 ? 'medal' : ($index === 2 ? 'ribbon' : 'star')) }}"
                                                             class="mr-1 text-sm md:text-md"></ion-icon>
-                                                        <span class="text-[11px] md:text-[12px]">{{ $index + 1 }}</span>
+                                                        <span
+                                                            class="text-[11px] md:text-[12px]">{{ $index + 1 }}</span>
                                                     </span>
                                                 </div>
-    
+
                                                 <!-- Stats -->
                                                 <div
                                                     class="text-center p-1.5 md:p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded border border-green-200 mb-1.5 md:mb-2">
@@ -744,14 +745,15 @@
                                                         <span class="text-sm md:text-md font-medium text-gray-800">Đã
                                                             bán</span>
                                                     </div>
-    
+
                                                     <!-- Số lượng bán -->
                                                     <p class="text-base md:text-lg font-bold text-[#ef3248] mb-2">
                                                         {{ number_format($shop->total_products_sold) }}
                                                     </p>
-    
+
                                                     <!-- Progress bar -->
-                                                    <div class="relative h-2 md:h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        class="relative h-2 md:h-3 bg-gray-200 rounded-full overflow-hidden">
                                                         @php
                                                             $maxSales = max(
                                                                 $rankingShops->pluck('total_products_sold')->toArray(),
@@ -760,7 +762,7 @@
                                                                 $maxSales > 0
                                                                     ? ($shop->total_products_sold / $maxSales) * 100
                                                                     : 0;
-    
+
                                                             // Phối màu chủ đạo với gradient đẹp
                                                             $barColor = 'bg-gradient-to-r from-[#ef3248] to-[#ff6b35]';
                                                         @endphp
@@ -773,7 +775,7 @@
                                                                 </div>
                                                             @endif
                                                         </div>
-    
+
                                                         <!-- Hiệu ứng lửa xung quanh cho top 1 -->
                                                         @if ($index === 0)
                                                             <div class="absolute inset-0 rounded-full flame-effect"></div>
@@ -797,7 +799,7 @@
                                                         @endif
                                                     </div>
                                                 </div>
-    
+
                                                 <!-- Action button -->
                                                 <a href="{{ route('shop.show', $shop->id) }}"
                                                     class="block w-full text-center py-1 px-2 bg-[#ef3248] hover:bg-[#d62a3e] text-white font-medium rounded transition-colors duration-200 text-sm md:text-base">
@@ -818,14 +820,15 @@
                                 </div>
                             </div>
                         </div>
-    
+
                         <div class="product-showcase">
                             <h3 class="showcase-heading">Sản phẩm bán chạy</h3>
                             <div class="showcase-wrapper">
                                 <div class="showcase-container">
                                     @foreach ($bestSellers as $product)
                                         <div class="showcase">
-                                            <a href="{{ route('product.show', $product->slug) }}" class="showcase-img-box">
+                                            <a href="{{ route('product.show', $product->slug) }}"
+                                                class="showcase-img-box">
                                                 <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
                                                     width="75" height="75" class="showcase-img">
                                             </a>
@@ -1765,7 +1768,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }

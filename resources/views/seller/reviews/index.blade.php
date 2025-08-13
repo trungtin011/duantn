@@ -1,5 +1,5 @@
 @extends('layouts.seller_home')
-
+@section('title', 'Danh sách đánh giá')
 @section('content')
     <div class="mx-auto py-4 sm:py-6 md:py-8">
         <header class="flex justify-between items-center border-b border-gray-200 p-3 mb-6 bg-white rounded">

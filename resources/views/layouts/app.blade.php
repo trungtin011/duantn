@@ -5,7 +5,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="{{ asset('images/about.png') }}" type="image/png" />
+    @if (!empty($settings?->favicon))
+        <link rel="icon" href="{{ asset('storage/' . $settings->favicon) }}" type="image/png" />
+    @else
+        <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png" />
+    @endif
     <title>@yield('title', 'Default Title')</title>
 
     @php
@@ -298,43 +302,7 @@
             }
         }
 
-        /* Custom scrollbar for notification dropdown */
-        .notification-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .notification-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        .notification-scrollbar::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
-            transition: background 0.2s ease;
-        }
-
-        .notification-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-
-        /* Firefox scrollbar */
-        .notification-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: #c1c1c1 #f1f1f1;
-        }
-
-        /* Smooth scrolling */
-        .notification-scrollbar {
-            scroll-behavior: smooth;
-        }
-
         /* Notification content styling */
-        .notification-content {
-            max-height: calc(70vh - 2rem);
-            overflow-y: auto;
-        }
-
         .notification-content .mb-3:last-child {
             margin-bottom: 0;
         }
@@ -859,8 +827,8 @@
                     </form>
 
                     <div class="relative">
-                        <div
-                            class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
+                        <div id="cart-count-badge"
+                            class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10 hidden">
                             <span id="cart-count" class="text-center text-xs text-white">0</span>
                         </div>
                         <button id="desktop-cart-trigger"
@@ -1447,12 +1415,20 @@
 
                         if (cartCountElement) {
                             cartCountElement.textContent = data.quantity;
-                            cartCountElement.classList.toggle('hidden', data.quantity <= 0);
+                        }
+
+                        const cartCountBadge = document.getElementById('cart-count-badge');
+                        if (cartCountBadge) {
+                            cartCountBadge.classList.toggle('hidden', data.quantity <= 0);
                         }
 
                         if (mobileCartCountElement) {
                             mobileCartCountElement.textContent = data.quantity;
-                            mobileCartCountElement.classList.toggle('hidden', data.quantity <= 0);
+                        }
+
+                        const mobileCartCountBadge = mobileCartCountElement?.closest('.count');
+                        if (mobileCartCountBadge) {
+                            mobileCartCountBadge.classList.toggle('hidden', data.quantity <= 0);
                         }
                     })
                     .catch(error => console.error('Error fetching cart quantity:', error));

@@ -1,12 +1,10 @@
-
 @extends('layouts.seller_home')
-
-
+@section('title', 'Quản lý Combo')
 @section('content')
     <div class="admin-page-header mb-5">
         <h1 class="admin-page-title text-2xl">Combo sản phẩm</h1>
         <div class="admin-breadcrumb">
-            <a href="{{ route('seller.dashboard') }}" class="admin-breadcrumb-link">Home</a> / Quản lý Combo
+            <a href="{{ route('seller.dashboard') }}" class="admin-breadcrumb-link">Trang chủ</a> / Quản lý Combo
         </div>
     </div>
 
@@ -76,13 +74,13 @@
                                 foreach ($combo->products as $cp) {
                                     // Debugging individual product data
                                     echo "<!-- CP ID: {$cp->id}, Product ID: {$cp->productID}, Variant ID: {$cp->variantID}, Quantity: {$cp->quantity} -->";
-                                    echo "<!-- Product Data: " . json_encode($cp->product) . " -->";
-                                    
+                                    echo '<!-- Product Data: ' . json_encode($cp->product) . ' -->';
+
                                     $productPrice = $cp->product->price; // Default to product original price
                                     if ($cp->variantID && $cp->variant) {
                                         $productPrice = $cp->variant->sale_price ?? $cp->variant->price; // Use variant's sale or original price
-                                    } else {
-                                        $productPrice = $cp->product->sale_price ?? $cp->product->price; // Use product's sale or original price for simple products
+    } else {
+        $productPrice = $cp->product->sale_price ?? $cp->product->price; // Use product's sale or original price for simple products
                                     }
 
                                     $basePrice += $productPrice * $cp->quantity;
@@ -90,12 +88,13 @@
                                 $discountedPrice = $combo->total_price; // Giá đã giảm từ database
                             @endphp
                             <!-- Debug: Raw basePrice: {{ $basePrice }}, Raw discountedPrice: {{ $discountedPrice }} -->
-                            <span class="line-through text-gray-400">{{ number_format((float)$basePrice) }}đ</span><br>
-                            <span class="text-red-500 font-semibold">{{ number_format((float)$discountedPrice) }}đ</span>
+                            <span class="line-through text-gray-400">{{ number_format((float) $basePrice) }}đ</span><br>
+                            <span class="text-red-500 font-semibold">{{ number_format((float) $discountedPrice) }}đ</span>
                         </td>
                         <td class="py-4 text-[13px]">
                             @if ($combo->discount_value)
-                                {{ number_format($combo->discount_value) }} {{ $combo->discount_type == 'percentage' ? '%' : 'VNĐ' }}
+                                {{ number_format($combo->discount_value) }}
+                                {{ $combo->discount_type == 'percentage' ? '%' : 'VNĐ' }}
                             @else
                                 Không giảm giá
                             @endif

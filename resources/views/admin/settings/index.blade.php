@@ -11,8 +11,13 @@
         <!-- Menu -->
         <div class="mb-6">
             <ul class="flex flex-wrap gap-2 border-b border-gray-200">
-                <li><a href="#" class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600 border-b-2 border-blue-600">Tổng quan</a></li>
-                <li><a href="{{ route('admin.settings.emails') }}" class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600">Emails</a></li>
+                <li><a href="#"
+                        class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600 border-b-2 border-blue-600">Tổng
+                        quan</a></li>
+                <li><a href="{{ route('admin.settings.emails') }}"
+                        class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600">Emails</a></li>
+                <li><a href="{{ route('admin.password') }}"
+                        class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600">Mật khẩu</a></li>
             </ul>
         </div>
         <div class="bg-white p-6 rounded-lg rounded-lg shadow-md max-w-2xl">
@@ -20,11 +25,11 @@
                 <h2 class="text-lg font-semibold text-gray-800">Cài đặt chung</h2>
                 <p class="text-sm text-gray-600">Quản lý các cài đặt cơ bản cho trang web của bạn.</p>
             </div>
-            <form action="{{ route('admin.settings.update') }}" method="post"
-                class="space-y-6 max-w-3xl" enctype="multipart/form-data">
+            <form action="{{ route('admin.settings.update') }}" method="post" class="space-y-6 max-w-3xl"
+                enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-    
+
                 <!-- Tiêu đề trang -->
                 <div class="flex items-center space-x-4">
                     <label class="w-40 text-sm font-semibold text-gray-700" for="site-title">
@@ -35,7 +40,7 @@
                         id="site-title" type="text" name="site_title"
                         value="{{ old('site_title', $settings['site_title'] ?? '') }}" />
                 </div>
-    
+
                 <!-- Dòng mô tả -->
                 <div class="flex items-start space-x-4">
                     <label class="w-40 text-sm font-semibold text-gray-700 pt-1" for="tagline">
@@ -51,7 +56,7 @@
                         </p>
                     </div>
                 </div>
-    
+
                 <!-- Logo -->
                 <div class="flex items-center space-x-4 space-y-6">
                     <label class="w-40 text-sm font-semibold text-gray-700" for="logo">Logo trang web</label>
@@ -91,7 +96,7 @@
                             200x200px.</p>
                     </div>
                 </div>
-    
+
                 <!-- Banner Image -->
                 <div class="flex items-center space-x-4 space-y-6">
                     <label class="w-40 text-sm font-semibold text-gray-700" for="banner-image">Hình ảnh banner</label>
@@ -126,11 +131,12 @@
                                 @endif
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1 max-w-lg">Tải lên hình ảnh banner. Kích thước tối ưu là 1200x400px.
+                        <p class="text-xs text-gray-500 mt-1 max-w-lg">Tải lên hình ảnh banner. Kích thước tối ưu là
+                            1200x400px.
                         </p>
                     </div>
                 </div>
-    
+
                 <!-- Favicon -->
                 <div class="flex items-center space-x-4 space-y-6">
                     <label class="w-40 text-sm font-semibold text-gray-700" for="favicon">Favicon</label>
@@ -169,7 +175,7 @@
                             32x32px.</p>
                     </div>
                 </div>
-    
+
                 <!-- Nút Lưu thay đổi -->
                 <div>
                     <button

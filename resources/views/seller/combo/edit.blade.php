@@ -1,6 +1,5 @@
 @extends('layouts.seller_home')
-
-
+@section('title', 'Sửa Combo')
 @section('content')
     <div class="admin-page-header mb-5">
         <h1 class="admin-page-title text-2xl">Chỉnh sửa Combo</h1>

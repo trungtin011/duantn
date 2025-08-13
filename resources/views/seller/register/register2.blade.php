@@ -193,7 +193,7 @@
                                             Email nhận hóa đơn điện tử <span class="text-red-500">*</span>
                                         </label>
                                         <input type="email" name="invoice_email"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#f42f46] focus:border-[#f42f46] transition-all duration-200"
                                             placeholder="invoice@example.com"
                                             value="{{ old('invoice_email', session('register.invoice_email')) }}">
                                         <p class="text-sm text-gray-500 mt-1">Hóa đơn điện tử sẽ được gửi đến email này</p>
@@ -208,7 +208,7 @@
                                             Mã số thuế <span class="text-red-500">*</span>
                                         </label>
                                         <input type="text" name="tax_code"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#f42f46] focus:border-[#f42f46] transition-all duration-200"
                                             placeholder="0123456789"
                                             value="{{ old('tax_code', session('register.tax_code')) }}">
                                         <p class="text-sm text-gray-500 mt-1">

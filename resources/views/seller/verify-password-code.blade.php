@@ -8,37 +8,51 @@
         </div>
     </div>
     @include('seller.partials.account_submenu')
-    <div class="bg-white p-6 rounded shadow max-w-md mx-auto mb-6">
-        <h2 class="text-xl font-semibold mb-4">Xác nhận đổi mật khẩu</h2>
+    <div class="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold text-gray-800">Xác nhận đổi mật khẩu</h2>
+            <p class="text-sm text-gray-600">Nhập mã xác nhận 6 số đã được gửi tới email của bạn.</p>
+        </div>
 
         @if (session('success'))
-            <div class="text-green-600 mb-4">{{ session('success') }}</div>
+            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                {{ session('success') }}
+            </div>
         @endif
 
         @if ($errors->any())
-            <div class="text-red-600 mb-4">
-                @foreach ($errors->all() as $error)
-                    <div>{{ $error }}</div>
-                @endforeach
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
-        <form method="POST" action="{{ route('seller.password.verify.code') }}" id="verifyForm">
+        <form method="POST" action="{{ route('seller.password.verify.code') }}" id="verifyForm" class="space-y-6">
             @csrf
 
-            <div class="flex gap-2 justify-center mb-4">
-                @for ($i = 0; $i < 6; $i++)
-                    <input type="text" name="code[]" maxlength="1"
-                        class="w-12 h-12 text-center text-lg border rounded focus:ring-2 focus:ring-black"
-                        inputmode="numeric" required>
-                @endfor
+            <div class="space-y-4">
+                <div class="text-center">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Nhập mã xác nhận 6 số:</label>
+                    <div class="flex gap-2 justify-center mb-4">
+                        @for ($i = 0; $i < 6; $i++)
+                            <input type="text" name="code[]" maxlength="1"
+                                class="w-12 h-12 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#f42f46] focus:border-transparent text-lg"
+                                inputmode="numeric" required>
+                        @endfor
+                    </div>
+                </div>
+
+                <input type="hidden" name="code" id="full_code">
+
+                <div class="text-center">
+                    <button type="submit" class="bg-[#f42f46] text-white text-sm font-semibold px-6 py-2 rounded hover:bg-[#d91f35] focus:outline-none focus:ring-2 focus:ring-[#f42f46] focus:ring-opacity-50">
+                        <i class="fas fa-check mr-2"></i> Xác nhận
+                    </button>
+                </div>
             </div>
-
-            <input type="hidden" name="code" id="full_code">
-
-            <button type="submit" class="bg-black text-white px-4 py-2 rounded w-full">
-                Xác nhận
-            </button>
         </form>
     </div>
 

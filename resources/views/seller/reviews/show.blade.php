@@ -1,5 +1,5 @@
 @extends('layouts.seller')
-
+@section('title', 'Chi tiết đánh giá')
 @section('head')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/admin/review.css') }}">

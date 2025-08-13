@@ -169,17 +169,15 @@ class UserController extends Controller
         $resetLink = route('account.password.verify.form');
 
         try {
-            Mail::send([], [], function ($message) use ($user, $code, $resetLink) {
-                $message->to($user->email)
-                    ->subject('Mã xác nhận đổi mật khẩu')
-                    ->html("
-                    <p>Chào {$user->fullname},</p>
-                    <p>Mã xác nhận đổi mật khẩu của bạn là: <strong>$code</strong></p>
-                    <p>Hoặc bạn có thể nhấn vào nút bên dưới để nhập mã và đổi mật khẩu:</p>
-                    <p><a href='{$resetLink}' style='padding:10px 15px; background:#ef4444; color:white; text-decoration:none; border-radius:5px;'>Xác nhận đổi mật khẩu</a></p>
-                    <p>Trân trọng,</p>
-                    <p>Hệ thống</p>
-                ");
+            $emailData = [
+                'name' => $user->fullname ?? $user->username,
+                'code' => $code,
+                'email' => $user->email
+            ];
+
+            Mail::send('emails.user-password-reset-code', $emailData, function ($message) use ($user) {
+                $message->to($user->email, $user->fullname ?? $user->username)
+                        ->subject('Mã xác nhận đổi mật khẩu - ZynoxMall');
             });
 
             Log::info('Password reset code sent successfully', ['user_id' => $user->id, 'email' => $user->email]);

@@ -13,13 +13,13 @@
                 <p class="text-gray-600 mb-6 text-sm md:text-base">Nhập 6 chữ số đã được gửi về email của bạn.</p>
 
                 @if (session('success'))
-                    <div class="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm">
+                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                         {{ session('error') }}
                     </div>
                 @endif
@@ -32,7 +32,8 @@
                         <div class="flex justify-between gap-2 md:gap-3">
                             @for ($i = 0; $i < 6; $i++)
                                 <input type="text" name="code_digits[]" maxlength="1"
-                                    class="w-10 h-12 md:w-12 md:h-14 text-center text-lg border rounded" required>
+                                    class="w-10 h-12 md:w-12 md:h-14 text-center text-lg border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#f42f46] focus:border-transparent" 
+                                    inputmode="numeric" required>
                             @endfor
                         </div>
                         @error('code')
@@ -43,8 +44,8 @@
                     <input type="hidden" name="code" id="full-code">
 
                     <button type="submit"
-                        class="w-full bg-black hover:bg-gray-800 text-white py-2 text-sm md:text-base rounded">
-                        Xác nhận mã
+                        class="w-full bg-[#f42f46] hover:bg-[#d91f35] text-white py-2 text-sm md:text-base rounded focus:outline-none focus:ring-2 focus:ring-[#f42f46] focus:ring-opacity-50">
+                        <i class="fas fa-check mr-2"></i> Xác nhận mã
                     </button>
 
                     <div class="flex mt-4 text-xs flex-wrap gap-2">

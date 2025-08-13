@@ -701,9 +701,14 @@
                                     x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
                                     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                                     class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                                    <a href="#"
-                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Cài
-                                        đặt</a>
+                                    <a href="{{ route('admin.password') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                                        Đổi mật khẩu
+                                    </a>
+                                    <a href="{{ route('admin.settings.index') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                                        Cài đặt
+                                    </a>
                                     <a href="{{ route('logout') }}"
                                         onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
                                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">Đăng

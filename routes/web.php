@@ -321,6 +321,14 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('admin.brands.update');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('admin.brands.destroy');
 
+    // Admin password reset routes
+    Route::get('/password', function () { return view('admin.password'); })->name('admin.password');
+    Route::post('/password/send-code', [AdminSettingsController::class, 'requestChangePasswordWithCode'])->name('admin.password.request.code');
+    Route::get('/password/verify', [AdminSettingsController::class, 'showVerifyCodeForm'])->name('admin.password.verify.form');
+    Route::post('/password/verify', [AdminSettingsController::class, 'verifyPasswordCode'])->name('admin.password.verify.code');
+    Route::get('/password/reset', [AdminSettingsController::class, 'showPasswordResetForm'])->name('admin.password.reset.form');
+    Route::post('/password/reset', [AdminSettingsController::class, 'confirmNewPassword'])->name('admin.password.reset.confirm');
+
     // Post Category
     Route::resource('post-categories', PostCategoryController::class);
     // Post Tag

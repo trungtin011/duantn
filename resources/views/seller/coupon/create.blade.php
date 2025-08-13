@@ -1,5 +1,5 @@
 @extends('layouts.seller_home')
-
+@section('title', 'Thêm mã giảm giá')
 @section('head')
     @push('styles')
         <link rel="stylesheet" href="{{ asset('css/admin/coupon.css') }}">

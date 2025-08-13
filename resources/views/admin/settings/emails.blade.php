@@ -5,7 +5,8 @@
         <div class="admin-page-header">
             <h1 class="admin-page-title">Cài đặt Email</h1>
             <div class="admin-breadcrumb"><a href="{{ route('admin.settings.index') }}" class="admin-breadcrumb-link">Cài
-                    đặt</a> / Email</div>
+                    đặt</a> / Email
+            </div>
         </div>
         <div class="mb-6">
             <ul class="flex flex-wrap gap-2 border-b border-gray-200">
@@ -14,6 +15,8 @@
                 <li><a href="{{ route('admin.settings.emails') }}"
                         class="inline-block px-4 py-2 font-semibold text-blue-700 border-b-2 border-blue-600">Emails</a>
                 </li>
+                <li><a href="{{ route('admin.password') }}"
+                        class="inline-block px-4 py-2 font-semibold text-gray-700 hover:text-blue-600">Mật khẩu</a></li>
             </ul>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl">

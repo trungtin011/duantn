@@ -196,6 +196,7 @@ class CheckoutController extends Controller
         $user_coupon = CouponUser::where('user_id', Auth::user()->id)->first();
         $public_coupons = $this->getAvailableCoupons($customer);
 
+
         $items = $this->getItems();
 
         if (!$items) {
@@ -274,30 +275,30 @@ class CheckoutController extends Controller
         return redirect()->route('checkout');
     }
 
-    protected function getAvailableCoupons($customer)
+    private function getAvailableCoupons($customer)
     {
         $userRank = $customer->ranking ?? 'bronze';
         $ranks = ['bronze' => 1, 'silver' => 2, 'gold' => 3, 'diamond' => 4];
         $userRankValue = $ranks[$userRank] ?? 1;
 
-        $isFirstOrder = Order::where('userID', Auth::user()->id)->count() == 0;
-
         $publicCoupons = Coupon::where('is_public', 1)
-            ->where('shop_id', null)
+            ->where('shop_id', NULL)
             ->where('end_date', '>', now())
-            ->where(function ($query) use ($userRank, $ranks, $userRankValue, $isFirstOrder) {
-                $query->where('rank_limit', 'all');
-                foreach ($ranks as $rank => $value) {
-                    if ($value <= $userRankValue) {
-                        $query->orWhere('rank_limit', $rank);
-                    }
-                }
-                if ($isFirstOrder) {
-                    $query->orWhere('type_coupon', 'first_order');
-                }
+            ->where(function ($query) use ($userRank, $ranks, $userRankValue) {
+                $query->where('rank_limit', 'all')
+                    ->orWhere(function ($subQuery) use ($ranks, $userRankValue) {
+                        foreach ($ranks as $rank => $value) {
+                            if ($value <= $userRankValue) {
+                                $subQuery->orWhere('rank_limit', $rank);
+                            }
+                        }
+                    });
             })
             ->where('status', 'active')
-            ->get();
+            ->get()
+            ->filter(function ($coupon) use ($customer) {
+                return $coupon->isActive() && $coupon->canBeUsedByUser($customer->id);
+            });
 
         return $publicCoupons;
     }

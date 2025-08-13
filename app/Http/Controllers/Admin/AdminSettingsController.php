@@ -7,10 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AdminSettingsController extends Controller
 {
-    
+
     public function index()
     {
         $settings = DB::table('settings')->first();
@@ -24,7 +29,7 @@ class AdminSettingsController extends Controller
         return view('admin.settings.index', compact('settings'));
     }
 
-    
+
     public function create()
     {
         $settings = DB::table('settings')->first();
@@ -226,11 +231,11 @@ class AdminSettingsController extends Controller
             'mail_password' => $validated['mail_password'],
             'mail_encryption' => $validated['mail_encryption'],
         ];
-        $exists = \DB::table('settings')->exists();
+        $exists = DB::table('settings')->exists();
         if ($exists) {
-            \DB::table('settings')->update($data);
+            DB::table('settings')->update($data);
         } else {
-            \DB::table('settings')->insert($data);
+            DB::table('settings')->insert($data);
         }
         // Đồng bộ vào file .env
         $this->setEnv([
@@ -247,7 +252,7 @@ class AdminSettingsController extends Controller
         // Reload config cache để giá trị mới có hiệu lực ngay
         \Artisan::call('config:clear');
         \Artisan::call('config:cache');
-        \Session::flash('success', 'Cập nhật cài đặt email thành công!');
+        Session::flash('success', 'Cập nhật cài đặt email thành công!');
         return redirect()->route('admin.settings.emails');
     }
 
@@ -268,5 +273,159 @@ class AdminSettingsController extends Controller
             }
         }
         file_put_contents($envPath, $env);
+    }
+
+    /**
+     * Gửi mã xác nhận đổi mật khẩu
+     */
+    public function requestChangePasswordWithCode(Request $request)
+    {
+        try {
+            $user = auth()->user();
+
+            if (!$user) {
+                return redirect()->back()->withErrors(['error' => 'Không tìm thấy thông tin người dùng.']);
+            }
+
+            // Tạo mã xác nhận 6 số
+            $code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+
+            // Lưu mã vào session
+            session(['password_reset_code' => $code]);
+            session(['password_reset_user_id' => $user->id]);
+            session(['password_reset_expires' => now()->addMinutes(10)]);
+
+            // Gửi email
+            $emailData = [
+                'name' => $user->fullname ?? $user->username,
+                'code' => $code,
+                'email' => $user->email
+            ];
+
+            Mail::send('emails.seller-password-reset-code', $emailData, function ($message) use ($user) {
+                $message->to($user->email, $user->fullname ?? $user->username)
+                    ->subject('Mã xác nhận đổi mật khẩu - ZynoxMall');
+            });
+
+            Log::info('Password reset code sent to admin: ' . $user->email);
+
+            return redirect()->route('admin.password.verify.form')
+                ->with('password_success', 'Mã xác nhận đã được gửi tới email của bạn.');
+        } catch (\Exception $e) {
+            Log::error('Error sending password reset code: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Có lỗi xảy ra khi gửi mã xác nhận. Vui lòng thử lại.']);
+        }
+    }
+
+    /**
+     * Hiển thị form xác nhận mã
+     */
+    public function showVerifyCodeForm()
+    {
+        if (!session('password_reset_code') || !session('password_reset_user_id')) {
+            return redirect()->route('admin.password')
+                ->withErrors(['error' => 'Phiên đổi mật khẩu đã hết hạn. Vui lòng thử lại.']);
+        }
+
+        if (session('password_reset_expires') < now()) {
+            session()->forget(['password_reset_code', 'password_reset_user_id', 'password_reset_expires']);
+            return redirect()->route('admin.password')
+                ->withErrors(['error' => 'Mã xác nhận đã hết hạn. Vui lòng thử lại.']);
+        }
+
+        return view('admin.verify-password-code');
+    }
+
+    /**
+     * Xác thực mã và chuyển đến form đặt mật khẩu mới
+     */
+    public function verifyPasswordCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|size:6'
+        ]);
+
+        $storedCode = session('password_reset_code');
+        $userId = session('password_reset_user_id');
+        $expires = session('password_reset_expires');
+
+        if (!$storedCode || !$userId || !$expires) {
+            return redirect()->route('admin.password')
+                ->withErrors(['error' => 'Phiên đổi mật khẩu không hợp lệ.']);
+        }
+
+        if ($expires < now()) {
+            session()->forget(['password_reset_code', 'password_reset_user_id', 'password_reset_expires']);
+            return redirect()->route('admin.password')
+                ->withErrors(['error' => 'Mã xác nhận đã hết hạn.']);
+        }
+
+        if ($request->code !== $storedCode) {
+            return redirect()->back()->withErrors(['error' => 'Mã xác nhận không đúng.']);
+        }
+
+        // Xác thực thành công, chuyển đến form đặt mật khẩu mới
+        session(['password_verified' => true]);
+
+        return redirect()->route('admin.password.reset.form')
+            ->with('success', 'Mã xác nhận đúng. Vui lòng nhập mật khẩu mới.');
+    }
+
+    /**
+     * Hiển thị form đặt mật khẩu mới
+     */
+    public function showPasswordResetForm()
+    {
+        if (!session('password_verified')) {
+            return redirect()->route('admin.password')
+                ->withErrors(['error' => 'Vui lòng xác thực mã trước khi đặt mật khẩu mới.']);
+        }
+
+        return view('admin.reset-password');
+    }
+
+    /**
+     * Xác nhận và lưu mật khẩu mới
+     */
+    public function confirmNewPassword(Request $request)
+    {
+        if (!session('password_verified')) {
+            return redirect()->route('admin.password')
+                ->withErrors(['error' => 'Vui lòng xác thực mã trước khi đặt mật khẩu mới.']);
+        }
+
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        try {
+            $userId = session('password_reset_user_id');
+            $user = User::find($userId);
+
+            if (!$user) {
+                return redirect()->route('admin.password')
+                    ->withErrors(['error' => 'Không tìm thấy thông tin người dùng.']);
+            }
+
+            // Cập nhật mật khẩu
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            // Xóa session
+            session()->forget([
+                'password_reset_code',
+                'password_reset_user_id',
+                'password_reset_expires',
+                'password_verified'
+            ]);
+
+            Log::info('Admin password changed successfully: ' . $user->email);
+
+            return redirect()->route('admin.password')
+                ->with('password_success', 'Mật khẩu đã được thay đổi thành công!');
+        } catch (\Exception $e) {
+            Log::error('Error changing admin password: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Có lỗi xảy ra khi thay đổi mật khẩu. Vui lòng thử lại.']);
+        }
     }
 }

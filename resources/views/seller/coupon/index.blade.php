@@ -1,5 +1,5 @@
 @extends('layouts.seller_home')
-
+@section('title', 'Danh sách mã giảm giá')
 @section('content')
     <div class="mt-[32px] mb-[24px]">
         <h1 class="font-semibold text-[28px]">Mã giảm giá</h1>
