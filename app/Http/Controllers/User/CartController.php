@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
-    
+
     public function index()
     {
-        
+
         $user = Auth::user();
         $userID = Auth::check() ? Auth::id() : null;
         $sessionID = Session::getId();
@@ -37,6 +37,11 @@ class CartController extends Controller
 
     public function addToCart(Request $request)
     {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->guest(route('login'))->with('error', 'Bạn cần đăng nhập để xem chi tiết sản phẩm');
+        }
+        
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'variant_id' => 'nullable|exists:product_variants,id',
@@ -44,14 +49,14 @@ class CartController extends Controller
         ]);
 
         $product = Product::with('variants')->findOrFail($request->product_id);
-        
+
         // Kiểm tra nếu sản phẩm có biến thể nhưng chưa chọn biến thể
         if ($product->is_variant && $product->variants->isNotEmpty() && !$request->variant_id) {
             return response()->json([
                 'message' => 'Vui lòng chọn biến thể trước khi thêm vào giỏ hàng!',
             ], 422);
         }
-        
+
         $stock = $product->stock_total ?? 0;
         $price = $product->sale_price ?? $product->price;
 
@@ -113,11 +118,11 @@ class CartController extends Controller
 
         return response()->json(['message' => 'Đã thêm vào giỏ hàng!'], 200);
     }
-    
+
     private function calculateComboDiscountedPrice($combo, $basePrice, $comboProduct)
     {
         $discountedPrice = $basePrice;
-        
+
         if ($combo->discount_type === 'percentage' && $combo->discount_value > 0) {
             // Giảm giá theo phần trăm
             $discountMultiplier = 1 - ($combo->discount_value / 100);
@@ -129,7 +134,7 @@ class CartController extends Controller
                 $productPrice = $cp->variant ? ($cp->variant->sale_price ?? $cp->variant->price) : ($cp->product->sale_price ?? $cp->product->price);
                 $totalComboBasePrice += $productPrice * $cp->quantity;
             }
-            
+
             if ($totalComboBasePrice > 0) {
                 // Tính tỷ lệ giá của sản phẩm này trong combo
                 $productBasePrice = $basePrice * $comboProduct->quantity;
@@ -141,7 +146,7 @@ class CartController extends Controller
                 $discountedPrice = $basePrice - ($combo->discount_value / count($combo->products));
             }
         }
-        
+
         // Đảm bảo giá không âm
         return max(0, $discountedPrice);
     }
@@ -192,9 +197,9 @@ class CartController extends Controller
 
             $details[] = [
                 'product_id' => $product->id,
-                'product_name' => $product->name ?? ('SP#'.$product->id),
+                'product_name' => $product->name ?? ('SP#' . $product->id),
                 'variant_id' => $variant ? $variant->id : null,
-                'variant_name' => $variant ? ($variant->variant_name ?? ('V#'.$variant->id)) : null,
+                'variant_name' => $variant ? ($variant->variant_name ?? ('V#' . $variant->id)) : null,
                 'required_per_combo' => (int) $comboProduct->quantity,
                 'stock_units' => (int) $stock,
                 'available_combo_units' => (int) $availableStock,
@@ -259,7 +264,7 @@ class CartController extends Controller
                 $stock = $product->is_variant ? ($product->variants->sum('stock') ?? 0) : ($product->stock_total ?? 0);
             }
             $basePrice = $variant ? ($variant->sale_price ?? $variant->price) : ($product->sale_price ?? $product->price);
-            
+
             // Tính giá sau khi áp dụng giảm giá combo
             $discountedPrice = $this->calculateComboDiscountedPrice($combo, $basePrice, $comboProduct);
 
@@ -371,7 +376,7 @@ class CartController extends Controller
         return redirect()->back()->with('error', 'Một số sản phẩm trong combo không thể thêm vào giỏ hàng!');
     }
 
-   
+
     public function remove($id)
     {
         $userID = Auth::check() ? Auth::id() : null;
@@ -520,7 +525,7 @@ class CartController extends Controller
                     if ($comboProduct && (!$item->variantID && !$comboProduct->variantID || $comboProduct->variantID == $item->variantID)) {
                         $newQuantity = $comboQuantity * $comboProduct->quantity; // áp dụng số combo đã chuẩn hóa cho tất cả dòng
                         $basePrice = $item->variant ? ($item->variant->sale_price ?? $item->variant->price) : ($item->product->sale_price ?? $item->product->price);
-                        
+
                         // Tính giá sau khi áp dụng giảm giá combo
                         $discountedPrice = $this->calculateComboDiscountedPrice($combo, $basePrice, $comboProduct);
 
@@ -730,5 +735,4 @@ class CartController extends Controller
 
         return response()->json(['cartItems' => $cartItems]);
     }
-
 }

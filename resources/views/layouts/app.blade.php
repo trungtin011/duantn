@@ -362,11 +362,11 @@
             .notification-scrollbar {
                 max-height: 60vh;
             }
-            
+
             .notification-content {
                 max-height: calc(60vh - 2rem);
             }
-            
+
             .notification-scrollbar::-webkit-scrollbar {
                 width: 4px;
             }
@@ -383,6 +383,7 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -420,96 +421,127 @@
         style="position:fixed;z-index:99999;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;">
         <div class="loader"></div>
     </div>
-    <!-- Top Header -->
-    <div class="bg-black text-white py-3">
-        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="hidden md:flex">
-                @auth
-                    @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
-                        <div>
-                            <a href="{{ route('seller.index') }}"
-                                class="text-[#EF3248] text-sm capitalize hover:text-orange-600">
-                                Kênh người bán
-                            </a>
-                        </div>
-                    @endif
-                @endauth
-            </div>
-            <div class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left text-sm hidden md:flex">
-                <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
-                <button class="text-white font-bold border-b border-white hover:text-orange-500">Mua ngay</button>
-            </div>
-            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end px-3">
-                <!-- Notification Dropdown -->
-                <div class="relative dropdown-notification cursor-pointer">
-                    <div class="flex items-center gap-1 hover:text-[#EF3248] cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+    <div id="sticky-header" class="sticky top-0 z-[100] transition-all duration-700 ease-in-out">
+        <!-- Top Header -->
+        <div id="top-header-bar" class="bg-black text-white py-3 opacity-100 transition-all duration-700 ease-in-out">
+            <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="hidden md:flex">
+                    @auth
+                        @if (optional(Auth::user()->role)->value == 'customer' || Auth::user()->role == 'customer')
+                            <div class="flex items-center gap-1">
+                                <a href="{{ route('seller.index') }}"
+                                    class="text-white text-sm capitalize hover:text-white transition-colors duration-200">
+                                    <i class="fa-solid fa-shop mr-1"></i> Trở thành người bán
+                                </a>
+                            </div>
+                        @endif
+                    @endauth
+                </div>
+                <div
+                    class="flex flex-col md:flex-row items-center gap-2 text-center md:text-left text-sm hidden md:flex">
+                    <span>Khuyến mãi mùa hè cho tất cả đồ bơi và giao hàng nhanh miễn phí - GIẢM 50%!</span>
+                    <button class="text-white font-bold border-b border-white hover:text-orange-500">Mua ngay</button>
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end px-3">
+                    <!-- ticket -->
+                    <a href="{{ route('user.tickets.index') }}" class="text-white flex items-center gap-2">
+                        <svg class="size-5" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" stroke-width="3"
+                            stroke="#fff" fill="none">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path d="M12.91,31.8V26.1a19.09,19.09,0,0,1,38.18,0v5.7" stroke-linecap="round"></path>
+                                <path
+                                    d="M12.06,31.8h4.7a0,0,0,0,1,0,0V45.18a0,0,0,0,1,0,0h-4.7a3,3,0,0,1-3-3V34.8A3,3,0,0,1,12.06,31.8Z"
+                                    stroke-linecap="round"></path>
+                                <path
+                                    d="M50.24,31.8h4.7a0,0,0,0,1,0,0V45.18a0,0,0,0,1,0,0h-4.7a3,3,0,0,1-3-3V34.8A3,3,0,0,1,50.24,31.8Z"
+                                    transform="translate(102.18 76.98) rotate(180)" stroke-linecap="round"></path>
+                                <path d="M51.7,45.56v5a4,4,0,0,1-4,4H36.56" stroke-linecap="round"></path>
+                                <rect x="28.45" y="51.92" width="8.1" height="5.07" rx="2"
+                                    stroke-linecap="round"></rect>
+                            </g>
                         </svg>
-                        <span class="capitalize text-sm">Thông báo</span>
-                        @auth
-                            @php
-                                $unreadCount = 0;
-                                $userNotifications = collect();
-                                
-                                // Lấy thông báo của user hiện tại (đồng bộ với NotificationController)
-                                if (auth()->check()) {
-                                    // Sử dụng cache để tránh query nhiều lần
-                                    $userNotifications = cache()->remember('user_notifications_' . auth()->id(), 300, function() {
-                                        return \App\Http\Controllers\NotificationController::getUserNotificationsForHeader(auth()->id(), 10);
-                                    });
-                                    
-                                    // Đếm số thông báo chưa đọc
+                        <span class="capitalize text-sm">Hổ trợ</span>
+                    </a>
+                    <!-- Notification Dropdown -->
+                    <div class="relative dropdown-notification cursor-pointer">
+                        <div class="flex items-center gap-1 hover:text-[#EF3248] cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                            </svg>
+                            <span class="capitalize text-sm">Thông báo</span>
+                            @auth
+                                @php
                                     $unreadCount = 0;
-                                    foreach ($userNotifications as $notification) {
-                                        $isRead = false;
-                                        if ($notification->receiver && $notification->receiver->count() > 0) {
-                                            foreach ($notification->receiver as $receiver) {
-                                                if ($receiver->receiver_id == auth()->id()) {
-                                                    $isRead = $receiver->is_read;
-                                                    break;
+                                    $userNotifications = collect();
+
+                                    // Lấy thông báo của user hiện tại (đồng bộ với NotificationController)
+                                    if (auth()->check()) {
+                                        // Sử dụng cache để tránh query nhiều lần
+                                        $userNotifications = cache()->remember(
+                                            'user_notifications_' . auth()->id(),
+                                            300,
+                                            function () {
+                                                return \App\Http\Controllers\NotificationController::getUserNotificationsForHeader(
+                                                    auth()->id(),
+                                                    10,
+                                                );
+                                            },
+                                        );
+
+                                        // Đếm số thông báo chưa đọc
+                                        $unreadCount = 0;
+                                        foreach ($userNotifications as $notification) {
+                                            $isRead = false;
+                                            if ($notification->receiver && $notification->receiver->count() > 0) {
+                                                foreach ($notification->receiver as $receiver) {
+                                                    if ($receiver->receiver_id == auth()->id()) {
+                                                        $isRead = $receiver->is_read;
+                                                        break;
+                                                    }
                                                 }
                                             }
+                                            if (!$isRead) {
+                                                $unreadCount++;
+                                            }
                                         }
-                                        if (!$isRead) {
-                                            $unreadCount++;
-                                        }
+
+                                        // Nhóm thông báo theo loại
+                                        $groupedNotifications = $userNotifications->groupBy('type');
                                     }
-                                    
-                                    // Nhóm thông báo theo loại
-                                    $groupedNotifications = $userNotifications->groupBy('type');
-                                }
-                            @endphp
-                            @if ($unreadCount > 0)
-                                <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                                    {{ $unreadCount > 99 ? '99+' : $unreadCount }}
-                                </span>
-                            @endif
-                        @endauth
-                    </div>
-                    <div
-                        class="absolute dropdown-notification-content z-20 bg-white w-[300px] max-w-[90vw]
+                                @endphp
+                                @if ($unreadCount > 0)
+                                    <span
+                                        class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                                        {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                                    </span>
+                                @endif
+                            @endauth
+                        </div>
+                        <div
+                            class="absolute dropdown-notification-content z-[200] bg-white w-[300px] max-w-[90vw]
                             left-0 sm:left-auto sm:right-0 sm:translate-x-0 sm:w-[400px]
                             max-h-[70vh] sm:max-h-[500px] overflow-y-auto shadow-lg rounded-lg border hidden
                             notification-scrollbar transform transition-all duration-200 ease-in-out">
-                        <div
-                            class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle hidden sm:block">
-                        </div>
-                        @auth
-                            @if (isset($groupedNotifications) && $groupedNotifications->count() > 0 && auth()->check())
-                                <div class="p-4 notification-content">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <span class="text-sm font-semibold text-gray-700">Thông báo mới</span>
-                                        <a href="{{ route('notifications.index') }}"
-                                            class="text-xs text-blue-600 hover:text-blue-800">Xem tất cả</a>
-                                    </div>
-                                    @foreach ($groupedNotifications as $type => $notifications)
-                                        <div class="mb-3">
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <div
-                                                    class="w-2 h-2 rounded-full
+                            <div
+                                class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle hidden sm:block">
+                            </div>
+                            @auth
+                                @if (isset($groupedNotifications) && $groupedNotifications->count() > 0 && auth()->check())
+                                    <div class="p-4 notification-content">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <span class="text-sm font-semibold text-gray-700">Thông báo mới</span>
+                                            <a href="{{ route('notifications.index') }}"
+                                                class="text-xs text-blue-600 hover:text-blue-800">Xem tất cả</a>
+                                        </div>
+                                        @foreach ($groupedNotifications as $type => $notifications)
+                                            <div class="mb-3">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <div
+                                                        class="w-2 h-2 rounded-full
                                                     @switch($type)
                                                         @case('order') bg-blue-500 @break
                                                         @case('promotion') bg-green-500 @break
@@ -517,458 +549,470 @@
                                                         @case('security') bg-red-500 @break
                                                         @default bg-gray-500
                                                     @endswitch">
+                                                    </div>
+                                                    <h4 class="text-xs font-medium text-gray-500 uppercase">
+                                                        @switch($type)
+                                                            @case('order')
+                                                                Đơn hàng
+                                                            @break
+
+                                                            @case('promotion')
+                                                                Khuyến mãi
+                                                            @break
+
+                                                            @case('system')
+                                                                Hệ thống
+                                                            @break
+
+                                                            @case('security')
+                                                                Bảo mật
+                                                            @break
+
+                                                            @default
+                                                                {{ ucfirst($type) }}
+                                                        @endswitch
+                                                    </h4>
+                                                    <span
+                                                        class="text-xs text-gray-400">({{ $notifications->count() }})</span>
                                                 </div>
-                                                <h4 class="text-xs font-medium text-gray-500 uppercase">
-                                                    @switch($type)
-                                                        @case('order')
-                                                            Đơn hàng
-                                                        @break
-
-                                                        @case('promotion')
-                                                            Khuyến mãi
-                                                        @break
-
-                                                        @case('system')
-                                                            Hệ thống
-                                                        @break
-
-                                                        @case('security')
-                                                            Bảo mật
-                                                        @break
-
-                                                        @default
-                                                            {{ ucfirst($type) }}
-                                                    @endswitch
-                                                </h4>
-                                                <span class="text-xs text-gray-400">({{ $notifications->count() }})</span>
-                                            </div>
-                                            @foreach ($notifications->sortByDesc('created_at')->take(3) as $notification)
-                                                @php
-                                                    $isRead = false;
-                                                    // Vì đã lọc theo user nên chỉ cần kiểm tra trạng thái đọc
-                                                    if ($notification->receiver && $notification->receiver->count() > 0) {
-                                                        foreach ($notification->receiver as $receiver) {
-                                                            if ($receiver->receiver_id == auth()->id()) {
-                                                                $isRead = $receiver->is_read;
-                                                                break;
+                                                @foreach ($notifications->sortByDesc('created_at')->take(3) as $notification)
+                                                    @php
+                                                        $isRead = false;
+                                                        // Vì đã lọc theo user nên chỉ cần kiểm tra trạng thái đọc
+                                                        if (
+                                                            $notification->receiver &&
+                                                            $notification->receiver->count() > 0
+                                                        ) {
+                                                            foreach ($notification->receiver as $receiver) {
+                                                                if ($receiver->receiver_id == auth()->id()) {
+                                                                    $isRead = $receiver->is_read;
+                                                                    break;
+                                                                }
                                                             }
                                                         }
-                                                    }
-                                                @endphp
-                                                <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ !$isRead ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
-                                                    data-notification-id="{{ $notification->id }}"
-                                                    data-notification-type="{{ $notification->type }}">
-                                                    <div class="flex-shrink-0">
-                                                        @if ($notification->image_path)
-                                                            <div
-                                                                class="w-10 h-10 rounded-full flex items-center justify-center">
-                                                                <img src="{{ asset('images/notifications/' . $notification->image_path) }}"
-                                                                    alt="Notification Image"
-                                                                    class="w-full h-full rounded-full">
-                                                            </div>
-                                                        @else
-                                                            @php
-                                                                $defaultImage = match ($notification->type) {
-                                                                    'order' => 'default-order.png',
-                                                                    'promotion' => 'default-promotion.png',
-                                                                    'system' => 'default-system.png',
-                                                                    'security' => 'default-security.png',
-                                                                    default => 'default.png',
-                                                                };
-                                                            @endphp
-                                                            <div
-                                                                class="w-10 h-10 rounded-full flex items-center justify-center">
-                                                                <img src="{{ asset('images/notifications/' . $defaultImage) }}"
-                                                                    alt="Notification Default Image"
-                                                                    class="w-full h-full rounded-full">
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                    <div class="flex-1 min-w-0">
-                                                        <div class="flex items-center justify-between">
-                                                            <p class="text-sm font-medium text-gray-900 truncate">
-                                                                {{ $notification->title }}
-                                                            </p>
-                                                            @if ($notification->priority === 'high')
-                                                                <span
-                                                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                                    Quan trọng
-                                                                </span>
+                                                    @endphp
+                                                    <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer mb-2 {{ !$isRead ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent' }}"
+                                                        data-notification-id="{{ $notification->id }}"
+                                                        data-notification-type="{{ $notification->type }}">
+                                                        <div class="flex-shrink-0">
+                                                            @if ($notification->image_path)
+                                                                <div
+                                                                    class="w-10 h-10 rounded-full flex items-center justify-center">
+                                                                    <img src="{{ asset('images/notifications/' . $notification->image_path) }}"
+                                                                        alt="Notification Image"
+                                                                        class="w-full h-full rounded-full">
+                                                                </div>
+                                                            @else
+                                                                @php
+                                                                    $defaultImage = match ($notification->type) {
+                                                                        'order' => 'default-order.png',
+                                                                        'promotion' => 'default-promotion.png',
+                                                                        'system' => 'default-system.png',
+                                                                        'security' => 'default-security.png',
+                                                                        default => 'default.png',
+                                                                    };
+                                                                @endphp
+                                                                <div
+                                                                    class="w-10 h-10 rounded-full flex items-center justify-center">
+                                                                    <img src="{{ asset('images/notifications/' . $defaultImage) }}"
+                                                                        alt="Notification Default Image"
+                                                                        class="w-full h-full rounded-full">
+                                                                </div>
                                                             @endif
                                                         </div>
-                                                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">
-                                                            {{ $notification->content }}
-                                                        </p>
-                                                        <div class="flex items-center justify-between mt-2">
-                                                            <p class="text-xs text-gray-400">
-                                                                {{ $notification->created_at->diffForHumans() }}
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="flex items-center justify-between">
+                                                                <p class="text-sm font-medium text-gray-900 truncate">
+                                                                    {{ $notification->title }}
+                                                                </p>
+                                                                @if ($notification->priority === 'high')
+                                                                    <span
+                                                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                        Quan trọng
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                                {{ $notification->content }}
                                                             </p>
-                                                            @php
-                                                                $isRead = false;
-                                                                if (
-                                                                    $notification->receiver &&
-                                                                    $notification->receiver->count() > 0
-                                                                ) {
-                                                                    foreach ($notification->receiver as $receiver) {
-                                                                        if ($receiver->receiver_id == auth()->id()) {
-                                                                            $isRead = $receiver->is_read;
-                                                                            break;
+                                                            <div class="flex items-center justify-between mt-2">
+                                                                <p class="text-xs text-gray-400">
+                                                                    {{ $notification->created_at->diffForHumans() }}
+                                                                </p>
+                                                                @php
+                                                                    $isRead = false;
+                                                                    if (
+                                                                        $notification->receiver &&
+                                                                        $notification->receiver->count() > 0
+                                                                    ) {
+                                                                        foreach ($notification->receiver as $receiver) {
+                                                                            if (
+                                                                                $receiver->receiver_id == auth()->id()
+                                                                            ) {
+                                                                                $isRead = $receiver->is_read;
+                                                                                break;
+                                                                            }
                                                                         }
                                                                     }
-                                                                }
-                                                            @endphp
-                                                            @if ($isRead === false)
-                                                                <div class="w-2 h-2 bg-blue-500 rounded-full unread-dot"
-                                                                    data-notification-id="{{ $notification->id }}"></div>
-                                                            @endif
+                                                                @endphp
+                                                                @if ($isRead === false)
+                                                                    <div class="w-2 h-2 bg-blue-500 rounded-full unread-dot"
+                                                                        data-notification-id="{{ $notification->id }}">
+                                                                    </div>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            @endforeach
-                                            @if ($notifications->count() > 3)
-                                                <div class="text-center py-2">
-                                                    <a href="{{ route('notifications.index', ['type' => $type]) }}"
-                                                        class="text-xs text-blue-600 hover:text-blue-800">
-                                                        Xem thêm {{ $notifications->count() - 3 }} thông báo
-                                                        {{ strtolower($type) }}
-                                                    </a>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="p-8 text-center">
-                                    <div
-                                        class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-gray-400">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                                        </svg>
+                                                @endforeach
+                                                @if ($notifications->count() > 3)
+                                                    <div class="text-center py-2">
+                                                        <a href="{{ route('notifications.index', ['type' => $type]) }}"
+                                                            class="text-xs text-blue-600 hover:text-blue-800">
+                                                            Xem thêm {{ $notifications->count() - 3 }} thông báo
+                                                            {{ strtolower($type) }}
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endforeach
                                     </div>
-                                    <p class="text-sm text-gray-500">Không có thông báo mới</p>
-                                </div>
-                            @endif
-                        @endauth
-                        @guest
-                            <div class="p-6 text-center">
-                                <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
-                                <a href="{{ route('login') }}"
-                                    class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng nhập</a>
-                            </div>
-                        @endguest
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="relative dropdown-parent">
-                        @guest
-                            <div class="flex items-center gap-2 text-sm">
-                                <a href="{{ route('signup') }}" class="hover:text-[#EF3248]">Đăng ký</a>
-                                |
-                                <a href="{{ route('login') }}" class="hover:text-[#EF3248]">Đăng nhập</a>
-                            </div>
-                        @endguest
-                        @auth
-                            <div class="flex items-center gap-1 w-auto">
-                                @include('partials.user-avatar', ['size' => 'sm'])
-                                @auth
-                                    <span
-                                        class="text-sm font-semibold text-white hover:text-[#EF3248] cursor-pointer">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
-                                @endauth
-                            </div>
-                        @endauth
-                        <div class="absolute dropdown-content w-[250px] shadow bg-white">
-                            @auth
-                                <div class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle-second">
-                                </div>
-                                @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
-                                    <a href="{{ route('admin.dashboard') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
-                                        </svg>
-                                        Quản trị viên
-                                    </a>
-                                    <a href="{{ route('admin.products.index') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                                        </svg>
-                                        Quản lý sản phẩm
-                                    </a>
-                                @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
-                                    <a href="{{ route('seller.dashboard') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6z" />
-                                        </svg>
-                                        Bảng điều khiển Seller
-                                    </a>
-                                    <a href="{{ route('seller.products.index') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                                        </svg>
-                                        Sản phẩm của tôi
-                                    </a>
-                                    <a href="{{ route('seller.order.index') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                                        </svg>
-                                        Đơn hàng
-                                    </a>
-                                @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
-                                    <a href="{{ route('account.profile') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                        </svg>
-                                        Quản lý tài khoản
-                                    </a>
-                                    <a href="{{ route('user.order.parent-order') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                                        </svg>
-                                        Đơn hàng của tôi
-                                    </a>
-                                    <a href="{{ route('wishlist') }}"
-                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                        </svg>
-                                        Yêu thích
-                                    </a>
+                                @else
+                                    <div class="p-8 text-center">
+                                        <div
+                                            class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-gray-400">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-sm text-gray-500">Không có thông báo mới</p>
+                                    </div>
                                 @endif
-                                <a href="{{ route('logout') }}"
-                                    onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
-                                    class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
-                                    </svg>
-                                    Đăng xuất
-                                </a>
-                                <form id="logout-form-header" action="{{ route('logout') }}" method="POST"
-                                    class="hidden">
-                                    @csrf
-                                </form>
                             @endauth
+                            @guest
+                                <div class="p-6 text-center">
+                                    <p class="text-sm text-gray-500">Vui lòng đăng nhập để xem thông báo</p>
+                                    <a href="{{ route('login') }}"
+                                        class="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block">Đăng nhập</a>
+                                </div>
+                            @endguest
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header class="bg-white border-b" x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
-        <div class="container-header mx-auto sm:px-0 py-[10px] px-3 flex justify-between items-center">
-            <!-- Logo -->
-            @if (empty($settings->logo))
-                <a class="w-20 md:w-[10%] lg:w-[10%]" href="/">
-                    <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-full h-full">
-                </a>
-            @else
-                <a href="{{ route('home') }}" class="flex items-center">
-                    <img src="{{ asset('storage/' . $settings->logo) }}" alt="logo" class="w-20">
-                </a>
-            @endif
-
-            <!-- Mobile Menu Button -->
-            <button class="md:hidden text-2xl text-gray-700" @click="mobileMenuOpen = !mobileMenuOpen">
-                <i class="fa fa-bars"></i>
-            </button>
-
-            <!-- Search & Cart (Desktop) -->
-            <div class="hidden md:flex items-center gap-10 w-5/6">
-                <form action="{{ route('search') }}" method="GET" id="searchForm"
-                    class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between relative">
-
-                    <input type="text" name="query" id="searchInput" placeholder="Bạn muốn tìm kiếm gì ?"
-                        class="text-sm focus:outline-none w-full" value="{{ request('query') }}"
-                        autocomplete="off" />
-                    <button type="submit">
-                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
-                    </button>
-
-                    <!-- Gợi ý tìm kiếm -->
-                    <div id="searchSuggestions"
-                        class="absolute top-full left-0 bg-white border border-gray-200 w-full mt-1 shadow-xl rounded-lg hidden z-50 max-h-80 overflow-y-auto">
-                    </div>
-                </form>
-
-                <div class="relative">
-                    <div
-                        class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
-                        <span id="cart-count" class="text-center text-xs text-white">0</span>
-                    </div>
-                    <button id="desktop-cart-trigger"
-                        class="cart-icon-trigger text-gray-700 hover:text-red-500 text-2xl p-0 border-none bg-transparent cursor-pointer">
-                        <i class="fa fa-shopping-cart"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile Menu -->
-        <div x-show="mobileMenuOpen" class="md:hidden px-4 pb-4">
-            <ul class="flex justify-center gap-3 text-sm font-medium text-gray-700 border-t pt-3">
-                <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
-                <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
-                <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
-                @guest
-                    <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
-                @endguest
-                @auth
-                    @if (Auth::user()->role === 'customer')
-                        <li>
-                            <a href="{{ route('seller.register') }}"
-                                class="text-orange-500 font-semibold hover:text-orange-600">
-                                {{ __('messages.become_seller') }}
-                            </a>
-                        </li>
-                    @endif
-                @endauth
-            </ul>
-            <div class="md:hidden flex items-center justify-center gap-3 mt-4">
-                <form action="{{ route('search') }}" method="GET" id="searchForm"
-                    class="rounded-full border border-gray-300 px-4 py-1 w-full flex items-center justify-between relative">
-
-                    <input type="text" name="query" id="searchInput" placeholder="Bạn muốn tìm kiếm gì ?"
-                        class="px-4 py-1.5 text-sm rounded-full focus:outline-none" value="{{ request('query') }}"
-                        autocomplete="off" />
-                    <button type="submit">
-                        <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
-                    </button>
-                </form>
-                <a href="{{ route('wishlist') }}"><i class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
-                <a href="{{ route('cart') }}"><i
-                        class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
-                @if (Auth::check())
-                    <div class="relative" @click="userDropdownOpen = !userDropdownOpen"
-                        @click.away="userDropdownOpen = false">
-                        <div
-                            class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-200">
-                            <i class="fa fa-user"></i>
-                        </div>
-                        <div x-show="userDropdownOpen"
-                            class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-white rounded-md shadow-lg z-10">
+                    <div class="flex items-center gap-2">
+                        <div class="relative dropdown-parent">
+                            @guest
+                                <div class="flex items-center gap-2 text-sm">
+                                    <a href="{{ route('signup') }}" class="hover:text-[#EF3248]">Đăng ký</a>
+                                    |
+                                    <a href="{{ route('login') }}" class="hover:text-[#EF3248]">Đăng nhập</a>
+                                </div>
+                            @endguest
                             @auth
-                                @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
-                                    <a href="{{ route('admin.dashboard') }}"
-                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                            class="size-6">
-                                            <path stroke="#FFFFFF" stroke-width="2"
-                                                d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5ZM14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5ZM4 16a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3ZM14 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-6Z" />
-                                        </svg>
-                                        Quản trị viên
-                                    </a>
-                                    <a href="{{ route('admin.products.index') }}"
-                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                                        </svg>
-                                        Quản lý sản phẩm
-                                    </a>
-                                @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
-                                    <a href="{{ route('seller.dashboard') }}"
-                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6z" />
-                                        </svg>
-                                        Bảng điều khiển Seller
-                                    </a>
-                                    <a href="{{ route('seller.products.index') }}"
-                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-                                        </svg>
-                                        Sản phẩm của tôi
-                                    </a>
-                                    <a href="{{ route('seller.order.index') }}"
-                                        class="flex items-center gap-2 px-6 py-3 hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                                        </svg>
-                                        Đơn hàng
-                                    </a>
-                                @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
-                                    <a href="{{ route('account.profile') }}"
-                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                        </svg>
-                                        Quản lý tài khoản
-                                    </a>
-                                    <a href="{{ route('order_history') }}"
-                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
-                                        </svg>
-                                        Đơn hàng của tôi
-                                    </a>
-                                    <a href="{{ route('wishlist') }}"
-                                        class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                                        </svg>
-                                        Yêu thích
-                                    </a>
-                                @endif
-                                <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST"
-                                    class="inline">
-                                    @csrf
-                                    <button type="submit" class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                <div class="flex items-center gap-1 w-auto">
+                                    @include('partials.user-avatar', ['size' => 'sm'])
+                                    @auth
+                                        <span
+                                            class="text-sm font-semibold text-white hover:text-[#EF3248] cursor-pointer">{{ Auth::user()->fullname ?? Auth::user()->username }}</span>
+                                    @endauth
+                                </div>
+                            @endauth
+                            <div class="absolute dropdown-content w-[250px] shadow bg-white">
+                                @auth
+                                    <div
+                                        class="absolute top-[-15px] right-10 transform w-5 h-5 bg-white clip-triangle-second">
+                                    </div>
+                                    @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
+                                        <a href="{{ route('admin.dashboard') }}"
+                                            class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                                            </svg>
+                                            Quản trị viên
+                                        </a>
+                                        <a href="{{ route('admin.products.index') }}"
+                                            class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                            </svg>
+                                            Quản lý sản phẩm
+                                        </a>
+                                    @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
+                                        <a href="{{ route('seller.dashboard') }}"
+                                            class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6z" />
+                                            </svg>
+                                            Bảng điều khiển Seller
+                                        </a>
+                                        <a href="{{ route('seller.products.index') }}"
+                                            class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                            </svg>
+                                            Sản phẩm của tôi
+                                        </a>
+                                        <a href="{{ route('seller.order.index') }}"
+                                            class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                            </svg>
+                                            Đơn hàng
+                                        </a>
+                                    @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
+                                        <a href="{{ route('account.profile') }}"
+                                            class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                            </svg>
+                                            Quản lý tài khoản
+                                        </a>
+                                        <a href="{{ route('user.order.parent-order') }}"
+                                            class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                            </svg>
+                                            Đơn hàng của tôi
+                                        </a>
+                                        <a href="{{ route('wishlist') }}"
+                                            class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                            </svg>
+                                            Yêu thích
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('logout') }}"
+                                        onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();"
+                                        class="flex items-center gap-2 px-6 py-3 text-black hover:bg-gray-100 text-sm hover:text-[#EF3248]">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                             stroke-width="1.5" stroke="currentColor" class="size-6">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
                                         </svg>
                                         Đăng xuất
-                                    </button>
-                                </form>
-                            @endauth
+                                    </a>
+                                    <form id="logout-form-header" action="{{ route('logout') }}" method="POST"
+                                        class="hidden">
+                                        @csrf
+                                    </form>
+                                @endauth
+                            </div>
                         </div>
                     </div>
-                @endif
+                </div>
             </div>
         </div>
-    </header>
+
+        <!-- Header -->
+        <header id="main-header" class="bg-white border-b transition-all duration-700 ease-in-out"
+            x-data="{ mobileMenuOpen: false, userDropdownOpen: false, notificationDropdownOpen: false }">
+            <div class="container-header mx-auto sm:px-0 py-[10px] px-3 flex justify-between items-center">
+                <!-- Logo -->
+                @if (empty($settings->logo))
+                    <a class="w-20 md:w-[8%] lg:w-[8%]" href="/">
+                        <img src="{{ asset('images/logo.png') }}" alt="logo" class="w-full h-full">
+                    </a>
+                @else
+                    <a href="{{ route('home') }}" class="flex items-center">
+                        <img src="{{ asset('storage/' . $settings->logo) }}" alt="logo" class="w-20">
+                    </a>
+                @endif
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-2xl text-gray-700" @click="mobileMenuOpen = !mobileMenuOpen">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                <!-- Search & Cart (Desktop) -->
+                <div class="hidden md:flex items-center gap-10 w-5/6">
+                    <form action="{{ route('search') }}" method="GET" id="searchForm"
+                        class="rounded-full border border-gray-300 px-4 py-2 w-full flex items-center justify-between relative">
+
+                        <input type="text" name="query" id="searchInput" placeholder="Bạn muốn tìm kiếm gì ?"
+                            class="text-sm focus:outline-none w-full" value="{{ request('query') }}"
+                            autocomplete="off" />
+                        <button type="submit">
+                            <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                        </button>
+
+                        <!-- Gợi ý tìm kiếm -->
+                        <div id="searchSuggestions"
+                            class="absolute top-full left-0 bg-white border border-gray-200 w-full mt-1 shadow-xl rounded-lg hidden z-50 max-h-80 overflow-y-auto">
+                        </div>
+                    </form>
+
+                    <div class="relative">
+                        <div
+                            class="absolute top-0 left-4 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center z-10">
+                            <span id="cart-count" class="text-center text-xs text-white">0</span>
+                        </div>
+                        <button id="desktop-cart-trigger"
+                            class="cart-icon-trigger text-gray-700 hover:text-red-500 text-2xl p-0 border-none bg-transparent cursor-pointer">
+                            <i class="fa fa-shopping-cart"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div x-show="mobileMenuOpen" class="md:hidden px-4 pb-4">
+                <ul class="flex justify-center gap-3 text-sm font-medium text-gray-700 border-t pt-3">
+                    <li><a href="{{ route('home') }}" class="hover:text-orange-500">Trang chủ</a></li>
+                    <li><a href="{{ route('contact') }}" class="hover:text-orange-500">Liên hệ</a></li>
+                    <li><a href="{{ route('about') }}" class="hover:text-orange-500">Về chúng tôi</a></li>
+                    @guest
+                        <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
+                    @endguest
+                    @auth
+                        @if (Auth::user()->role === 'customer')
+                            <li>
+                                <a href="{{ route('seller.register') }}"
+                                    class="text-orange-500 font-semibold hover:text-orange-600">
+                                    {{ __('messages.become_seller') }}
+                                </a>
+                            </li>
+                        @endif
+                    @endauth
+                </ul>
+                <div class="md:hidden flex items-center justify-center gap-3 mt-4">
+                    <form action="{{ route('search') }}" method="GET" id="searchForm"
+                        class="rounded-full border border-gray-300 px-4 py-1 w-full flex items-center justify-between relative">
+
+                        <input type="text" name="query" id="searchInput" placeholder="Bạn muốn tìm kiếm gì ?"
+                            class="px-4 py-1.5 text-sm rounded-full focus:outline-none"
+                            value="{{ request('query') }}" autocomplete="off" />
+                        <button type="submit">
+                            <i class="fa fa-search text-gray-700 hover:text-[#EF3248]"></i>
+                        </button>
+                    </form>
+                    <a href="{{ route('wishlist') }}"><i
+                            class="fa fa-heart text-gray-700 hover:text-orange-500"></i></a>
+                    <a href="{{ route('cart') }}"><i
+                            class="fa fa-shopping-cart text-gray-700 hover:text-orange-500"></i></a>
+                    @if (Auth::check())
+                        <div class="relative" @click="userDropdownOpen = !userDropdownOpen"
+                            @click.away="userDropdownOpen = false">
+                            <div
+                                class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-200">
+                                <i class="fa fa-user"></i>
+                            </div>
+                            <div x-show="userDropdownOpen"
+                                class="absolute right-[-1px] mt-2 p-3 w-[250px] bg-white rounded-md shadow-lg z-10">
+                                @auth
+                                    @if (Auth::user()->role === \App\Enums\UserRole::ADMIN)
+                                        <a href="{{ route('admin.dashboard') }}"
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                                class="size-6">
+                                                <path stroke="#FFFFFF" stroke-width="2"
+                                                    d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5ZM14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5ZM4 16a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3ZM14 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-6Z" />
+                                            </svg>
+                                            Quản trị viên
+                                        </a>
+                                        <a href="{{ route('admin.products.index') }}"
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                            </svg>
+                                            Quản lý sản phẩm
+                                        </a>
+                                    @elseif (Auth::user()->role === \App\Enums\UserRole::SELLER)
+                                        <a href="{{ route('seller.dashboard') }}"
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6z" />
+                                            </svg>
+                                            Bảng điều khiển Seller
+                                        </a>
+                                        <a href="{{ route('seller.products.index') }}"
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                            </svg>
+                                            Sản phẩm của tôi
+                                        </a>
+                                        <a href="{{ route('seller.order.index') }}"
+                                            class="flex items-center gap-2 px-6 py-3 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                            </svg>
+                                            Đơn hàng
+                                        </a>
+                                    @elseif (Auth::user()->role === \App\Enums\UserRole::CUSTOMER)
+                                        <a href="{{ route('account.profile') }}"
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                            </svg>
+                                            Quản lý tài khoản
+                                        </a>
+                                        <a href="{{ route('order_history') }}"
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                            </svg>
+                                            Đơn hàng của tôi
+                                        </a>
+                                        <a href="{{ route('wishlist') }}"
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                            </svg>
+                                            Yêu thích
+                                        </a>
+                                    @endif
+                                    <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST"
+                                        class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-purple-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                                            </svg>
+                                            Đăng xuất
+                                        </button>
+                                    </form>
+                                @endauth
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </header>
+    </div>
 
     <!-- Main Content -->
     <main class="bg-white min-h-screen">
@@ -1035,7 +1079,8 @@
                             ký</a>
                         <a href="{{ route('cart') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Giỏ
                             hàng</a>
-                        <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Sản phẩm yêu thích</a>
+                        <a href="{{ route('wishlist') }}" class="text-sm text-gray-400 hover:text-orange-500 block">Sản
+                            phẩm yêu thích</a>
                         <a href="#" class="text-sm text-gray-400 hover:text-orange-500 block">Cửa hàng</a>
                     @endif
                 @endauth
@@ -1082,8 +1127,14 @@
         </div>
     </footer>
 
+    <!-- Back To Top Button (shows on scroll) -->
+    <button id="back-to-top-btn" type="button"
+        class="fixed right-2 top-1/2 -translate-y-1/2 w-[48px] h-[48px] rounded-full bg-[#ef3248] text-white shadow-lg flex items-center justify-center transition-all duration-300 opacity-0 pointer-events-none hover:brightness-110 z-40"
+        aria-label="Lên đầu trang">
+        <ion-icon name="chevron-up-outline" class="text-xl"></ion-icon>
+    </button>
     <!-- Popup -->
-    <div class="group fixed bottom-20 right-0 sm:bottom-0 sm:right-0 p-2 flex items-end justify-end w-24 h-24">
+    <div class="group fixed bottom-20 right-0 sm:bottom-0 sm:right-0 p-2 flex items-end justify-end w-24 h-24 z-10">
         <!-- main -->
         <div
             class="text-white shadow-xl flex items-center justify-center p-3 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 z-50 absolute  ">
@@ -1189,6 +1240,112 @@
         // window.Laravel bootstrap đã được thiết lập ở đầu file
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Slow-motion header effects on scroll
+            const stickyHeader = document.getElementById('sticky-header');
+            const topHeaderBar = document.getElementById('top-header-bar');
+            const mainHeader = document.getElementById('main-header');
+            let lastKnownScrollY = 0;
+            let ticking = false;
+            let basePaddingTop = 0;
+            let basePaddingBottom = 0;
+            let initialTopMaxHeight = 0;
+            let initializedHeader = false;
+
+            function initHeaderMetrics() {
+                if (!topHeaderBar) return;
+                const comp = window.getComputedStyle(topHeaderBar);
+                basePaddingTop = parseFloat(comp.paddingTop) || 0;
+                basePaddingBottom = parseFloat(comp.paddingBottom) || 0;
+                initialTopMaxHeight = topHeaderBar.scrollHeight;
+                topHeaderBar.style.maxHeight = `${initialTopMaxHeight}px`;
+                initializedHeader = true;
+            }
+            initHeaderMetrics();
+
+            function onScrollProgress(scrollY) {
+                if (!stickyHeader || !topHeaderBar || !mainHeader) return;
+                const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+                const progress = clamp(scrollY / 140, 0, 1);
+
+                if (!initializedHeader) initHeaderMetrics();
+
+                // Top bar: fade, collapse height, and remove padding smoothly
+                topHeaderBar.style.opacity = String(1 - progress);
+                const currentPt = Math.max(0, basePaddingTop * (1 - progress));
+                const currentPb = Math.max(0, basePaddingBottom * (1 - progress));
+                topHeaderBar.style.paddingTop = `${currentPt}px`;
+                topHeaderBar.style.paddingBottom = `${currentPb}px`;
+                topHeaderBar.style.maxHeight = `${Math.max(0, initialTopMaxHeight * (1 - progress))}px`;
+
+                // Main header: reduce vertical padding and add shadow
+                const basePadding = 10; // from py-[10px]
+                const reduced = Math.max(2, basePadding - Math.round(progress * 6));
+                if (mainHeader.firstElementChild && mainHeader.firstElementChild.className.includes('py-[')) {
+                    mainHeader.firstElementChild.className = mainHeader.firstElementChild.className.replace(
+                        /py-\[[0-9]+px\]/, `py-[${reduced}px]`);
+                } else if (mainHeader.firstElementChild) {
+                    mainHeader.firstElementChild.classList.add(`py-[${reduced}px]`);
+                }
+                mainHeader.classList.toggle('shadow-md', progress > 0.15);
+                mainHeader.classList.toggle('border-b', progress <= 0.15);
+            }
+
+            function onScroll() {
+                lastKnownScrollY = window.scrollY || window.pageYOffset;
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        onScrollProgress(lastKnownScrollY);
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }
+
+            window.addEventListener('scroll', onScroll, {
+                passive: true
+            });
+            onScroll();
+            // Show/hide Back To Top button
+            const backToTopBtn = document.getElementById('back-to-top-btn');
+
+            function toggleBackToTop() {
+                const y = window.scrollY || window.pageYOffset;
+                if (!backToTopBtn) return;
+                if (y > 300) {
+                    backToTopBtn.classList.remove('opacity-0', 'pointer-events-none');
+                    backToTopBtn.classList.add('opacity-100');
+                } else {
+                    backToTopBtn.classList.add('opacity-0');
+                    backToTopBtn.classList.remove('opacity-100');
+                    backToTopBtn.classList.add('pointer-events-none');
+                }
+            }
+            toggleBackToTop();
+            window.addEventListener('scroll', toggleBackToTop, {
+                passive: true
+            });
+
+            function smoothScrollToTop(duration = 700) {
+                const startY = window.pageYOffset || document.documentElement.scrollTop || document.body
+                    .scrollTop || 0;
+                if (startY <= 0) return;
+                const startTime = performance.now();
+                const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+                function step(now) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const y = Math.max(0, Math.floor(startY * (1 - easeOutCubic(progress))));
+                    window.scrollTo(0, y);
+                    if (progress < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+            if (backToTopBtn) {
+                backToTopBtn.addEventListener('click', function() {
+                    smoothScrollToTop(700);
+                });
+            }
             // Notification Dropdown
             const notificationBtn = document.querySelector('.dropdown-notification');
             const dropdownContent = document.querySelector('.dropdown-notification-content');

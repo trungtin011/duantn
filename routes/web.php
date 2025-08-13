@@ -61,21 +61,21 @@ use App\Http\Controllers\User\OrderController as UserOrderController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\UserAddressController;
 use App\Http\Controllers\User\WishlistController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\User\CheckinController;
 use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ShippingFeeController;
 use App\Http\Controllers\User\CouponController as UserCouponController;
 use App\Http\Controllers\User\FrontendController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\VNPayController;
-use App\Http\Controllers\ShopController;
 use App\Http\Controllers\User\ComboController as UserComboController;
 use App\Http\Controllers\User\TicketController as UserTicketController;
 
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\VNPayController;
+use App\Http\Controllers\ShopController;
+use App\Http\Controllers\MessageController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\MessageController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');

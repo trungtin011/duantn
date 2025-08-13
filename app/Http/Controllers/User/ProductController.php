@@ -452,11 +452,6 @@ class ProductController extends Controller
 
     public function show(Request $request, $slug)
     {
-        $user = Auth::user();
-        if (!$user) {
-            return redirect()->guest(route('login'))->with('error', 'Bạn cần đăng nhập để xem chi tiết sản phẩm');
-        }
-
         $product = Product::with([
             'images',
             'variants.attributeValues.attribute',
