@@ -242,16 +242,24 @@ class ProductController extends Controller
                 'sample_product_shop' => $products->first() ? ($products->first()->shop ? $products->first()->shop->name : 'NO SHOP') : 'NO PRODUCTS'
             ]);
 
-            // Get simple categories and brands
-            $categories = Category::withCount('products')->get();
-            $brands = Brand::withCount('products')->get();
-
-            // Get shops with proper products count
-            $shops = Shop::whereHas('products', function ($query) {
-                $query->where('status', 'active');
-            })->withCount(['products' => function ($query) {
-                $query->where('status', 'active');
-            }])->get();
+            // Build facet data (categories, brands, shops) based on current filtered results
+            try {
+                $facetBaseQuery = (clone $productQuery);
+                [$relevantCategories, $relevantBrands, $relevantShops, $sampleProducts] = $this->getRelevantCategoriesBrandsAndShops($facetBaseQuery);
+                $categories = $this->processCategories($relevantCategories, $sampleProducts);
+                $brands = $this->processBrands($relevantBrands, $sampleProducts);
+                $shops = $this->processShops($relevantShops, $sampleProducts);
+            } catch (\Exception $e) {
+                Log::warning('Facet build failed, falling back to global lists: ' . $e->getMessage());
+                // Fallback to global lists if facet building fails
+                $categories = Category::withCount('products')->get();
+                $brands = Brand::withCount('products')->get();
+                $shops = Shop::whereHas('products', function ($query) {
+                    $query->where('status', 'active');
+                })->withCount(['products' => function ($query) {
+                    $query->where('status', 'active');
+                }])->get();
+            }
 
             // Debug: Log shop data
             Log::info('Shops data:', [

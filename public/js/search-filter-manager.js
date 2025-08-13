@@ -15,6 +15,11 @@ class SearchFilterManager {
         this.requestTimeout = 30000; // 30 seconds
         this.debounceDelay = 500;
 
+        // Bind handlers to preserve instance context across dynamic re-attachments
+        this.handleSortButtonClick = this.handleSortButtonClick.bind(this);
+        this.handlePriceSortChange = this.handlePriceSortChange.bind(this);
+        this.handlePriceSuggestion = this.handlePriceSuggestion.bind(this);
+
         // Initialize only if required elements exist
         if (this.form && this.productResults) {
             this.init();
@@ -44,10 +49,7 @@ class SearchFilterManager {
             // Price suggestions
             const priceButtons = document.querySelectorAll('.price-suggestion');
             priceButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.handlePriceSuggestion(button);
-                });
+                button.addEventListener('click', this.handlePriceSuggestion);
             });
 
             // Apply filters button
@@ -71,17 +73,13 @@ class SearchFilterManager {
             // Sort buttons
             const sortButtons = document.querySelectorAll('.sort-btn');
             sortButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    this.handleSortButtonClick(e);
-                });
+                btn.addEventListener('click', this.handleSortButtonClick);
             });
 
             // Price sort select
             const priceSelect = document.getElementById('price-sort-select');
             if (priceSelect) {
-                priceSelect.addEventListener('change', (e) => {
-                    this.handlePriceSortChange(e);
-                });
+                priceSelect.addEventListener('change', this.handlePriceSortChange);
             }
 
             // Price inputs with debounce
@@ -141,7 +139,9 @@ class SearchFilterManager {
         });
     }
 
-    handlePriceSuggestion(button) {
+    handlePriceSuggestion(e) {
+        e.preventDefault();
+        const button = e.currentTarget;
         const min = button.getAttribute('data-min') || '';
         const max = button.getAttribute('data-max') || '';
 
@@ -542,10 +542,7 @@ class SearchFilterManager {
             const priceButtons = document.querySelectorAll('.price-suggestion');
             priceButtons.forEach(button => {
                 button.removeEventListener('click', this.handlePriceSuggestion);
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.handlePriceSuggestion(button);
-                });
+                button.addEventListener('click', this.handlePriceSuggestion);
             });
             
             // Cập nhật trạng thái nút reset sau khi reattach
