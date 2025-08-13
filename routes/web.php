@@ -63,6 +63,7 @@ use App\Http\Controllers\ShopController;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\User\ComboController as UserComboController;
+use App\Http\Controllers\User\ReportController;
 
 // trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -375,6 +376,10 @@ Route::prefix('customer')->group(function () {
     Route::middleware('CheckRole:customer')->group(function () {
         // Trang đăng ký người dùng
         Route::get('/seller/index/', [RegisterShopController::class, 'index'])->name('seller.index');
+
+        //report
+        Route::get('/report', [ReportController::class, 'index'])->name('report.index');
+        Route::get('/report/{report}', [ReportController::class, 'show'])->name('report.show');
 
         // Trang thông tin người dùng
         Route::prefix('user/account')->group(function () {
