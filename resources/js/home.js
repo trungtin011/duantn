@@ -155,3 +155,76 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateCountdown, 1000); // Cập nhật mỗi giây
   });
 });
+
+// Testimonials Slider Functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const testimonialSlides = document.querySelectorAll('.testimonial-slide');
+  const testimonialDots = document.querySelectorAll('.testimonial-dot');
+  let currentSlide = 0;
+  let slideInterval;
+
+  // Function to show specific slide with transition effects
+  function showSlide(slideIndex) {
+    // Hide all slides first
+    testimonialSlides.forEach(slide => {
+      slide.classList.remove('active');
+    });
+
+    // Remove active class from all dots
+    testimonialDots.forEach(dot => {
+      dot.classList.remove('active');
+    });
+
+    // Show new slide and activate current dot
+    if (testimonialSlides[slideIndex]) {
+      testimonialSlides[slideIndex].classList.add('active');
+    }
+    if (testimonialDots[slideIndex]) {
+      testimonialDots[slideIndex].classList.add('active');
+    }
+
+    currentSlide = slideIndex;
+  }
+
+  // Function to go to next slide
+  function nextSlide() {
+    const nextIndex = (currentSlide + 1) % testimonialSlides.length;
+    showSlide(nextIndex);
+  }
+
+  // Function to go to previous slide
+  function prevSlide() {
+    const prevIndex = (currentSlide - 1 + testimonialSlides.length) % testimonialSlides.length;
+    showSlide(prevIndex);
+  }
+
+  // Auto-advance slides
+  function startAutoSlide() {
+    slideInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+  }
+
+  function stopAutoSlide() {
+    clearInterval(slideInterval);
+  }
+
+  // Event listeners for dots
+  testimonialDots.forEach((dot, index) => {
+    dot.addEventListener('click', function() {
+      showSlide(index);
+      stopAutoSlide();
+      startAutoSlide(); // Restart auto-slide after manual navigation
+    });
+  });
+
+  // Pause auto-slide on hover
+  const testimonialsContainer = document.querySelector('.testimonials-slider-container');
+  if (testimonialsContainer) {
+    testimonialsContainer.addEventListener('mouseenter', stopAutoSlide);
+    testimonialsContainer.addEventListener('mouseleave', startAutoSlide);
+  }
+
+  // Start auto-slide if there are multiple slides
+  if (testimonialSlides.length > 1) {
+    startAutoSlide();
+  }
+});

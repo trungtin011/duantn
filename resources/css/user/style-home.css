@@ -908,7 +908,7 @@ body::-webkit-scrollbar-thumb:hover {
     bottom: 0;
     width: 100%;
     max-width: 320px;
-    padding: 30px;
+    padding: 20px 0px 20px 10px;
     overflow-y: scroll;
     overscroll-behavior: contain;
     visibility: hidden;
@@ -4462,5 +4462,57 @@ footer {
         font-size: 0.6rem;
         min-width: 1rem;
         height: 1rem;
+    }
+}
+
+/* Testimonials Slider Responsive */
+@media (max-width: 768px) {
+    .testimonials-slider-container {
+        margin-bottom: 15px;
+        min-height: 250px;
+    }
+
+    .testimonials-dots {
+        margin-top: 15px;
+        gap: 6px;
+    }
+
+    .testimonial-dot {
+        width: 10px;
+        height: 10px;
+    }
+
+    .testimonial-card {
+        padding: 20px 15px;
+        max-width: 100%;
+    }
+
+    .testimonial-desc {
+        max-width: 85%;
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .testimonials-slider-container {
+        min-height: 200px;
+    }
+
+    .testimonials-dots {
+        gap: 5px;
+    }
+
+    .testimonial-dot {
+        width: 8px;
+        height: 8px;
+    }
+
+    .testimonial-card {
+        padding: 15px 10px;
+    }
+
+    .testimonial-desc {
+        max-width: 90%;
+        font-size: 0.8rem;
     }
 }

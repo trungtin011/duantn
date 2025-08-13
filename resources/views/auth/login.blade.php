@@ -1,45 +1,73 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="login-container">
-        <div class="login-box">
-            <div class="login-image"></div>
-            <div class="login-form">
+    <div class="flex items-center justify-center px-4 pt-8">
+        <div class="flex flex-col md:flex-row w-full max-w-6xl shadow-xl rounded-xl overflow-hidden">
+            <!-- Image Section -->
+            <div class="w-full md:w-1/2 bg-cover bg-center min-h-[200px] md:min-h-[500px]"
+                style="background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');">
+            </div>
+
+            <!-- Form Section -->
+            <div class="w-full md:w-1/2 bg-white p-4 md:p-12">
                 @if (session('success'))
-                    <div style="color: green; margin-bottom: 20px;">
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                         {{ session('success') }}
                     </div>
                 @endif
-                <h2 class="title">Đăng nhập</h2>
-                <p class="subtitle">Nhập thông tin của bạn bên dưới</p>
+
+                @if (session('error'))
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                <h2 class="text-2xl md:text-3xl font-bold mb-3">Đăng nhập</h2>
+                <p class="text-gray-600 mb-6 text-sm md:text-base">Nhập thông tin của bạn bên dưới</p>
+
                 <form method="POST" action="{{ route('login.post') }}">
                     @csrf
-                    <div class="form-group">
-                        <input type="text" name="login" placeholder="Email hoặc số điện thoại" class="input-text"
-                            value="{{ old('login') }}">
+
+                    <!-- Login Field -->
+                    <div class="mb-4">
+                        <input type="text" name="login" placeholder="Email hoặc số điện thoại" value="{{ old('login') }}"
+                            class="text-sm md:text-base w-full border rounded px-3 py-2 placeholder-gray-400 @error('login') border-red-500 @enderror"
+                            required />
                         @error('login')
-                            <p style="color:red; font-size: 14px">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="form-group">
-                        <input type="password" name="password" placeholder="Mật khẩu" class="input-text">
+                    <!-- Password Field -->
+                    <div class="mb-4">
+                        <input type="password" name="password" placeholder="Mật khẩu"
+                            class="text-sm md:text-base w-full border rounded px-3 py-2 placeholder-gray-400 @error('password') border-red-500 @enderror"
+                            required />
                         @error('password')
-                            <p style="color:red; font-size: 14px">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="form-remember">
-                        <input type="checkbox" name="remember" id="remember">
-                        <label for="remember">Nhớ mật khẩu</label>
+                    <!-- Remember Me -->
+                    <div class="flex items-center mb-6">
+                        <input type="checkbox" name="remember" id="remember" class="mr-2">
+                        <label for="remember" class="text-sm text-gray-600">Nhớ mật khẩu</label>
                     </div>
 
-                    <div class="form-actions flex flex-row gap-2 md:flex-col">
-                        <button type="submit" class="login-button w-full">Đăng nhập</button>
-                        <a href="{{ route('password.email.form') }}" class="forgot-password">Quên mật khẩu?</a>
+                    <!-- Submit Button -->
+                    <button type="submit"
+                        class="w-full bg-black hover:bg-gray-800 text-white py-2 text-sm md:text-base rounded mb-4">
+                        Đăng nhập
+                    </button>
 
+                    <!-- Forgot Password -->
+                    <div class="text-center mb-4">
+                        <a href="{{ route('password.email.form') }}" class="text-gray-600 hover:underline text-sm">
+                            Quên mật khẩu?
+                        </a>
                     </div>
-                    <!-- Google & Facebook Signup -->
+
+                    <!-- Google Login -->
                     <div class="flex flex-col md:flex-row gap-2 mt-4">
                         <a href="{{ route('auth.google.login') }}"
                             class="w-full flex items-center justify-center border border-red-300 hover:bg-gray-100 py-2 text-sm md:text-base rounded">
@@ -48,272 +76,15 @@
                             Google
                         </a>
                     </div>
-                    @if (session('error'))
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                            {{ session('error') }}
-                        </div>
-                    @endif
 
-                    <div class="signup-wrap">
-                        <span>Bạn chưa có tài khoản?
-                            <a href="{{ route('signup') }}">Đăng ký</a>
+                    <!-- Signup Link -->
+                    <div class="flex mt-4 text-xs flex-wrap gap-2 justify-center">
+                        <span class="text-gray-600">Bạn chưa có tài khoản?
+                            <a href="{{ route('signup') }}" class="text-gray-600 hover:underline">Đăng ký</a>
                         </span>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        .login-container {
-            min-height: 100vh;
-            background-color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-box {
-            width: 90%;
-            max-width: 1120px;
-            display: flex;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .login-image {
-            width: 50%;
-            background-image: url('https://e-commerce-website-muzaffar-ali.vercel.app/_next/image?url=%2Fimages%2Fsignup%2Fmobile.png&w=828&q=75');
-            background-size: cover;
-            background-position: center;
-            min-height: 600px;
-        }
-
-        .login-form {
-            width: 50%;
-            background-color: #ffffff;
-            padding: 64px;
-        }
-
-        .title {
-            font-size: 36px;
-            font-weight: bold;
-            margin-bottom: 16px;
-        }
-
-        .subtitle {
-            font-size: 18px;
-            color: #666666;
-            margin-bottom: 32px;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .input-text {
-            width: 100%;
-            padding: 12px 8px;
-            font-size: 16px;
-            border: none;
-            border-bottom: 1px solid #ccc;
-            outline: none;
-        }
-
-        .input-text:focus {
-            border-color: #000;
-        }
-
-        .form-remember {
-            display: flex;
-            align-items: center;
-            margin-bottom: 32px;
-            font-size: 14px;
-            color: #555;
-        }
-
-        .form-remember input {
-            margin-right: 8px;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .login-button {
-            background-color: #000;
-            color: #fff;
-            padding: 12px 32px;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .login-button:hover {
-            background-color: #333;
-        }
-
-        .forgot-password {
-            font-size: 14px;
-            color: #999;
-            text-decoration: none;
-        }
-
-        .forgot-password:hover {
-            text-decoration: underline;
-        }
-
-        .signup-wrap {
-            margin-top: 24px;
-            font-size: 14px;
-        }
-
-        .signup-wrap a {
-            color: #444;
-            text-decoration: none;
-            margin-left: 4px;
-        }
-
-        .signup-wrap a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .login-box {
-                flex-direction: column;
-            }
-
-            .login-image,
-            .login-form {
-                width: 100%;
-            }
-
-            .login-form {
-                padding: 40px;
-            }
-        }
-
-        .title {
-            font-size: 36px;
-            font-weight: bold;
-            margin-bottom: 16px;
-        }
-
-        .subtitle {
-            font-size: 18px;
-            color: #666666;
-            margin-bottom: 32px;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .input-text {
-            width: 100%;
-            padding: 12px 8px;
-            font-size: 16px;
-            border: none;
-            border-bottom: 1px solid #ccc;
-            outline: none;
-        }
-
-        .input-text:focus {
-            border-color: #000;
-        }
-
-        .form-remember {
-            display: flex;
-            align-items: center;
-            margin-bottom: 32px;
-            font-size: 14px;
-            color: #555;
-        }
-
-        .form-remember input {
-            margin-right: 8px;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .login-button {
-            background-color: #000;
-            color: #fff;
-            padding: 12px 32px;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .login-button:hover {
-            background-color: #333;
-        }
-
-        .forgot-password {
-            font-size: 14px;
-            color: #999;
-            text-decoration: none;
-        }
-
-        .forgot-password:hover {
-            text-decoration: underline;
-        }
-
-        .signup-wrap {
-            margin-top: 24px;
-            font-size: 14px;
-        }
-
-        .signup-wrap a {
-            color: #444;
-            text-decoration: none;
-            margin-left: 4px;
-        }
-
-        .signup-wrap a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .login-box {
-                flex-direction: column;
-            }
-
-            .login-image,
-            .login-form {
-                width: 100%;
-            }
-
-            .login-form {
-                padding: 40px;
-            }
-        }
-    </style>
 @endsection

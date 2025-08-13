@@ -38,7 +38,7 @@ class HomeController extends Controller
             // Lấy giá thấp nhất từ các biến thể
             $minPrice = $product->variants->min('price') ?? 0;
             $minSalePrice = $product->variants->min('sale_price') ?? 0;
-            
+
             // Nếu có sale_price và nhỏ hơn price thì dùng sale_price
             if ($minSalePrice > 0 && $minSalePrice < $minPrice) {
                 return [
@@ -66,7 +66,7 @@ class HomeController extends Controller
     private function processCategoryWithSubCategories($categoryName): array
     {
         $category = Category::where('name', $categoryName)->first();
-        
+
         if (!$category) {
             return [
                 'category' => null,
@@ -81,7 +81,7 @@ class HomeController extends Controller
             $subCategories = $category->subCategories()->with(['products' => function ($query) {
                 $query->where('status', 'active');
             }])->get();
-            
+
             return [
                 'category' => $category,
                 'subCategories' => $subCategories,
@@ -94,7 +94,7 @@ class HomeController extends Controller
             $subCategories = $parentCategory ? $parentCategory->subCategories()->with(['products' => function ($query) {
                 $query->where('status', 'active');
             }])->get() : collect();
-            
+
             return [
                 'category' => $category,
                 'subCategories' => $subCategories,
@@ -291,17 +291,19 @@ class HomeController extends Controller
 
         // Lấy và tính toán xếp hạng shop
         $rankingShops = Shop::where('shop_status', 'active')
-            ->where(function ($query) {
-                $query->where('total_products', '>', 0);
-            })
             ->withCount('followers') // Thêm eager loading để đếm followers từ bảng shop_followers
             ->withCount('orderReviews') // Thêm eager loading để đếm reviews từ bảng order_reviews
             ->withAvg('orderReviews', 'rating') // Thêm eager loading để tính trung bình rating từ bảng order_reviews
+            ->withCount('products') // Đếm số lượng products thực tế
             ->withSum('products', 'sold_quantity') // Thêm tổng số lượng sản phẩm đã bán
-            ->orderBy('order_reviews_avg_rating', 'desc')
-            ->orderBy('total_sales', 'desc')
+            ->orderBy('products_sum_sold_quantity', 'desc')  // Ưu tiên số lượng sản phẩm ĐÃ BÁN
+            ->orderBy('order_reviews_avg_rating', 'desc')   // Sau đó mới đến rating
+            ->orderBy('total_sales', 'desc')                // Cuối cùng là doanh số
             ->take(10)
             ->get()
+            ->filter(function ($shop) {
+                return $shop->products_count > 0; // Chỉ lấy shops có products
+            })
             ->map(function ($shop) {
                 // Sử dụng rating thực tế từ bảng order_reviews
                 $actualRating = $shop->order_reviews_avg_rating ?? 0;
@@ -309,16 +311,24 @@ class HomeController extends Controller
 
                 $ratingScore = $actualRating / 5;
                 $salesScore = min($shop->total_sales / 1000000000, 1);
-                $productsScore = min($shop->total_products / 100, 1);
+                $productsSoldScore = min(($shop->products_sum_sold_quantity ?? 0) / 100, 1); // Sử dụng số lượng sản phẩm ĐÃ BÁN
+                $productsCountScore = min($shop->products_count / 100, 1); // Số lượng products có sẵn
                 // Sử dụng số lượng followers thực tế từ bảng shop_followers
                 $actualFollowers = $shop->followers_count;
                 $followersScore = min($actualFollowers / 1000, 1);
+                
+                // Đảm bảo không bị lỗi chia cho 0
+                if ($shop->total_sales == 0) $salesScore = 0;
+                if (($shop->products_sum_sold_quantity ?? 0) == 0) $productsSoldScore = 0;
+                if ($shop->products_count == 0) $productsCountScore = 0;
+                if ($actualFollowers == 0) $followersScore = 0;
 
                 $totalScore =
-                    ($ratingScore * 0.4) +
-                    ($salesScore * 0.3) +
-                    ($productsScore * 0.2) +
-                    ($followersScore * 0.1);
+                    ($ratingScore * 0.25) +           // Rating: 25% (giảm từ 40%)
+                    ($productsSoldScore * 0.35) +     // Sản phẩm ĐÃ BÁN: 35% (quan trọng nhất)
+                    ($salesScore * 0.25) +            // Doanh số: 25% (giảm từ 30%)
+                    ($productsCountScore * 0.10) +    // Số products: 10% (giảm từ 20%)
+                    ($followersScore * 0.05);         // Followers: 5% (giảm từ 10%)
 
                 if ($totalScore >= 0.8) {
                     $shop->tier = 'diamond';
@@ -360,7 +370,7 @@ class HomeController extends Controller
         // Ensure all variables are defined
         $advertisedProducts = $advertisedProducts ?? collect();
         $banners = $banners ?? collect();
-        
+
         return view('user.home', compact(
             'rankingShops',
             'parentCategory',

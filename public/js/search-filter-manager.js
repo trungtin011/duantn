@@ -22,83 +22,85 @@ class SearchFilterManager {
     }
 
     init() {
-        this.attachEventListeners();
-        this.updateResetButtonVisibility();
-        this.initMobileFilter();
-        this.setupErrorHandling();
+        try {
+            this.attachEventListeners();
+            this.updateResetButtonVisibility();
+            this.initMobileFilter();
+            this.setupErrorHandling();
+        } catch (error) {
+            console.error('Error in init:', error);
+        }
     }
 
     attachEventListeners() {
-        // Attach event listeners for all filter types
-        this.attachCheckboxListeners('input[name="category[]"]');
-        this.attachCheckboxListeners('input[name="brand[]"]');
-        this.attachCheckboxListeners('input[name="shop[]"]');
-        this.attachRadioListeners('input[name="rating"]'); // Thêm event listener cho rating filter
-        this.attachCheckboxListeners('.filter-checkbox');
+        try {
+            // Attach event listeners for all filter types
+            this.attachCheckboxListeners('input[name="category[]"]');
+            this.attachCheckboxListeners('input[name="brand[]"]');
+            this.attachCheckboxListeners('input[name="shop[]"]');
+            this.attachRadioListeners('input[name="rating"]'); // Thêm event listener cho rating filter
+            this.attachCheckboxListeners('.filter-checkbox');
 
-        // Price suggestions
-        const priceButtons = document.querySelectorAll('.price-suggestion');
-        priceButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.handlePriceSuggestion(button);
+            // Price suggestions
+            const priceButtons = document.querySelectorAll('.price-suggestion');
+            priceButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.handlePriceSuggestion(button);
+                });
             });
-        });
 
-        // Apply filters button
-        const applyBtn = document.getElementById('apply-filters');
-        if (applyBtn) {
-            applyBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.updateResults();
+            // Apply filters button
+            const applyBtn = document.getElementById('apply-filters');
+            if (applyBtn) {
+                applyBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.updateResults();
+                });
+            }
+
+            // Reset filters button
+            const resetBtn = document.getElementById('reset-filters');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.resetFilters();
+                });
+            }
+
+            // Sort buttons
+            const sortButtons = document.querySelectorAll('.sort-btn');
+            sortButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    this.handleSortButtonClick(e);
+                });
             });
-        }
 
-        // Reset filters button
-        const resetBtn = document.getElementById('reset-filters');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.resetFilters();
+            // Price sort select
+            const priceSelect = document.getElementById('price-sort-select');
+            if (priceSelect) {
+                priceSelect.addEventListener('change', (e) => {
+                    this.handlePriceSortChange(e);
+                });
+            }
+
+            // Price inputs with debounce
+            this.attachPriceInputListeners();
+
+            // Browser back/forward - simplified
+            window.addEventListener('popstate', () => {
+                window.location.reload();
             });
-        }
 
-        // Sort buttons
-        const sortButtons = document.querySelectorAll('.sort-btn');
-        sortButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const sort = btn.getAttribute('data-sort');
-                if (sort) {
-                    this.updateResults({ sort: sort });
-                }
-            });
-        });
-
-        // Price sort select
-        const priceSelect = document.getElementById('price-sort-select');
-        if (priceSelect) {
-            priceSelect.addEventListener('change', (e) => {
-                if (e.target.value) {
-                    this.updateResults({ sort: e.target.value });
-                }
-            });
-        }
-
-        // Price inputs with debounce
-        this.attachPriceInputListeners();
-
-        // Browser back/forward - simplified
-        window.addEventListener('popstate', () => {
-            window.location.reload();
-        });
-
-        // Handle form submission
-        if (this.form) {
-            this.form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.updateResults();
-            });
+            // Handle form submission
+            if (this.form) {
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.updateResults();
+                });
+            }
+        } catch (error) {
+            console.error('Error in attachEventListeners:', error);
         }
     }
 
@@ -150,6 +152,39 @@ class SearchFilterManager {
         if (maxInput) maxInput.value = max;
 
         this.updateResults();
+        this.updateResetButtonVisibility();
+    }
+
+    handlePriceSortChange(e) {
+        try {
+            if (e.target.value) {
+                this.updateResults({ sort: e.target.value });
+                this.updateResetButtonVisibility();
+            }
+        } catch (error) {
+            console.error('Error in handlePriceSortChange:', error);
+            // Fallback: reload page with sort parameter
+            const url = new URL(window.location);
+            url.searchParams.set('sort', e.target.value);
+            window.location.href = url.toString();
+        }
+    }
+
+    handleSortButtonClick(e) {
+        try {
+            e.preventDefault();
+            const sort = e.currentTarget.getAttribute('data-sort');
+            if (sort) {
+                this.updateResults({ sort: sort });
+                this.updateResetButtonVisibility();
+            }
+        } catch (error) {
+            console.error('Error in handleSortButtonClick:', error);
+            // Fallback: reload page with sort parameter
+            const url = new URL(window.location);
+            url.searchParams.set('sort', e.currentTarget.getAttribute('data-sort'));
+            window.location.href = url.toString();
+        }
     }
 
     resetFilters() {
@@ -164,6 +199,12 @@ class SearchFilterManager {
             ratingRadios.forEach(radio => {
                 radio.checked = false;
             });
+
+            // Reset sort to default
+            const sortInput = this.form.querySelector('input[name="sort"]');
+            if (sortInput) {
+                sortInput.value = 'relevance';
+            }
         }
 
         const minInput = document.getElementById('price_min');
@@ -171,7 +212,26 @@ class SearchFilterManager {
         if (minInput) minInput.value = '';
         if (maxInput) maxInput.value = '';
 
+        // Reset price sort select
+        const priceSortSelect = document.getElementById('price-sort-select');
+        if (priceSortSelect) {
+            priceSortSelect.value = 'price_asc';
+        }
+
+        // Reset sort buttons
+        const sortButtons = document.querySelectorAll('.sort-btn');
+        sortButtons.forEach(btn => {
+            btn.classList.remove('bg-gray-800', 'text-white', 'border-transparent');
+            btn.classList.add('hover:bg-gray-50');
+        });
+        const relevanceBtn = document.querySelector('[data-sort="relevance"]');
+        if (relevanceBtn) {
+            relevanceBtn.classList.remove('hover:bg-gray-50');
+            relevanceBtn.classList.add('bg-gray-800', 'text-white', 'border-transparent');
+        }
+
         this.updateResults();
+        this.updateResetButtonVisibility();
     }
 
     debouncePriceUpdate(func, wait) {
@@ -253,6 +313,7 @@ class SearchFilterManager {
             this.updateSortButtons(params.sort || formData.get('sort'));
             this.updateProductCount(data.totalProducts);
             this.handleAutoScroll();
+            this.updateResetButtonVisibility();
 
             // Không hiển thị thông báo thành công nữa
             this.retryCount = 0;
@@ -302,19 +363,22 @@ class SearchFilterManager {
             ratingContainer.innerHTML = data.ratingFilters;
             this.attachRadioListeners('input[name="rating"]');
         }
+
+        // Cập nhật trạng thái nút reset sau khi cập nhật filters
+        this.updateResetButtonVisibility();
     }
 
     updateSortButtons(sort) {
         if (!sort) return;
         const sortButtons = document.querySelectorAll('.sort-btn');
         sortButtons.forEach(btn => {
-            btn.classList.remove('bg-red-500', 'text-white');
-            btn.classList.add('hover:bg-gray-100');
+            btn.classList.remove('bg-gray-800', 'text-white', 'border-transparent');
+            btn.classList.add('hover:bg-gray-50');
         });
         const activeBtn = document.querySelector(`[data-sort="${sort}"]`);
         if (activeBtn) {
-            activeBtn.classList.remove('hover:bg-gray-100');
-            activeBtn.classList.add('bg-red-500', 'text-white');
+            activeBtn.classList.remove('hover:bg-gray-50');
+            activeBtn.classList.add('bg-gray-800', 'text-white', 'border-transparent');
         }
         const priceSelect = document.getElementById('price-sort-select');
         if (priceSelect && (sort === 'price_asc' || sort === 'price_desc')) {
@@ -340,127 +404,232 @@ class SearchFilterManager {
     }
 
     handleError(error) {
-        this.retryCount++;
-        if (this.retryCount <= this.maxRetries) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Lỗi tải dữ liệu',
-                text: `Đang thử lại... (${this.retryCount}/${this.maxRetries})`,
-                timer: 2000,
-                showConfirmButton: false
-            });
-            setTimeout(() => {
-                this.updateResults();
-            }, 1000 * this.retryCount);
-        } else {
-            this.showErrorState();
-            Swal.fire({
-                icon: 'error',
-                title: 'Không thể tải kết quả tìm kiếm',
-                text: 'Vui lòng thử lại.',
-            });
+        try {
+            this.retryCount++;
+            if (this.retryCount <= this.maxRetries) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lỗi tải dữ liệu',
+                        text: `Đang thử lại... (${this.retryCount}/${this.maxRetries})`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+                setTimeout(() => {
+                    this.updateResults();
+                }, 1000 * this.retryCount);
+            } else {
+                this.showErrorState();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Không thể tải kết quả tìm kiếm',
+                        text: 'Vui lòng thử lại.',
+                    });
+                }
+            }
+        } catch (err) {
+            console.error('Error in handleError:', err);
         }
     }
 
     showErrorState() {
-        if (this.productResults) {
-            this.productResults.innerHTML = `
-                <div class="error-state">
-                    <div class="text-red-500 mb-4">
-                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                        </svg>
+        try {
+            if (this.productResults) {
+                this.productResults.innerHTML = `
+                    <div class="error-state">
+                        <div class="text-red-500 mb-4">
+                            <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Có lỗi xảy ra</h3>
+                        <p class="text-gray-600 mb-4">Không thể tải kết quả tìm kiếm. Vui lòng thử lại.</p>
+                        <button onclick="window.location.reload()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            Tải lại trang
+                        </button>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Có lỗi xảy ra</h3>
-                    <p class="text-gray-600 mb-4">Không thể tải kết quả tìm kiếm. Vui lòng thử lại.</p>
-                    <button onclick="window.location.reload()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
-                        Tải lại trang
-                    </button>
-                </div>
-            `
+                `
+            }
+        } catch (error) {
+            console.error('Error in showErrorState:', error);
         }
     }
 
     updateResetButtonVisibility() {
-        const resetBtn = document.getElementById('reset-filters');
-        if (!resetBtn) return;
-        
-        // Kiểm tra các filter có giá trị
-        const hasActiveFilters =
-            document.querySelectorAll('input[name="category[]"]:checked').length > 0 ||
-            document.querySelectorAll('input[name="brand[]"]:checked').length > 0 ||
-            document.querySelectorAll('input[name="shop[]"]:checked').length > 0 ||
-            // Kiểm tra rating filter: chỉ coi là active nếu giá trị khác rỗng
-            (document.querySelector('input[name="rating"]:checked') && document.querySelector('input[name="rating"]:checked').value !== '') ||
-            (document.getElementById('price_min') && document.getElementById('price_min').value && document.getElementById('price_min').value.trim() !== '') ||
-            (document.getElementById('price_max') && document.getElementById('price_max').value && document.getElementById('price_max').value.trim() !== '');
+        try {
+            const resetBtn = document.getElementById('reset-filters');
+            if (!resetBtn) return;
             
-        if (hasActiveFilters) {
-            resetBtn.classList.remove('hidden');
-        } else {
-            resetBtn.classList.add('hidden');
+            // Kiểm tra các filter có giá trị
+            const hasActiveFilters = this.hasAnyActiveFilters();
+                
+            if (hasActiveFilters) {
+                resetBtn.classList.remove('hidden');
+            } else {
+                resetBtn.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Error in updateResetButtonVisibility:', error);
+        }
+    }
+
+    hasAnyActiveFilters() {
+        try {
+            // Kiểm tra category filters
+            const categoryCheckboxes = document.querySelectorAll('input[name="category[]"]:checked');
+            if (categoryCheckboxes.length > 0) return true;
+
+            // Kiểm tra brand filters
+            const brandCheckboxes = document.querySelectorAll('input[name="brand[]"]:checked');
+            if (brandCheckboxes.length > 0) return true;
+
+            // Kiểm tra shop filters
+            const shopCheckboxes = document.querySelectorAll('input[name="shop[]"]:checked');
+            if (shopCheckboxes.length > 0) return true;
+
+            // Kiểm tra rating filter - chỉ coi là active nếu giá trị khác rỗng
+            const ratingRadio = document.querySelector('input[name="rating"]:checked');
+            if (ratingRadio && ratingRadio.value !== '') return true;
+
+            // Kiểm tra price filters
+            const priceMin = document.getElementById('price_min');
+            const priceMax = document.getElementById('price_max');
+            
+            if (priceMin && priceMin.value && priceMin.value.trim() !== '') return true;
+            if (priceMax && priceMax.value && priceMax.value.trim() !== '') return true;
+
+            // Kiểm tra sort khác với mặc định
+            const currentSort = new URLSearchParams(window.location.search).get('sort');
+            if (currentSort && currentSort !== 'relevance') return true;
+
+            // Kiểm tra price sort select khác với mặc định
+            const priceSortSelect = document.getElementById('price-sort-select');
+            if (priceSortSelect && priceSortSelect.value !== 'price_asc') return true;
+
+            return false;
+        } catch (error) {
+            console.error('Error in hasAnyActiveFilters:', error);
+            return false;
         }
     }
 
     reattachEventListeners() {
-        this.attachCheckboxListeners('input[name="category[]"]');
-        this.attachCheckboxListeners('input[name="brand[]"]');
-        this.attachCheckboxListeners('input[name="shop[]"]');
-        this.attachRadioListeners('input[name="rating"]');
-        this.attachCheckboxListeners('.filter-checkbox');
-        this.attachPriceInputListeners();
-        const priceButtons = document.querySelectorAll('.price-suggestion');
-        priceButtons.forEach(button => {
-            button.removeEventListener('click', this.handlePriceSuggestion);
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.handlePriceSuggestion(button);
+        try {
+            this.attachCheckboxListeners('input[name="category[]"]');
+            this.attachCheckboxListeners('input[name="brand[]"]');
+            this.attachCheckboxListeners('input[name="shop[]"]');
+            this.attachRadioListeners('input[name="rating"]');
+            this.attachCheckboxListeners('.filter-checkbox');
+            this.attachPriceInputListeners();
+            
+            // Reattach price sort select listener
+            const priceSelect = document.getElementById('price-sort-select');
+            if (priceSelect) {
+                priceSelect.removeEventListener('change', this.handlePriceSortChange);
+                priceSelect.addEventListener('change', this.handlePriceSortChange);
+            }
+            
+            // Reattach sort buttons listeners
+            const sortButtons = document.querySelectorAll('.sort-btn');
+            sortButtons.forEach(btn => {
+                btn.removeEventListener('click', this.handleSortButtonClick);
+                btn.addEventListener('click', this.handleSortButtonClick);
             });
-        });
+            
+            // Reattach price suggestion buttons listeners
+            const priceButtons = document.querySelectorAll('.price-suggestion');
+            priceButtons.forEach(button => {
+                button.removeEventListener('click', this.handlePriceSuggestion);
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.handlePriceSuggestion(button);
+                });
+            });
+            
+            // Cập nhật trạng thái nút reset sau khi reattach
+            this.updateResetButtonVisibility();
+        } catch (error) {
+            console.error('Error in reattachEventListeners:', error);
+        }
     }
 
     initMobileFilter() {
-        const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
-        const filterContent = document.getElementById('filter-content');
-        if (mobileFilterToggle && filterContent) {
-            mobileFilterToggle.addEventListener('click', () => {
-                const isHidden = filterContent.classList.contains('hidden');
-                if (isHidden) {
-                    filterContent.classList.remove('hidden');
-                    const svg = mobileFilterToggle.querySelector('svg');
-                    if (svg) svg.classList.add('rotate-180');
-                } else {
-                    filterContent.classList.add('hidden');
-                    const svg = mobileFilterToggle.querySelector('svg');
-                    if (svg) svg.classList.remove('rotate-180');
-                }
-            });
-            filterContent.classList.add('hidden');
+        try {
+            const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
+            const filterContent = document.getElementById('filter-content');
+            if (mobileFilterToggle && filterContent) {
+                mobileFilterToggle.addEventListener('click', () => {
+                    const isHidden = filterContent.classList.contains('hidden');
+                    if (isHidden) {
+                        filterContent.classList.remove('hidden');
+                        const svg = mobileFilterToggle.querySelector('svg');
+                        if (svg) svg.classList.add('rotate-180');
+                    } else {
+                        filterContent.classList.add('hidden');
+                        const svg = mobileFilterToggle.querySelector('svg');
+                        if (svg) svg.classList.remove('rotate-180');
+                    }
+                });
+                filterContent.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Error in initMobileFilter:', error);
         }
     }
 
     setupErrorHandling() {
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-            Swal.fire({
-                icon: 'error',
-                title: 'Có lỗi không mong muốn xảy ra',
+        try {
+            window.addEventListener('unhandledrejection', (event) => {
+                console.error('Unhandled promise rejection:', event.reason);
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Có lỗi không mong muốn xảy ra',
+                    });
+                }
             });
-        });
-        window.addEventListener('error', (event) => {
-            console.error('Global error:', event.error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Có lỗi xảy ra',
+            window.addEventListener('error', (event) => {
+                console.error('Global error:', event.error);
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Có lỗi xảy ra',
+                    });
+                }
             });
-        });
+        } catch (error) {
+            console.error('Error in setupErrorHandling:', error);
+        }
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     try {
-        new SearchFilterManager();
+        window.searchFilterManager = new SearchFilterManager();
     } catch (error) {
         console.error('Failed to initialize SearchFilterManager:', error);
+        // Fallback: show error message to user
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-state';
+        errorDiv.innerHTML = `
+            <div class="text-red-500 mb-4">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Lỗi khởi tạo bộ lọc</h3>
+            <p class="text-gray-600 mb-4">Không thể khởi tạo bộ lọc tìm kiếm. Vui lòng tải lại trang.</p>
+            <button onclick="window.location.reload()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
+                Tải lại trang
+            </button>
+        `;
+        
+        // Insert error message into page
+        const container = document.querySelector('.container') || document.body;
+        if (container) {
+            container.insertBefore(errorDiv, container.firstChild);
+        }
     }
 });

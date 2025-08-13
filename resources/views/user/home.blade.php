@@ -8,6 +8,7 @@
 <!-- Custom style -->
 @push('styles')
     @vite(['resources/css/user/style-home.css'])
+    @vite(['resources/css/user/style.css'])
     <style>
         /* Custom styles for enhanced shop ranking */
         .quick-view-modal {
@@ -625,9 +626,9 @@
                         data-mobile-menu-close-btn>
                         <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
                     </button>
-                    <div class="shop-container-bg rounded-xl border border-orange-200 p-6 mb-8 mt-10 lg:mt-0">
+                    <div class="rounded-xl border border-orange-200 p-4 mb-8 lg:mt-0">
                         <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-bold flex items-center justify-between gap-2 w-full shop-title">
+                            <h2 class="text-lg font-bold flex items-center justify-between gap-2 w-full">
                                 Shop Bán Chạy
                                 <ion-icon name="flame"
                                     class="text-orange-500 text-xl bg-white rounded-full p-2"></ion-icon>
@@ -666,7 +667,8 @@
                         <!-- Danh sách shop -->
                         <div class="shop-ranking-container">
                             <div class="grid grid-cols-1 gap-3 pb-2 relative">
-                                @foreach ($rankingShops as $index => $shop)
+                                @if($rankingShops->count() > 0)
+                                    @foreach ($rankingShops as $index => $shop)
                                     <div class="relative bg-white border border-gray-200 rounded-lg p-2.5 shop-ranking-card {{ $index < 3 ? 'ring-1 ring-opacity-30' : '' }} {{ $index === 0 ? 'ring-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : '' }} {{ $index === 1 ? 'ring-gray-400 bg-gradient-to-r from-gray-50 to-slate-50' : '' }} {{ $index === 2 ? 'ring-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50' : '' }}"
                                         style="animation-delay: {{ $index * 0.1 }}s;">
 
@@ -798,6 +800,12 @@
                                         </a>
                                     </div>
                                 @endforeach
+                                @else
+                                    <div class="text-center py-8 text-gray-500">
+                                        <ion-icon name="storefront-outline" class="text-4xl mb-2"></ion-icon>
+                                        <p>Chưa có shop nào để hiển thị</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -1270,31 +1278,58 @@
             <div class="container flex gap-[30px]">
                 <div class="testimonial">
                     <h2 class="title">Đánh giá khách hàng</h2>
-                    @foreach ($testimonials as $review)
-                        <div class="testimonial-card">
-                            <div class="flex items-center gap-2">
-                                @include('partials.user-avatar', [
-                                    'user' => $review->user,
-                                    'size' => '2xl',
-                                    'className' => 'testimonial-banner',
-                                ])
-                            </div>
+                    
+                    @if ($testimonials->isNotEmpty())
+                        <!-- Testimonials Slider Container -->
+                        <div class="testimonials-slider-container">
+                            @php
+                                $testimonialsPerSlide = 1; // Hiển thị 1 testimonial mỗi slide
+                                $totalTestimonialSlides = ceil($testimonials->count() / $testimonialsPerSlide);
+                            @endphp
 
-                            <p class="testimonial-name truncate">{{ $review->user->username ?? 'Khách hàng ẩn danh' }}
-                            </p>
-                            <p class="testimonial-title truncate">
-                                {{ $review->product->name ?? 'Sản phẩm đã mua' }}
-                            </p>
+                            @for ($slideIndex = 0; $slideIndex < $totalTestimonialSlides; $slideIndex++)
+                                <div class="testimonial-slide {{ $slideIndex === 0 ? 'active' : '' }}"
+                                    data-slide="{{ $slideIndex }}">
+                                    @foreach ($testimonials->slice($slideIndex * $testimonialsPerSlide, $testimonialsPerSlide) as $review)
+                                        <div class="testimonial-card">
+                                            <div class="flex items-center gap-2">
+                                                @include('partials.user-avatar', [
+                                                    'user' => $review->user,
+                                                    'size' => '2xl',
+                                                    'className' => 'testimonial-banner',
+                                                ])
+                                            </div>
 
-                            <img src="{{ asset('assets/images/icons/quotes.svg') }}" alt="quotation"
-                                class="quotation-img" width="26">
+                                            <p class="testimonial-name truncate">{{ $review->user->username ?? 'Khách hàng ẩn danh' }}
+                                            </p>
+                                            <p class="testimonial-title truncate">
+                                                {{ $review->product->name ?? 'Sản phẩm đã mua' }}
+                                            </p>
 
-                            <p class="testimonial-desc truncate">
-                                {{ Str::limit($review->comment, 120) }}
-                            </p>
+                                            <img src="{{ asset('assets/images/icons/quotes.svg') }}" alt="quotation"
+                                                class="quotation-img" width="26">
+
+                                            <p class="testimonial-desc truncate">
+                                                {{ Str::limit($review->comment, 120) }}
+                                            </p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endfor
                         </div>
-                    @endforeach
-                    @if ($testimonials->isEmpty())
+
+                        <!-- Testimonials Dots Navigation -->
+                        @if ($totalTestimonialSlides > 1)
+                            <div class="testimonials-dots">
+                                @for ($dotIndex = 0; $dotIndex < $totalTestimonialSlides; $dotIndex++)
+                                    <button class="testimonial-dot {{ $dotIndex === 0 ? 'active' : '' }}"
+                                        data-slide="{{ $dotIndex }}"
+                                        aria-label="Go to testimonial slide {{ $dotIndex + 1 }}">
+                                    </button>
+                                @endfor
+                            </div>
+                        @endif
+                    @else
                         <p>Chưa có đánh giá nào từ khách hàng.</p>
                     @endif
                 </div>

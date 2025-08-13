@@ -24,7 +24,7 @@ class NotificationsRequest extends FormRequest
         return [
             'title' => 'required|string|max:100',
             'content' => 'required|string|max:500',
-            'sender_id' => 'required|exists:users,id',
+            'sender_id' => 'required',
             'receiver_type' => 'required|in:user,shop,admin,all,employee',
             'direct_to' => 'nullable',
             'type' => 'required|in:promotion,system,security',
