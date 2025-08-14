@@ -198,7 +198,6 @@ class RegisterShopController extends Controller
      */
     public function step4(Request $request)
     {
-     
         $request->validate([
             'id_number' => 'required|string|max:20',
             'full_name' => 'required|string|max:100',
@@ -215,6 +214,15 @@ class RegisterShopController extends Controller
             'gender.required' => 'Giới tính là bắt buộc.',
             'gender.in' => 'Giới tính không hợp lệ.',
         ]);
+
+        // Kiểm tra số CCCD đã tồn tại cho user khác chưa
+        $exists = \App\Models\IdentityVerification::where('identity_number', $request->id_number)
+            ->where('userID', '!=', Auth::id())
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['id_number' => 'Đã có người sử dụng CCCD này.'])->withInput();
+        }
 
         // Lưu trực tiếp vào bảng identity_verifications
         $identityData = [
@@ -238,9 +246,7 @@ class RegisterShopController extends Controller
         try {
             \App\Models\IdentityVerification::create($identityData);
         } catch (\Illuminate\Database\QueryException $ex) {
-            if ($ex->getCode() == 23000 && str_contains($ex->getMessage(), 'identity_number')) {
-                return back()->withErrors(['id_number' => 'Đã có người sử dụng CCCD này.'])->withInput();
-            }
+            // Trường hợp lỗi khác ngoài duplicate, vẫn throw ra
             throw $ex;
         }
 

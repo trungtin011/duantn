@@ -61,8 +61,7 @@
                                         <div>
                                             <h3 class="font-semibold text-blue-900 mb-2">Thông tin quan trọng</h3>
                                             <p class="text-sm text-blue-800">
-                                                Vui lòng cung cấp ảnh mặt trước và mặt sau CCCD/CMND. Hệ thống sẽ tự động
-                                                quét và điền thông tin vào form.
+                                                Vui lòng cung cấp ảnh mặt trước và mặt sau CCCD/CMND. Sau đó nhấn nút "Nhập thủ công" để điền thông tin vào form.
                                             </p>
                                         </div>
                                     </div>
@@ -230,56 +229,17 @@
                                         </div>
                                     </div>
 
-                                    <!-- Scan and Manual Input Buttons -->
-                                    <div
-                                        class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                        <button type="button" id="scan-cccd-btn"
-                                            class="inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-                                            <i class="fas fa-search mr-3"></i>
-                                            Quét và tự động điền thông tin
-                                        </button>
-                                        <button type="button" id="manual-input-btn"
-                                            class="inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-blue-400 to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-                                            <i class="fas fa-edit mr-3"></i>
-                                            Nhập thủ công
-                                        </button>
-                                    </div>
-
-                                    <div id="scan-cccd-loading" class="hidden text-center">
-                                        <div class="inline-flex items-center space-x-2">
-                                            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500">
-                                            </div>
-                                            <span class="text-gray-600">Đang quét và xử lý thông tin...</span>
+                                    <!-- Manual Input Button (Optional - for reference) -->
+                                    <div class="flex justify-center">
+                                        <div class="inline-flex items-center justify-center px-6 py-4 bg-gray-100 text-gray-600 font-semibold rounded-xl">
+                                            <i class="fas fa-info-circle mr-3"></i>
+                                            Form nhập thủ công đã hiển thị bên dưới
                                         </div>
                                     </div>
-                                    <div id="scan-cccd-error" class="text-red-500 text-sm text-center"></div>
-                                    <div id="scan-cccd-success" class="text-green-600 text-sm text-center hidden"></div>
                                 </div>
 
-                                <!-- Hidden fields to preserve scanned data -->
-                                <input type="hidden" name="scanned_full_name" id="scanned_full_name"
-                                    value="{{ old('scanned_full_name') }}">
-                                <input type="hidden" name="scanned_id_number" id="scanned_id_number"
-                                    value="{{ old('scanned_id_number') }}">
-                                <input type="hidden" name="scanned_birthday" id="scanned_birthday"
-                                    value="{{ old('scanned_birthday') }}">
-                                <input type="hidden" name="scanned_nationality" id="scanned_nationality"
-                                    value="{{ old('scanned_nationality') }}">
-                                <input type="hidden" name="scanned_residence" id="scanned_residence"
-                                    value="{{ old('scanned_residence') }}">
-                                <input type="hidden" name="scanned_hometown" id="scanned_hometown"
-                                    value="{{ old('scanned_hometown') }}">
-                                <input type="hidden" name="scanned_gender" id="scanned_gender"
-                                    value="{{ old('scanned_gender') }}">
-                                <input type="hidden" name="scanned_identity_card_date" id="scanned_identity_card_date"
-                                    value="{{ old('scanned_identity_card_date') }}">
-                                <input type="hidden" name="scanned_identity_card_place" id="scanned_identity_card_place"
-                                    value="{{ old('scanned_identity_card_place') }}">
-                                <input type="hidden" name="scanned_dac_diem_nhan_dang" id="scanned_dac_diem_nhan_dang"
-                                    value="{{ old('scanned_dac_diem_nhan_dang') }}">
-
-                                <!-- Personal Information (Hidden initially, shown after scan) -->
-                                <div id="personal-info-section" class="hidden space-y-6">
+                                <!-- Personal Information (Always visible) -->
+                                <div id="personal-info-section" class="space-y-6">
                                     <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                                         <i class="fas fa-user mr-2 text-purple-500"></i>
                                         Thông tin cá nhân
@@ -377,8 +337,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Identity Card Information (Hidden initially, shown after scan) -->
-                                <div id="identity-info-section" class="hidden space-y-6">
+                                <!-- Identity Card Information (Always visible) -->
+                                <div id="identity-info-section" class="space-y-6">
                                     <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                                         <i class="fas fa-id-card mr-2 text-purple-500"></i>
                                         Thông tin CCCD/CMND
@@ -660,195 +620,11 @@
             }
         });
 
-        // CCCD scan integration
-        const scanBtn = document.getElementById('scan-cccd-btn');
-        const manualBtn = document.getElementById('manual-input-btn');
-        const fileInput = document.getElementById('filechoose');
-        const loadingDiv = document.getElementById('scan-cccd-loading');
-        const errorDiv = document.getElementById('scan-cccd-error');
-        const successDiv = document.getElementById('scan-cccd-success');
+        // Form sections are now always visible
         const personalInfoSection = document.getElementById('personal-info-section');
         const identityInfoSection = document.getElementById('identity-info-section');
 
-        scanBtn.addEventListener('click', function() {
-            errorDiv.textContent = '';
-            successDiv.classList.add('hidden');
-            successDiv.textContent = '';
-
-            if (!fileInput.files[0] || !document.getElementById('backfilechoose').files[0]) {
-                errorDiv.textContent = 'Vui lòng chọn đủ ảnh mặt trước và mặt sau CCCD/CMND trước khi quét.';
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('front_image', fileInput.files[0]);
-            formData.append('back_image', document.getElementById('backfilechoose').files[0]);
-
-            loadingDiv.classList.remove('hidden');
-            scanBtn.disabled = true;
-
-            fetch('http://127.0.0.1:5000/process_cccd', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    loadingDiv.classList.add('hidden');
-                    scanBtn.disabled = false;
-
-                    if (data.error) {
-                        errorDiv.textContent = data.error;
-                        return;
-                    }
-
-                    // Fill form data
-                    fillFormData(data);
-
-                    // Show the sections
-                    personalInfoSection.classList.remove('hidden');
-                    identityInfoSection.classList.remove('hidden');
-
-                    successDiv.textContent =
-                        'Quét thành công! Thông tin đã được điền tự động. Bạn có thể chỉnh sửa nếu cần thiết.';
-                    successDiv.classList.remove('hidden');
-
-                    // Scroll to the filled sections
-                    personalInfoSection.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                })
-                .catch(err => {
-                    loadingDiv.classList.add('hidden');
-                    scanBtn.disabled = false;
-                    errorDiv.textContent = 'Không thể quét CCCD/CMND. Vui lòng thử lại.';
-                });
-        });
-
-        // Manual input button handler
-        manualBtn.addEventListener('click', function() {
-            errorDiv.textContent = '';
-            successDiv.classList.add('hidden');
-            successDiv.textContent = '';
-
-            // Show the sections for manual input
-            personalInfoSection.classList.remove('hidden');
-            identityInfoSection.classList.remove('hidden');
-
-            // Clear any existing scanned data
-            const scannedFields = [
-                'scanned_full_name', 'scanned_id_number', 'scanned_birthday',
-                'scanned_nationality', 'scanned_residence', 'scanned_hometown',
-                'scanned_identity_card_date', 'scanned_identity_card_place',
-                'scanned_dac_diem_nhan_dang', 'scanned_gender'
-            ];
-
-            scannedFields.forEach(field => {
-                const hiddenInput = document.querySelector(`input[name="${field}"]`);
-                if (hiddenInput) {
-                    hiddenInput.value = '';
-                }
-            });
-
-            // Clear form fields to allow manual input
-            const formFields = [
-                'full_name', 'id_number', 'birthday', 'nationality', 'residence',
-                'hometown', 'identity_card_date', 'identity_card_place', 'dac_diem_nhan_dang'
-            ];
-
-            const placeholders = {
-                'full_name': 'Nhập họ và tên theo CCCD/CMND',
-                'id_number': 'Nhập số CCCD/CMND',
-                'birthday': '',
-                'nationality': 'Ví dụ: Việt Nam',
-                'residence': 'Nhập nơi thường trú theo CCCD/CMND',
-                'hometown': 'Nhập quê quán theo CCCD/CMND',
-                'identity_card_date': '',
-                'identity_card_place': 'Nhập nơi cấp CCCD/CMND',
-                'dac_diem_nhan_dang': 'Nhập đặc điểm nhận dạng (nếu có)'
-            };
-
-            formFields.forEach(field => {
-                const input = document.querySelector(`input[name="${field}"]`);
-                if (input) {
-                    input.value = '';
-                    if (placeholders[field]) {
-                        input.placeholder = placeholders[field];
-                    }
-                }
-            });
-
-            // Clear gender selection
-            const genderRadios = document.querySelectorAll('input[name="gender"]');
-            genderRadios.forEach(radio => {
-                radio.checked = false;
-            });
-
-            successDiv.textContent =
-                'Chế độ nhập thủ công đã được kích hoạt. Vui lòng điền thông tin vào các trường bên dưới.';
-            successDiv.classList.remove('hidden');
-
-            // Scroll to the sections
-            personalInfoSection.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        });
-
-        // Fill form data from CCCD scan
-        function fillFormData(data) {
-            const fieldMappings = {
-                'full_name': 'full_name',
-                'identity_number': 'id_number',
-                'birth_date': 'birthday',
-                'nationality': 'nationality',
-                'residence': 'residence',
-                'hometown': 'hometown',
-                'identity_card_date': 'identity_card_date',
-                'identity_card_place': 'identity_card_place',
-                'dac_diem_nhan_dang': 'dac_diem_nhan_dang'
-            };
-
-            Object.entries(fieldMappings).forEach(([apiField, formField]) => {
-                if (data[apiField]) {
-                    const input = document.querySelector(`input[name="${formField}"]`);
-                    const hiddenInput = document.querySelector(`input[name="scanned_${formField}"]`);
-                    if (input) {
-                        if (apiField === 'birth_date' || apiField === 'identity_card_date') {
-                            // Handle date formatting
-                            const date = new Date(data[apiField]);
-                            if (!isNaN(date.getTime())) {
-                                const formattedDate = date.toISOString().split('T')[0];
-                                input.value = formattedDate;
-                                if (hiddenInput) hiddenInput.value = formattedDate;
-                            }
-                        } else {
-                            input.value = data[apiField];
-                            if (hiddenInput) hiddenInput.value = data[apiField];
-                        }
-                    }
-                }
-            });
-
-            // Handle gender
-            if (data.gender) {
-                const radios = document.querySelectorAll('input[name="gender"]');
-                const hiddenGender = document.querySelector('input[name="scanned_gender"]');
-                radios.forEach(radio => {
-                    if (radio.value === data.gender.toLowerCase()) {
-                        radio.checked = true;
-                        if (hiddenGender) hiddenGender.value = data.gender.toLowerCase();
-                    }
-                });
-            }
-            
-            // Save scanned data to localStorage after filling form
-            setTimeout(() => {
-                saveFormDataToLocalStorage();
-            }, 100);
-        }
-
-        // Function to restore form data from old values or localStorage
+        // Function to restore form data from old values
         function restoreFormData() {
             // Restore form fields from old values
             const formFields = [
@@ -880,17 +656,8 @@
                 }
             });
             
-            // Check if personal info sections should be shown
-            const hasPersonalData = formFields.some(field => {
-                const input = document.querySelector(`input[name="${field}"]`);
-                return input && input.value;
-            });
-            
-            if (hasPersonalData) {
-                personalInfoSection.classList.remove('hidden');
-                identityInfoSection.classList.remove('hidden');
-                console.log('Personal info sections shown due to existing data');
-            }
+            // Form sections are always visible now
+            console.log('Personal info sections are always visible');
         }
 
         // Function to save form data to localStorage
@@ -923,21 +690,6 @@
                 }
             });
             
-            // Save scanned data
-            const scannedFields = [
-                'scanned_full_name', 'scanned_id_number', 'scanned_birthday', 
-                'scanned_nationality', 'scanned_residence', 'scanned_hometown',
-                'scanned_identity_card_date', 'scanned_identity_card_place', 
-                'scanned_dac_diem_nhan_dang', 'scanned_gender'
-            ];
-            
-            scannedFields.forEach(field => {
-                const input = document.querySelector(`input[name="${field}"]`);
-                if (input && input.value) {
-                    formData[field] = input.value;
-                }
-            });
-            
             try {
                 localStorage.setItem('register3_form_data', JSON.stringify(formData));
                 console.log('Form data saved to localStorage:', formData);
@@ -956,13 +708,7 @@
                     
                     // Restore text inputs
                     Object.keys(formData).forEach(fieldName => {
-                        if (fieldName.startsWith('scanned_')) {
-                            // Handle scanned fields
-                            const input = document.querySelector(`input[name="${fieldName}"]`);
-                            if (input) {
-                                input.value = formData[fieldName];
-                            }
-                        } else if (fieldName === 'gender') {
+                        if (fieldName === 'gender') {
                             // Handle gender
                             const radios = document.querySelectorAll('input[name="gender"]');
                             radios.forEach(radio => {
@@ -993,16 +739,8 @@
                         }
                     });
                     
-                    // Show sections if there's data
-                    const hasData = Object.keys(formData).some(key => 
-                        !key.startsWith('scanned_') && formData[key] && 
-                        key !== 'cccd_image' && key !== 'back_cccd_image'
-                    );
-                    
-                    if (hasData) {
-                        personalInfoSection.classList.remove('hidden');
-                        identityInfoSection.classList.remove('hidden');
-                    }
+                    // Form sections are always visible now
+                    console.log('Form sections are always visible');
                     
                     // Restore image previews
                     restoreImagePreviews();
@@ -1073,46 +811,6 @@
             if (!restoredFromLocalStorage) {
                 // Fallback to old values
                 restoreFormData();
-            }
-            
-            // Check for scanned data
-            const hasScannedData = document.querySelector('input[name="scanned_full_name"]').value ||
-                                  document.querySelector('input[name="scanned_id_number"]').value;
-            
-            if (hasScannedData) {
-                // Restore scanned data to visible fields
-                const scannedFields = [
-                    'scanned_full_name', 'scanned_id_number', 'scanned_birthday', 
-                    'scanned_nationality', 'scanned_residence', 'scanned_hometown',
-                    'scanned_identity_card_date', 'scanned_identity_card_place', 
-                    'scanned_dac_diem_nhan_dang'
-                ];
-                
-                scannedFields.forEach(field => {
-                    const hiddenInput = document.querySelector(`input[name="${field}"]`);
-                    const visibleInput = document.querySelector(`input[name="${field.replace('scanned_', '')}"]`);
-                    if (hiddenInput && hiddenInput.value && visibleInput) {
-                        visibleInput.value = hiddenInput.value;
-                    }
-                });
-                
-                // Restore gender
-                const scannedGender = document.querySelector('input[name="scanned_gender"]').value;
-                if (scannedGender) {
-                    const radios = document.querySelectorAll('input[name="gender"]');
-                    radios.forEach(radio => {
-                        if (radio.value === scannedGender) {
-                            radio.checked = true;
-                        }
-                    });
-                }
-                
-                // Show the sections
-                personalInfoSection.classList.remove('hidden');
-                identityInfoSection.classList.remove('hidden');
-                
-                successDiv.textContent = 'Thông tin đã quét trước đó được khôi phục.';
-                successDiv.classList.remove('hidden');
             }
             
             // Restore image previews

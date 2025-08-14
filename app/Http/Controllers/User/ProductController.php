@@ -281,8 +281,23 @@ class ProductController extends Controller
                 })->toArray()
             ]);
 
-            // Get advertised products (simplified)
-            $advertisedProductsByShop = collect();
+            // Get advertised products
+            $advertisedProductsByShop = $this->getAdvertisedProducts($query);
+            
+            // Log advertised products for debugging
+            Log::info('Advertised products found:', [
+                'query' => $query,
+                'total_shops' => $advertisedProductsByShop->count(),
+                'shops_data' => $advertisedProductsByShop->map(function ($shopAds) {
+                    return [
+                        'shop_id' => $shopAds['shop']->id ?? 'N/A',
+                        'shop_name' => $shopAds['shop']->shop_name ?? 'N/A',
+                        'products_count' => $shopAds['products']->count() ?? 0,
+                        'campaign_name' => $shopAds['campaign_name'] ?? 'N/A',
+                        'bid_amount' => $shopAds['bid_amount'] ?? 0
+                    ];
+                })->toArray()
+            ]);
 
             // Log results
             Log::info('Search results:', [
@@ -1817,13 +1832,11 @@ class ProductController extends Controller
      */
     private function getAdvertisedProducts($query)
     {
-        $advertisedCampaigns = AdsCampaign::where('status', 'active')
+        $advertisedCampaigns = \App\Models\AdsCampaign::where('status', 'active')
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
-            ->when($query, function ($q) use ($query) {
-                $q->whereHas('adsCampaignItems.product', function ($productQuery) use ($query) {
-                    $productQuery->where('name', 'like', "%{$query}%");
-                });
+            ->whereHas('adsCampaignItems.product', function ($productQuery) use ($query) {
+                $productQuery->where('name', 'like', "%{$query}%");
             })
             ->with([
                 'adsCampaignItems.product.images',
@@ -1836,21 +1849,26 @@ class ProductController extends Controller
             ])
             ->get();
 
+        \Log::info('DEBUG getAdvertisedProducts', [
+            'query' => $query,
+            'advertisedCampaigns_count' => $advertisedCampaigns->count(),
+            'advertisedCampaigns_ids' => $advertisedCampaigns->pluck('id')->toArray(),
+        ]);
+
         $advertisedProductsByShop = collect();
 
         foreach ($advertisedCampaigns as $campaign) {
             foreach ($campaign->adsCampaignItems as $item) {
-                if ($query) {
-                    if ($item->product && Str::contains(strtolower($item->product->name), strtolower($query))) {
-                        $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
-                    }
-                } else {
-                    if ($item->product) {
-                        $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
-                    }
+                if ($item->product && stripos($item->product->name, $query) !== false) {
+                    $this->addProductToShopAds($advertisedProductsByShop, $item, $campaign);
                 }
             }
         }
+
+        \Log::info('DEBUG advertisedProductsByShop', [
+            'count' => $advertisedProductsByShop->count(),
+            'shop_ids' => $advertisedProductsByShop->pluck('shop.id')->toArray(),
+        ]);
 
         return $advertisedProductsByShop->sortByDesc(function ($entry) {
             return $entry['max_bid_amount'] ?? 0;

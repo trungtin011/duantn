@@ -182,7 +182,7 @@
                                                 <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
                                                      class="w-full h-20 object-cover rounded mb-1">
                                                 <div class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 py-0.5 rounded">
-                                                    Ad
+                                                    Quảng cáo
                                                 </div>
                                             </a>
                                                 

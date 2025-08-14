@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ShopWallet extends Model
 {
+    protected $table =  'shop_wallets';
     protected $fillable = ['shop_id', 'balance'];
 
     public function shop()

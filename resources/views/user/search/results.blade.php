@@ -88,9 +88,10 @@
                         <button type="button" id="mobile-filter-toggle"
                             class="w-full bg-white hover:bg-gray-50 text-gray-800 py-3 px-4 rounded-lg shadow-sm flex items-center justify-between transition-colors duration-200 border border-gray-200">
                             <span class="font-medium text-gray-700">Bộ Lọc Sản Phẩm</span>
-                            <svg class="w-5 h-5 transform transition-transform text-gray-500" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            <svg class="w-5 h-5 transform transition-transform text-gray-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                                </path>
                             </svg>
                         </button>
                     </div>
@@ -152,26 +153,30 @@
                                             <div class="space-y-3">
                                                 <div>
                                                     <label class="text-xs text-gray-600 mb-1 block">Giá tối thiểu</label>
-                                                    <input type="range" id="price-range-min" min="0" max="100000000" step="1000"
+                                                    <input type="range" id="price-range-min" min="0"
+                                                        max="100000000" step="1000"
                                                         value="{{ request('price_min') ? (int) request('price_min') : 0 }}"
                                                         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                                                 </div>
                                                 <div>
                                                     <label class="text-xs text-gray-600 mb-1 block">Giá tối đa</label>
-                                                    <input type="range" id="price-range-max" min="0" max="100000000" step="1000"
+                                                    <input type="range" id="price-range-max" min="0"
+                                                        max="100000000" step="1000"
                                                         value="{{ request('price_max') ? (int) request('price_max') : 100000000 }}"
                                                         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="flex items-center justify-between mt-3 text-sm">
                                                 <span id="price-min-display" class="text-gray-700"></span>
                                                 <span id="price-max-display" class="text-gray-700"></span>
                                             </div>
-                                            
-                                            <input type="hidden" name="price_min" id="price_min" value="{{ request('price_min') }}">
-                                            <input type="hidden" name="price_max" id="price_max" value="{{ request('price_max') }}">
-                                            
+
+                                            <input type="hidden" name="price_min" id="price_min"
+                                                value="{{ request('price_min') }}">
+                                            <input type="hidden" name="price_max" id="price_max"
+                                                value="{{ request('price_max') }}">
+
                                             <div class="grid grid-cols-2 gap-2 mt-3">
                                                 <button type="button"
                                                     class="price-suggestion bg-white border border-gray-200 rounded px-2 py-1 text-xs hover:bg-gray-50 transition-colors duration-200"
@@ -191,7 +196,8 @@
 
                                     <!-- Tùy chọn tự động lướt xuống -->
                                     <div class="mb-4">
-                                        <label class="flex items-center space-x-2 cursor-pointer p-2 rounded hover:bg-gray-50 transition-colors duration-200">
+                                        <label
+                                            class="flex items-center space-x-2 cursor-pointer p-2 rounded hover:bg-gray-50 transition-colors duration-200">
                                             <input type="checkbox" id="auto-scroll-toggle" class="rounded border-gray-300">
                                             <span class="text-sm text-gray-600">Tự động lướt xuống kết quả</span>
                                         </label>
@@ -209,6 +215,11 @@
 
                 <!-- Kết quả tìm kiếm -->
                 <div class="w-full lg:w-3/4">
+                    @if ($advertisedProductsByShop->isNotEmpty())
+                        @include('partials.advertised_products', [
+                            'advertisedProductsByShop' => $advertisedProductsByShop,
+                        ])
+                    @endif
                     <!-- Hiển thị từ khóa tìm kiếm nếu có -->
                     @if (request('query'))
                         <div class="mb-4 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -222,7 +233,8 @@
                                         <p class="text-gray-600">Từ khóa: <strong>"{{ request('query') }}"</strong></p>
                                     </div>
                                 </div>
-                                <a href="{{ route('search') }}" class="text-gray-500 hover:text-gray-700 text-sm underline transition-colors duration-200">
+                                <a href="{{ route('search') }}"
+                                    class="text-gray-500 hover:text-gray-700 text-sm underline transition-colors duration-200">
                                     Xóa từ khóa
                                 </a>
                             </div>
@@ -234,17 +246,21 @@
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-gray-600">
-                                        <path d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                        class="w-4 h-4 text-gray-600">
+                                        <path
+                                            d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
                                     </svg>
                                 </div>
                                 <div>
                                     <span class="text-sm text-gray-600">
-                                        Hiển thị <span id="product-count" class="font-semibold text-lg text-gray-800">{{ $products->total() }}</span> sản phẩm
+                                        Hiển thị <span id="product-count"
+                                            class="font-semibold text-lg text-gray-800">{{ $products->total() }}</span> sản
+                                        phẩm
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div class="flex gap-2 flex-wrap">
                                 <button type="button" data-sort="relevance"
                                     class="sort-btn px-3 py-2 text-sm border border-gray-300 rounded font-medium transition-colors duration-200 {{ request('sort') == 'relevance' || !request('sort') ? 'bg-gray-800 text-white border-transparent' : 'hover:bg-gray-50' }}">
@@ -260,13 +276,14 @@
                                 </button>
                                 <select id="price-sort-select"
                                     class="px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-all duration-200">
-                                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Giá: Thấp đến Cao</option>
-                                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Giá: Cao đến Thấp</option>
+                                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Giá:
+                                        Thấp đến Cao</option>
+                                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>
+                                        Giá: Cao đến Thấp</option>
                                 </select>
                             </div>
                         </div>
                     </div>
-
                     <!-- Product Results -->
                     <div id="product-results" class="fade-in">
                         @include('partials.product_list', ['products' => $products])
@@ -331,8 +348,10 @@
                 // Price suggestion buttons bind to ranges
                 document.querySelectorAll('.price-suggestion').forEach(btn => {
                     btn.addEventListener('click', function() {
-                        const min = this.dataset.min === '' ? ABS_MIN : parseInt(this.dataset.min || ABS_MIN, 10);
-                        const max = this.dataset.max === '' ? ABS_MAX : parseInt(this.dataset.max || ABS_MAX, 10);
+                        const min = this.dataset.min === '' ? ABS_MIN : parseInt(this.dataset.min ||
+                            ABS_MIN, 10);
+                        const max = this.dataset.max === '' ? ABS_MAX : parseInt(this.dataset.max ||
+                            ABS_MAX, 10);
                         rangeMin.value = min;
                         rangeMax.value = max;
                         hiddenMin.value = min === ABS_MIN ? '' : min;
@@ -357,7 +376,7 @@
                     }
                 };
                 checkManager();
-                
+
                 // Fallback: nếu SearchFilterManager không hoạt động, sử dụng form submit thông thường
                 setTimeout(() => {
                     if (!window.searchFilterManager) {
@@ -371,13 +390,14 @@
                                     e.preventDefault();
                                     const sort = btn.getAttribute('data-sort');
                                     if (sort) {
-                                        const sortInput = form.querySelector('input[name="sort"]');
+                                        const sortInput = form.querySelector(
+                                            'input[name="sort"]');
                                         if (sortInput) sortInput.value = sort;
                                         form.submit();
                                     }
                                 });
                             });
-                            
+
                             const priceSelect = document.getElementById('price-sort-select');
                             if (priceSelect) {
                                 priceSelect.addEventListener('change', (e) => {

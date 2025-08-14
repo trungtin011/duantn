@@ -245,7 +245,11 @@ class CheckoutController extends Controller
             ->where('status', 'active')
             ->get();
         
-        $couponUsed = $customer->user->couponUsed()->get();
+        // kiểm tra nếu chưa có mã giảm giá, tránh lỗi Attempt to read property "user" on null
+        $couponUsed = collect();
+        if ($customer && $customer->user && method_exists($customer->user, 'couponUsed')) {
+            $couponUsed = $customer->user->couponUsed()->get();
+        }
         $publicCoupons = $publicCoupons->filter(function ($coupon) use ($couponUsed) {
             $usedCount = $couponUsed->where('coupon_id', $coupon->id)->sum('used_count');
             if ($coupon->max_uses_per_user <= 0) {

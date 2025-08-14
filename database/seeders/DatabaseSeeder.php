@@ -1012,5 +1012,10 @@ class DatabaseSeeder extends Seeder
             }
             $productId++;
         }
+
+        // Chạy BankSeeder để thêm dữ liệu ngân hàng
+        $this->call([
+            BankSeeder::class,
+        ]);
     }
 }

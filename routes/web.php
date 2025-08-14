@@ -68,6 +68,7 @@ use App\Http\Controllers\User\CouponController as UserCouponController;
 use App\Http\Controllers\User\FrontendController;
 use App\Http\Controllers\User\ComboController as UserComboController;
 use App\Http\Controllers\User\TicketController as UserTicketController;
+use App\Http\Controllers\User\ReportController;
 
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ChatController;
@@ -322,7 +323,9 @@ Route::prefix('admin')->middleware('CheckRole:admin')->group(function () {
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('admin.brands.destroy');
 
     // Admin password reset routes
-    Route::get('/password', function () { return view('admin.password'); })->name('admin.password');
+    Route::get('/password', function () {
+        return view('admin.password');
+    })->name('admin.password');
     Route::post('/password/send-code', [AdminSettingsController::class, 'requestChangePasswordWithCode'])->name('admin.password.request.code');
     Route::get('/password/verify', [AdminSettingsController::class, 'showVerifyCodeForm'])->name('admin.password.verify.form');
     Route::post('/password/verify', [AdminSettingsController::class, 'verifyPasswordCode'])->name('admin.password.verify.code');
@@ -397,8 +400,7 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     });
 
     Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
-    Route::get('/wallet/withdraw', [WithdrawController::class, 'index'])->name('seller.withdraw.index');
-    Route::post('/wallet/withdraw', [WithdrawController::class, 'requestWithdraw'])->name('seller.withdraw.request');
+    // Withdraw routes handled by WalletController to ensure wallet_transactions history is available in the view
     Route::get('/withdraw', [WalletController::class, 'showWithdrawForm'])->name('seller.withdraw.create');
     Route::post('/withdraw', [WalletController::class, 'processWithdraw'])->name('seller.withdraw.store');
     Route::post('/wallet/withdraw', [WalletController::class, 'processWithdraw'])->name('wallet.withdraw.process');
@@ -408,6 +410,8 @@ Route::prefix('seller')->middleware('CheckRole:seller')->group(function () {
     Route::post('linked-banks', [WalletController::class, 'storeLinkedBank'])->name('seller.linked-banks.store');
     Route::delete('linked-banks/{id}', [WalletController::class, 'deleteLinkedBank'])->name('seller.linked-banks.destroy');
     Route::post('/wallet/reverse-revenue', [WalletController::class, 'reverseTransferredRevenue'])->name('wallet.reverse.revenue');
+    Route::post('linked-banks/{id}/set-default', [WalletController::class, 'setDefaultLinkedBank'])
+        ->name('seller.linked-banks.set-default');
 
     Route::prefix('order')->group(function () {
         Route::get('/', [SellerOrderController::class, 'index'])->name('seller.order.index');
@@ -519,7 +523,9 @@ Route::prefix('seller')->middleware('auth')->group(function () {
     Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
     Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
     // Seller password menu & flows (reuse user password controllers)
-    Route::get('/password', function () { return view('seller.password'); })->name('seller.password');
+    Route::get('/password', function () {
+        return view('seller.password');
+    })->name('seller.password');
     Route::post('/password/send-code', [SellerSettingsController::class, 'requestChangePasswordWithCode'])->name('seller.password.request.code');
     Route::get('/password/verify', [SellerSettingsController::class, 'showVerifyCodeForm'])->name('seller.password.verify.form');
     Route::post('/password/verify', [SellerSettingsController::class, 'verifyPasswordCode'])->name('seller.password.verify.code');
@@ -574,6 +580,10 @@ Route::prefix('customer')->group(function () {
     Route::post('/cart/add-combo', [CartController::class, 'addComboToCart'])->name('cart.addCombo');
     // Route mua ngay sản phẩm
     Route::post('/instant-buy', [ProductController::class, 'instantBuy'])->name('instant-buy');
+    // Route report
+    Route::get('/report', [ReportController::class, 'index'])->name('report.index');
+    Route::get('/report/{report}', [ReportController::class, 'show'])->name('report.show');
+
     Route::get('/contact', function () {
         return view('user.contact');
     })->name('contact');
@@ -942,32 +952,6 @@ Route::post('/api/upload-cccd-temp', function (Request $request) {
     ]);
 })->middleware('web');
 
-// Temp upload for product images
-Route::post('/api/upload-product-temp', function (Request $request) {
-    if ($request->hasFile('file')) {
-        $file = $request->file('file');
-        // Validate file
-        $request->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,webp,svg|max:5120',
-        ]);
-
-        $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('temp/products', $fileName, 'public');
-
-        return response()->json([
-            'success' => true,
-            'path' => $path, // relative to storage/app/public
-            'url' => asset('storage/' . $path),
-            'filename' => $fileName
-        ]);
-    }
-
-    return response()->json([
-        'success' => false,
-        'message' => 'Không có file được upload'
-    ], 400);
-})->middleware('web');
-
 Route::get('/admin/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
 Route::get('/admin/reviews/ajax', [AdminReviewController::class, 'ajax'])->name('admin.reviews.ajax');
 
@@ -978,32 +962,6 @@ Route::post('/admin/reviews/{user}/ban', [AdminReviewController::class, 'banCust
 Route::delete('/admin/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('admin.reviews.destroy');
 Route::post('/admin/reviews/{shop}/ban', [AdminReviewController::class, 'banSeller'])->name('admin.reviews.banSeller');
 
-// Test route để kiểm tra thông tin shop
-Route::get('/test-shop-info/{shopId}', function ($shopId) {
-    $shop = \App\Models\Shop::withCount('followers')
-        ->withCount('orderReviews')
-        ->withAvg('orderReviews', 'rating')
-        ->findOrFail($shopId);
-
-    $actualRating = $shop->order_reviews_avg_rating ?? 0;
-    $actualFollowers = $shop->followers_count ?? 0;
-
-    $shop->shop_rating = round($actualRating, 1);
-    $shop->total_followers = $actualFollowers;
-
-    return response()->json([
-        'shop' => [
-            'id' => $shop->id,
-            'shop_name' => $shop->shop_name,
-            'shop_logo' => $shop->shop_logo,
-            'shop_rating' => $shop->shop_rating,
-            'total_followers' => $shop->total_followers,
-            'order_reviews_avg_rating' => $shop->order_reviews_avg_rating,
-            'followers_count' => $shop->followers_count,
-            'order_reviews_count' => $shop->order_reviews_count,
-        ]
-    ]);
-});
 
 // Ad Click Tracking Routes
 Route::prefix('ad')->name('ad.')->group(function () {

@@ -149,14 +149,6 @@
                     {{ $report->resolvedBy ? $report->resolvedBy->fullname ?? 'Không có' : '-' }}
                 </span>
             </div>
-            <div>
-                <span class="font-semibold text-gray-600">Ghi chú xử lý:</span>
-                <span class="text-[13px]">
-                    <p class="bg-gray-100 p-2 rounded-md max-h-[80px] overflow-y-auto">
-                        {{ $report->resolution_note }}
-                    </p>
-                </span>
-            </div>
         </div>
 
         {{-- Form cập nhật trạng thái --}}

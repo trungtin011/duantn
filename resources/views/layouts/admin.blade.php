@@ -181,23 +181,12 @@
                             <a href="{{ route('admin.attributes.index') }}"
                                 class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thuộc
                                 tính sản phẩm</a>
+                            <a href="{{ route('admin.brands.index') }}"
+                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thương hiệu</a>
+                            <a href="{{ route('admin.categories.index') }}"
+                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Danh mục</a>
                         </div>
                     </div>
-
-                    <!-- Categories -->
-                    <a href="{{ route('admin.categories.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.categories.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
-                            </path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Danh mục</span>
-                    </a>
-
-
-
 
                     <!-- Orders -->
                     <a href="{{ route('admin.orders.index') }}"

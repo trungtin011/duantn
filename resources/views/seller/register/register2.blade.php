@@ -213,7 +213,6 @@
                                             value="{{ old('tax_code', session('register.tax_code')) }}">
                                         <p class="text-sm text-gray-500 mt-1">
                                             Mã số thuế kinh doanh.
-                                            <a href="#" class="text-blue-600 hover:underline">Tìm hiểu thêm</a>
                                         </p>
                                         @error('tax_code')
                                             <p class="text-red-500 text-sm">{{ $message }}</p>
