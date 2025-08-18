@@ -26,7 +26,7 @@ Push code php artisan serve
 Push code php artisan serve
 ``` bash
 git add .
-git commit -m "( commit )" 
+git commit -m "( commit )"
 git push
 ```
 
