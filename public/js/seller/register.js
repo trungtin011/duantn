@@ -47,13 +47,14 @@ function updateStepper(currentStep) {
 // File upload preview functionality
 function renderImageList(inputId, listId, maxSizeMB) {
     const input = document.getElementById(inputId);
-    const list = document.getElementById(listId);
+    const uploadContent = document.getElementById(inputId.replace('_input', '_upload_content'));
+    const previewDiv = document.getElementById(inputId.replace('_input', '_preview'));
+    const previewImg = previewDiv ? previewDiv.querySelector('img') : null;
     
-    if (!input || !list) return;
+    if (!input || !uploadContent || !previewDiv || !previewImg) return;
     
     input.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        list.innerHTML = '';
         
         if (file) {
             const maxSize = maxSizeMB * 1024 * 1024;
@@ -65,20 +66,58 @@ function renderImageList(inputId, listId, maxSizeMB) {
             
             const reader = new FileReader();
             reader.onload = function(ev) {
-                const img = document.createElement('img');
-                img.src = ev.target.result;
-                img.className = inputId === 'shop_logo_input' 
-                    ? 'w-20 h-20 object-cover rounded-lg shadow-md' 
-                    : 'w-32 h-20 object-cover rounded-lg shadow-md';
-                img.alt = 'Preview';
-                list.appendChild(img);
+                // Hide upload content and show preview
+                uploadContent.classList.add('hidden');
+                previewImg.src = ev.target.result;
+                previewDiv.classList.remove('hidden');
                 
                 // Add success animation
-                img.style.animation = 'success-checkmark 0.5s ease-in-out';
+                previewDiv.style.animation = 'success-checkmark 0.5s ease-in-out';
             };
             reader.readAsDataURL(file);
         }
     });
+    
+    // Add click handler to preview to allow re-upload
+    previewDiv.addEventListener('click', function() {
+        input.click();
+    });
+    
+    // Add right-click context menu to remove image
+    previewDiv.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        removeImage(inputId);
+    });
+    
+    // Add hover effect to show it's clickable
+    previewDiv.style.cursor = 'pointer';
+    
+    // Add tooltip to show right-click to remove
+    previewDiv.title = 'Click để thay đổi ảnh, chuột phải để xóa';
+}
+
+// Function to remove uploaded image
+function removeImage(inputId) {
+    const input = document.getElementById(inputId);
+    const uploadContent = document.getElementById(inputId.replace('_input', '_upload_content'));
+    const previewDiv = document.getElementById(inputId.replace('_input', '_preview'));
+    
+    if (input && uploadContent && previewDiv) {
+        // Clear file input
+        input.value = '';
+        
+        // Show upload content and hide preview
+        uploadContent.classList.remove('hidden');
+        previewDiv.classList.add('hidden');
+        
+        // Clear preview image
+        const previewImg = previewDiv.querySelector('img');
+        if (previewImg) {
+            previewImg.src = '';
+        }
+        
+        showNotification('Đã xóa ảnh', 'info');
+    }
 }
 
 // Notification system
@@ -326,8 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCCCDScan();
     
     // Initialize image previews
-    renderImageList('shop_logo_input', 'shop_logo_list', 2);
-    renderImageList('shop_banner_input', 'shop_banner_list', 4);
+    renderImageList('shop_logo_input', 'shop_logo_preview', 2);
+    renderImageList('shop_banner_input', 'shop_banner_preview', 4);
     renderImageList('filechoose', 'filepreview', 5);
     renderImageList('backfilechoose', 'backfilepreview', 5);
     
@@ -370,3 +409,4 @@ window.showNotification = showNotification;
 window.validateForm = validateForm;
 window.smoothScrollTo = smoothScrollTo;
 window.setLoadingState = setLoadingState;
+window.removeImage = removeImage;

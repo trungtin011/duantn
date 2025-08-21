@@ -1,5 +1,5 @@
 @extends('user.account.profile')
-
+@section('title', 'Chỉnh sửa địa chỉ')
 @section('account-content')
 <h2 class="text-2xl font-bold mb-4">Chỉnh sửa địa chỉ</h2>
 

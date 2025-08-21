@@ -122,7 +122,7 @@
 
         <!-- Main Content Form -->
         <form id="product-form" action="{{ route('admin.products.update', $product->id) }}" method="POST"
-            enctype="multipart/form-data">
+            enctype="multipart/form-data" novalidate>
             @csrf
             @method('PUT')
 
@@ -193,7 +193,12 @@
                             <button type="button"
                                 class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
                                 data-tab="general-details">
-                                <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm & SEO
+                                <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm
+                            </button>
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="seo">
+                                <i class="fas fa-search mr-2"></i>SEO
                             </button>
                             <button type="button"
                                 class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
@@ -217,7 +222,7 @@
                 <!-- Right Content Area: Tab Content Sections -->
                 <div class="col-span-12 lg:col-span-9">
 
-                    <!-- Tab Content: General Details (Includes original Product Details, SEO, Image Upload) -->
+                    <!-- Tab Content: General Details -->
                     <div id="tab-general-details" class="tab-content">
                         <!-- Category & Brand Section -->
                         <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
@@ -414,56 +419,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="mb-4">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="is_featured" value="1" class="mr-2"
-                                        {{ old('is_featured', $product->is_featured) ? 'checked' : '' }}
-                                        data-original-required="false">
-                                    <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
-                                </label>
-                            </div>
-                        </div>
 
-                        <!-- SEO Section -->
-                        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                            <h4 class="text-xl font-semibold mb-4">SEO</h4>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO (Meta Title) <span
-                                        id="meta-title-count">0/60</span></label>
-                                <input type="text" name="meta_title" id="meta-title"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value="{{ old('meta_title', $product->meta_title) }}" maxlength="60"
-                                    placeholder="Tiêu đề SEO (tối đa 60 ký tự)" data-original-required="false">
-                                <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm kiếm,
-                                    nên chứa từ khóa chính.</span>
-                                @error('meta_title')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Mô tả SEO (Meta Description) <span
-                                        id="meta-description-count">0/160</span></label>
-                                <textarea name="meta_description" id="meta-description"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    maxlength="160" placeholder="Mô tả ngắn gọn (tối đa 160 ký tự)" data-original-required="false">{{ old('meta_description', $product->meta_description) }}</textarea>
-                                <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ
-                                    tìm kiếm.</span>
-                                @error('meta_description')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
-                                <div id="seo-preview" class="p-3 border border-gray-300 rounded-md">
-                                    <h5 id="preview-title" class="text-blue-600 mb-1">
-                                        {{ $product->meta_title ?: $product->name }}</h5>
-                                    <p id="preview-url" class="text-green-600 mb-1">
-                                        https://Zynox.com/san-pham/{{ Str::slug(old('name', $product->name)) }}
-                                    </p>
-                                    <p id="preview-description" class="text-gray-600">
-                                        {{ $product->meta_description ?: 'Mô tả ngắn gọn về sản phẩm.' }}</p>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Upload Image Section (Ảnh chính) -->
@@ -514,7 +470,8 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                    <span class="text-sm text-sm text-gray-500 block mb-3">Kích thước ảnh nhỏ hơn 5Mb</span>
+                                    <span class="text-sm text-sm text-gray-500 block mb-3">Kích thước ảnh nhỏ hơn
+                                        5Mb</span>
                                     <label for="additionalImages"
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                         ảnh phụ</label>
@@ -524,6 +481,48 @@
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEO Section -->
+                    <div id="tab-seo" class="tab-content hidden bg-white p-6 rounded-lg shadow-sm mb-6">
+                        <h4 class="text-xl font-semibold mb-4">SEO</h4>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO (Meta Title) <span
+                                    id="meta-title-count">0/60</span></label>
+                            <input type="text" name="meta_title" id="meta-title"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="{{ old('meta_title', $product->meta_title) }}" maxlength="60"
+                                placeholder="Tiêu đề SEO (tối đa 60 ký tự)" data-original-required="false">
+                            <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm kiếm,
+                                nên chứa từ khóa chính.</span>
+                            @error('meta_title')
+                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Mô tả SEO (Meta Description) <span
+                                    id="meta-description-count">0/160</span></label>
+                            <textarea name="meta_description" id="meta-description"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                maxlength="160" placeholder="Mô tả ngắn gọn (tối đa 160 ký tự)" data-original-required="false">{{ old('meta_description', $product->meta_description) }}</textarea>
+                            <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ
+                                tìm kiếm.</span>
+                            @error('meta_description')
+                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
+                            <div id="seo-preview" class="p-3 border border-gray-300 rounded-md">
+                                <h5 id="preview-title" class="text-blue-600 mb-1">
+                                    {{ $product->meta_title ?: $product->name }}</h5>
+                                <p id="preview-url" class="text-green-600 mb-1">
+                                    https://zynoxmall.xyz/san-pham/{{ Str::slug(old('name', $product->name)) }}
+                                </p>
+                                <p id="preview-description" class="text-gray-600">
+                                    {{ $product->meta_description ?: 'Mô tả ngắn gọn về sản phẩm.' }}</p>
                             </div>
                         </div>
                     </div>
@@ -1209,11 +1208,11 @@
                             <div class="mb-4">
                                 <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                                 ${variant.map((value, attrIndex) => `
-                                                                        <div class="flex items-center gap-4 mb-2">
-                                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                                        </div>
-                                                                    `).join('')}
+                                                                                <div class="flex items-center gap-4 mb-2">
+                                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                                </div>
+                                                                            `).join('')}
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
@@ -1565,73 +1564,45 @@
                 });
             }
 
-            // Hàm validate form
+            // Hàm validate form (gom lỗi ở đầu trang, không dùng alert)
             function validateForm(e) {
+                e.preventDefault();
                 const productForm = document.getElementById('product-form');
-                if (!productForm) {
-                    debugLog('Product form not found');
-                    return;
-                }
-                debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
+                if (!productForm) return;
+
+                const errors = [];
                 const brandCheckboxes = document.querySelectorAll('#tab-general-details input[name="brand_ids[]"]:checked');
                 const categoryCheckboxes = document.querySelectorAll(
                     '#tab-general-details input[name="category_ids[]"]:checked');
-                let isValid = true;
 
-                // Kiểm tra loại sản phẩm
-                const productTypeInput = document.querySelector('input[name="product_type"]:checked');
-                if (!productTypeInput) {
-                    // console.log('Không có radio product_type nào được chọn!');
-                } else {
-                    // console.log('Giá trị product_type được chọn:', productTypeInput.value);
-                }
-                const productType = productTypeInput ? productTypeInput.value : null;
+                const productType = document.querySelector('input[name="product_type"]:checked')?.value || null;
 
-                // Common validations (now in General Details tab)
+                // Common validations
                 const nameInput = document.querySelector('input[name="name"]');
-                if (!nameInput.value.trim()) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập tên sản phẩm.');
-                    isValid = false;
+                if (!nameInput || !nameInput.value.trim()) {
+                    errors.push('Vui lòng nhập tên sản phẩm.');
                 } else if (nameInput.value.trim().length > 100) {
-                    e.preventDefault();
-                    alert('Tên sản phẩm không được vượt quá 100 ký tự.');
-                    isValid = false;
+                    errors.push('Tên sản phẩm không được vượt quá 100 ký tự.');
                 } else {
-                    // Kiểm tra tên sản phẩm đã tồn tại
                     const nameError = nameInput.parentNode.querySelector('.field-error');
                     if (nameError && nameError.textContent.includes('đã tồn tại')) {
-                        e.preventDefault();
-                        alert('Tên sản phẩm đã tồn tại trong shop của bạn.');
-                        isValid = false;
+                        errors.push('Tên sản phẩm đã tồn tại trong shop của bạn.');
                     }
                 }
-                if (!document.querySelector('input[name="sku"]').value.trim()) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập mã SKU.');
-                    isValid = false;
-                }
-                // Thương hiệu không bắt buộc nữa
-                // if (brandCheckboxes.length === 0) {
-                //     e.preventDefault();
-                //     alert('Vui lòng chọn ít nhất một thương hiệu.');
-                //     isValid = false;
-                // }
+
+                const skuValue = (document.querySelector('input[name="sku"]')?.value || '').trim();
+                if (!skuValue) errors.push('Vui lòng nhập mã SKU.');
+
                 if (categoryCheckboxes.length === 0) {
-                    e.preventDefault();
-                    alert('Vui lòng chọn ít nhất một danh mục.');
-                    isValid = false;
-                }
-                // Check main image only if no existing main image AND no new file selected
-                const existingMainImage = document.querySelector('input[name="existing_main_image"]').value;
-                const newMainImageSelected = document.getElementById('mainImage').files.length > 0;
-                if (!existingMainImage && !newMainImageSelected) {
-                    e.preventDefault();
-                    alert('Vui lòng chọn ảnh chính.');
-                    isValid = false;
+                    errors.push('Vui lòng chọn ít nhất một danh mục.');
                 }
 
-                // Product type specific validations
+                const existingMainImage = document.querySelector('input[name="existing_main_image"]')?.value || '';
+                const newMainImageSelected = (document.getElementById('mainImage')?.files.length || 0) > 0;
+                if (!existingMainImage && !newMainImageSelected) {
+                    errors.push('Vui lòng chọn ảnh chính.');
+                }
+
                 if (productType === 'simple') {
                     const priceInput = document.querySelector('#tab-pricing-inventory input[name="price"]');
                     const purchasePriceInput = document.querySelector('#tab-pricing-inventory input[name="purchase_price"]');
@@ -1639,59 +1610,41 @@
                     const stockInput = document.querySelector('#tab-pricing-inventory input[name="stock_total"]');
 
                     if (!priceInput || !priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
-                        isValid = false;
+                        errors.push('Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
                     }
                     if (!purchasePriceInput || !purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
                             purchasePriceInput.value) < 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
-                        isValid = false;
+                        errors.push('Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
                     }
                     if (!salePriceInput || !salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
                             .value) < 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
-                        isValid = false;
+                        errors.push('Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
                     }
                     if (!stockInput || !stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
-                        isValid = false;
+                        errors.push('Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
                     }
                 } else if (productType === 'variant') {
                     const attributeSelects = document.querySelectorAll(
                         '#tab-attributes-variants .attribute-row .attribute-select');
                     const variantItems = document.querySelectorAll('#variant-container > .variant-item');
 
-                    // Check attributes
                     if (attributeSelects.length === 0) {
-                        e.preventDefault();
-                        alert('Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
-                        isValid = false;
+                        errors.push('Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
                     } else {
                         attributeSelects.forEach((select, index) => {
-                            const nameInput = select.closest('.attribute-row').querySelector('.attribute-name');
-                            const valuesInput = select.closest('.attribute-row').querySelector('.attribute-values');
-                            if (select.value === 'new' && (!nameInput.value || !nameInput.value.trim())) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
-                                isValid = false;
+                            const nameField = select.closest('.attribute-row').querySelector('.attribute-name');
+                            const valuesField = select.closest('.attribute-row').querySelector('.attribute-values');
+                            if (select.value === 'new' && (!nameField.value || !nameField.value.trim())) {
+                                errors.push(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
                             }
-                            if (!valuesInput.value || !valuesInput.value.trim()) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
-                                isValid = false;
+                            if (!valuesField.value || !valuesField.value.trim()) {
+                                errors.push(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
                             }
                         });
                     }
 
-                    // Check variants
                     if (variantItems.length === 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
-                        isValid = false;
+                        errors.push('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
                     } else {
                         variantItems.forEach((item, index) => {
                             const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
@@ -1701,43 +1654,61 @@
                             const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
                             const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
 
-                            if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
-                                isValid = false;
+                            if (!priceInput?.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
+                                errors.push(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
                             }
-                            if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
+                            if (!purchasePriceInput?.value || isNaN(purchasePriceInput.value) || parseFloat(
                                     purchasePriceInput.value) < 0) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
-                                isValid = false;
+                                errors.push(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
                             }
-                            if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
+                            if (!salePriceInput?.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
                                     .value) < 0) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
-                                isValid = false;
+                                errors.push(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
                             }
-                            if (!skuInput.value || !skuInput.value.trim()) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
-                                isValid = false;
+                            if (!skuInput?.value || !skuInput.value.trim()) {
+                                errors.push(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
                             }
-                            if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
-                                isValid = false;
+                            if (!stockInput?.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
+                                errors.push(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
                             }
                         });
                     }
                 }
 
-                if (isValid) {
-                    if (typeof tinymce !== 'undefined') {
-                        tinymce.triggerSave();
-                    }
-                    debugLog('Form submission validated successfully');
+                // Render lỗi đầu trang
+                let errorBox = document.getElementById('client-error-box');
+                if (!errorBox) {
+                    errorBox = document.createElement('div');
+                    errorBox.id = 'client-error-box';
+                    errorBox.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 hidden';
+                    const ul = document.createElement('ul');
+                    ul.id = 'client-error-list';
+                    ul.className = 'list-disc pl-5 text-sm';
+                    errorBox.appendChild(ul);
+                    productForm.parentNode.insertBefore(errorBox, productForm);
                 }
+
+                const errorList = document.getElementById('client-error-list');
+                errorList.innerHTML = '';
+
+                if (errors.length > 0) {
+                    errors.forEach(msg => {
+                        const li = document.createElement('li');
+                        li.textContent = msg;
+                        errorList.appendChild(li);
+                    });
+                    errorBox.classList.remove('hidden');
+                    errorBox.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    return; // không submit
+                } else {
+                    errorBox.classList.add('hidden');
+                }
+
+                if (typeof tinymce !== 'undefined') tinymce.triggerSave();
+                productForm.submit();
             }
 
 
@@ -2033,7 +2004,7 @@
                     metaDescriptionCount.textContent = `${metaDescription.value.length}/160`;
                     previewTitle.textContent = metaTitle.value || 'Tiêu đề sản phẩm';
                     previewUrl.textContent =
-                        `https://Zynox.com/san-pham/${slugify(productName.value || 'san-pham')}`;
+                        `https://zynoxmall.xyz/san-pham/${slugify(productName.value || 'san-pham')}`;
                     previewDescription.textContent = metaDescription.value || 'Mô tả ngắn gọn về sản phẩm.';
                 };
 

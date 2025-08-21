@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Cài đặt Email')
+
 @section('content')
     <div class="pb-10 mx-auto">
         <div class="admin-page-header">

@@ -175,7 +175,8 @@ class ProductControllerAdmin extends Controller
                 'meta_title' => $request->meta_title,
                 'meta_description' => $request->meta_description,
                 'meta_keywords' => $metaKeywords,
-                'is_featured' => $request->has('is_featured') ? 1 : 0,
+                // 'is_featured' removed: always 0 or managed elsewhere
+                'is_featured' => 0,
                 'is_variant' => $isVariant ? 1 : 0,
                 'status' => $request->save_draft ? 'draft' : 'active',
                 'sold_quantity' => 0,
@@ -716,7 +717,8 @@ class ProductControllerAdmin extends Controller
                 'meta_title' => $request->meta_title,
                 'meta_description' => $request->meta_description,
                 'meta_keywords' => $metaKeywords,
-                'is_featured' => $request->has('is_featured') ? 1 : 0,
+                // 'is_featured' removed from update: preserve or set to 0
+                'is_featured' => 0,
                 'is_variant' => $request->filled('variants') ? 1 : 0,
                 'status' => $request->save_draft ? 'draft' : 'active',
             ]);
@@ -1245,6 +1247,8 @@ class ProductControllerAdmin extends Controller
             'main_image.image' => 'Ảnh chính phải là hình ảnh.',
             'main_image.mimes' => 'Ảnh chính chỉ chấp nhận định dạng jpeg, png, jpg, webp, svg.',
             'main_image.max' => 'Ảnh chính không được vượt quá 5MB.',
+            // Thông báo cho ảnh chính tạm thời khi thiếu cả file ảnh chính
+            'main_image_temp.required_without' => 'Vui lòng tải ảnh chính (hoặc chọn ảnh chính tạm thời).',
         ];
     }
 

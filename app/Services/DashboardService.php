@@ -9,6 +9,9 @@ use App\Models\User;
 use App\Helpers\DashboardHelper;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\ProductVariant;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardService
 {
@@ -86,7 +89,7 @@ class DashboardService
      */
     private function getTopSellingProducts($startDate = null, $endDate = null)
     {
-        $query = Product::select('id', 'name', 'sale_price', 'sold_quantity', 'stock_total')
+        $query = Product::select('id', 'name', 'price', 'sale_price', 'sold_quantity', 'stock_total')
             ->where('status', 'active');
             
         if ($startDate && $endDate) {
@@ -95,18 +98,41 @@ class DashboardService
             });
         }
         
-        return $query->orderBy('sold_quantity', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($product) {
+        return $query
+            ->with(['variants' => function ($q) {
+                $q->active()->orderByRaw('COALESCE(sale_price, price) asc');
+            }, 'images', 'variants.images'])
+            ->orderBy('sold_quantity', 'desc')
+            ->paginate(10, ['*'], 'top_products_page')
+            ->through(function ($product) {
+                // If product has a specific variant set, prefer variant data when the column exists
+                $variant = null;
+                if (Schema::hasColumn('products', 'variantID') && !empty($product->variantID)) {
+                    $variant = ProductVariant::find($product->variantID);
+                }
+                if (!$variant && $product->variants && $product->variants->isNotEmpty()) {
+                    $variant = $product->variants->first();
+                }
+
+                // Price precedence: variant price -> product current price
+                $effectivePrice = $variant ? ($variant->sale_price ?? $variant->price) : ($product->sale_price ?? $product->price);
+
+                // Stock precedence: variant stock -> product stock_total
+                $effectiveStock = $variant ? ($variant->stock ?? 0) : ($product->stock_total);
+
+                // Image precedence: variant default/first image -> product default/first image -> fallback
+                $variantImage = $variant ? ($variant->images()->where('is_default', 1)->first() ?? $variant->images()->first()) : null;
+                $productImage = ($product->images()->where('is_default', 1)->first()) ?? $product->images()->first();
+                $selectedImage = $variantImage ?? $productImage;
+                $imageUrl = $selectedImage ? Storage::url($selectedImage->image_path) : '/assets/images/products/default.jpg';
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
-                    'price' => $product->sale_price,
+                    'price' => $effectivePrice,
                     'sold_quantity' => $product->sold_quantity,
-                    'stock_total' => $product->stock_total,
-                    'revenue' => $product->sale_price * $product->sold_quantity,
-                    'image_url' => $product->images->first()?->image_url ?? '/assets/images/products/default.jpg'
+                    'stock_total' => $effectiveStock,
+                    'revenue' => $effectivePrice * $product->sold_quantity,
+                    'image_url' => $imageUrl
                 ];
             });
     }
@@ -224,22 +250,23 @@ class DashboardService
      */
     private function getRecentOrders()
     {
-        return Order::with(['user:id,fullname,email', 'items.product:id,name'])
-            ->orderBy('orders.created_at', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($order) {
+        // Lấy theo bảng shop_order, join order để lấy thông tin khách hàng và tổng tiền
+        return \App\Models\ShopOrder::with(['order.user:id,fullname,email'])
+            ->orderBy('shop_order.created_at', 'desc')
+            ->paginate(10, ['*'], 'recent_orders_page')
+            ->through(function ($shopOrder) {
+                $order = $shopOrder->order;
                 return [
-                    'id' => $order->id,
-                    'order_code' => $order->order_code,
-                    'customer_name' => $order->user->fullname ?? 'N/A',
-                    'total_price' => $order->total_price,
-                    'order_status' => $order->order_status,
-                    'order_status_label' => DashboardHelper::getOrderStatusLabel($order->order_status),
-                    'order_status_badge' => DashboardHelper::getOrderStatusBadge($order->order_status),
-                    'payment_status' => $order->payment_status,
-                    'created_at' => $order->created_at->format('d/m/Y H:i'),
-                    'items_count' => $order->items->count()
+                    'id' => $shopOrder->id,
+                    'order_code' => $shopOrder->code ?? ($order->order_code ?? ''),
+                    'customer_name' => $order?->user?->fullname ?? 'N/A',
+                    'total_price' => $order->total_price ?? 0,
+                    'order_status' => $shopOrder->status,
+                    'order_status_label' => DashboardHelper::getOrderStatusLabel($shopOrder->status),
+                    'order_status_badge' => DashboardHelper::getOrderStatusBadge($shopOrder->status),
+                    'payment_status' => $order->payment_status ?? null,
+                    'created_at' => ($order?->created_at ?? now())->format('d/m/Y H:i'),
+                    'items_count' => $order?->items?->count() ?? 0
                 ];
             });
     }

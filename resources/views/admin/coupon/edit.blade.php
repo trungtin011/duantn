@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Chỉnh Sửa Mã Giảm Giá')
+
 @section('head')
     @push('styles')
         <link rel="stylesheet" href="{{ asset('css/admin/product.css') }}">

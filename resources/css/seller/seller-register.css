@@ -99,27 +99,48 @@
     border: none;
 }
 
-.btn-danger:hover {
-    background: #c53030;
+/* Image Upload Preview */
+#shop_logo_preview,
+#shop_banner_preview {
+    transition: all 0.3s ease;
 }
 
-.btn-outline-secondary {
-    font-size: 0.85rem;
-    color: #718096;
-    border: 1px solid #e2e8f0;
-    background: #edf2f7;
+#shop_logo_preview:hover,
+#shop_banner_preview:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.btn-outline-secondary:hover {
-    background: #e2e8f0;
-    color: #4a5568;
-}
-
-.btn-light {
-    background: #edf2f7;
-    color: #4a5568;
-    border: 1px solid #e2e8f0;
+#shop_logo_preview img,
+#shop_banner_preview img {
+    transition: all 0.3s ease;
     border-radius: 8px;
+}
+
+/* Success animation for image upload */
+@keyframes success-checkmark {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Upload area hover effects */
+.upload-area:hover {
+    border-color: #f4a261;
+    background-color: #fef7f0;
+}
+
+/* Hidden class utility */
+.hidden {
+    display: none !important;
 }
 
 /* Breadcrumb */

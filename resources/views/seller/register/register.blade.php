@@ -113,7 +113,7 @@
                                     <i class="fas fa-align-left mr-2 text-orange-500"></i>
                                     Mô tả shop <span class="text-red-500">*</span>
                                 </label>
-                                <textarea name="shop_description" rows="4"
+                                <textarea value="{{ old('shop_description') }}" name="shop_description" rows="4"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 resize-none"
                                     placeholder="Mô tả về shop của bạn, sản phẩm chính, đặc điểm nổi bật..." required maxlength="65535">{{ old('shop_description') }}</textarea>
                                 @error('shop_description')
@@ -133,22 +133,18 @@
                                         <input type="file" name="shop_logo" accept="image/*"
                                             class="hidden" id="shop_logo_input" required>
                                         <label for="shop_logo_input" 
-                                               class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-500 transition-colors duration-200">
-                                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                               class="upload-area flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-500 transition-colors duration-200">
+                                            <div class="flex flex-col items-center justify-center pt-5 pb-6 {{ session('register_shop.shop_logo') ? 'hidden' : '' }}" id="shop_logo_upload_content">
                                                 <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
                                                 <p class="mb-2 text-sm text-gray-500">
                                                     <span class="font-semibold">Click để tải lên</span> hoặc kéo thả
                                                 </p>
                                                 <p class="text-xs text-gray-500">PNG, JPG, JPEG (Tối đa 2MB)</p>
                                             </div>
+                                            <div id="shop_logo_preview" class="{{ session('register_shop.shop_logo') ? 'w-full h-full flex items-center justify-center' : 'hidden w-full h-full flex items-center justify-center' }}">
+                                                <img src="{{ session('register_shop.shop_logo') ? asset('storage/' . session('register_shop.shop_logo')) : '' }}" alt="Logo preview" class="max-w-full max-h-full object-contain rounded-lg">
+                                            </div>
                                         </label>
-                                    </div>
-                                    <div id="shop_logo_list" class="flex flex-wrap gap-2 mt-2">
-                                        @if(old('shop_logo_url'))
-                                            <img src="{{ old('shop_logo_url') }}" alt="Logo preview" class="w-20 h-20 object-cover rounded-lg shadow-md">
-                                        @elseif(session('shop_logo_url'))
-                                            <img src="{{ session('shop_logo_url') }}" alt="Logo preview" class="w-20 h-20 object-cover rounded-lg shadow-md">
-                                        @endif
                                     </div>
                                     @error('shop_logo')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -165,22 +161,18 @@
                                         <input type="file" name="shop_banner" accept="image/*"
                                             class="hidden" id="shop_banner_input" required>
                                         <label for="shop_banner_input" 
-                                               class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-500 transition-colors duration-200">
-                                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                               class="upload-area flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-500 transition-colors duration-200">
+                                            <div class="flex flex-col items-center justify-center pt-5 pb-6 {{ session('register_shop.shop_banner') ? 'hidden' : '' }}" id="shop_banner_upload_content">
                                                 <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
                                                 <p class="mb-2 text-sm text-gray-500">
                                                     <span class="font-semibold">Click để tải lên</span> hoặc kéo thả
                                                 </p>
                                                 <p class="text-xs text-gray-500">PNG, JPG, JPEG (Tối đa 4MB)</p>
                                             </div>
+                                            <div id="shop_banner_preview" class="{{ session('register_shop.shop_banner') ? 'w-full h-full flex items-center justify-center' : 'hidden w-full h-full flex items-center justify-center' }}">
+                                                <img src="{{ session('register_shop.shop_banner') ? asset('storage/' . session('register_shop.shop_banner')) : '' }}" alt="Banner preview" class="max-w-full max-h-full object-contain rounded-lg">
+                                            </div>
                                         </label>
-                                    </div>
-                                    <div id="shop_banner_list" class="flex flex-wrap gap-2 mt-2">
-                                        @if(old('shop_banner_url'))
-                                            <img src="{{ old('shop_banner_url') }}" alt="Banner preview" class="w-32 h-20 object-cover rounded-lg shadow-md">
-                                        @elseif(session('shop_banner_url'))
-                                            <img src="{{ session('shop_banner_url') }}" alt="Banner preview" class="w-32 h-20 object-cover rounded-lg shadow-md">
-                                        @endif
                                     </div>
                                     @error('shop_banner')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -271,37 +263,35 @@
 
 @section('scripts')
 <script>
-function renderImageList(inputId, listId, maxSizeMB) {
-    document.getElementById(inputId).addEventListener('change', function(e) {
+function initInlineUploadPreview(inputId, uploadContentId, previewDivId, maxSizeMB) {
+    const input = document.getElementById(inputId);
+    const uploadContent = document.getElementById(uploadContentId);
+    const previewDiv = document.getElementById(previewDivId);
+    const previewImg = previewDiv ? previewDiv.querySelector('img') : null;
+    if (!input || !uploadContent || !previewDiv || !previewImg) return;
+    input.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        const list = document.getElementById(listId);
-        list.innerHTML = '';
-        
-        if (file) {
-            const maxSize = maxSizeMB * 1024 * 1024;
-            if (file.size > maxSize) {
-                alert('Kích thước ảnh vượt quá ' + maxSizeMB + 'MB.');
-                e.target.value = '';
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                const img = document.createElement('img');
-                img.src = ev.target.result;
-                img.className = inputId === 'shop_logo_input' 
-                    ? 'w-20 h-20 object-cover rounded-lg shadow-md' 
-                    : 'w-32 h-20 object-cover rounded-lg shadow-md';
-                img.alt = 'Preview';
-                list.appendChild(img);
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+        const maxSize = maxSizeMB * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('Kích thước ảnh vượt quá ' + maxSizeMB + 'MB.');
+            e.target.value = '';
+            return;
         }
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            uploadContent.classList.add('hidden');
+            previewImg.src = ev.target.result;
+            previewDiv.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
     });
+    previewDiv.addEventListener('click', function() { input.click(); });
+    previewDiv.style.cursor = 'pointer';
 }
 
-// Initialize image preview
-renderImageList('shop_logo_input', 'shop_logo_list', 2);
-renderImageList('shop_banner_input', 'shop_banner_list', 4);
+// Initialize inline previews
+initInlineUploadPreview('shop_logo_input', 'shop_logo_upload_content', 'shop_logo_preview', 2);
+initInlineUploadPreview('shop_banner_input', 'shop_banner_upload_content', 'shop_banner_preview', 4);
 </script>
 @endsection

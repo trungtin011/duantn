@@ -250,11 +250,13 @@
                             <ul class="dropdown-panel-list">
                                 @if ($parentCategory)
                                     <li class="menu-title">
-                                        <a href="{{ route('search', ['category' => $parentCategory->id ?? '']) }}">{{ $parentCategory->name ?? 'Danh mục' }}</a>
+                                        <a
+                                            href="{{ route('search', ['category' => $parentCategory->id ?? '']) }}">{{ $parentCategory->name ?? 'Danh mục' }}</a>
                                     </li>
                                     @foreach ($subCategories as $subcategory)
                                         <li class="panel-list-item">
-                                            <a href="{{ route('search', ['category' => $subcategory->id]) }}">{{ $subcategory->name }}</a>
+                                            <a
+                                                href="{{ route('search', ['category' => $subcategory->id]) }}">{{ $subcategory->name }}</a>
                                         </li>
                                     @endforeach
                                     @if ($parentCategory->image_path)
@@ -278,11 +280,13 @@
                             @foreach ($fashionSub as $subCategory)
                                 <ul class="dropdown-panel-list">
                                     <li class="menu-title">
-                                        <a href="{{ route('search', ['category' => $subCategory->id]) }}">{{ $subCategory->name }}</a>
+                                        <a
+                                            href="{{ route('search', ['category' => $subCategory->id]) }}">{{ $subCategory->name }}</a>
                                     </li>
                                     @foreach ($subCategory->subCategories as $child)
                                         <li class="panel-list-item">
-                                            <a href="{{ route('search', ['category' => $child->id]) }}">{{ $child->name }}</a>
+                                            <a
+                                                href="{{ route('search', ['category' => $child->id]) }}">{{ $child->name }}</a>
                                         </li>
                                     @endforeach
                                     @if ($subCategory->image_path)
@@ -312,10 +316,13 @@
                             @endforeach
 
                             <ul class="dropdown-panel-list">
-                                <li class="menu-title"><a href="{{ route('search', ['category' => $parentCategory->id ?? '']) }}">{{ $parentCategory->name ?? 'Danh mục' }}</a></li>
+                                <li class="menu-title"><a
+                                        href="{{ route('search', ['category' => $parentCategory->id ?? '']) }}">{{ $parentCategory->name ?? 'Danh mục' }}</a>
+                                </li>
                                 @foreach ($filteredSubCategories as $child)
                                     <li class="panel-list-item">
-                                        <a href="{{ route('search', ['category' => $child->id]) }}">{{ $child->name }}</a>
+                                        <a
+                                            href="{{ route('search', ['category' => $child->id]) }}">{{ $child->name }}</a>
                                     </li>
                                 @endforeach
                                 @if (isset($parentCategory) && $parentCategory->image_path)
@@ -499,7 +506,7 @@
 
     <main>
         <div class="banner">
-            <div class="container">
+            <div class="">
                 <div class="slider-container has-scrollbar">
                     @if ($banners->count() > 0)
                         @foreach ($banners as $banner)
@@ -629,51 +636,57 @@
                             data-mobile-menu-close-btn>
                             <ion-icon name="close-outline" class="text-gray-500"></ion-icon>
                         </button>
-                        <div class="rounded-xl border border-orange-200 p-3 md:p-4 mb-6 md:mb-8 lg:mt-0">
-                            <div class="flex items-center justify-between mb-4">
-                                <h2 class="text-base md:text-lg font-bold flex items-center justify-between gap-2 w-full">
-                                    Shop Bán Chạy
-                                    <ion-icon name="flame"
-                                        class="text-orange-500 text-lg md:text-xl bg-white rounded-full p-1.5 md:p-2"></ion-icon>
-                                </h2>
-                            </div>
-
-                            <!-- Header với legend -->
-                            <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-2 md:p-3 mb-3 md:mb-4">
-                                <h3
-                                    class="text-sm md:text-md pl-3 pr-3 font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                    Top Shop theo doanh số bán hàng
-                                </h3>
-                                <div
-                                    class="grid grid-cols-2 gap-x-1.5 md:gap-x-2 w-[160px] md:w-[200px] gap-y-1.5 md:gap-y-2 items-center mx-auto">
-                                    <span
-                                        class="inline-flex items-center px-2.5 md:px-3 py-0.5 md:py-1 rounded-full text-[11px] md:text-sm font-medium bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 flex-shrink-0 border border-yellow-300">
-                                        <ion-icon name="trophy" class="mr-1 text-md"></ion-icon>
-                                        Top 1
-                                    </span>
-                                    <span
-                                        class="inline-flex items-center px-2.5 md:px-3 py-0.5 md:py-1 rounded-full text-[11px] md:text-sm font-medium bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 flex-shrink-0 border border-gray-300">
-                                        <ion-icon name="medal" class="mr-1 text-md"></ion-icon>
-                                        Top 2
-                                    </span>
-                                    <span
-                                        class="inline-flex items-center px-2.5 md:px-3 py-0.5 md:py-1 rounded-full text-[11px] md:text-sm font-medium bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 flex-shrink-0 border border-amber-300">
-                                        <ion-icon name="ribbon" class="mr-1 text-md"></ion-icon>
-                                        Top 3
-                                    </span>
-                                    <span
-                                        class="inline-flex items-center px-2.5 md:px-3 py-0.5 md:py-1 rounded-full text-[11px] md:text-sm font-medium bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 flex-shrink-0 border border-blue-300">
-                                        <ion-icon name="star" class="mr-1 text-md"></ion-icon>
-                                        Top 4
-                                    </span>
+                        @php
+                            // Kiểm tra xem có shop nào có sản phẩm được bán không
+                            $hasShopsWithSales = $rankingShops->where('total_products_sold', '>', 0)->count() > 0;
+                        @endphp
+                        
+                        @if ($hasShopsWithSales)
+                            <div class="rounded-xl border border-orange-200 p-3 md:p-4 mb-6 md:mb-8 lg:mt-0">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-base md:text-lg font-bold flex items-center justify-between gap-2 w-full">
+                                        Shop Bán Chạy
+                                        <ion-icon name="flame"
+                                            class="text-orange-500 text-lg md:text-xl bg-white rounded-full p-1.5 md:p-2"></ion-icon>
+                                    </h2>
                                 </div>
-                            </div>
 
-                            <!-- Danh sách shop -->
-                            <div class="shop-ranking-container">
-                                <div class="grid grid-cols-1 gap-2 md:gap-3 pb-2 relative">
-                                    @if ($rankingShops->count() > 0)
-                                        @foreach ($rankingShops as $index => $shop)
+                                <!-- Header với legend -->
+                                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-2 md:p-3 mb-3 md:mb-4">
+                                    <h3
+                                        class="text-sm md:text-md pl-3 pr-3 font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        Top Shop theo doanh số bán hàng
+                                    </h3>
+                                    <div
+                                        class="grid grid-cols-2 gap-x-1.5 md:gap-x-2 w-[160px] md:w-[200px] gap-y-1.5 md:gap-y-2 items-center mx-auto">
+                                        <span
+                                            class="inline-flex items-center px-2.5 md:px-3 py-0.5 md:py-1 rounded-full text-[11px] md:text-sm font-medium bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800 flex-shrink-0 border border-yellow-300">
+                                            <ion-icon name="trophy" class="mr-1 text-md"></ion-icon>
+                                            Top 1
+                                        </span>
+                                        <span
+                                            class="inline-flex items-center px-2.5 md:px-3 py-0.5 md:py-1 rounded-full text-[11px] md:text-sm font-medium bg-gradient-to-r from-gray-200 to-slate-300 text-slate-700 flex-shrink-0 border border-gray-300">
+                                            <ion-icon name="medal" class="mr-1 text-md"></ion-icon>
+                                            Top 2
+                                        </span>
+                                        <span
+                                            class="inline-flex items-center px-2.5 md:px-3 py-0.5 md:py-1 rounded-full text-[11px] md:text-sm font-medium bg-gradient-to-r from-amber-200 to-yellow-200 text-amber-800 flex-shrink-0 border border-amber-300">
+                                            <ion-icon name="ribbon" class="mr-1 text-md"></ion-icon>
+                                            Top 3
+                                        </span>
+                                        <span
+                                            class="inline-flex items-center px-2.5 md:px-3 py-0.5 md:py-1 rounded-full text-[11px] md:text-sm font-medium bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 flex-shrink-0 border border-blue-300">
+                                            <ion-icon name="star" class="mr-1 text-md"></ion-icon>
+                                            Top 4
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Danh sách shop -->
+                                <div class="shop-ranking-container">
+                                    <div class="grid grid-cols-1 gap-2 md:gap-3 pb-2 relative">
+                                        @if ($rankingShops->where('total_products_sold', '>', 0)->count() > 0)
+                                            @foreach ($rankingShops->where('total_products_sold', '>', 0) as $index => $shop)
                                             <div class="relative bg-white border border-gray-200 rounded-lg p-2 md:p-2.5 shop-ranking-card {{ $index < 3 ? 'ring-1 ring-opacity-30' : '' }} {{ $index === 0 ? 'ring-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : '' }} {{ $index === 1 ? 'ring-gray-400 bg-gradient-to-r from-gray-50 to-slate-50' : '' }} {{ $index === 2 ? 'ring-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50' : '' }}"
                                                 style="animation-delay: {{ $index * 0.1 }}s;">
 
@@ -812,7 +825,7 @@
                                             </div>
                                         @endforeach
                                     @else
-                                        <div class="text-center py-8 text-gray-500">
+                                        <div class="text-center py-8 text-gray-500 flex flex-col items-center justify-center">
                                             <ion-icon name="storefront-outline" class="text-4xl mb-2"></ion-icon>
                                             <p>Chưa có shop nào để hiển thị</p>
                                         </div>
@@ -820,48 +833,78 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
 
                         <div class="product-showcase">
-                            <h3 class="showcase-heading">Sản phẩm bán chạy</h3>
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="showcase-heading">Sản phẩm bán chạy</h3>
+                                <a href="{{ route('search', ['sort' => 'best_sellers']) }}" 
+                                   class="text-xs text-[#ef3248] hover:underline mb-[15px]">
+                                    Xem tất cả
+                                </a>
+                            </div>
                             <div class="showcase-wrapper">
-                                <div class="showcase-container">
-                                    @foreach ($bestSellers as $product)
-                                        <div class="showcase">
-                                            <a href="{{ route('product.show', $product->slug) }}"
-                                                class="showcase-img-box">
-                                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
-                                                    width="75" height="75" class="showcase-img">
-                                            </a>
-                                            <div class="showcase-content">
-                                                <a href="{{ route('product.show', $product->slug) }}" class="h-[30px]">
-                                                    <h4 class="showcase-title">{{ $product->name }}</h4>
+                                <div class="showcase-container" style="max-height: 400px; overflow-y: auto;">
+                                    @if ($bestSellers->isEmpty())
+                                        <div class="text-center py-4 text-gray-500">
+                                            <ion-icon name="bag-outline" class="text-2xl mb-2"></ion-icon>
+                                            <p class="text-sm">Chưa có sản phẩm nào được bán</p>
+                                        </div>
+                                    @else
+                                        @foreach ($bestSellers as $product)
+                                            <div class="showcase">
+                                                <a href="{{ route('product.show', $product->slug) }}"
+                                                    class="showcase-img-box">
+                                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                                        width="75" height="75" class="showcase-img">
                                                 </a>
-                                                <div class="showcase-rating">
-                                                    @for ($i = 1; $i <= 5; $i++)
-                                                        @if ($product->orderReviews->avg('rating') >= $i)
-                                                            <ion-icon name="star"></ion-icon>
-                                                        @elseif ($product->orderReviews->avg('rating') >= $i - 0.5)
-                                                            <ion-icon name="star-half-outline"></ion-icon>
+                                                <div class="showcase-content">
+                                                    <a href="{{ route('product.show', $product->slug) }}"
+                                                        class="h-[30px]">
+                                                        <h4 class="showcase-title">{{ $product->name }}</h4>
+                                                    </a>
+                                                    <div class="showcase-rating">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            @if ($product->orderReviews->avg('rating') >= $i)
+                                                                <ion-icon name="star"></ion-icon>
+                                                            @elseif ($product->orderReviews->avg('rating') >= $i - 0.5)
+                                                                <ion-icon name="star-half-outline"></ion-icon>
+                                                            @else
+                                                                <ion-icon name="star-outline"></ion-icon>
+                                                            @endif
+                                                        @endfor
+                                                    </div>
+                                                    <div class="price-box">
+                                                        @if ($product->display_original_price && $product->display_price < $product->display_original_price)
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price, 0, ',', '.') }}₫
+                                                            </p>
+                                                            <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
                                                         @else
-                                                            <ion-icon name="star-outline"></ion-icon>
+                                                            <p class="price">
+                                                                {{ number_format($product->display_price, 0, ',', '.') }}₫
+                                                            </p>
                                                         @endif
-                                                    @endfor
-                                                </div>
-                                                <div class="price-box">
-                                                    @if ($product->display_original_price && $product->display_price < $product->display_original_price)
-                                                        <p class="price">
-                                                            {{ number_format($product->display_price, 0, ',', '.') }}₫</p>
-                                                        <del>{{ number_format($product->display_original_price, 0, ',', '.') }}₫</del>
-                                                    @else
-                                                        <p class="price">
-                                                            {{ number_format($product->display_price, 0, ',', '.') }}₫
-                                                        </p>
-                                                    @endif
+                                                    </div>
+                                                    <div class="text-xs text-gray-500 mt-1">
+                                                        <span class="flex items-center gap-1">
+                                                            <ion-icon name="bag-check-outline"
+                                                                class="text-green-500"></ion-icon>
+                                                            Đã bán {{ number_format($product->sold_quantity) }}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    @endforeach
+                                        @endforeach
+                                    @endif
                                 </div>
+                                @if ($bestSellers->count() >= 6)
+                                    <div class="text-center mt-3">
+                                        <p class="text-xs text-gray-500">
+                                            Hiển thị top {{ $bestSellers->count() }} sản phẩm bán chạy nhất
+                                        </p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -1768,7 +1811,7 @@
                     priceDisplay.innerHTML = `
                         <span class="text-red-600 text-2xl font-bold">${number_format(price)} VNĐ</span>
                         ${originalPrice > price ? `<span class="text-gray-500 line-through text-md">${number_format(originalPrice)} VNĐ</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded text-xs">-${Math.round(((originalPrice - price) / originalPrice) * 100)}%</span>` : ''}
                     `;
                     stockInfo.textContent = `${stock} sản phẩm có sẵn`;
                 }

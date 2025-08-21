@@ -60,17 +60,29 @@ class RegisterShopController extends Controller
         ], [
             'shop_name.required' => 'Tên shop là bắt buộc.',
             'shop_name.unique' => 'Tên shop đã tồn tại.',
+            'shop_name.max' => 'Tên shop không được vượt quá 100 ký tự.',
             'email.required' => 'Email là bắt buộc.',
+            'email.email' => 'Email không hợp lệ.',
             'email.unique' => 'Email đã được sử dụng.',
+            'email.max' => 'Email không được vượt quá 100 ký tự.',
             'phone.required' => 'Số điện thoại là bắt buộc.',
             'phone.unique' => 'Số điện thoại đã được sử dụng.',
+            'phone.max' => 'Số điện thoại không được vượt quá 11 ký tự.',
             'address.required' => 'Địa chỉ lấy hàng là bắt buộc.',
+            'address.max' => 'Địa chỉ lấy hàng không được vượt quá 255 ký tự.',
             // Đã bỏ thông báo lỗi các trường địa phương
             'shop_description.required' => 'Mô tả shop là bắt buộc.',
+            'shop_description.max' => 'Mô tả shop không được vượt quá 65535 ký tự.',
             'shop_logo.required' => 'Logo shop là bắt buộc.',
+            'shop_logo.file' => 'Tệp logo không hợp lệ.',
+            'shop_logo.image' => 'Logo phải là định dạng hình ảnh.',
             'shop_logo.max' => 'Logo shop không được vượt quá 2MB.',
+            'shop_logo.mimes' => 'Logo chỉ chấp nhận các định dạng: jpg, jpeg, png.',
             'shop_banner.required' => 'Banner shop là bắt buộc.',
             'shop_banner.max' => 'Banner shop không được vượt quá 4MB.',
+            'shop_banner.file' => 'Tệp banner không hợp lệ.',
+            'shop_banner.image' => 'Banner phải là định dạng hình ảnh.',
+            'shop_banner.mimes' => 'Banner chỉ chấp nhận các định dạng: jpg, jpeg, png.',
         ]);
 
         // Lưu file logo và banner
@@ -145,15 +157,20 @@ class RegisterShopController extends Controller
             'business_district.required' => 'Quận/huyện là bắt buộc.',
             'business_ward.required' => 'Phường/xã là bắt buộc.',
             'business_address_detail.required' => 'Địa chỉ kinh doanh là bắt buộc.',
+            'business_address_detail.max' => 'Địa chỉ kinh doanh không được vượt quá 255 ký tự.',
             'invoice_email.required' => 'Email nhận hóa đơn là bắt buộc.',
+            'invoice_email.email' => 'Email nhận hóa đơn không hợp lệ.',
+            'invoice_email.max' => 'Email nhận hóa đơn không được vượt quá 100 ký tự.',
             'tax_code.required' => 'Mã số thuế là bắt buộc.',
             'tax_code.unique' => 'Mã số thuế đã được sử dụng.',
+            'tax_code.max' => 'Mã số thuế không được vượt quá 20 ký tự.',
         ]);
 
         // Gộp địa chỉ kinh doanh
-        $business_province_name = $this->getNameFromApi('province', $request->business_province) ?? '';
-        $business_district_name = $this->getNameFromApi('district', $request->business_district) ?? '';
-        $business_ward_name = $this->getNameFromApi('ward', $request->business_ward) ?? '';
+        // Ưu tiên lấy tên từ input hidden đã render sẵn, fallback gọi API
+        $business_province_name = $request->input('business_province_name') ?: ($this->getNameFromApi('province', $request->business_province) ?? '');
+        $business_district_name = $request->input('business_district_name') ?: ($this->getNameFromApi('district', $request->business_district) ?? '');
+        $business_ward_name = $request->input('business_ward_name') ?: ($this->getNameFromApi('ward', $request->business_ward) ?? '');
 
         $business_address = $request->business_address_detail . ', ';
         $business_address .= $business_ward_name . ', ';
@@ -208,11 +225,31 @@ class RegisterShopController extends Controller
             'residence' => 'required|string|max:255',
             'identity_card_date' => 'required|date',
             'identity_card_place' => 'required|string|max:255',
+            'cccd_image' => 'required|string',
+            'back_cccd_image' => 'required|string',
             'confirm' => 'required',
         ], [
+            'id_number.required' => 'Số CCCD/CMND là bắt buộc.',
+            'id_number.max' => 'Số CCCD/CMND không được vượt quá 20 ký tự.',
+            'full_name.required' => 'Họ và tên là bắt buộc.',
+            'full_name.max' => 'Họ và tên không được vượt quá 100 ký tự.',
+            'birthday.required' => 'Ngày sinh là bắt buộc.',
+            'birthday.date' => 'Ngày sinh không hợp lệ.',
+            'nationality.required' => 'Quốc tịch là bắt buộc.',
+            'nationality.max' => 'Quốc tịch không được vượt quá 100 ký tự.',
+            'cccd_image.required' => 'Ảnh mặt trước CCCD/CMND là bắt buộc.',
+            'back_cccd_image.required' => 'Ảnh mặt sau CCCD/CMND là bắt buộc.',
             'confirm.required' => 'Bạn phải xác nhận thông tin.',
             'gender.required' => 'Giới tính là bắt buộc.',
             'gender.in' => 'Giới tính không hợp lệ.',
+            'hometown.required' => 'Quê quán là bắt buộc.',
+            'hometown.max' => 'Quê quán không được vượt quá 255 ký tự.',
+            'residence.required' => 'Nơi thường trú là bắt buộc.',
+            'residence.max' => 'Nơi thường trú không được vượt quá 255 ký tự.',
+            'identity_card_date.required' => 'Ngày cấp là bắt buộc.',
+            'identity_card_date.date' => 'Ngày cấp không hợp lệ.',
+            'identity_card_place.required' => 'Nơi cấp là bắt buộc.',
+            'identity_card_place.max' => 'Nơi cấp không được vượt quá 255 ký tự.',
         ]);
 
         // Kiểm tra số CCCD đã tồn tại cho user khác chưa
@@ -223,6 +260,10 @@ class RegisterShopController extends Controller
         if ($exists) {
             return back()->withErrors(['id_number' => 'Đã có người sử dụng CCCD này.'])->withInput();
         }
+
+        // Đảm bảo các trường ảnh không bị null
+        $frontImage = $request->cccd_image ?: 'uploads/default_cccd_front.svg';
+        $backImage = $request->back_cccd_image ?: 'uploads/default_cccd_back.svg';
 
         // Lưu trực tiếp vào bảng identity_verifications
         $identityData = [
@@ -237,8 +278,8 @@ class RegisterShopController extends Controller
             'identity_type' => $request->id_type ?? 'cccd',
             'identity_card_date' => $request->identity_card_date,
             'identity_card_place' => $request->identity_card_place,
-            'identity_card_image' => $request->file ? $request->file('file')->store('identity_cards', 'public') : null,
-            'identity_card_holding_image' => $request->backfile ? $request->file('backfile')->store('identity_cards', 'public') : null,
+            'identity_card_image' => $frontImage,
+            'identity_card_holding_image' => $backImage,
             'status' => 'pending',
         ];
 
@@ -254,8 +295,8 @@ class RegisterShopController extends Controller
         $sessionData = [
             'identity_card' => $request->id_number,
             'identity_card_type' => $request->id_type ?? 'cccd',
-            'identity_card_image' => $identityData['identity_card_image'],
-            'identity_card_holding_image' => $identityData['identity_card_holding_image'],
+            'identity_card_image' => $frontImage,
+            'identity_card_holding_image' => $backImage,
             'full_name' => $request->full_name,
             'birth_date' => $request->birthday,
             'nationality' => $request->nationality,
@@ -359,8 +400,8 @@ class RegisterShopController extends Controller
                     'identity_card_type' => in_array($data['identity_card_type'], ['cccd', 'cmnd']) ? $data['identity_card_type'] : 'cccd',
                     'identity_card_date' => $data['identity_card_date'] ?? now(),
                     'identity_card_place' => $data['identity_card_place'] ?? 'Unknown',
-                    'identity_card_image' => $data['identity_card_image'],
-                    'identity_card_holding_image' => $data['identity_card_holding_image'] ?? null,
+                    'identity_card_image' => $data['identity_card_image'] ?: 'uploads/default_cccd_front.svg',
+                    'identity_card_holding_image' => $data['identity_card_holding_image'] ?: 'uploads/default_cccd_back.svg',
                     'privacy_policy_agreed' => $data['privacy_policy_agreed'] ?? 0,
                     'bank_account' => null,
                     'bank_name' => '',

@@ -223,6 +223,10 @@ if (!function_exists('getUserAvatar')) {
     function getUserAvatar($avatar = null, $defaultPath = 'images/avatar.png')
     {
         if ($avatar && !empty($avatar)) {
+            // Nếu là link ngoài (http/https) thì trả về luôn
+            if (filter_var($avatar, FILTER_VALIDATE_URL)) {
+                return $avatar;
+            }
             return asset('storage/' . $avatar);
         }
         return asset($defaultPath);

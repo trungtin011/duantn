@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Chi tiết đơn hàng')
+
 @section('content')
     <div class="admin-page-header">
         <h1 class="admin-page-title">Chi tiết đơn hàng</h1>

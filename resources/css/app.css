@@ -48,20 +48,10 @@
 }
 
 .filter-radio {
-    @apply mr-2;
     width: 16px;
     height: 16px;
     accent-color: #3b82f6;
 }
-
-.filter-radio:checked + div {
-    @apply text-blue-600;
-}
-
-.rating-group input[type="radio"]:checked + div .text-gray-800 {
-    @apply text-blue-600 font-medium;
-}
-
 /* Star rating styles */
 .rating-stars {
     display: inline-flex;

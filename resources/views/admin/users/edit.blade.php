@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Sửa thông tin người dùng')
+
 @section('content')
     <div class="admin-page-header">
         <h1 class="admin-page-title">Sửa thông tin người dùng</h1>

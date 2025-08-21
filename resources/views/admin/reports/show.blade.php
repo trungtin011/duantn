@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Chi tiết Báo cáo')
+
 @section('head')
     @push('styles')
         <link rel="stylesheet" href="{{ asset('css/admin/user.css') }}">

@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Sửa thông báo')
+
 @push('styles')
     <style>
         :root {

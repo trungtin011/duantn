@@ -76,24 +76,22 @@
                         @enderror
                     </div>
                     <div class="mb-3">
-                        <label for="metaTitle" class="form-label">Meta Title</label>
-                        <input type="text" class="form-control" id="metaTitle" name="meta_title"
-                            value="{{ old('meta_title', $category->meta_title) }}">
+                        <label for="metaTitle" class="form-label">Tiêu đề Meta</label>
+                        <input type="text" class="form-control" id="metaTitle" name="meta_title" placeholder="Tiêu đề Meta" value="{{ old('meta_title', $category->meta_title) }}">
                         @error('meta_title')
                             <div class="text-danger text-sm">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="mb-3">
-                        <label for="metaDescription" class="form-label">Meta Description</label>
-                        <textarea class="form-control" id="metaDescription" name="meta_description" rows="3">{{ old('meta_description', $category->meta_description) }}</textarea>
+                        <label for="metaDescription" class="form-label">Mô tả Meta</label>
+                        <textarea class="form-control" id="metaDescription" name="meta_description" rows="3" placeholder="Mô tả Meta">{{ old('meta_description', $category->meta_description) }}</textarea>
                         @error('meta_description')
                             <div class="text-danger text-sm">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="mb-3">
-                        <label for="metaKeywords" class="form-label">Meta Keywords</label>
-                        <input type="text" class="form-control" id="metaKeywords" name="meta_keywords"
-                            value="{{ old('meta_keywords', $category->meta_keywords) }}">
+                        <label for="metaKeywords" class="form-label">Từ khóa Meta</label>
+                        <input type="text" class="form-control" id="metaKeywords" name="meta_keywords" placeholder="Từ khóa Meta" value="{{ old('meta_keywords', $category->meta_keywords) }}">
                         @error('meta_keywords')
                             <div class="text-danger text-sm">{{ $message }}</div>
                         @enderror

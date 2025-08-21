@@ -838,7 +838,7 @@ body::-webkit-scrollbar-thumb:hover {
 .category-item-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 20px;
     overflow: auto hidden;
     scroll-snap-type: inline mandatory;
     overscroll-behavior-inline: contain;
@@ -3418,9 +3418,9 @@ footer {
      * #CATEGORY
      */
 
-    .category-item-container {
-        gap: 30px;
-    }
+    /*.category-item-container {*/
+    /*    gap: 30px;*/
+    /*}*/
 
     .category-item {
         min-width: calc(50% - 15px);

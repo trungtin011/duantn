@@ -41,7 +41,8 @@
         @endif
 
         <!-- Main Content Form -->
-        <form id="product-form" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="product-form" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data"
+            novalidate>
             @csrf
             <input type="hidden" name="shop_id" value="{{ $shop->id }}">
 
@@ -135,7 +136,12 @@
                             <button type="button"
                                 class="tab-button active text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
                                 data-tab="general-details">
-                                <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm & SEO
+                                <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm
+                            </button>
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="seo">
+                                <i class="fas fa-search mr-2"></i>SEO
                             </button>
                             <button type="button"
                                 class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
@@ -277,45 +283,6 @@
                                     @endforeach
                                 </div>
                             </div>
-
-                            <div class="mb-4">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="is_featured" value="1" class="mr-2"
-                                        {{ old('is_featured') ? 'checked' : '' }}>
-                                    <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- SEO Section -->
-                        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                            <h4 class="text-xl font-semibold mb-4">SEO</h4>
-
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO <span
-                                        id="meta-title-count">0/60</span></label>
-                                <input type="text" name="meta_title" id="meta-title"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value="{{ old('meta_title') }}" maxlength="60" placeholder="Tối đa 60 ký tự">
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Mô tả SEO <span
-                                        id="meta-description-count">0/160</span></label>
-                                <textarea name="meta_description" id="meta-description"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    maxlength="160" rows="4" placeholder="Tối đa 160 ký tự">{{ old('meta_description') }}</textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
-                                <div id="seo-preview" class="p-3 border border-gray-300 rounded-md">
-                                    <h5 id="preview-title" class="text-blue-600 mb-1">Tiêu đề sản phẩm</h5>
-                                    <p id="preview-url" class="text-green-600 mb-1">
-                                        https://Zynox.com/san-pham/{{ Str::slug(old('name', 'san-pham')) }}</p>
-                                    <p id="preview-description" class="text-gray-600">Mô tả ngắn gọn về sản phẩm.</p>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Image Upload -->
@@ -357,8 +324,39 @@
                                     <input type="file" id="additionalImages" multiple class="hidden"
                                         accept="image/*">
                                     <input type="hidden" name="images_temp" id="additionalImagesTemp"
-                                        value='@json(old('images_temp', []))'>
+                                        value='@json(old("images_temp", []))'>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEO Section -->
+                    <div id="tab-seo" class="tab-content hidden bg-white p-6 rounded-lg shadow-sm mb-6">
+                        <h4 class="text-xl font-semibold mb-4">SEO</h4>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO <span
+                                    id="meta-title-count">0/60</span></label>
+                            <input type="text" name="meta_title" id="meta-title"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="{{ old('meta_title') }}" maxlength="60" placeholder="Tối đa 60 ký tự">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Mô tả SEO <span
+                                    id="meta-description-count">0/160</span></label>
+                            <textarea name="meta_description" id="meta-description"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                maxlength="160" rows="4" placeholder="Tối đa 160 ký tự">{{ old('meta_description') }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
+                            <div id="seo-preview" class="p-3 border border-gray-300 rounded-md">
+                                <h5 id="preview-title" class="text-blue-600 mb-1">Tiêu đề sản phẩm</h5>
+                                <p id="preview-url" class="text-green-600 mb-1">
+                                    https://zynoxmall.xyz/san-pham/{{ Str::slug(old('name', 'san-pham')) }}</p>
+                                <p id="preview-description" class="text-gray-600">Mô tả ngắn gọn về sản phẩm.</p>
                             </div>
                         </div>
                     </div>

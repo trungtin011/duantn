@@ -168,23 +168,22 @@
                                                 <input type="hidden" name="cccd_image" id="cccd_image"
                                                     value="{{ old('cccd_image') }}">
                                                 <label for="filechoose"
-                                                    class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 transition-colors duration-200 bg-gray-50">
-                                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    class="upload-area flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 transition-colors duration-200 bg-gray-50">
+                                                    <div class="flex flex-col items-center justify-center pt-5 pb-6 {{ old('cccd_image') ? 'hidden' : '' }}" id="cccd_front_upload_content">
                                                         <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
                                                         <p class="mb-2 text-sm text-gray-500">
                                                             <span class="font-semibold">Click để tải lên</span> hoặc kéo thả
                                                         </p>
                                                         <p class="text-xs text-gray-500">PNG, JPG, JPEG (Tối đa 5MB)</p>
                                                     </div>
+                                                    <div id="cccd_front_preview" class="{{ old('cccd_image') ? 'w-full h-full flex items-center justify-center' : 'hidden w-full h-full flex items-center justify-center' }}">
+                                                        <img src="{{ old('cccd_image') ? asset(old('cccd_image')) : '' }}" alt="Preview" class="max-w-full max-h-full object-contain rounded-lg">
+                                                    </div>
                                                 </label>
                                             </div>
                                             <!-- Preview image: ưu tiên old('cccd_image') nếu có -->
-                                            @if (old('cccd_image'))
-                                                <img id="filepreview" src="{{ asset(old('cccd_image')) }}" alt="Preview"
-                                                    class="w-full h-32 object-cover rounded-lg shadow-md mt-2" />
-                                            @else
-                                                <img id="filepreview" src="#" alt="Preview"
-                                                    class="hidden w-full h-32 object-cover rounded-lg shadow-md mt-2" />
+                                            @if (false)
+                                                <img id="filepreview" src="#" alt="Preview" class="hidden" />
                                             @endif
                                             @error('file')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
@@ -203,8 +202,8 @@
                                                 <input type="hidden" name="back_cccd_image" id="back_cccd_image"
                                                     value="{{ old('back_cccd_image') }}">
                                                 <label for="backfilechoose"
-                                                    class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 transition-colors duration-200 bg-gray-50">
-                                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    class="upload-area flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 transition-colors duration-200 bg-gray-50">
+                                                    <div class="flex flex-col items-center justify-center pt-5 pb-6 {{ old('back_cccd_image') ? 'hidden' : '' }}" id="cccd_back_upload_content">
                                                         <i class="fas fa-camera text-3xl text-gray-400 mb-2"></i>
                                                         <p class="mb-2 text-sm text-gray-500">
                                                             <span class="font-semibold">Click để tải lên</span> hoặc kéo
@@ -212,28 +211,18 @@
                                                         </p>
                                                         <p class="text-xs text-gray-500">PNG, JPG, JPEG (Tối đa 5MB)</p>
                                                     </div>
+                                                    <div id="cccd_back_preview" class="{{ old('back_cccd_image') ? 'w-full h-full flex items-center justify-center' : 'hidden w-full h-full flex items-center justify-center' }}">
+                                                        <img src="{{ old('back_cccd_image') ? asset(old('back_cccd_image')) : '' }}" alt="Preview" class="max-w-full max-h-full object-contain rounded-lg">
+                                                    </div>
                                                 </label>
                                             </div>
                                             <!-- Preview image: ưu tiên old('back_cccd_image') nếu có -->
-                                            @if (old('back_cccd_image'))
-                                                <img id="backfilepreview" src="{{ asset(old('back_cccd_image')) }}"
-                                                    alt="Preview"
-                                                    class="w-full h-32 object-cover rounded-lg shadow-md mt-2" />
-                                            @else
-                                                <img id="backfilepreview" src="#" alt="Preview"
-                                                    class="hidden w-full h-32 object-cover rounded-lg shadow-md mt-2" />
+                                            @if (false)
+                                                <img id="backfilepreview" src="#" alt="Preview" class="hidden" />
                                             @endif
                                             @error('backfile')
                                                 <p class="text-red-500 text-sm">{{ $message }}</p>
                                             @enderror
-                                        </div>
-                                    </div>
-
-                                    <!-- Manual Input Button (Optional - for reference) -->
-                                    <div class="flex justify-center">
-                                        <div class="inline-flex items-center justify-center px-6 py-4 bg-gray-100 text-gray-600 font-semibold rounded-xl">
-                                            <i class="fas fa-info-circle mr-3"></i>
-                                            Form nhập thủ công đã hiển thị bên dưới
                                         </div>
                                     </div>
                                 </div>
@@ -507,7 +496,9 @@
         // Upload ảnh mặt trước bằng AJAX
         document.getElementById('filechoose').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            const preview = document.getElementById('filepreview');
+            const previewDiv = document.getElementById('cccd_front_preview');
+            const previewImg = previewDiv.querySelector('img');
+            const uploadContent = document.getElementById('cccd_front_upload_content');
             const hiddenInput = document.getElementById('cccd_image');
 
             if (file) {
@@ -515,7 +506,8 @@
                 if (file.size > maxSize) {
                     alert('Kích thước tệp vượt quá 5MB. Vui lòng chọn tệp nhỏ hơn.');
                     e.target.value = '';
-                    preview.classList.add('hidden');
+                    previewDiv.classList.add('hidden');
+                    uploadContent.classList.remove('hidden');
                     return;
                 }
 
@@ -537,23 +529,29 @@
                         if (data.success) {
                             // Lưu đường dẫn ảnh vào input hidden
                             hiddenInput.value = data.path;
-                            // Hiển thị preview từ server
-                            preview.src = data.url;
-                            preview.classList.remove('hidden');
+                            // Hiển thị preview từ server ngay trong vùng upload
+                            previewImg.src = data.url;
+                            previewDiv.classList.remove('hidden');
+                            uploadContent.classList.add('hidden');
                             // Bỏ required ở input file vì đã có ảnh
                             e.target.removeAttribute('required');
                         } else {
                             alert('Lỗi upload ảnh: ' + data.message);
                             e.target.value = '';
+                            previewDiv.classList.add('hidden');
+                            uploadContent.classList.remove('hidden');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         alert('Lỗi upload ảnh. Vui lòng thử lại.');
                         e.target.value = '';
+                        previewDiv.classList.add('hidden');
+                        uploadContent.classList.remove('hidden');
                     });
             } else {
-                preview.classList.add('hidden');
+                previewDiv.classList.add('hidden');
+                uploadContent.classList.remove('hidden');
                 hiddenInput.value = '';
                 // Thêm lại required nếu không có ảnh
                 if (!hiddenInput.value) {
@@ -565,7 +563,9 @@
         // Upload ảnh mặt sau bằng AJAX
         document.getElementById('backfilechoose').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            const preview = document.getElementById('backfilepreview');
+            const previewDiv = document.getElementById('cccd_back_preview');
+            const previewImg = previewDiv.querySelector('img');
+            const uploadContent = document.getElementById('cccd_back_upload_content');
             const hiddenInput = document.getElementById('back_cccd_image');
 
             if (file) {
@@ -573,7 +573,8 @@
                 if (file.size > maxSize) {
                     alert('Kích thước tệp vượt quá 5MB. Vui lòng chọn tệp nhỏ hơn.');
                     e.target.value = '';
-                    preview.classList.add('hidden');
+                    previewDiv.classList.add('hidden');
+                    uploadContent.classList.remove('hidden');
                     return;
                 }
 
@@ -595,23 +596,29 @@
                         if (data.success) {
                             // Lưu đường dẫn ảnh vào input hidden
                             hiddenInput.value = data.path;
-                            // Hiển thị preview từ server
-                            preview.src = data.url;
-                            preview.classList.remove('hidden');
+                            // Hiển thị preview từ server ngay trong vùng upload
+                            previewImg.src = data.url;
+                            previewDiv.classList.remove('hidden');
+                            uploadContent.classList.add('hidden');
                             // Bỏ required ở input file vì đã có ảnh
                             e.target.removeAttribute('required');
                         } else {
                             alert('Lỗi upload ảnh: ' + data.message);
                             e.target.value = '';
+                            previewDiv.classList.add('hidden');
+                            uploadContent.classList.remove('hidden');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         alert('Lỗi upload ảnh. Vui lòng thử lại.');
                         e.target.value = '';
+                        previewDiv.classList.add('hidden');
+                        uploadContent.classList.remove('hidden');
                     });
             } else {
-                preview.classList.add('hidden');
+                previewDiv.classList.add('hidden');
+                uploadContent.classList.remove('hidden');
                 hiddenInput.value = '';
                 // Thêm lại required nếu không có ảnh
                 if (!hiddenInput.value) {
@@ -692,9 +699,9 @@
             
             try {
                 localStorage.setItem('register3_form_data', JSON.stringify(formData));
-                console.log('Form data saved to localStorage:', formData);
+                console.log('Dữ liệu biểu mẫu được lưu vào localStorage:', formData);
             } catch (error) {
-                console.error('Error saving to localStorage:', error);
+                console.error('Lỗi khi lưu vào localStorage:', error);
             }
         }
 
@@ -758,18 +765,24 @@
         function restoreImagePreviews() {
             // Restore front image preview
             const frontImagePath = document.getElementById('cccd_image').value;
-            const frontPreview = document.getElementById('filepreview');
-            if (frontImagePath && frontPreview) {
-                frontPreview.src = '/' + frontImagePath.replace(/^\/+/, '');
-                frontPreview.classList.remove('hidden');
+            const frontPreviewDiv = document.getElementById('cccd_front_preview');
+            const frontPreviewImg = frontPreviewDiv ? frontPreviewDiv.querySelector('img') : null;
+            const frontUploadContent = document.getElementById('cccd_front_upload_content');
+            if (frontImagePath && frontPreviewDiv && frontPreviewImg) {
+                frontPreviewImg.src = '/' + frontImagePath.replace(/^\/+/, '');
+                frontPreviewDiv.classList.remove('hidden');
+                if (frontUploadContent) frontUploadContent.classList.add('hidden');
             }
             
             // Restore back image preview
             const backImagePath = document.getElementById('back_cccd_image').value;
-            const backPreview = document.getElementById('backfilepreview');
-            if (backImagePath && backPreview) {
-                backPreview.src = '/' + backImagePath.replace(/^\/+/, '');
-                backPreview.classList.remove('hidden');
+            const backPreviewDiv = document.getElementById('cccd_back_preview');
+            const backPreviewImg = backPreviewDiv ? backPreviewDiv.querySelector('img') : null;
+            const backUploadContent = document.getElementById('cccd_back_upload_content');
+            if (backImagePath && backPreviewDiv && backPreviewImg) {
+                backPreviewImg.src = '/' + backImagePath.replace(/^\/+/, '');
+                backPreviewDiv.classList.remove('hidden');
+                if (backUploadContent) backUploadContent.classList.add('hidden');
             }
         }
 
@@ -820,18 +833,24 @@
         // Preview ảnh mặt trước, ưu tiên old('cccd_image')
         document.addEventListener('DOMContentLoaded', function() {
             var oldCccdImage = document.getElementById('cccd_image').value;
-            var preview = document.getElementById('filepreview');
-            if (oldCccdImage) {
-                preview.src = '/' + oldCccdImage.replace(/^\/+/, '');
-                preview.classList.remove('hidden');
+            var previewDiv = document.getElementById('cccd_front_preview');
+            var previewImg = previewDiv ? previewDiv.querySelector('img') : null;
+            var uploadContent = document.getElementById('cccd_front_upload_content');
+            if (oldCccdImage && previewDiv && previewImg) {
+                previewImg.src = '/' + oldCccdImage.replace(/^\/+/, '');
+                previewDiv.classList.remove('hidden');
+                if (uploadContent) uploadContent.classList.add('hidden');
             }
 
             // Preview ảnh mặt sau, ưu tiên old('back_cccd_image')
             var oldBackCccdImage = document.getElementById('back_cccd_image').value;
-            var backPreview = document.getElementById('backfilepreview');
-            if (oldBackCccdImage) {
-                backPreview.src = '/' + oldBackCccdImage.replace(/^\/+/, '');
-                backPreview.classList.remove('hidden');
+            var backPreviewDiv = document.getElementById('cccd_back_preview');
+            var backPreviewImg = backPreviewDiv ? backPreviewDiv.querySelector('img') : null;
+            var backUploadContent = document.getElementById('cccd_back_upload_content');
+            if (oldBackCccdImage && backPreviewDiv && backPreviewImg) {
+                backPreviewImg.src = '/' + oldBackCccdImage.replace(/^\/+/, '');
+                backPreviewDiv.classList.remove('hidden');
+                if (backUploadContent) backUploadContent.classList.add('hidden');
             }
         });
     </script>

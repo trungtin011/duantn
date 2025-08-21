@@ -165,7 +165,6 @@ class ProductControllerSeller extends Controller
                 'meta_title' => $request->meta_title,
                 'meta_description' => $request->meta_description,
                 'meta_keywords' => $metaKeywords,
-                'is_featured' => $request->has('is_featured') ? 1 : 0,
                 'is_variant' => $isVariant ? 1 : 0,
                 'status' => $request->save_draft ? 'draft' : 'pending',
                 'sold_quantity' => 0,
@@ -671,7 +670,6 @@ class ProductControllerSeller extends Controller
                 'meta_title' => $request->meta_title,
                 'meta_description' => $request->meta_description,
                 'meta_keywords' => $metaKeywords,
-                'is_featured' => $request->has('is_featured') ? 1 : 0,
                 'is_variant' => $request->filled('variants') ? 1 : 0,
                 // Giữ nguyên status nếu sản phẩm đã được admin duyệt
                 'status' => $product->status === 'active' ? 'active' : ($request->save_draft ? 'draft' : 'pending'),

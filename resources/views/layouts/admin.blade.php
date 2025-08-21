@@ -5,11 +5,12 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @if (!empty($settings?->favicon))
-        <link rel="icon" href="{{ asset('storage/' . $settings->favicon) }}" type="image/png" />
+        <link rel="icon" href="{{ asset('storage/' . $settings->favicon) }}?v={{ $settings?->updated_at?->timestamp ?? '' }}" type="image/png" />
     @else
-        <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png" />
+        <!-- Override fallback to avoid showing logo.png when no admin favicon is set -->
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>" type="image/svg+xml" />
     @endif
-    <title>@yield('title')</title>
+    <title>@yield('title', 'Admin Panel')</title>
     <!-- Quill CSS -->
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
     <!-- Quill JS -->
@@ -45,27 +46,21 @@
     @vite('resources/css/admin/product.css')
 </head>
 
-<body class="bg-gray-50 h-screen font-[Inter]">
-    <div x-data="{ sidebarOpen: true, mobileSidebarOpen: false, mobileCollapsed: false }" class="flex bg-gray-50 h-screen">
+<body class="bg-gray-50 font-[Inter]">
+    <div x-data="{ sidebarOpen: true, mobileSidebarOpen: false, mobileCollapsed: false, showSidebarDesktopToggle: true }" class="flex bg-gray-50 w-full">
         <!-- Mobile sidebar overlay -->
-        <div x-show="mobileSidebarOpen" x-transition:enter="transition-opacity duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity duration-300" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" class="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+        <div class="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] opacity-0 pointer-events-none"
+            :class="mobileSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
             @click="mobileSidebarOpen = false">
         </div>
 
         <!-- Sidebar -->
-        <div x-show="sidebarOpen || mobileSidebarOpen" x-transition:enter="transition duration-300 ease-in-out"
-            x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition duration-300 ease-in-out" x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="-translate-x-full"
-            class="fixed inset-y-0 left-0 z-50 bg-white lg:static lg:translate-x-0 transition-all duration-300"
+        <div class="fixed inset-y-0 left-0 z-50 bg-white transform-gpu transition-[transform,width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-hidden lg:static lg:translate-x-0"
             :class="{
-                'w-64': (sidebarOpen && !mobileCollapsed) || (!sidebarOpen && mobileSidebarOpen && !mobileCollapsed),
-                'w-16': (!sidebarOpen && !mobileSidebarOpen) || (mobileCollapsed && mobileSidebarOpen),
-                'lg:w-64': sidebarOpen && !mobileCollapsed,
-                'lg:w-16': !sidebarOpen && !mobileCollapsed
+                'translate-x-0': mobileSidebarOpen,
+                '-translate-x-full': !mobileSidebarOpen,
+                'lg:w-64': sidebarOpen,
+                'lg:w-0': !sidebarOpen
             }"
             @click.away="mobileSidebarOpen = false">
 
@@ -96,333 +91,369 @@
                             </path>
                         </svg>
                     </button>
-                    <!-- Desktop toggle button -->
-                    <button @click="sidebarOpen = !sidebarOpen"
-                        class="hidden lg:block text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-md hover:bg-gray-100">
-                        <svg class="w-5 h-5 transition-transform duration-200" :class="{ 'rotate-180': !sidebarOpen }"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
-                        </svg>
-                    </button>
                 </div>
             </div>
 
             <!-- Sidebar Content -->
             <div class="flex-1 overflow-y-auto">
-                <nav class="px-4 py-6 space-y-2">
-                    <!-- Dashboard -->
-                    <a href="{{ route('admin.dashboard') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}"
-                        :title="mobileCollapsed ? 'Bảng điều khiển' : ''">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
-                            x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
-                            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Bảng điều
-                            khiển</span>
-                    </a>
+                <!-- Big Title -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h1 class="text-xl font-bold text-gray-800">ADMIN PANEL</h1>
+                    <p class="text-sm text-gray-500 mt-1">Quản lý hệ thống</p>
+                </div>
 
-                    <!-- Notifications -->
-                    <a href="{{ route('admin.notifications.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.notifications.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 17h5l-5 5v-5z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
-                            x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
-                            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Thông báo</span>
-                    </a>
+                <nav class="px-4 py-6 space-y-6 pb-8">
+                    <!-- Main Dashboard Section -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng quan</h3>
 
-                    <!-- Products Dropdown -->
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open"
-                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                </svg>
-                                <span
-                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                        <!-- Dashboard -->
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}"
+                            :title="mobileCollapsed ? 'Bảng điều khiển' : ''">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
+                            </svg>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
+                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Bảng điều
+                                khiển</span>
+                        </a>
+
+                        <!-- Notifications -->
+                        <a href="{{ route('admin.notifications.index') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.notifications.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 17h5l-5 5v-5z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
+                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Thông
+                                báo</span>
+                        </a>
+                    </div>
+
+                    <!-- E-commerce Management Section -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quản lý kinh doanh</h3>
+
+                        <!-- Products Dropdown -->
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open"
+                                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                    <span
+                                        x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                        x-transition:enter="transition duration-200"
+                                        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                        x-transition:leave="transition duration-200"
+                                        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Sản
+                                        phẩm</span>
+                                </div>
+                                <svg x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
                                     x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
                                     x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
-                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Sản
-                                    phẩm</span>
+                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                    class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div x-show="open" x-transition:enter="transition duration-200"
+                                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                x-transition:leave="transition duration-200" x-transition:leave-start="opacity-100"
+                                x-transition:leave-end="opacity-0" class="ml-8 mt-1 space-y-1">
+                                <a href="{{ route('admin.products.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Danh
+                                    sách sản phẩm</a>
+                                <a href="{{ route('admin.attributes.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thuộc
+                                    tính sản phẩm</a>
+                                <a href="{{ route('admin.brands.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thương
+                                    hiệu</a>
+                                <a href="{{ route('admin.categories.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Danh
+                                    mục</a>
                             </div>
-                            <svg x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                                x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
-                                x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
-                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                                class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div x-show="open" x-transition:enter="transition duration-200"
-                            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                            x-transition:leave="transition duration-200" x-transition:leave-start="opacity-100"
-                            x-transition:leave-end="opacity-0" class="ml-8 mt-1 space-y-1">
-                            <a href="{{ route('admin.products.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Danh
-                                sách sản phẩm</a>
-                            <a href="{{ route('admin.attributes.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thuộc
-                                tính sản phẩm</a>
-                            <a href="{{ route('admin.brands.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thương hiệu</a>
-                            <a href="{{ route('admin.categories.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Danh mục</a>
                         </div>
-                    </div>
 
-                    <!-- Orders -->
-                    <a href="{{ route('admin.orders.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.orders.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                            </path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Đơn hàng</span>
-                    </a>
+                        <!-- Orders -->
+                        <a href="{{ route('admin.orders.index') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.orders.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition>Đơn hàng</span>
+                        </a>
 
-                    <!-- Reviews -->
-                    <a href="{{ route('admin.reviews.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.reviews.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11.049 2.927c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                            </path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Đánh giá</span>
-                    </a>
+                        <!-- Coupons -->
+                        <a href="{{ route('admin.coupon.index') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.coupon.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z">
+                                </path>
+                            </svg>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition>Mã giảm giá</span>
+                        </a>
 
-                    <!-- Reports -->
-                    <a href="{{ route('admin.reports.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.reports.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                            </path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Báo cáo</span>
-                    </a>
-
-                    <!-- Coupons -->
-                    <a href="{{ route('admin.coupon.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.coupon.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z">
-                            </path>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Mã giảm giá</span>
-                    </a>
-
-                    <!-- Banners -->
-                    <a href="{{ route('admin.banners.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.banners.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg fill="#000000" class="w-5 h-5 mr-3" version="1.1" id="Layer_1"
-                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            viewBox="0 0 512 512" xml:space="preserve">
-                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                            <g id="SVGRepo_iconCarrier">
-                                <g>
+                        <!-- Banners -->
+                        <a href="{{ route('admin.banners.index') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.banners.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                            <svg fill="#000000" class="w-5 h-5 mr-3" version="1.1" id="Layer_1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                viewBox="0 0 512 512" xml:space="preserve">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                <g id="SVGRepo_iconCarrier">
                                     <g>
-                                        <path
-                                            d="M481.806,286.348l29.618-85.491c1.108-3.197,0.6-6.471-1.363-9.227c-1.962-2.757-5.136-4.132-8.519-4.132H397.186V135.73 c0-5.776-4.455-9.935-10.231-9.935H125.499c-5.776,0-10.685,4.159-10.685,9.935v51.768H10.519c-3.382,0-6.556,1.374-8.518,4.13 c-1.962,2.755-2.471,6.159-1.366,9.355l29.558,85.392l-29.617,85.46c-1.107,3.197-0.6,6.977,1.363,9.734 c1.962,2.757,5.136,4.638,8.519,4.638h115.041c5.776,0,10.231-5.205,10.231-10.981v-50.722h240.54v50.722 c0,5.776,4.909,10.981,10.685,10.981H501.48c3.382,0,6.556-1.897,8.518-4.653c1.962-2.755,2.471-6.42,1.366-9.616L481.806,286.348 z M25.149,365.289l25.993-75.292c0.768-2.216,0.768-4.495,0.001-6.711l-25.942-74.871h89.611v156.874H25.149z M156.647,303.586 H135.73V197.434v-50.722h20.917V303.586z M334.437,303.586H177.563V146.712h156.874V303.586z M376.27,197.434v106.151h-20.916 V146.712h20.916V197.434z M397.186,365.289V208.416h89.664l-25.993,74.769c-0.768,2.216-0.768,4.756-0.001,6.972l25.942,75.132 H397.186z">
-                                        </path>
+                                        <g>
+                                            <path
+                                                d="M481.806,286.348l29.618-85.491c1.108-3.197,0.6-6.471-1.363-9.227c-1.962-2.757-5.136-4.132-8.519-4.132H397.186V135.73 c0-5.776-4.455-9.935-10.231-9.935H125.499c-5.776,0-10.685,4.159-10.685,9.935v51.768H10.519c-3.382,0-6.556,1.374-8.518,4.13 c-1.962,2.755-2.471,6.159-1.366,9.355l29.558,85.392l-29.617,85.46c-1.107,3.197-0.6,6.977,1.363,9.734 c1.962,2.757,5.136,4.638,8.519,4.638h115.041c5.776,0,10.231-5.205,10.231-10.981v-50.722h240.54v50.722 c0,5.776,4.909,10.981,10.685,10.981H501.48c3.382,0,6.556-1.897,8.518-4.653c1.962-2.755,2.471-6.42,1.366-9.616L481.806,286.348 z M25.149,365.289l25.993-75.292c0.768-2.216,0.768-4.495,0.001-6.711l-25.942-74.871h89.611v156.874H25.149z M156.647,303.586 H135.73V197.434v-50.722h20.917V303.586z M334.437,303.586H177.563V146.712h156.874V303.586z M376.27,197.434v106.151h-20.916 V146.712h20.916V197.434z M397.186,365.289V208.416h89.664l-25.993,74.769c-0.768,2.216-0.768,4.756-0.001,6.972l25.942,75.132 H397.186z">
+                                            </path>
+                                        </g>
                                     </g>
                                 </g>
-                            </g>
-                        </svg>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Banner</span>
-                    </a>
+                            </svg>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition>Banner</span>
+                        </a>
+                    </div>
 
-                    <!-- Users -->
-                    <a href="{{ route('admin.users.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.users.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                        </svg>
+                    <!-- User & Community Section -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Người dùng & Cộng đồng
+                        </h3>
 
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition>Người dùng</span>
-                    </a>
+                        <!-- Users -->
+                        <a href="{{ route('admin.users.index') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.users.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                            </svg>
 
-                    <a href="{{ route('admin.tickets.index') }}"
-                        class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.tickets.*') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}"
-                        :title="mobileCollapsed ? 'Hỗ trợ khách hàng' : ''">
-                        <i class="fas fa-headset w-5 h-5 mr-3 text-lg"></i>
-                        <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                            x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
-                            x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
-                            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Hỗ trợ khách
-                            hàng</span>
-                    </a>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition>Người dùng</span>
+                        </a>
 
-                    <!-- Shop Management -->
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open"
-                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <!-- Shop Management -->
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open"
+                                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                        </path>
+                                    </svg>
+                                    <span
+                                        x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                        x-transition>Quản lý Shop</span>
+                                </div>
+                                <svg x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                    x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
+                                    x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
+                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                    class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                    </path>
+                                        d="M19 9l-7 7-7-7"></path>
                                 </svg>
-                                <span
-                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                                    x-transition>Quản lý Shop</span>
+                            </button>
+                            <div x-show="open" x-transition:enter="transition duration-200"
+                                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                x-transition:leave="transition duration-200" x-transition:leave-start="opacity-100"
+                                x-transition:leave-end="opacity-0" class="ml-8 mt-1 space-y-1">
+                                <a href="{{ route('admin.shops.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                    Tất cả cửa hàng
+                                </a>
+                                <a href="{{ route('admin.shops.pending') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                    Chờ duyệt
+                                </a>
+                                <a href="{{ route('admin.shops.suspended') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                    Tạm ngưng
+                                </a>
+                                <a href="{{ route('admin.shops.banned') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                    Đã bị cấm
+                                </a>
+                                <a href="{{ route('admin.shops.analytics') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                    Thống kê
+                                </a>
+                                <a href="{{ route('admin.ads_campaigns.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                    Chiến dịch quảng cáo
+                                </a>
                             </div>
-                            <svg x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                        </div>
+
+                        <!-- Customer Support -->
+                        <a href="{{ route('admin.tickets.index') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.tickets.*') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}"
+                            :title="mobileCollapsed ? 'Hỗ trợ khách hàng' : ''">
+                            <i class="fas fa-headset w-5 h-5 mr-3 text-lg"></i>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
                                 x-transition:enter="transition duration-200" x-transition:enter-start="opacity-0"
                                 x-transition:enter-end="opacity-100" x-transition:leave="transition duration-200"
-                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                                class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div x-show="open" x-transition:enter="transition duration-200"
-                            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                            x-transition:leave="transition duration-200" x-transition:leave-start="opacity-100"
-                            x-transition:leave-end="opacity-0" class="ml-8 mt-1 space-y-1">
-                            <a href="{{ route('admin.shops.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                Tất cả cửa hàng
-                            </a>
-                            <a href="{{ route('admin.shops.pending') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                Chờ duyệt
-                            </a>
-                            <a href="{{ route('admin.shops.suspended') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                Tạm ngưng
-                            </a>
-                            <a href="{{ route('admin.shops.banned') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                Đã bị cấm
-                            </a>
-                            <a href="{{ route('admin.shops.analytics') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                Thống kê
-                            </a>
-                            <a href="{{ route('admin.ads_campaigns.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                Chiến dịch quảng cáo
-                            </a>
-                        </div>
+                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">Hỗ trợ khách
+                                hàng</span>
+                        </a>
                     </div>
 
-                    <!-- Content Management -->
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open"
-                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- Content & Marketing Section -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Nội dung & Marketing
+                        </h3>
+
+                        <!-- Content Management -->
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open"
+                                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z">
+                                        </path>
+                                    </svg>
+                                    <span
+                                        x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                        x-transition>Quản lý nội dung</span>
+                                </div>
+                                <svg x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                    x-transition class="w-4 h-4 transition-transform duration-200"
+                                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z">
-                                    </path>
+                                        d="M19 9l-7 7-7-7"></path>
                                 </svg>
-                                <span
-                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                                    x-transition>Quản lý nội dung</span>
+                            </button>
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95" class="ml-8 mt-1 space-y-1">
+                                <a href="{{ route('post.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Bài
+                                    viết</a>
+                                <a href="{{ route('post-categories.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Loại
+                                    bài viết</a>
+                                <a href="{{ route('post-tags.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thẻ
+                                    bài viết</a>
+                                <a href="{{ route('admin.comments.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Bình
+                                    luận</a>
+                                <a href="{{ route('help-article.index') }}"
+                                    class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Chính
+                                    sách bài viết</a>
                             </div>
-                            <svg x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                                x-transition class="w-4 h-4 transition-transform duration-200"
-                                :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div x-show="open" x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95" class="ml-8 mt-1 space-y-1">
-                            <a href="{{ route('post.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Bài
-                                viết</a>
-                            <a href="{{ route('post-categories.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Loại
-                                bài viết</a>
-                            <a href="{{ route('post-tags.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Thẻ
-                                bài viết</a>
-                            <a href="{{ route('admin.comments.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Bình
-                                luận</a>
-                            <a href="{{ route('help-article.index') }}"
-                                class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Chính
-                                sách bài viết</a>
                         </div>
                     </div>
 
-                    <!-- Divider -->
-                    <div class="border-t border-gray-200 mt-4"></div>
+                    <!-- Analytics & Reports Section -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Phân tích & Báo cáo
+                        </h3>
 
-                    <!-- Chính sách -->
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open"
-                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                            <div class="flex items-center">
-                                <span
-                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                                    x-transition><a href="{{ route('help-category.index') }}"
-                                        class="block text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Chính
-                                        sách
-                                    </a>
-                                </span>
-                            </div>
-                        </button>
+                        <!-- Reviews -->
+                        <a href="{{ route('admin.reviews.index') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.reviews.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11.049 2.927c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                                </path>
+                            </svg>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition>Đánh giá</span>
+                        </a>
+
+                        <!-- Reports -->
+                        <a href="{{ route('admin.reports.index') }}"
+                            class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.reports.index') ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500' : 'text-gray-700 hover:bg-gray-100' }}">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                </path>
+                            </svg>
+                            <span x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                x-transition>Báo cáo</span>
+                        </a>
                     </div>
 
-                    <!-- Cài đặt cửa hàng -->
-                    <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open"
-                            class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                            <div class="flex items-center">
-                                <span
-                                    x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
-                                    x-transition><a href="{{ route('admin.settings.index') }}"
-                                        class="block text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Cài
-                                        đặt cửa hàng
-                                    </a>
-                                </span>
-                            </div>
-                        </button>
+                    <!-- System & Settings Section -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Hệ thống & Cài đặt
+                        </h3>
+
+                        <!-- Chính sách -->
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open"
+                                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <div class="flex items-center">
+                                    <span
+                                        x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                        x-transition><a href="{{ route('help-category.index') }}"
+                                            class="block text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Chính
+                                            sách
+                                        </a>
+                                    </span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Cài đặt cửa hàng -->
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open"
+                                class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <div class="flex items-center">
+                                    <span
+                                        x-show="(sidebarOpen && !mobileCollapsed) || (mobileSidebarOpen && !mobileCollapsed)"
+                                        x-transition><a href="{{ route('admin.settings.index') }}"
+                                            class="block text-sm text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">Cài
+                                            đặt cửa hàng
+                                        </a>
+                                    </span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </nav>
             </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 min-w-0 flex flex-col overflow-hidden transition-[margin,width] duration-150">
             <!-- Top Header -->
             <header class="bg-white shadow-sm border-b border-gray-200">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
@@ -436,16 +467,19 @@
                     </button>
 
                     <div class="flex items-center w-full space-x-2 lg:space-x-4">
-                        <!-- Desktop sidebar toggle -->
-                        <button @click="sidebarOpen = !sidebarOpen"
+                        <!-- Desktop toggle button (moved here) -->
+                        <button
+                            @click="sidebarOpen = !sidebarOpen; showSidebarDesktopToggle = !showSidebarDesktopToggle"
                             class="hidden lg:block p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors duration-200">
-                            <svg class="w-6 h-6 transition-transform duration-200"
+                            <svg class="w-5 h-5 transition-transform duration-200"
                                 :class="{ 'rotate-180': !sidebarOpen }" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16"></path>
+                                    d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
                             </svg>
                         </button>
+
+
 
                         <!-- Search -->
                         <div class="flex-1 mx-4">
@@ -682,7 +716,7 @@
                             <div class="relative" x-data="{ open: false }">
                                 <button @click="open = !open"
                                     class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                                    <img src="{{ asset('images/avatar.png') }}" alt="Avatar"
+                                    <img src="{{ getUserAvatar(Auth::user()->avatar) }}" alt="Avatar"
                                         class="w-8 h-8 rounded-full">
                                     <span
                                         class="hidden md:block text-sm font-medium text-gray-700">{{ \Auth::user()->fullname }}</span>

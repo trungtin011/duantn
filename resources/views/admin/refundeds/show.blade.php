@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Chi tiết yêu cầu hoàn hàng')
+
 @section('head')
     @push('styles')
         <link rel="stylesheet" href="{{ asset('css/admin/refunded.css') }}">

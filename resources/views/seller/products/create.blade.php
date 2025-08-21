@@ -32,7 +32,7 @@
 
 
         <!-- Main Content Form -->
-        <form id="product-form" action="{{ route('seller.products.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="product-form" action="{{ route('seller.products.store') }}" method="POST" enctype="multipart/form-data" novalidate>
             @csrf
 
             <!-- General Product Information (Always Visible) - Top Section -->
@@ -41,18 +41,18 @@
                 <div class="mb-4">
                     <label class="block text-gray-700 font-medium mb-1">Tên sản phẩm <span
                             class="text-red-500">*</span></label>
-                                                <div class="relative">
-                                <input type="text" name="name" id="product-name"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Nhập tên sản phẩm" value="{{ old('name') }}" maxlength="100">
-                                <div class="absolute right-2 top-2 text-xs text-gray-400">
-                                    <span id="name-char-count">0</span>/100
-                                </div>
-                            </div>
-                            @error('name')
-                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                            @enderror
-                            <span class="text-sm text-gray-500 block mt-1">Tên sản phẩm nên ngắn gọn và duy nhất.</span>
+                    <div class="relative">
+                        <input type="text" name="name" id="product-name"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Nhập tên sản phẩm" value="{{ old('name') }}" maxlength="100">
+                        <div class="absolute right-2 top-2 text-xs text-gray-400">
+                            <span id="name-char-count">0</span>/100
+                        </div>
+                    </div>
+                    @error('name')
+                        <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                    @enderror
+                    <span class="text-sm text-gray-500 block mt-1">Tên sản phẩm nên ngắn gọn và duy nhất.</span>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 font-medium mb-1">Mô tả sản phẩm</label>
@@ -97,7 +97,12 @@
                             <button type="button"
                                 class="tab-button active text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
                                 data-tab="general-details">
-                                <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm & SEO
+                                <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm
+                            </button>
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="seo">
+                                <i class="fas fa-search mr-2"></i>SEO
                             </button>
                             <button type="button"
                                 class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
@@ -314,59 +319,15 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="mb-4">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="is_featured" value="1" class="mr-2"
-                                        {{ old('is_featured') ? 'checked' : '' }}>
-                                    <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
-                                </label>
-                            </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Từ khóa (Tags)</label>
                                 <input type="text" name="meta_keywords" id="meta-keywords"
                                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="VD: áo thun, thời trang, mùa hè" value="{{ old('meta_keywords') }}">
+                                    placeholder="Thêm từ khóa (phân cách bằng dấu phẩy)"
+                                    value="{{ old('meta_keywords') }}" data-original-required="false">
                                 @error('meta_keywords')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
-                            </div>
-                        </div>
-
-                        <!-- SEO -->
-                        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                            <h4 class="text-xl font-semibold mb-4">SEO</h4>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO <span
-                                        id="meta-title-count">0/60</span></label>
-                                <input type="text" name="meta_title" id="meta-title"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value="{{ old('meta_title') }}" maxlength="60" placeholder="Tối đa 60 ký tự">
-                                <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm
-                                    kiếm.</span>
-                                @error('meta_title')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Mô tả SEO <span
-                                        id="meta-description-count">0/160</span></label>
-                                <textarea name="meta_description" id="meta-description"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    maxlength="160" rows="4" placeholder="Tối đa 160 ký tự">{{ old('meta_description') }}</textarea>
-                                <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ tìm
-                                    kiếm.</span>
-                                @error('meta_description')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
-                                <div id="seo-preview" class="p-3 border border-gray-300 rounded-md">
-                                    <h5 id="preview-title" class="text-blue-600 mb-1">Tiêu đề sản phẩm</h5>
-                                    <p id="preview-url" class="text-green-600 mb-1">
-                                        https://Zynox.com/san-pham/{{ Str::slug(old('name', 'san-pham')) }}</p>
-                                    <p id="preview-description" class="text-gray-600">Mô tả ngắn gọn về sản phẩm.</p>
-                                </div>
                             </div>
                         </div>
 
@@ -408,6 +369,44 @@
                                 @error('images.*')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEO -->
+                    <div id="tab-seo" class="tab-content hidden bg-white p-6 rounded-lg shadow-sm mb-6">
+                        <h4 class="text-xl font-semibold mb-4">SEO</h4>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO <span
+                                    id="meta-title-count">0/60</span></label>
+                            <input type="text" name="meta_title" id="meta-title"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="{{ old('meta_title') }}" maxlength="60" placeholder="Tối đa 60 ký tự">
+                            <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm
+                                kiếm.</span>
+                            @error('meta_title')
+                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Mô tả SEO <span
+                                    id="meta-description-count">0/160</span></label>
+                            <textarea name="meta_description" id="meta-description"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                maxlength="160" rows="4" placeholder="Tối đa 160 ký tự">{{ old('meta_description') }}</textarea>
+                            <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ tìm
+                                kiếm.</span>
+                            @error('meta_description')
+                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
+                            <div id="seo-preview" class="p-3 border border-gray-300 rounded-md">
+                                <h5 id="preview-title" class="text-blue-600 mb-1">Tiêu đề sản phẩm</h5>
+                                <p id="preview-url" class="text-green-600 mb-1">
+                                    https://zynoxmall.xyz/san-pham/{{ Str::slug(old('name', 'san-pham')) }}</p>
+                                <p id="preview-description" class="text-gray-600">Mô tả ngắn gọn về sản phẩm.</p>
                             </div>
                         </div>
                     </div>
@@ -1096,11 +1095,11 @@
                         <div class="mb-4">
                             <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                             ${variant.map((value, attrIndex) => `
-                                                        <div class="flex items-center gap-4 mb-2">
-                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                        </div>
-                                                    `).join('')}
+                                                            <div class="flex items-center gap-4 mb-2">
+                                                                <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                            </div>
+                                                        `).join('')}
                         </div>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
@@ -1404,7 +1403,7 @@
             });
         }
 
-        // Hàm validate form với validation thủ công và hiển thị lỗi inline
+        // Hàm validate form (hiển thị lỗi ở đầu trang)
         function validateForm(e) {
             e.preventDefault();
             const productForm = document.getElementById('product-form');
@@ -1413,65 +1412,42 @@
                 return;
             }
 
-            // Xóa tất cả thông báo lỗi cũ
-            clearAllErrors();
-
+            const errors = [];
             debugLog('Dữ liệu form trước khi gửi', Object.fromEntries(new FormData(productForm)));
-            const brandCheckboxes = document.querySelectorAll('input[name="brand_ids[]"]:checked');
+
             const categoryCheckboxes = document.querySelectorAll('input[name="category_ids[]"]:checked');
-            let isValid = true;
 
             // Kiểm tra loại sản phẩm
             const productTypeInput = document.querySelector('input[name="product_type"]:checked');
-            if (!productTypeInput) {
-                console.log('Không có radio product_type nào được chọn!');
-            } else {
-                console.log('Giá trị product_type được chọn:', productTypeInput.value);
-            }
             const productType = productTypeInput ? productTypeInput.value : null;
 
             // Common validations
             const nameInput = document.querySelector('input[name="name"]');
-            if (!nameInput.value.trim()) {
-                showFieldError(nameInput, 'Vui lòng nhập tên sản phẩm.');
-                isValid = false;
+            if (!nameInput || !nameInput.value.trim()) {
+                errors.push('Vui lòng nhập tên sản phẩm.');
             } else if (nameInput.value.trim().length > 100) {
-                showFieldError(nameInput, 'Tên sản phẩm không được vượt quá 100 ký tự.');
-                isValid = false;
+                errors.push('Tên sản phẩm không được vượt quá 100 ký tự.');
             } else {
-                // Kiểm tra tên sản phẩm đã tồn tại
                 const nameError = nameInput.parentNode.querySelector('.field-error');
                 if (nameError && nameError.textContent.includes('đã tồn tại')) {
-                    isValid = false;
+                    errors.push('Tên sản phẩm đã tồn tại trong shop của bạn.');
                 }
             }
 
-            const skuInput = document.querySelector('input[name="sku"]');
-            if (!skuInput.value.trim()) {
-                showFieldError(skuInput, 'Vui lòng nhập mã SKU.');
-                isValid = false;
+            const skuValue = (document.querySelector('input[name="sku"]')?.value || '').trim();
+            if (!skuValue) {
+                errors.push('Vui lòng nhập mã SKU.');
             }
 
-            // Thương hiệu không bắt buộc nữa
-            // if (brandCheckboxes.length === 0) {
-            //     showFieldError(document.querySelector('input[name="brand_ids[]"]'),
-            //         'Vui lòng chọn ít nhất một thương hiệu.');
-            //     isValid = false;
-            // }
-
             if (categoryCheckboxes.length === 0) {
-                showFieldError(document.querySelector('input[name="category_ids[]"]'),
-                    'Vui lòng chọn ít nhất một danh mục.');
-                isValid = false;
+                errors.push('Vui lòng chọn ít nhất một danh mục.');
             }
 
             const mainImageInput = document.getElementById('mainImage');
-            if (!mainImageInput.files.length) {
-                showFieldError(mainImageInput, 'Vui lòng chọn ảnh chính.');
-                isValid = false;
+            if (!mainImageInput?.files.length) {
+                errors.push('Vui lòng chọn ảnh chính.');
             }
 
-            // Product type specific validations
             if (productType === 'simple') {
                 const priceInput = document.querySelector('#tab-pricing-inventory input[name="price"]');
                 const purchasePriceInput = document.querySelector('#tab-pricing-inventory input[name="purchase_price"]');
@@ -1479,66 +1455,41 @@
                 const stockInput = document.querySelector('#tab-pricing-inventory input[name="stock_total"]');
 
                 if (!priceInput || !priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                    showFieldError(priceInput, 'Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
-                    isValid = false;
+                    errors.push('Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
                 }
                 if (!purchasePriceInput || !purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
                         purchasePriceInput.value) < 0) {
-                    showFieldError(purchasePriceInput, 'Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
-                    isValid = false;
+                    errors.push('Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
                 }
                 if (!salePriceInput || !salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
                         .value) < 0) {
-                    showFieldError(salePriceInput, 'Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
-                    isValid = false;
-                }
-
-                // Kiểm tra logic giá nhập và giá bán
-                if (purchasePriceInput && salePriceInput && purchasePriceInput.value && salePriceInput.value) {
-                    const purchasePrice = parseFloat(purchasePriceInput.value);
-                    const salePrice = parseFloat(salePriceInput.value);
-
-                    if (purchasePrice > salePrice) {
-                        showFieldError(purchasePriceInput, 'Giá nhập không được lớn hơn giá bán.');
-                        showFieldError(salePriceInput, 'Giá bán phải lớn hơn hoặc bằng giá nhập.');
-                        isValid = false;
-                    }
+                    errors.push('Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
                 }
                 if (!stockInput || !stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                    showFieldError(stockInput, 'Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
-                    isValid = false;
+                    errors.push('Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
                 }
             } else if (productType === 'variant') {
                 const attributeSelects = document.querySelectorAll(
                     '#tab-attributes-variants .attribute-row .attribute-select');
                 const variantItems = document.querySelectorAll('#variant-container > .variant-item');
 
-                // Check attributes
                 if (attributeSelects.length === 0) {
-                    showFieldError(document.querySelector('#add-attribute-btn'),
-                        'Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
-                    isValid = false;
+                    errors.push('Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
                 } else {
                     attributeSelects.forEach((select, index) => {
-                        const nameInput = select.closest('.attribute-row').querySelector('.attribute-name');
-                        const valuesInput = select.closest('.attribute-row').querySelector('.attribute-values');
-                        if (select.value === 'new' && (!nameInput.value || !nameInput.value.trim())) {
-                            showFieldError(nameInput, `Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
-                            isValid = false;
+                        const nameField = select.closest('.attribute-row').querySelector('.attribute-name');
+                        const valuesField = select.closest('.attribute-row').querySelector('.attribute-values');
+                        if (select.value === 'new' && (!nameField.value || !nameField.value.trim())) {
+                            errors.push(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
                         }
-                        if (!valuesInput.value || !valuesInput.value.trim()) {
-                            showFieldError(valuesInput,
-                                `Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
-                            isValid = false;
+                        if (!valuesField.value || !valuesField.value.trim()) {
+                            errors.push(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
                         }
                     });
                 }
 
-                // Check variants
                 if (variantItems.length === 0) {
-                    showFieldError(document.querySelector('#generate-variants-btn'),
-                        'Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
-                    isValid = false;
+                    errors.push('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
                 } else {
                     variantItems.forEach((item, index) => {
                         const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
@@ -1548,64 +1499,62 @@
                         const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
                         const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
 
-                        if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                            showFieldError(priceInput, `Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
-                            isValid = false;
+                        if (!priceInput?.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
+                            errors.push(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
                         }
-                        if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
+                        if (!purchasePriceInput?.value || isNaN(purchasePriceInput.value) || parseFloat(
                                 purchasePriceInput.value) < 0) {
-                            showFieldError(purchasePriceInput,
-                                `Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
-                            isValid = false;
+                            errors.push(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
                         }
-                        if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
-                            .value) < 0) {
-                            showFieldError(salePriceInput,
-                                `Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
-                            isValid = false;
+                        if (!salePriceInput?.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
+                                .value) < 0) {
+                            errors.push(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
                         }
-
-                        // Kiểm tra logic giá nhập và giá bán cho biến thể
-                        if (purchasePriceInput.value && salePriceInput.value) {
-                            const purchasePrice = parseFloat(purchasePriceInput.value);
-                            const salePrice = parseFloat(salePriceInput.value);
-
-                            if (purchasePrice > salePrice) {
-                                showFieldError(purchasePriceInput,
-                                    `Giá nhập không được lớn hơn giá bán cho biến thể ${index + 1}.`);
-                                showFieldError(salePriceInput,
-                                    `Giá bán phải lớn hơn hoặc bằng giá nhập cho biến thể ${index + 1}.`);
-                                isValid = false;
-                            }
+                        if (!skuInput?.value || !skuInput.value.trim()) {
+                            errors.push(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
                         }
-                        if (!skuInput.value || !skuInput.value.trim()) {
-                            showFieldError(skuInput, `Vui lòng nhập SKU cho biến thể ${index + 1}.`);
-                            isValid = false;
-                        }
-                        if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                            showFieldError(stockInput,
-                                `Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
-                            isValid = false;
+                        if (!stockInput?.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
+                            errors.push(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
                         }
                     });
                 }
             }
 
-            if (isValid) {
-                tinymce.triggerSave();
-                debugLog('Form submission validated successfully');
-                // Nếu tất cả validation pass, submit form
-                productForm.submit();
+            // Render error list at top of form
+            let errorBox = document.getElementById('client-error-box');
+            if (!errorBox) {
+                errorBox = document.createElement('div');
+                errorBox.id = 'client-error-box';
+                errorBox.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 hidden';
+                const ul = document.createElement('ul');
+                ul.id = 'client-error-list';
+                ul.className = 'list-disc pl-5 text-sm';
+                errorBox.appendChild(ul);
+                productForm.parentNode.insertBefore(errorBox, productForm);
+            }
+
+            const errorList = document.getElementById('client-error-list');
+            errorList.innerHTML = '';
+
+            if (errors.length > 0) {
+                errors.forEach(msg => {
+                    const li = document.createElement('li');
+                    li.textContent = msg;
+                    errorList.appendChild(li);
+                });
+                errorBox.classList.remove('hidden');
+                errorBox.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                return; // stop submit
             } else {
-                // Scroll to first error
-                const firstError = document.querySelector('.field-error');
-                if (firstError) {
-                    firstError.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
+                errorBox.classList.add('hidden');
             }
+
+            // Hợp lệ => submit
+            tinymce.triggerSave();
+            productForm.submit();
         }
 
         // Hàm hiển thị lỗi cho từng trường
@@ -1710,7 +1659,7 @@
                 metaDescriptionCount.textContent = `${metaDescription.value.length}/160`;
                 previewTitle.textContent = metaTitle.value || 'Tiêu đề sản phẩm';
                 previewUrl.textContent =
-                    `https://Zynox.com/san-pham/${slugify(productName.value || 'san-pham')}`;
+                    `https://zynoxmall.xyz/san-pham/${slugify(productName.value || 'san-pham')}`;
                 previewDescription.textContent = metaDescription.value || 'Mô tả ngắn gọn về sản phẩm.';
             };
 
@@ -1777,6 +1726,7 @@
             const shippingTabButton = document.querySelector('.tab-button[data-tab="shipping"]');
             const attributesVariantsTabButton = document.querySelector(
                 '.tab-button[data-tab="attributes-variants"]');
+            const seoTabButton = document.querySelector('.tab-button[data-tab="seo"]');
 
             const tabGeneralDetails = document.getElementById('tab-general-details');
             const tabPricingInventory = document.getElementById('tab-pricing-inventory');
@@ -1791,12 +1741,14 @@
                 tabPricingInventory.classList.add('hidden');
                 tabShipping.classList.add('hidden');
                 tabAttributesVariants.classList.add('hidden');
+                document.getElementById('tab-seo').classList.add('hidden');
 
                 // Reset all tab button active state
                 generalDetailsTabButton.classList.remove('active');
                 pricingInventoryTabButton.classList.remove('active');
                 shippingTabButton.classList.remove('active');
                 attributesVariantsTabButton.classList.remove('active');
+                seoTabButton.classList.remove('active');
 
                 // Helper to manage disabled state (no more required attributes)
                 function setFieldsState(elements, isDisabled) {
@@ -1808,18 +1760,17 @@
                 // Get all relevant inputs within tabs
                 const generalDetailsInputs = document.querySelectorAll(
                     '#tab-general-details input:not([type="hidden"]), #tab-general-details select, #tab-general-details textarea'
-                    );
+                );
                 const pricingInputs = document.querySelectorAll(
-                '#tab-pricing-inventory input:not([type="hidden"])');
+                    '#tab-pricing-inventory input:not([type="hidden"])');
                 const shippingInputs = document.querySelectorAll('#tab-shipping input:not([type="hidden"])');
                 const attributesVariantsInputs = document.querySelectorAll(
                     '#tab-attributes-variants input:not([type="hidden"]), #tab-attributes-variants select');
 
                 if (selectedProductType === 'variant') {
-                    // Show General Details and Attributes & Variants tab content and buttons
+                    // Show only General Details by default; enable Attributes & Variants button
                     tabGeneralDetails.classList.remove('hidden');
-                    generalDetailsTabButton.classList.add('active'); // Make general-details the default active tab
-                    tabAttributesVariants.classList.remove('hidden');
+                    generalDetailsTabButton.classList.add('active');
                     attributesVariantsTabButton.style.display = '';
 
                     // Disable simple product specific fields
@@ -1832,12 +1783,10 @@
                     shippingTabButton.style.display = 'none';
 
                 } else { // simple
-                    // Show General Details, Pricing & Inventory and Shipping tab content and buttons
+                    // Show only General Details by default; enable Pricing & Inventory and Shipping buttons
                     tabGeneralDetails.classList.remove('hidden');
-                    generalDetailsTabButton.classList.add('active'); // Make general-details the default active tab
-                    tabPricingInventory.classList.remove('hidden');
+                    generalDetailsTabButton.classList.add('active');
                     pricingInventoryTabButton.style.display = '';
-                    tabShipping.classList.remove('hidden');
                     shippingTabButton.style.display = '';
 
                     // Enable simple fields, disable variant fields
@@ -1891,7 +1840,7 @@
                         if (currentlyDisplayedTab) {
                             document.querySelector(
                                 `.tab-button[data-tab="${currentlyDisplayedTab.id.replace('tab-', '')}"]`
-                                ).classList.add('active');
+                            ).classList.add('active');
                         }
                     }
                 });
@@ -1900,7 +1849,7 @@
             // Store original required state for inputs inside tabs, so we can re-apply/remove dynamically
             document.querySelectorAll(
                 '#tab-general-details input, #tab-general-details select, #tab-general-details textarea, #tab-pricing-inventory input, #tab-shipping input, #tab-attributes-variants input, #tab-attributes-variants select, #tab-attributes-variants textarea'
-                ).forEach(input => {
+            ).forEach(input => {
                 if (input.required) {
                     input.setAttribute('data-original-required', 'true');
                 }
@@ -1928,15 +1877,15 @@
             // Validation cho tên sản phẩm
             const nameInput = document.querySelector('input[name="name"]');
             const nameCharCount = document.getElementById('name-char-count');
-            
+
             if (nameInput) {
                 let nameCheckTimeout;
-                
+
                 // Cập nhật character counter
                 const updateCharCount = () => {
                     const length = nameInput.value.length;
                     nameCharCount.textContent = length;
-                    
+
                     // Thay đổi màu khi gần đạt giới hạn
                     if (length >= 90) {
                         nameCharCount.classList.add('text-red-500');
@@ -1949,26 +1898,26 @@
                         nameCharCount.classList.add('text-gray-400');
                     }
                 };
-                
+
                 // Cập nhật counter khi load trang
                 updateCharCount();
-                
+
                 nameInput.addEventListener('input', function() {
                     // Cập nhật character counter
                     updateCharCount();
-                    
+
                     // Clear timeout cũ
                     clearTimeout(nameCheckTimeout);
-                    
+
                     // Clear error nếu có
                     clearFieldError(this);
-                    
+
                     // Set timeout mới để kiểm tra sau 500ms
                     nameCheckTimeout = setTimeout(() => {
                         checkProductName(this.value.trim());
                     }, 500);
                 });
-                
+
                 nameInput.addEventListener('blur', function() {
                     if (!this.value.trim()) {
                         showFieldError(this, 'Vui lòng nhập tên sản phẩm.');
@@ -2084,7 +2033,7 @@
 
             variantItems.forEach((variant, index) => {
                 const purchasePriceInput = variant.querySelector(
-                `input[name="variants[${index}][purchase_price]"]`);
+                    `input[name="variants[${index}][purchase_price]"]`);
                 const salePriceInput = variant.querySelector(`input[name="variants[${index}][sale_price]"]`);
 
                 if (purchasePriceInput && salePriceInput && purchasePriceInput.value && salePriceInput.value) {
@@ -2102,7 +2051,7 @@
             });
         }
 
-                // Hàm kiểm tra tên sản phẩm đã tồn tại
+        // Hàm kiểm tra tên sản phẩm đã tồn tại
         function checkProductName(name) {
             if (!name || name.length < 2) {
                 return; // Không kiểm tra nếu tên quá ngắn
@@ -2110,7 +2059,7 @@
 
             const nameInput = document.querySelector('input[name="name"]');
             const nameContainer = nameInput.parentNode;
-            
+
             // Tạo hoặc hiển thị spinner
             let spinner = nameContainer.querySelector('.name-check-spinner');
             if (!spinner) {
@@ -2120,30 +2069,30 @@
                 nameContainer.appendChild(spinner);
             }
             spinner.style.display = 'block';
-            
-            fetch('{{ route("seller.products.check-name") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    name: name
+
+            fetch('{{ route('seller.products.check-name') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        name: name
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                spinner.style.display = 'none';
-                if (data.exists) {
-                    showFieldError(nameInput, data.message);
-                } else {
-                    clearFieldError(nameInput);
-                }
-            })
-            .catch(error => {
-                spinner.style.display = 'none';
-                console.error('Error checking product name:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    spinner.style.display = 'none';
+                    if (data.exists) {
+                        showFieldError(nameInput, data.message);
+                    } else {
+                        clearFieldError(nameInput);
+                    }
+                })
+                .catch(error => {
+                    spinner.style.display = 'none';
+                    console.error('Error checking product name:', error);
+                });
         }
 
         // Hàm khôi phục dữ liệu form từ session storage (nếu có)
@@ -2153,10 +2102,10 @@
             if (hasErrors) {
                 // Nếu có lỗi, form sẽ tự động giữ dữ liệu cũ thông qua Laravel's old() helper
                 console.log('Form có lỗi validation, dữ liệu cũ đã được khôi phục');
-                
+
                 // Khôi phục trạng thái tab và loại sản phẩm
                 restoreProductTypeState();
-                
+
                 // Khôi phục dữ liệu biến thể nếu có
                 restoreVariantData();
             }
@@ -2304,11 +2253,11 @@
                         <div class="mb-4">
                             <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                             ${variant.attributes ? variant.attributes.map((attr, attrIndex) => `
-                                    <div class="flex items-center gap-4 mb-2">
-                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attr.name || ''}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                        <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${attr.value || ''}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                    </div>
-                                `).join('') : ''}
+                                        <div class="flex items-center gap-4 mb-2">
+                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attr.name || ''}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                            <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${attr.value || ''}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                        </div>
+                                    `).join('') : ''}
                         </div>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>

@@ -1875,7 +1875,7 @@ footer {
    * #CATEGORY
    */
 
-  .category-item-container { gap: 30px; }
+  /*.category-item-container { gap: 30px; }*/
 
   .category-item { min-width: calc(50% - 15px); }
 

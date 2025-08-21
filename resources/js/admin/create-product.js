@@ -778,41 +778,146 @@ function getCombinations(arrays) {
     return result;
 }
 
-// Form Validation
+// Form Validation (aggregate errors at top, no alerts)
 function initializeFormValidation() {
     const form = document.getElementById('product-form');
 
-    if (form) {
-        form.addEventListener('submit', function (e) {
-            const productName = document.getElementById('product-name');
-            const sku = document.querySelector('input[name="sku"]');
-            const productType = document.querySelector('input[name="product_type"]:checked');
+    if (!form) return;
 
-            let isValid = true;
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
 
-            // Validate product name
-            if (!productName.value.trim()) {
-                alert('Vui lòng nhập tên sản phẩm.');
-                isValid = false;
+        const errors = [];
+        const productName = document.getElementById('product-name');
+        const sku = document.querySelector('input[name="sku"]');
+        const productTypeInput = document.querySelector('input[name="product_type"]:checked');
+
+        // Common validations (same style as Seller)
+        if (!productName || !productName.value.trim()) {
+            errors.push('Vui lòng nhập tên sản phẩm.');
+        } else if (productName.value.trim().length > 100) {
+            errors.push('Tên sản phẩm không được vượt quá 100 ký tự.');
+        }
+
+        if (!sku || !sku.value.trim()) {
+            errors.push('Vui lòng nhập SKU sản phẩm.');
+        }
+
+        if (!productTypeInput) {
+            errors.push('Vui lòng chọn loại sản phẩm.');
+        }
+
+        // Categories
+        const categoryCheckboxes = document.querySelectorAll('input[name="category_ids[]"]:checked');
+        if (categoryCheckboxes.length === 0) {
+            errors.push('Vui lòng chọn ít nhất một danh mục.');
+        }
+
+        // Main image
+        const mainImageInput = document.getElementById('mainImage');
+        if (!mainImageInput?.files?.length) {
+            errors.push('Vui lòng chọn ảnh chính.');
+        }
+
+        // Conditional checks by product type
+        const productType = productTypeInput?.value;
+        if (productType === 'simple') {
+            const priceInput = document.querySelector('#tab-pricing-inventory input[name="price"]');
+            const purchasePriceInput = document.querySelector('#tab-pricing-inventory input[name="purchase_price"]');
+            const salePriceInput = document.querySelector('#tab-pricing-inventory input[name="sale_price"]');
+            const stockInput = document.querySelector('#tab-pricing-inventory input[name="stock_total"]');
+
+            if (!priceInput || priceInput.value === '' || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
+                errors.push('Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
+            }
+            if (!purchasePriceInput || purchasePriceInput.value === '' || isNaN(purchasePriceInput.value) || parseFloat(purchasePriceInput.value) < 0) {
+                errors.push('Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
+            }
+            if (!salePriceInput || salePriceInput.value === '' || isNaN(salePriceInput.value) || parseFloat(salePriceInput.value) < 0) {
+                errors.push('Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
+            }
+            if (!stockInput || stockInput.value === '' || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
+                errors.push('Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
+            }
+        } else if (productType === 'variant') {
+            const attributeSelects = document.querySelectorAll('#tab-attributes-variants .attribute-row .attribute-select');
+            const variantItems = document.querySelectorAll('#variant-container > .variant-item');
+
+            if (attributeSelects.length === 0) {
+                errors.push('Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
+            } else {
+                attributeSelects.forEach((select, index) => {
+                    const row = select.closest('.attribute-row');
+                    const nameField = row?.querySelector('.attribute-name');
+                    const valuesField = row?.querySelector('.attribute-values');
+                    if (select.value === 'new' && (!nameField?.value || !nameField.value.trim())) {
+                        errors.push(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+                    }
+                    if (!valuesField?.value || !valuesField.value.trim()) {
+                        errors.push(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
+                    }
+                });
             }
 
-            // Validate SKU
-            if (!sku.value.trim()) {
-                alert('Vui lòng nhập SKU sản phẩm.');
-                isValid = false;
-            }
+            if (variantItems.length === 0) {
+                errors.push('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
+            } else {
+                variantItems.forEach((item, index) => {
+                    const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
+                    const purchasePriceInput = item.querySelector(`input[name="variants[${index}][purchase_price]"]`);
+                    const salePriceInput = item.querySelector(`input[name="variants[${index}][sale_price]"]`);
+                    const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
+                    const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
 
-            // Validate product type
-            if (!productType) {
-                alert('Vui lòng chọn loại sản phẩm.');
-                isValid = false;
+                    if (!priceInput?.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
+                        errors.push(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
+                    }
+                    if (!purchasePriceInput?.value || isNaN(purchasePriceInput.value) || parseFloat(purchasePriceInput.value) < 0) {
+                        errors.push(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
+                    }
+                    if (!salePriceInput?.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput.value) < 0) {
+                        errors.push(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
+                    }
+                    if (!skuInput?.value || !skuInput.value.trim()) {
+                        errors.push(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
+                    }
+                    if (!stockInput?.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
+                        errors.push(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
+                    }
+                });
             }
+        }
 
-            if (!isValid) {
-                e.preventDefault();
-            }
-        });
-    }
+        // Render error box
+        let errorBox = document.getElementById('client-error-box');
+        if (!errorBox) {
+            errorBox = document.createElement('div');
+            errorBox.id = 'client-error-box';
+            errorBox.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 hidden';
+            const ul = document.createElement('ul');
+            ul.id = 'client-error-list';
+            ul.className = 'list-disc pl-5 text-sm';
+            errorBox.appendChild(ul);
+            form.parentNode.insertBefore(errorBox, form);
+        }
+        const errorList = document.getElementById('client-error-list');
+        errorList.innerHTML = '';
+
+        if (errors.length > 0) {
+            errors.forEach(msg => {
+                const li = document.createElement('li');
+                li.textContent = msg;
+                errorList.appendChild(li);
+            });
+            errorBox.classList.remove('hidden');
+            errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        } else {
+            errorBox.classList.add('hidden');
+        }
+
+        form.submit();
+    });
 }
 
 // Character counter for product name

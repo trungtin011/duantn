@@ -63,7 +63,7 @@
                 <div class="text-sm text-gray-500">
                     <a href="{{ route('seller.dashboard') }}" class="hover:underline">Trang chủ</a> / Chỉnh sửa sản phẩm
                 </div>
-                @if($product->status === 'active')
+                @if ($product->status === 'active')
                     <div class="mt-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-md">
                         <i class="fas fa-check-circle mr-2"></i>
                         Sản phẩm đã được admin duyệt. Khi cập nhật, trạng thái sẽ được giữ nguyên.
@@ -83,7 +83,7 @@
             <div class="flex space-x-3">
                 <button type="submit" form="product-form"
                     class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Lưu và cập nhật</button>
-                <a href="{{ route('seller.dashboard') }}"
+                <a href="{{ route('seller.products.index') }}"
                     class="border border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-100">Huỷ</a>
             </div>
         </div>
@@ -101,7 +101,7 @@
 
         <!-- Main Content Form -->
         <form id="product-form" action="{{ route('seller.products.update', $product->id) }}" method="POST"
-            enctype="multipart/form-data">
+            enctype="multipart/form-data" novalidate>
             @csrf
             @method('PUT')
 
@@ -137,7 +137,7 @@
                             class="text-red-500">*</span></label>
                     <input type="text" name="sku"
                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="SKU sản phẩm" value="{{ old('sku', $product->sku) }}" required>
+                        placeholder="SKU sản phẩm" value="{{ old('sku', $product->sku) }}">
                     @error('sku')
                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                     @enderror
@@ -168,7 +168,12 @@
                             <button type="button"
                                 class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
                                 data-tab="general-details">
-                                <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm & SEO
+                                <i class="fas fa-info-circle mr-2"></i>Chi tiết sản phẩm
+                            </button>
+                            <button type="button"
+                                class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                                data-tab="seo">
+                                <i class="fas fa-search mr-2"></i>SEO
                             </button>
                             <button type="button"
                                 class="tab-button text-left px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100"
@@ -389,14 +394,6 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="mb-4">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="is_featured" value="1" class="mr-2"
-                                        {{ old('is_featured', $product->is_featured) ? 'checked' : '' }}
-                                        data-original-required="false">
-                                    <span class="text-gray-700 font-medium">Sản phẩm nổi bật</span>
-                                </label>
-                            </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Từ khóa (Tags)</label>
                                 <input type="text" name="meta_keywords" id="meta-keywords"
@@ -407,48 +404,6 @@
                                 @error('meta_keywords')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                 @enderror
-                            </div>
-                        </div>
-
-                        <!-- SEO Section -->
-                        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                            <h4 class="text-xl font-semibold mb-4">SEO</h4>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO (Meta Title) <span
-                                        id="meta-title-count">0/60</span></label>
-                                <input type="text" name="meta_title" id="meta-title"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value="{{ old('meta_title', $product->meta_title) }}" maxlength="60"
-                                    placeholder="Tiêu đề SEO (tối đa 60 ký tự)" data-original-required="false">
-                                <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm kiếm,
-                                    nên chứa từ khóa chính.</span>
-                                @error('meta_title')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Mô tả SEO (Meta Description) <span
-                                        id="meta-description-count">0/160</span></label>
-                                <textarea name="meta_description" id="meta-description"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    maxlength="160" placeholder="Mô tả ngắn gọn (tối đa 160 ký tự)" data-original-required="false">{{ old('meta_description', $product->meta_description) }}</textarea>
-                                <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ
-                                    tìm kiếm.</span>
-                                @error('meta_description')
-                                    <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
-                                <div id="seo-preview" class="p-3 border border-gray-300 rounded-md">
-                                    <h5 id="preview-title" class="text-blue-600 mb-1">
-                                        {{ $product->meta_title ?: $product->name }}</h5>
-                                    <p id="preview-url" class="text-green-600 mb-1">
-                                        https://Zynox.com/san-pham/{{ Str::slug(old('name', $product->name)) }}
-                                    </p>
-                                    <p id="preview-description" class="text-gray-600">
-                                        {{ $product->meta_description ?: 'Mô tả ngắn gọn về sản phẩm.' }}</p>
-                                </div>
                             </div>
                         </div>
 
@@ -504,6 +459,48 @@
                                         <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEO Section -->
+                    <div id="tab-seo" class="tab-content hidden bg-white p-6 rounded-lg shadow-sm mb-6">
+                        <h4 class="text-xl font-semibold mb-4">SEO</h4>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Tiêu đề SEO (Meta Title) <span
+                                    id="meta-title-count">0/60</span></label>
+                            <input type="text" name="meta_title" id="meta-title"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="{{ old('meta_title', $product->meta_title) }}" maxlength="60"
+                                placeholder="Tiêu đề SEO (tối đa 60 ký tự)" data-original-required="false">
+                            <span class="text-sm text-gray-500 block mt-1">Tiêu đề hiển thị trên công cụ tìm kiếm,
+                                nên chứa từ khóa chính.</span>
+                            @error('meta_title')
+                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Mô tả SEO (Meta Description) <span
+                                    id="meta-description-count">0/160</span></label>
+                            <textarea name="meta_description" id="meta-description"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                maxlength="160" placeholder="Mô tả ngắn gọn (tối đa 160 ký tự)" data-original-required="false">{{ old('meta_description', $product->meta_description) }}</textarea>
+                            <span class="text-sm text-gray-500 block mt-1">Mô tả hiển thị dưới tiêu đề trên công cụ
+                                tìm kiếm.</span>
+                            @error('meta_description')
+                                <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-1">Xem trước SEO</label>
+                            <div id="seo-preview" class="p-3 border border-gray-300 rounded-md">
+                                <h5 id="preview-title" class="text-blue-600 mb-1">
+                                    {{ $product->meta_title ?: $product->name }}</h5>
+                                <p id="preview-url" class="text-green-600 mb-1">
+                                    https://zynoxmall.xyz/san-pham/{{ Str::slug(old('name', $product->name)) }}
+                                </p>
+                                <p id="preview-description" class="text-gray-600">
+                                    {{ $product->meta_description ?: 'Mô tả ngắn gọn về sản phẩm.' }}</p>
                             </div>
                         </div>
                     </div>
@@ -1146,11 +1143,11 @@
                             <div class="mb-4">
                                 <label class="block text-gray-700 font-medium mb-1">Thuộc tính biến thể</label>
                                 ${variant.map((value, attrIndex) => `
-                                                                <div class="flex items-center gap-4 mb-2">
-                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
-                                                                </div>
-                                                            `).join('')}
+                                                                                <div class="flex items-center gap-4 mb-2">
+                                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][name]" value="${attributeData[attrIndex].name}" placeholder="Tên thuộc tính" class="w-1/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                                    <input type="text" name="variants[${index}][attributes][${attrIndex}][value]" value="${value}" placeholder="Giá trị thuộc tính" class="w-2/3 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" readonly>
+                                                                                </div>
+                                                                            `).join('')}
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Hình ảnh</label>
@@ -1301,7 +1298,7 @@
                         reader.onload = event => {
                             const imgContainer = document.createElement('div');
                             imgContainer.classList.add('relative', 'w-24', 'h-24',
-                            'new-image-preview'); // Add class for new images
+                                'new-image-preview'); // Add class for new images
                             imgContainer.innerHTML = `
                                 <img src="${event.target.result}" class="w-full h-full object-cover rounded-md border border-gray-300">
                                 <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-full" onclick="this.parentElement.remove()">✖</button>
@@ -1339,7 +1336,7 @@
                     reader.onload = function(e) {
                         const imgContainer = document.createElement('div');
                         imgContainer.classList.add('relative', 'w-24', 'h-24',
-                        'new-variant-image-preview'); // Add class for new variant images
+                            'new-variant-image-preview'); // Add class for new variant images
                         imgContainer.innerHTML = `
                             <img src="${e.target.result}" class="w-full h-full object-cover rounded-md border border-gray-300">
                             <button type="button" class="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded-full" onclick="this.parentElement.remove()">✖</button>
@@ -1501,8 +1498,9 @@
                 });
             }
 
-            // Hàm validate form
+            // Hàm validate form (hiển thị lỗi ở đầu trang)
             function validateForm(e) {
+                e.preventDefault();
                 const productForm = document.getElementById('product-form');
                 if (!productForm) {
                     debugLog('Product form not found');
@@ -1512,59 +1510,39 @@
                 const brandCheckboxes = document.querySelectorAll('#tab-general-details input[name="brand_ids[]"]:checked');
                 const categoryCheckboxes = document.querySelectorAll(
                     '#tab-general-details input[name="category_ids[]"]:checked');
-                let isValid = true;
+                const errors = [];
 
                 // Kiểm tra loại sản phẩm
                 const productTypeInput = document.querySelector('input[name="product_type"]:checked');
-                if (!productTypeInput) {
-                    console.log('Không có radio product_type nào được chọn!');
-                } else {
-                    console.log('Giá trị product_type được chọn:', productTypeInput.value);
-                }
                 const productType = productTypeInput ? productTypeInput.value : null;
 
-                // Common validations (now in General Details tab)
+                // Common validations (General Details)
                 const nameInput = document.querySelector('input[name="name"]');
-                if (!nameInput.value.trim()) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập tên sản phẩm.');
-                    isValid = false;
+                if (!nameInput || !nameInput.value.trim()) {
+                    errors.push('Vui lòng nhập tên sản phẩm.');
                 } else if (nameInput.value.trim().length > 100) {
-                    e.preventDefault();
-                    alert('Tên sản phẩm không được vượt quá 100 ký tự.');
-                    isValid = false;
+                    errors.push('Tên sản phẩm không được vượt quá 100 ký tự.');
                 } else {
-                    // Kiểm tra tên sản phẩm đã tồn tại
                     const nameError = nameInput.parentNode.querySelector('.field-error');
                     if (nameError && nameError.textContent.includes('đã tồn tại')) {
-                        e.preventDefault();
-                        alert('Tên sản phẩm đã tồn tại trong shop của bạn.');
-                        isValid = false;
+                        errors.push('Tên sản phẩm đã tồn tại trong shop của bạn.');
                     }
                 }
-                if (!document.querySelector('input[name="sku"]').value.trim()) {
-                    e.preventDefault();
-                    alert('Vui lòng nhập mã SKU.');
-                    isValid = false;
+
+                const skuValue = (document.querySelector('input[name="sku"]')?.value || '').trim();
+                if (!skuValue) {
+                    errors.push('Vui lòng nhập mã SKU.');
                 }
-                // Thương hiệu không bắt buộc nữa
-                // if (brandCheckboxes.length === 0) {
-                //     e.preventDefault();
-                //     alert('Vui lòng chọn ít nhất một thương hiệu.');
-                //     isValid = false;
-                // }
+
                 if (categoryCheckboxes.length === 0) {
-                    e.preventDefault();
-                    alert('Vui lòng chọn ít nhất một danh mục.');
-                    isValid = false;
+                    errors.push('Vui lòng chọn ít nhất một danh mục.');
                 }
-                // Check main image only if no existing main image AND no new file selected
-                const existingMainImage = document.querySelector('input[name="existing_main_image"]').value;
-                const newMainImageSelected = document.getElementById('mainImage').files.length > 0;
+
+                // Ảnh chính: chỉ bắt buộc nếu không có ảnh cũ và chưa chọn ảnh mới
+                const existingMainImage = document.querySelector('input[name="existing_main_image"]')?.value || '';
+                const newMainImageSelected = (document.getElementById('mainImage')?.files.length || 0) > 0;
                 if (!existingMainImage && !newMainImageSelected) {
-                    e.preventDefault();
-                    alert('Vui lòng chọn ảnh chính.');
-                    isValid = false;
+                    errors.push('Vui lòng chọn ảnh chính.');
                 }
 
                 // Product type specific validations
@@ -1575,59 +1553,41 @@
                     const stockInput = document.querySelector('#tab-pricing-inventory input[name="stock_total"]');
 
                     if (!priceInput || !priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
-                        isValid = false;
+                        errors.push('Vui lòng nhập giá gốc hợp lệ cho sản phẩm đơn.');
                     }
                     if (!purchasePriceInput || !purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
                             purchasePriceInput.value) < 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
-                        isValid = false;
+                        errors.push('Vui lòng nhập giá nhập hợp lệ cho sản phẩm đơn.');
                     }
                     if (!salePriceInput || !salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
                             .value) < 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
-                        isValid = false;
+                        errors.push('Vui lòng nhập giá bán hợp lệ cho sản phẩm đơn.');
                     }
                     if (!stockInput || !stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
-                        isValid = false;
+                        errors.push('Vui lòng nhập số lượng tồn kho hợp lệ cho sản phẩm đơn.');
                     }
                 } else if (productType === 'variant') {
                     const attributeSelects = document.querySelectorAll(
                         '#tab-attributes-variants .attribute-row .attribute-select');
                     const variantItems = document.querySelectorAll('#variant-container > .variant-item');
 
-                    // Check attributes
                     if (attributeSelects.length === 0) {
-                        e.preventDefault();
-                        alert('Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
-                        isValid = false;
+                        errors.push('Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.');
                     } else {
                         attributeSelects.forEach((select, index) => {
-                            const nameInput = select.closest('.attribute-row').querySelector('.attribute-name');
-                            const valuesInput = select.closest('.attribute-row').querySelector('.attribute-values');
-                            if (select.value === 'new' && (!nameInput.value || !nameInput.value.trim())) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
-                                isValid = false;
+                            const nameField = select.closest('.attribute-row').querySelector('.attribute-name');
+                            const valuesField = select.closest('.attribute-row').querySelector('.attribute-values');
+                            if (select.value === 'new' && (!nameField.value || !nameField.value.trim())) {
+                                errors.push(`Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
                             }
-                            if (!valuesInput.value || !valuesInput.value.trim()) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
-                                isValid = false;
+                            if (!valuesField.value || !valuesField.value.trim()) {
+                                errors.push(`Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
                             }
                         });
                     }
 
-                    // Check variants
                     if (variantItems.length === 0) {
-                        e.preventDefault();
-                        alert('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
-                        isValid = false;
+                        errors.push('Vui lòng nhấn "Tạo biến thể" để tạo các biến thể trước khi lưu sản phẩm.');
                     } else {
                         variantItems.forEach((item, index) => {
                             const priceInput = item.querySelector(`input[name="variants[${index}][price]"]`);
@@ -1637,41 +1597,62 @@
                             const skuInput = item.querySelector(`input[name="variants[${index}][sku]"]`);
                             const stockInput = item.querySelector(`input[name="variants[${index}][stock_total]"]`);
 
-                            if (!priceInput.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
-                                isValid = false;
+                            if (!priceInput?.value || isNaN(priceInput.value) || parseFloat(priceInput.value) < 0) {
+                                errors.push(`Vui lòng nhập giá gốc hợp lệ cho biến thể ${index + 1}.`);
                             }
-                            if (!purchasePriceInput.value || isNaN(purchasePriceInput.value) || parseFloat(
+                            if (!purchasePriceInput?.value || isNaN(purchasePriceInput.value) || parseFloat(
                                     purchasePriceInput.value) < 0) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
-                                isValid = false;
+                                errors.push(`Vui lòng nhập giá nhập hợp lệ cho biến thể ${index + 1}.`);
                             }
-                            if (!salePriceInput.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
-                                .value) < 0) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
-                                isValid = false;
+                            if (!salePriceInput?.value || isNaN(salePriceInput.value) || parseFloat(salePriceInput
+                                    .value) < 0) {
+                                errors.push(`Vui lòng nhập giá bán hợp lệ cho biến thể ${index + 1}.`);
                             }
-                            if (!skuInput.value || !skuInput.value.trim()) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
-                                isValid = false;
+                            if (!skuInput?.value || !skuInput.value.trim()) {
+                                errors.push(`Vui lòng nhập SKU cho biến thể ${index + 1}.`);
                             }
-                            if (!stockInput.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
-                                e.preventDefault();
-                                alert(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
-                                isValid = false;
+                            if (!stockInput?.value || isNaN(stockInput.value) || parseInt(stockInput.value) < 0) {
+                                errors.push(`Vui lòng nhập số lượng tồn kho hợp lệ cho biến thể ${index + 1}.`);
                             }
                         });
                     }
                 }
 
-                if (isValid) {
-                    tinymce.triggerSave();
-                    debugLog('Form submission validated successfully');
+                // Render errors at top
+                let errorBox = document.getElementById('client-error-box');
+                if (!errorBox) {
+                    errorBox = document.createElement('div');
+                    errorBox.id = 'client-error-box';
+                    errorBox.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 hidden';
+                    const ul = document.createElement('ul');
+                    ul.id = 'client-error-list';
+                    ul.className = 'list-disc pl-5 text-sm';
+                    errorBox.appendChild(ul);
+                    productForm.parentNode.insertBefore(errorBox, productForm);
                 }
+
+                const errorList = document.getElementById('client-error-list');
+                errorList.innerHTML = '';
+
+                if (errors.length > 0) {
+                    errors.forEach(msg => {
+                        const li = document.createElement('li');
+                        li.textContent = msg;
+                        errorList.appendChild(li);
+                    });
+                    errorBox.classList.remove('hidden');
+                    errorBox.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    return; // Không submit
+                } else {
+                    errorBox.classList.add('hidden');
+                }
+
+                // Hợp lệ => submit
+                tinymce.triggerSave();
+                productForm.submit();
             }
 
 
@@ -1861,7 +1842,7 @@
                     metaDescriptionCount.textContent = `${metaDescription.value.length}/160`;
                     previewTitle.textContent = metaTitle.value || 'Tiêu đề sản phẩm';
                     previewUrl.textContent =
-                        `https://Zynox.com/san-pham/${slugify(productName.value || 'san-pham')}`;
+                        `https://zynoxmall.xyz/san-pham/${slugify(productName.value || 'san-pham')}`;
                     previewDescription.textContent = metaDescription.value || 'Mô tả ngắn gọn về sản phẩm.';
                 };
 
@@ -1936,6 +1917,7 @@
                 const shippingTabButton = document.querySelector('.tab-button[data-tab="shipping"]');
                 const attributesVariantsTabButton = document.querySelector(
                     '.tab-button[data-tab="attributes-variants"]');
+                const seoTabButton = document.querySelector('.tab-button[data-tab="seo"]');
 
                 const tabGeneralDetails = document.getElementById('tab-general-details');
                 const tabPricingInventory = document.getElementById('tab-pricing-inventory');
@@ -1950,12 +1932,14 @@
                     tabPricingInventory.classList.add('hidden');
                     tabShipping.classList.add('hidden');
                     tabAttributesVariants.classList.add('hidden');
+                    document.getElementById('tab-seo').classList.add('hidden');
 
                     // Remove active class from all tab buttons initially
                     generalDetailsTabButton.classList.remove('active');
                     pricingInventoryTabButton.classList.remove('active');
                     shippingTabButton.classList.remove('active');
                     attributesVariantsTabButton.classList.remove('active');
+                    seoTabButton.classList.remove('active');
 
                     // Helper to manage required attributes and disabled state
                     function setFieldsState(elements, isRequired, isDisabled) {
@@ -1974,43 +1958,43 @@
                     // Get all relevant inputs within tabs
                     const generalDetailsInputs = document.querySelectorAll(
                         '#tab-general-details input:not([type="hidden"]), #tab-general-details select, #tab-general-details textarea'
-                        );
+                    );
                     const pricingInputs = document.querySelectorAll(
-                    '#tab-pricing-inventory input:not([type="hidden"])');
+                        '#tab-pricing-inventory input:not([type="hidden"])');
                     const shippingInputs = document.querySelectorAll('#tab-shipping input:not([type="hidden"])');
                     const attributesVariantsInputs = document.querySelectorAll(
                         '#tab-attributes-variants input:not([type="hidden"]), #tab-attributes-variants select');
 
 
                     if (selectedProductType === 'variant') {
-                        // Display relevant tabs and set their active state
+                        // Show only General Details by default; enable Attributes & Variants button
                         generalDetailsTabButton.style.display = '';
                         attributesVariantsTabButton.style.display = '';
-                        pricingInventoryTabButton.style.display = 'none'; // Hide for variant
-                        shippingTabButton.style.display = 'none'; // Hide for variant
+                        pricingInventoryTabButton.style.display = 'none';
+                        shippingTabButton.style.display = 'none';
 
                         // Set field states
-                        setFieldsState(pricingInputs, false, true); // Disable pricing for variant
-                        setFieldsState(shippingInputs, false, true); // Disable shipping for variant (if displayed)
-                        setFieldsState(attributesVariantsInputs, true, false); // Enable and require variant fields
+                        setFieldsState(pricingInputs, false, true);
+                        setFieldsState(shippingInputs, false, true);
+                        setFieldsState(attributesVariantsInputs, true, false);
 
-                        // Set default active tab and show content
+                        // Default visible content
                         generalDetailsTabButton.classList.add('active');
                         tabGeneralDetails.classList.remove('hidden');
 
                     } else { // simple
-                        // Display relevant tabs and set their active state
+                        // Show only General Details by default; enable Pricing & Inventory and Shipping buttons
                         generalDetailsTabButton.style.display = '';
                         pricingInventoryTabButton.style.display = '';
                         shippingTabButton.style.display = '';
-                        attributesVariantsTabButton.style.display = 'none'; // Hide for simple
+                        attributesVariantsTabButton.style.display = 'none';
 
                         // Set field states
-                        setFieldsState(pricingInputs, true, false); // Enable and require pricing for simple
-                        setFieldsState(shippingInputs, false, false); // Shipping fields are never required, enable
-                        setFieldsState(attributesVariantsInputs, false, true); // Disable variant fields
+                        setFieldsState(pricingInputs, true, false);
+                        setFieldsState(shippingInputs, false, false);
+                        setFieldsState(attributesVariantsInputs, false, true);
 
-                        // Set default active tab and show content
+                        // Default visible content
                         generalDetailsTabButton.classList.add('active');
                         tabGeneralDetails.classList.remove('hidden');
                     }
@@ -2024,7 +2008,7 @@
                 // Store original required state for inputs inside tabs, so we can re-apply/remove dynamically
                 document.querySelectorAll(
                     '#tab-general-details input, #tab-general-details select, #tab-general-details textarea, #tab-pricing-inventory input, #tab-shipping input, #tab-attributes-variants input, #tab-attributes-variants select, #tab-attributes-variants textarea'
-                    ).forEach(input => {
+                ).forEach(input => {
                     if (input.required || input.hasAttribute('data-original-required')) {
                         // If it was already required in HTML, or explicitly marked as original-required
                         input.setAttribute('data-original-required', input.required ? 'true' : 'false');
@@ -2050,7 +2034,8 @@
                         let shouldSwitch = true;
 
                         // Prevent switching to a tab not relevant for the current product type
-                        if (selectedProductType === 'simple' && targetTabId === 'attributes-variants') {
+                        if (selectedProductType === 'simple' && (targetTabId ===
+                                'attributes-variants')) {
                             shouldSwitch = false;
                         }
                         if (selectedProductType === 'variant' && (targetTabId === 'pricing-inventory' ||
@@ -2076,7 +2061,7 @@
                             if (currentlyDisplayedTab) {
                                 document.querySelector(
                                     `.tab-button[data-tab="${currentlyDisplayedTab.id.replace('tab-', '')}"]`
-                                    ).classList.add('active');
+                                ).classList.add('active');
                             }
                         }
                     });

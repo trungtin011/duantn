@@ -30,17 +30,18 @@ class UserAddressController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'receiver_name' => 'required',
-            'receiver_phone' => 'required',
-            'address' => 'required',
-            'province' => 'required',
-            'district' => 'required',
-            'ward' => 'required',
-            'zip_code' => 'nullable',
+            'receiver_name' => 'required|string|max:100',
+            'receiver_phone' => 'required|string|regex:/^[0-9]{10,11}$/',
+            'address' => 'required|string|max:255',
+            'province' => 'required|string|max:100',
+            'district' => 'required|string|max:100',
+            'ward' => 'required|string|max:100',
             'address_type' => 'required|in:home,office,other',
+        ], [
+            'receiver_phone.regex' => 'Số điện thoại phải có 10-11 chữ số.',
+            'receiver_name.max' => 'Tên người nhận không được quá 100 ký tự.',
+            'address.max' => 'Địa chỉ không được quá 255 ký tự.',
         ]);
-
-        $zip_code = $request->zip_code ?? str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
 
         if ($request->has('is_default')) {
             UserAddress::where('userID', Auth::id())->update(['is_default' => 0]);
@@ -56,15 +57,15 @@ class UserAddressController extends Controller
             'address_type' => $request->address_type,
             'userID' => Auth::id(),
             'is_default' => $request->has('is_default') ? 1 : 0,
-            'zip_code' => $zip_code,
+            'zip_code' => null, // Bỏ trường zip_code
         ]);
         Log::info($store);
         if ($store) {
             Log::info('Đã thêm địa chỉ thành công.');
-            return redirect()->back()->with('success', 'Đã thêm địa chỉ thành công.');
+            return redirect()->route('account.addresses')->with('success', 'Đã thêm địa chỉ thành công!');
         }
 
-        return redirect()->back()->with('error', 'Đã xảy ra lỗi khi thêm địa chỉ.');
+        return redirect()->back()->with('error', 'Đã xảy ra lỗi khi thêm địa chỉ. Vui lòng kiểm tra lại thông tin và thử lại.');
     }
 
     public function edit(UserAddress $address)
@@ -79,14 +80,17 @@ class UserAddressController extends Controller
         $this->authorize('update', $address);
 
         $request->validate([
-            'receiver_name' => 'required',
-            'receiver_phone' => 'required',
-            'address' => 'required',
-            'province' => 'required',
-            'district' => 'required',
-            'ward' => 'required',
-            'zip_code' => 'required',
+            'receiver_name' => 'required|string|max:100',
+            'receiver_phone' => 'required|string|regex:/^[0-9]{10,11}$/',
+            'address' => 'required|string|max:255',
+            'province' => 'required|string|max:100',
+            'district' => 'required|string|max:100',
+            'ward' => 'required|string|max:100',
             'address_type' => 'required|in:home,office,other',
+        ], [
+            'receiver_phone.regex' => 'Số điện thoại phải có 10-11 chữ số.',
+            'receiver_name.max' => 'Tên người nhận không được quá 100 ký tự.',
+            'address.max' => 'Địa chỉ không được quá 255 ký tự.',
         ]);
 
         if ($request->has('is_default')) {
@@ -94,11 +98,19 @@ class UserAddressController extends Controller
         }
 
         $address->update([
-            ...$request->all(),
-            'is_default' => $request->has('is_default') ? 1 : 0
+            'receiver_name' => $request->receiver_name,
+            'receiver_phone' => $request->receiver_phone,
+            'address' => $request->address,
+            'province' => $request->province,
+            'district' => $request->district,
+            'ward' => $request->ward,
+            'address_type' => $request->address_type,
+            'note' => $request->note,
+            'is_default' => $request->has('is_default') ? 1 : 0,
+            'zip_code' => null, // Bỏ trường zip_code
         ]);
 
-        return redirect()->route('account.addresses')->with('success', 'Đã cập nhật địa chỉ.');
+        return redirect()->route('account.addresses')->with('success', 'Đã cập nhật địa chỉ thành công!');
     }
 
     public function destroy(UserAddress $address)
@@ -106,7 +118,7 @@ class UserAddressController extends Controller
         $this->authorize('delete', $address);
         $address->delete();
 
-        return back()->with('success', 'Đã xoá địa chỉ.');
+        return redirect()->route('account.addresses')->with('success', 'Đã xoá địa chỉ thành công!');
     }
 
     public function setDefault(UserAddress $address)
@@ -119,6 +131,6 @@ class UserAddressController extends Controller
         // Set the selected address as default
         $address->update(['is_default' => 1]);
 
-        return redirect()->route('account.addresses')->with('success', 'Đã đặt địa chỉ làm mặc định.');
+        return redirect()->route('account.addresses')->with('success', 'Đã đặt địa chỉ làm mặc định thành công!');
     }
 }

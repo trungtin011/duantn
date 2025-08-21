@@ -18,7 +18,7 @@ class UserAddress extends Model
         'province',
         'district',
         'ward',
-        'zip_code',
+        'zip_code', // Giữ lại để tương thích với database nhưng sẽ luôn null
         'address_type',
         'note',
         'is_default'

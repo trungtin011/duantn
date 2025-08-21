@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
-use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\Customer;
 
 class LoginController extends Controller
 {
@@ -90,15 +91,17 @@ class LoginController extends Controller
 
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->with(['prompt' => 'select_account'])
+            ->redirect();
     }
 
     public function handleGoogleCallback()
     {
-        /** @var \Laravel\Socialite\Contracts\OAuth2Provider $socialiteProvider */
         $socialiteProvider = Socialite::driver('google');
         $googleUser = $socialiteProvider->stateless()->user();
         $user = User::where('email', $googleUser->getEmail())->first();
+
         if (!$user) {
             $user = User::create([
                 'username' => explode('@', $googleUser->getEmail())[0],
@@ -111,8 +114,40 @@ class LoginController extends Controller
                 'status' => \App\Enums\UserStatus::ACTIVE,
                 'role' => \App\Enums\UserRole::CUSTOMER,
             ]);
+            // Tạo customer mới cho user Google
+            Customer::create([
+                'userID' => $user->id,
+                'ranking' => 'bronze',
+                'preferred_payment_method' => null,
+                'total_orders' => 0,
+                'total_spent' => 0,
+                'total_points' => 0,
+                'last_order_at' => null,
+            ]);
+        } else {
+            // Nếu user đã có, kiểm tra có customer chưa, nếu chưa thì tạo
+            if (!Customer::where('userID', $user->id)->exists()) {
+                Customer::create([
+                    'userID' => $user->id,
+                    'ranking' => 'bronze',
+                    'preferred_payment_method' => null,
+                    'total_orders' => 0,
+                    'total_spent' => 0,
+                    'total_points' => 0,
+                    'last_order_at' => null,
+                ]);
+            }
         }
+
         Auth::login($user);
-        return redirect()->route('home')->with('success', 'Đăng nhập bằng Google thành công! Chào mừng bạn đến với hệ thống.');
+
+        // Chuyển hướng theo quyền
+        if ($user->role == \App\Enums\UserRole::ADMIN) {
+            return redirect()->route('admin.dashboard')->with('success', 'Đăng nhập thành công! Chào mừng bạn đến với trang quản trị.');
+        } elseif ($user->role == \App\Enums\UserRole::SELLER) {
+            return redirect()->route('seller.dashboard')->with('success', 'Đăng nhập thành công! Chào mừng bạn đến với trang người bán.');
+        } else {
+            return redirect()->intended(route('home'))->with('success', 'Đăng nhập thành công! Chào mừng bạn trở lại.');
+        }
     }
 }

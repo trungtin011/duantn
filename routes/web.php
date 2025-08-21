@@ -952,6 +952,36 @@ Route::post('/api/upload-cccd-temp', function (Request $request) {
     ]);
 })->middleware('web');
 
+// Route upload ảnh sản phẩm tạm thời (dùng cho trang tạo sản phẩm admin)
+Route::post('/api/upload-product-temp', function (Request $request) {
+	if ($request->hasFile('file')) {
+		// Validate file
+		$request->validate([
+			'file' => 'required|image|mimes:jpeg,png,jpg,webp,svg|max:5120', // 5MB
+		]);
+
+		$file = $request->file('file');
+		// Tạo tên file unique
+		$fileName = time() . '_product_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+		// Lưu vào thư mục tạm
+		$path = $file->storeAs('temp/product_images', $fileName, 'public');
+
+		return response()->json([
+			'success' => true,
+			// Trả về path tương đối theo disk public để backend có thể move
+			'path' => $path,
+			'url' => asset('storage/' . $path),
+			'filename' => $fileName,
+		]);
+	}
+
+	return response()->json([
+		'success' => false,
+		'message' => 'Không có file được upload',
+	]);
+})->middleware('web');
+
 Route::get('/admin/reviews', [AdminReviewController::class, 'index'])->name('admin.reviews.index');
 Route::get('/admin/reviews/ajax', [AdminReviewController::class, 'ajax'])->name('admin.reviews.ajax');
 

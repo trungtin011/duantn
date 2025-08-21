@@ -208,7 +208,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('name', 100);
             $table->string('slug', 100);
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->text('image_path');
             $table->string('meta_title', 255)->nullable();
             $table->text('meta_description')->nullable();

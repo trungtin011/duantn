@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Sửa đánh giá')
+
 @section('content')
 <h2>Sửa đánh giá</h2>
 <form method="POST" action="{{ route('admin.reviews.update', $review->id) }}">

@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Sửa thuộc tính')
+
 @section('content')
     <div class="admin-page-header">
         <h1 class="admin-page-title">Sửa thuộc tính</h1>

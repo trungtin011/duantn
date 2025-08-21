@@ -1,5 +1,5 @@
 @extends('user.account.profile')
-
+@section('title', 'Địa chỉ của tôi')
 @section('account-content')
     <div class="bg-white px-6 py-4 rounded shadow">
 

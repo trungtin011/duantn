@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Cài đặt')
+
 @section('content')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Main content container -->

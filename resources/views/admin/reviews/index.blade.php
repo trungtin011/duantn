@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Quản lý đánh giá')
+
 @section('head')
     @push('styles')
         <link rel="stylesheet" href="{{ asset('css/admin/reviews.css') }}">

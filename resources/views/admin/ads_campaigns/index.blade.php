@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Chiến dịch quảng cáo')
+
 @section('content')
     <div class="admin-page-header mb-5">
         <h1 class="admin-page-title">Chiến dịch quảng cáo</h1>

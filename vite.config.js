@@ -1,15 +1,11 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
-import glob from 'fast-glob';
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: glob.sync([
-                'resources/**/*.js',
-                'resources/**/*.css'
-            ]),
+            input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
         }),
         tailwindcss(),

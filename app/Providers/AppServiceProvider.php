@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
         ShopOrder::observe(ShopOrderObserver::class);
         Notification::observe(NotificationObserver::class);
         
-        View::composer('layouts.app', function ($view) {
+        View::composer(['layouts.app', 'layouts.admin', 'layouts.seller_home'], function ($view) {
             $settings = DB::table('settings')->first();
             $view->with('settings', $settings);
         });

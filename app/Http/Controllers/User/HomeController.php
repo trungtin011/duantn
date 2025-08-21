@@ -61,6 +61,35 @@ class HomeController extends Controller
     }
 
     /**
+     * Lấy sản phẩm nổi bật - logic đơn giản trong controller
+     */
+    private function getFeaturedProducts()
+    {
+        // Logic mặc định: kết hợp sản phẩm bán chạy, mới và đánh giá cao
+        return Product::with(['defaultImage', 'categories', 'variants'])
+            ->where('status', 'active')
+            ->where('stock_total', '>', 0) // Chỉ lấy sản phẩm còn hàng
+            ->where(function($query) {
+                $query->where('sold_quantity', '>=', 5) // Sản phẩm đã bán ít nhất 5 cái
+                      ->orWhere('created_at', '>=', Carbon::now()->subDays(30)) // Hoặc sản phẩm mới trong 30 ngày
+                      ->orWhereHas('orderReviews', function($reviewQuery) {
+                          $reviewQuery->where('rating', '>=', 4); // Hoặc có đánh giá từ 4 sao trở lên
+                      });
+            })
+            ->orderByDesc('sold_quantity') // Ưu tiên sản phẩm bán chạy
+            ->orderByDesc('created_at') // Sau đó ưu tiên sản phẩm mới
+            ->take(12) // Lấy nhiều hơn để có thể lọc
+            ->get()
+            ->map(function ($product) {
+                $prices = $this->calculateDisplayPrices($product);
+                $product->display_price = $prices['display_price'];
+                $product->display_original_price = $prices['display_original_price'];
+                return $product;
+            })
+            ->take(8); // Giới hạn cuối cùng 8 sản phẩm
+    }
+
+    /**
      * Xử lý danh mục với kiểm tra danh mục cha/con
      */
     private function processCategoryWithSubCategories($categoryName): array
@@ -162,11 +191,12 @@ class HomeController extends Controller
             ->take(1)
             ->get();
 
-        // Lấy 8 sản phẩm bán chạy nhất
+        // Lấy 6 sản phẩm bán chạy nhất (chỉ những sản phẩm đã được bán)
         $bestSellers = Product::with(['defaultImage', 'categories', 'variants'])
-            ->orderByDesc('sold_quantity')
             ->where('status', 'active')
-            ->take(8)
+            ->where('sold_quantity', '>', 0) // Chỉ lấy sản phẩm đã được bán ít nhất 1 cái
+            ->orderByDesc('sold_quantity') // Sắp xếp theo số lượng bán giảm dần
+            ->take(6) // Giới hạn 6 sản phẩm
             ->get()
             ->map(function ($product) {
                 $prices = $this->calculateDisplayPrices($product);
@@ -175,18 +205,8 @@ class HomeController extends Controller
                 return $product;
             });
 
-        // Sản phẩm nổi bật
-        $featuredProducts = Product::with(['defaultImage', 'categories', 'variants'])
-            ->where('is_featured', 1)
-            ->where('status', 'active')
-            ->orderByDesc('updated_at')
-            ->get()
-            ->map(function ($product) {
-                $prices = $this->calculateDisplayPrices($product);
-                $product->display_price = $prices['display_price'];
-                $product->display_original_price = $prices['display_original_price'];
-                return $product;
-            });
+        // Sản phẩm nổi bật - sử dụng method riêng
+        $featuredProducts = $this->getFeaturedProducts();
 
         // Sản phẩm được xem nhiều nhất
         $trendingProducts = app(\App\Services\ProductViewService::class)->getMostViewedProducts(10, 'all');
@@ -302,7 +322,7 @@ class HomeController extends Controller
             ->take(10)
             ->get()
             ->filter(function ($shop) {
-                return $shop->products_count > 0; // Chỉ lấy shops có products
+                return $shop->products_count > 0 && ($shop->products_sum_sold_quantity ?? 0) > 0; // Chỉ lấy shops có products và đã bán được sản phẩm
             })
             ->map(function ($shop) {
                 // Sử dụng rating thực tế từ bảng order_reviews
