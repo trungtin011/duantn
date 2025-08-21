@@ -27,6 +27,11 @@
         </div>
     </div>
 
+    <!-- Hidden names to always submit readable text -->
+    <input type="hidden" id="province_name" name="province_name" value="{{ old('province_name', $address->province ?? '') }}">
+    <input type="hidden" id="district_name" name="district_name" value="{{ old('district_name', $address->district ?? '') }}">
+    <input type="hidden" id="ward_name" name="ward_name" value="{{ old('ward_name', $address->ward ?? '') }}">
+
     <select name="address_type" class="border rounded px-3 py-2">
         <option value="home" {{ old('address_type', $address->address_type ?? '') === 'home' ? 'selected' : '' }}>Nhà
             riêng</option>
@@ -124,6 +129,9 @@
                     districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
                     wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
                 }
+                // set tên tỉnh vào hidden
+                const provinceNameHidden = document.getElementById('province_name');
+                provinceNameHidden.value = this.options[this.selectedIndex]?.dataset.name || this.options[this.selectedIndex]?.textContent || '';
             });
 
             // Xử lý khi chọn quận/huyện
@@ -137,6 +145,9 @@
                     hideLoading(wardSelect);
                     wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
                 }
+                // set tên quận vào hidden
+                const districtNameHidden = document.getElementById('district_name');
+                districtNameHidden.value = this.options[this.selectedIndex]?.dataset.name || this.options[this.selectedIndex]?.textContent || '';
             });
 
             // Load quận/huyện từ VNPost API
@@ -211,7 +222,7 @@
                             wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
                             data.data.forEach(ward => {
                                 const option = document.createElement('option');
-                                option.value = ward.wardCode;
+                                option.value = ward.wardCode || ward.wardName; // nếu có code dùng code, nhưng ta sẽ đổi khi submit
                                 option.textContent = ward.wardName;
                                 option.dataset.name = ward.wardName;
                                 wardSelect.appendChild(option);
@@ -240,7 +251,7 @@
                         wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
                         district.wards.forEach(ward => {
                             const option = document.createElement('option');
-                            option.value = ward.code;
+                            option.value = ward.code || ward.name;
                             option.textContent = ward.name;
                             option.dataset.name = ward.name;
                             wardSelect.appendChild(option);
@@ -292,6 +303,8 @@
                     );
                     if (wardOption) {
                         wardOption.selected = true;
+                        const wardNameHidden = document.getElementById('ward_name');
+                        wardNameHidden.value = wardOption.dataset.name || wardOption.textContent;
                     }
                 }
             }
@@ -317,11 +330,22 @@
                     const selectedDistrict = districtSelect.options[districtSelect.selectedIndex];
                     const selectedWard = wardSelect.options[wardSelect.selectedIndex];
 
-                    // Tạo input hidden để gửi giá trị hiển thị
+                    // Gán thẳng value của option thành tên để server luôn nhận CHỮ (không phải mã)
+                    if (selectedProvince) {
+                        selectedProvince.value = selectedProvince.dataset.name || selectedProvince.textContent;
+                    }
+                    if (selectedDistrict) {
+                        selectedDistrict.value = selectedDistrict.dataset.name || selectedDistrict.textContent;
+                    }
+                    if (selectedWard) {
+                        selectedWard.value = selectedWard.dataset.name || selectedWard.textContent;
+                    }
+
+                    // Tạo input hidden để gửi giá trị hiển thị (đặt tên khác để không đè giá trị code)
                     if (selectedProvince && selectedProvince.value) {
                         const provinceInput = document.createElement('input');
                         provinceInput.type = 'hidden';
-                        provinceInput.name = 'province';
+                        provinceInput.name = 'province_name';
                         provinceInput.value = selectedProvince.dataset.name || selectedProvince.textContent;
                         e.target.appendChild(provinceInput);
                     }
@@ -329,7 +353,7 @@
                     if (selectedDistrict && selectedDistrict.value) {
                         const districtInput = document.createElement('input');
                         districtInput.type = 'hidden';
-                        districtInput.name = 'district';
+                        districtInput.name = 'district_name';
                         districtInput.value = selectedDistrict.dataset.name || selectedDistrict.textContent;
                         e.target.appendChild(districtInput);
                     }
@@ -337,7 +361,7 @@
                     if (selectedWard && selectedWard.value) {
                         const wardInput = document.createElement('input');
                         wardInput.type = 'hidden';
-                        wardInput.name = 'ward';
+                        wardInput.name = 'ward_name';
                         wardInput.value = selectedWard.dataset.name || selectedWard.textContent;
                         e.target.appendChild(wardInput);
                     }
