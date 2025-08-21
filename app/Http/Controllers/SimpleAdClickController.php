@@ -69,7 +69,10 @@ class SimpleAdClickController extends Controller
             // 2. Kiểm tra số dư (lấy theo giá thầu bid_amount của campaign)
             $costPerClick = max(1.00, (float) ($campaign->bid_amount ?? 1.00));
             if ($shopWallet->balance < $costPerClick) {
-                // Không đủ tiền: im lặng chuyển hướng, không trừ, không thông báo
+                // Không đủ tiền: tạm dừng chiến dịch và im lặng chuyển hướng
+                if ($campaign->status === 'active') {
+                    $campaign->update(['status' => 'pending']);
+                }
                 if ($clickType === 'shop_detail') {
                     return redirect("/customer/shop/{$shopId}");
                 } elseif ($clickType === 'product_detail' && $productId) {

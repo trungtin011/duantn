@@ -8,6 +8,7 @@ use App\Models\AdsCampaign;
 use App\Models\AdsCampaignItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use App\Services\CampaignBudgetEnforcer;
 
 class AdsCampaignController extends Controller
 {
@@ -20,7 +21,8 @@ class AdsCampaignController extends Controller
 
     public function create()
     {
-        return view('seller.ads_campaign.create');
+        $walletBalance = optional(Auth::user()->shop->wallet)->balance ?? 0;
+        return view('seller.ads_campaign.create', compact('walletBalance'));
     }
 
     public function store(Request $request)
@@ -31,6 +33,13 @@ class AdsCampaignController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'bid_amount' => 'required|numeric|min:0',
         ]);
+
+        $walletBalance = optional(Auth::user()->shop->wallet)->balance ?? 0;
+        if ($request->bid_amount > $walletBalance) {
+            return back()
+                ->withErrors(['bid_amount' => 'Giá thầu không được lớn hơn số dư ví hiện tại (' . number_format($walletBalance, 0, ',', '.') . ' VND).'])
+                ->withInput();
+        }
 
         $campaign = AdsCampaign::create([
             'shop_id' => Auth::user()->shop->id,
@@ -90,7 +99,8 @@ class AdsCampaignController extends Controller
     {
         $shopId = Auth::user()->shop->id;
         $campaign = AdsCampaign::where('shop_id', $shopId)->findOrFail($id);
-        return view('seller.ads_campaign.edit', compact('campaign'));
+        $walletBalance = optional(Auth::user()->shop->wallet)->balance ?? 0;
+        return view('seller.ads_campaign.edit', compact('campaign', 'walletBalance'));
     }
 
     public function update(Request $request, $id)
@@ -105,12 +115,22 @@ class AdsCampaignController extends Controller
             'bid_amount' => 'required|numeric|min:0',
         ]);
 
+        $walletBalance = optional(Auth::user()->shop->wallet)->balance ?? 0;
+        if ($request->bid_amount > $walletBalance) {
+            return back()
+                ->withErrors(['bid_amount' => 'Giá thầu không được lớn hơn số dư ví hiện tại (' . number_format($walletBalance, 0, ',', '.') . ' VND).'])
+                ->withInput();
+        }
+
         $campaign->update([
             'name' => $request->name,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'bid_amount' => $request->bid_amount,
         ]);
+
+        // Áp dụng quy tắc dừng/kích hoạt theo số dư ví
+        CampaignBudgetEnforcer::enforceForCampaign($campaign);
 
         return redirect()->route('seller.ads_campaigns.index')
             ->with('success', 'Chiến dịch quảng cáo đã được cập nhật.');

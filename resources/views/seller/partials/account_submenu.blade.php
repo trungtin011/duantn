@@ -21,6 +21,10 @@
             class="px-3 py-2 rounded-md {{ request()->routeIs('seller.settings') ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100' }}">
             Cài đặt cửa hàng
         </a>
+        <a href="{{ route('seller.profile') }}"
+            class="px-3 py-2 rounded-md {{ request()->routeIs('seller.profile') ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+            Hồ sơ
+        </a>
         <a href="{{ route('seller.password') }}"
             class="px-3 py-2 rounded-md {{ request()->routeIs('seller.password*') ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100' }}">
             Mật khẩu

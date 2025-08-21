@@ -125,6 +125,11 @@ class AdClickController extends Controller
                         'wallet_transaction_id' => null
                     ]);
 
+                    // Tự động tạm dừng chiến dịch cho tới khi số dư >= giá thầu
+                    if ($campaign->status === 'active') {
+                        $campaign->update(['status' => 'pending']);
+                    }
+
                     Log::warning("Shop {$campaign->shop_id} không đủ tiền để trừ phí quảng cáo. Số dư: {$shopWallet->balance}, Cần: {$bidAmount}");
                     return;
                 }

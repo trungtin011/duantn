@@ -1,7 +1,7 @@
 @extends('layouts.seller')
 
 @section('content')
-<div class="container mx-auto py-5 flex flex-col" style="min-height: 80vh;">
+<div class="mx-auto py-5 flex flex-col" style="min-height: 80vh;">
     <!-- Breadcrumb -->
     <div class="flex flex-wrap items-center gap-2 my-10 md:my-10 text-sm md:text-base">
         <a href="{{ route('home') }}" class="text-gray-500 hover:underline">Trang chủ</a>
@@ -9,7 +9,7 @@
         <span>Đăng ký trở thành người bán</span>
     </div>
     
-    <div class="p-6 w-full shadow-md rounded-[10px]">
+    <div class="p-6 w-full rounded-[10px]">
         <div class="bg-white rounded-2xl p-6">
             <div class="flex flex-col items-center justify-center text-center">
                 <!-- Icon thành công -->

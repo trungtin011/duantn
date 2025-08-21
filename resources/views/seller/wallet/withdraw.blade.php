@@ -8,6 +8,7 @@
             'walletBalance' => $walletBalance ?? null,
             'availableBalance' => $availableBalance ?? null,
             'withdrawTransactions' => isset($withdrawTransactions) ? $withdrawTransactions->toArray() : null,
+            'untransferredRevenue' => $untransferredRevenue ?? null,
         ]);
     @endphp
     {{-- Flash message --}}

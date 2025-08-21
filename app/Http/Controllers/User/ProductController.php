@@ -1838,6 +1838,13 @@ class ProductController extends Controller
             ->whereHas('adsCampaignItems.product', function ($productQuery) use ($query) {
                 $productQuery->where('name', 'like', "%{$query}%");
             })
+            // Chỉ lấy campaign có số dư ví shop >= giá thầu
+            ->whereExists(function ($q) {
+                $q->select(\Illuminate\Support\Facades\DB::raw(1))
+                  ->from('shop_wallets')
+                  ->whereColumn('shop_wallets.shop_id', 'ads_campaigns.shop_id')
+                  ->whereRaw('shop_wallets.balance >= ads_campaigns.bid_amount');
+            })
             ->with([
                 'adsCampaignItems.product.images',
                 'adsCampaignItems.product.variants',
@@ -1849,7 +1856,7 @@ class ProductController extends Controller
             ])
             ->get();
 
-        \Log::info('DEBUG getAdvertisedProducts', [
+        \Illuminate\Support\Facades\Log::info('DEBUG getAdvertisedProducts', [
             'query' => $query,
             'advertisedCampaigns_count' => $advertisedCampaigns->count(),
             'advertisedCampaigns_ids' => $advertisedCampaigns->pluck('id')->toArray(),
@@ -1865,7 +1872,7 @@ class ProductController extends Controller
             }
         }
 
-        \Log::info('DEBUG advertisedProductsByShop', [
+        \Illuminate\Support\Facades\Log::info('DEBUG advertisedProductsByShop', [
             'count' => $advertisedProductsByShop->count(),
             'shop_ids' => $advertisedProductsByShop->pluck('shop.id')->toArray(),
         ]);

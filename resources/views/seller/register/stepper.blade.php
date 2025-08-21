@@ -1,4 +1,4 @@
-<div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+<div class="bg-white rounded-2xl border border-gray-100 p-8 mb-8">
     <div class="max-w-4xl mx-auto">
         <!-- Progress Header -->
         <div class="text-center mb-8">

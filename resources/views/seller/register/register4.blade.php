@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="">
             <!-- Breadcrumb -->
             <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-8">
                 <a href="{{ route('home') }}" class="hover:text-orange-500 transition-colors">
@@ -14,7 +14,7 @@
             </nav>
 
             <!-- Success Content -->
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-green-400 to-emerald-500 px-8 py-6">
                     <div class="flex items-center space-x-3">

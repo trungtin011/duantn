@@ -919,6 +919,10 @@ Route::prefix('seller')->middleware(['auth', 'CheckRole:seller'])->name('seller.
         Route::get('/stats', [App\Http\Controllers\Seller\AdBiddingController::class, 'stats'])->name('stats');
         Route::post('/update-bid', [App\Http\Controllers\Seller\AdBiddingController::class, 'updateBid'])->name('update_bid');
     });
+
+    // Seller profile routes
+    Route::get('/profile', [App\Http\Controllers\Seller\SellerSettingsController::class, 'profile'])->name('profile');
+    Route::post('/profile', [App\Http\Controllers\Seller\SellerSettingsController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Route upload ảnh CCCD tạm thời

@@ -13,6 +13,7 @@ use App\Models\Bank;
 use App\Models\LinkedBank;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\Auth;
+use App\Services\CampaignBudgetEnforcer;
 
 class WalletController extends Controller
 {
@@ -113,52 +114,73 @@ class WalletController extends Controller
             ]);
         }
 
-        $transferredOrders = ShopOrder::where('shopID', $shop->id)
-            ->where('status', 'completed')
-            ->where('is_revenue_transferred', true)
-            ->with(['items.product'])
-            ->get();
-
+        // Doanh thu đã chuyển: lấy từ bảng wallet_transactions (type = 'order' hoặc 'revenue' – hỗ trợ dữ liệu cũ)
         $transferredRevenue = 0;
-        foreach ($transferredOrders as $order) {
-            $transferredRevenue += $order->items->sum(fn($item) => $item->quantity * $item->product->sale_price);
+        if ($wallet) {
+            $transferredRevenue = (float) WalletTransaction::where('shop_wallet_id', $wallet->id)
+                ->where('direction', 'in')
+                ->whereIn('type', ['order', 'revenue'])
+                ->sum('amount');
         }
 
         $balance = $wallet->balance ?? 0;
         $availableBalance = max(0, $balance - 600000);
 
+        // Tổng doanh thu từ tất cả đơn đã hoàn thành (tính theo items_order giống logic chuyển vào ví)
         $completedOrders = ShopOrder::where('shopID', $shop->id)
             ->where('status', 'completed')
-            ->with(['items.product'])
+            ->with(['items.combo', 'items.product'])
             ->get();
 
         $totalCompletedRevenue = 0;
         foreach ($completedOrders as $order) {
-            $totalCompletedRevenue += $order->items->sum(fn($item) => $item->quantity * $item->product->sale_price);
+            foreach ($order->items as $item) {
+                if (!empty($item->combo_id) && $item->combo && isset($item->combo->price)) {
+                    $totalCompletedRevenue += (int)($item->combo_quantity ?? 1) * (float)$item->combo->price;
+                } else {
+                    $totalCompletedRevenue += (float)$item->total_price;
+                }
+            }
         }
 
-        $withdrawTransactions = collect();
+        // Paginated wallet transactions for table display with filters
+        $typeFilter = $request->input('type', 'all');
+        $statusParam = $request->input('status', 'all');
+        $searchTerm = $request->input('search');
+
+        $walletTransactions = collect();
         if ($wallet) {
-            $withdrawTransactions = $wallet->transactions()
-                ->where('type', 'withdraw')
-                ->orderByDesc('created_at')
-                ->limit(10)
-                ->get();
+            $txQuery = $wallet->transactions()->with('order')->orderByDesc('created_at');
+
+            if ($startDate && $endDate) {
+                $txQuery->whereBetween('created_at', [
+                    $startDate . ' 00:00:00',
+                    $endDate . ' 23:59:59',
+                ]);
+            }
+
+            if ($typeFilter !== 'all') {
+                $txQuery->where('type', $typeFilter);
+            }
+
+            if ($statusParam !== 'all') {
+                $txQuery->where('status', $statusParam);
+            }
+
+            if (!empty($searchTerm)) {
+                $txQuery->where(function($q) use ($searchTerm) {
+                    $q->where('description', 'like', "%{$searchTerm}%")
+                      ->orWhere('id', intval($searchTerm));
+                });
+            }
+
+            $walletTransactions = $txQuery->paginate(10)->withQueryString();
         }
 
-        // Gộp giao dịch rút tiền vào $transactions
-        foreach ($withdrawTransactions as $tx) {
-            $transactions->push([
-                'date' => $tx->created_at->format('Y-m-d'),
-                'buyer' => 'Rút tiền',
-                'order_id' => null,
-                'order_code' => '-',
-                'amount' => '-' . number_format($tx->amount, 0, ',', '.'),
-                'method' => 'Rút tiền',
-                'status' => 'Tiền ra',
-                'transaction_type' => 'Rút tiền',
-            ]);
-        }
+        // Doanh thu chưa chuyển = tổng completed - tổng đã chuyển (từ wallet_transactions)
+        $untransferredRevenue = max(0, (float)$totalCompletedRevenue - (float)$transferredRevenue);
+
+        // Legacy $transactions aggregation retained if needed elsewhere; UI table uses $walletTransactions
 
         $sellerId = Auth::user()->seller->id;
         $linkedBanks = LinkedBank::where('seller_id', $sellerId)
@@ -188,8 +210,9 @@ class WalletController extends Controller
             'sellers',
             'transferredRevenue',
             'totalCompletedRevenue',
+            'untransferredRevenue',
             'wallet',
-            'withdrawTransactions',
+            'walletTransactions',
             'linkedBanks',
             'banks',
             'defaultBank',
@@ -211,36 +234,33 @@ class WalletController extends Controller
         $wallet = Auth::user()->shop->wallet;
         $shopId = Auth::user()->shop->id;
 
-        // 1. Doanh thu đã chuyển
-        $transferredOrders = ShopOrder::where('shopID', $shopId)
-            ->where('status', 'completed')
-            ->where('is_revenue_transferred', true)
-            ->with(['items.product'])
-            ->get();
-
+        // 1. Doanh thu đã chuyển: sum theo wallet_transactions (type = 'order' hoặc 'revenue')
         $transferredRevenue = 0;
-        foreach ($transferredOrders as $order) {
-            $transferredRevenue += $order->items->sum(fn($item) => $item->quantity * $item->product->sale_price);
+        if ($wallet) {
+            $transferredRevenue = (float) WalletTransaction::where('shop_wallet_id', $wallet->id)
+                ->where('direction', 'in')
+                ->whereIn('type', ['order', 'revenue'])
+                ->sum('amount');
         }
 
-        // 2. Doanh thu chưa chuyển
-        // Lấy tất cả item thuộc các đơn hàng completed, chưa chuyển doanh thu, của shop này
-        $untransferredItems = ItemsOrder::whereHas('shopOrder', function ($query) use ($shopId) {
-            $query->where('shopID', $shopId)
-                ->where('status', 'completed')
-                ->where('is_revenue_transferred', false);
-        })
+        // 2. Doanh thu chưa chuyển = tổng doanh thu của đơn completed - tổng đã chuyển
+        $completedOrders = ShopOrder::where('shopID', $shopId)
+            ->where('status', 'completed')
+            ->with(['items.combo', 'items.product'])
             ->get();
 
-        $untransferredRevenue = $untransferredItems->sum(function ($item) {
-            // Nếu là combo và có giá combo, tính theo combo_quantity * giá combo
-            if (!empty($item->combo_id) && $item->combo && isset($item->combo->price)) {
-                return (int)$item->combo_quantity * (float)$item->combo->price;
+        $totalCompletedRevenue = 0;
+        foreach ($completedOrders as $order) {
+            foreach ($order->items as $item) {
+                if (!empty($item->combo_id) && $item->combo && isset($item->combo->price)) {
+                    $totalCompletedRevenue += (int)($item->combo_quantity ?? 1) * (float)$item->combo->price;
+                } else {
+                    $totalCompletedRevenue += (float)$item->total_price;
+                }
             }
-            // Nếu không phải combo, tính theo quantity * unit_price (ưu tiên unit_price, fallback sale_price)
-            $unitPrice = $item->unit_price ?? ($item->product->sale_price ?? 0);
-            return (int)$item->quantity * (float)$unitPrice;
-        });
+        }
+
+        $untransferredRevenue = max(0, (float)$totalCompletedRevenue - (float)$transferredRevenue);
 
 
         // Tổng doanh thu hoàn thành
@@ -350,25 +370,31 @@ class WalletController extends Controller
                     $orderTotal += $item->total_price;
                 }
             }
-            $totalToTransfer += $orderTotal;
+
+            if ($orderTotal > 0) {
+                // Tăng số dư theo từng đơn và tạo transaction có order_id
+                $wallet->increment('balance', $orderTotal);
+
+                WalletTransaction::create([
+                    'shop_wallet_id' => $wallet->id,
+                    'order_id' => $order->orderID, // tham chiếu tới bảng orders
+                    'amount' => $orderTotal,
+                    'direction' => 'in',
+                    'type' => 'revenue',
+                    'description' => 'Chuyển doanh thu đơn hàng #' . ($order->code ?? $order->orderID) . ' vào ví',
+                    'status' => 'completed',
+                ]);
+
+                $totalToTransfer += $orderTotal;
+            }
 
             $order->is_revenue_transferred = true;
             $order->save();
         }
 
         if ($totalToTransfer > 0) {
-            // Cập nhật số dư ví hiện có thay vì tạo mới
-            $wallet->increment('balance', $totalToTransfer);
-
-            WalletTransaction::create([
-                'shop_wallet_id' => $wallet->id,
-                'amount' => $totalToTransfer,
-                'direction' => 'in',
-                'type' => 'revenue',
-                'description' => 'Chuyển doanh thu từ đơn hàng hoàn thành vào ví',
-                'status' => 'completed',
-            ]);
-
+            // Kiểm tra và tự động kích hoạt lại các chiến dịch nếu đủ tiền
+            CampaignBudgetEnforcer::enforceForShop($shop->id);
 
             return back()->with('success', 'Đã chuyển ' . number_format($totalToTransfer, 0, ',', '.') . ' VND vào ví.');
         }

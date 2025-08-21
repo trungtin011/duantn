@@ -35,9 +35,10 @@ class UserController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'username' => 'nullable|string|max:50|unique:users,username,' . $user->id,
-            'fullname' => 'nullable|string|max:100',
-            'phone' => 'nullable|string|max:11',
+            'username' => 'nullable|string|max:50|min:3|unique:users,username,' . $user->id,
+            'fullname' => 'nullable|string|max:100|min:2',
+            'email' => 'nullable|email|max:100|min:5|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:11|min:10|unique:users,phone,' . $user->id,
             'day' => 'nullable|integer|between:1,31',
             'month' => 'nullable|integer|between:1,12',
             'year' => 'nullable|integer|between:1900,' . date('Y'),
@@ -45,6 +46,46 @@ class UserController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'current_password' => 'nullable|string',
             'new_password' => 'nullable|string|min:6|confirmed',
+        ], [
+            'username.string' => 'Tên đăng nhập phải là chuỗi ký tự.',
+            'username.max' => 'Tên đăng nhập không được vượt quá 50 ký tự.',
+            'username.min' => 'Tên đăng nhập phải có ít nhất 3 ký tự.',
+            'username.unique' => 'Tên đăng nhập này đã được sử dụng.',
+            
+            'fullname.string' => 'Họ tên phải là chuỗi ký tự.',
+            'fullname.max' => 'Họ tên không được vượt quá 100 ký tự.',
+            'fullname.min' => 'Họ tên phải có ít nhất 2 ký tự.',
+            
+            'email.email' => 'Email không đúng định dạng.',
+            'email.max' => 'Email không được vượt quá 100 ký tự.',
+            'email.min' => 'Email phải có ít nhất 5 ký tự.',
+            'email.unique' => 'Email này đã được sử dụng.',
+            
+            'phone.string' => 'Số điện thoại phải là chuỗi ký tự.',
+            'phone.max' => 'Số điện thoại không được vượt quá 11 số.',
+            'phone.min' => 'Số điện thoại phải có ít nhất 10 số.',
+            'phone.unique' => 'Số điện thoại này đã được sử dụng.',
+            
+            'day.integer' => 'Ngày phải là số nguyên.',
+            'day.between' => 'Ngày phải từ 1 đến 31.',
+            
+            'month.integer' => 'Tháng phải là số nguyên.',
+            'month.between' => 'Tháng phải từ 1 đến 12.',
+            
+            'year.integer' => 'Năm phải là số nguyên.',
+            'year.between' => 'Năm phải từ 1900 đến ' . date('Y') . '.',
+            
+            'gender.in' => 'Giới tính không hợp lệ.',
+            
+            'avatar.image' => 'File phải là hình ảnh.',
+            'avatar.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif.',
+            'avatar.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
+            
+            'current_password.string' => 'Mật khẩu hiện tại phải là chuỗi ký tự.',
+            
+            'new_password.string' => 'Mật khẩu mới phải là chuỗi ký tự.',
+            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'new_password.confirmed' => 'Xác nhận mật khẩu mới không khớp.',
         ]);
 
         // Kiểm tra và xử lý ảnh đại diện
@@ -61,6 +102,7 @@ class UserController extends Controller
         // Cập nhật thông tin
         $user->username = $request->input('username', $user->username); // Sử dụng giá trị cũ nếu không có thay đổi
         $user->fullname = $request->input('fullname', $user->fullname);
+        $user->email = $request->input('email', $user->email);
         $user->phone = $request->input('phone', $user->phone);
 
         // Kết hợp ngày, tháng, năm thành birthday nếu có
@@ -100,6 +142,11 @@ class UserController extends Controller
         $request->validate([
             'current_password' => 'required',
             'new_password' => 'required|min:6|confirmed',
+        ], [
+            'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+            'new_password.required' => 'Vui lòng nhập mật khẩu mới.',
+            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'new_password.confirmed' => 'Xác nhận mật khẩu mới không khớp.',
         ]);
 
         $user = Auth::user();
@@ -205,7 +252,10 @@ class UserController extends Controller
     public function verifyPasswordCode(Request $request)
     {
         Log::info('UserController@verifyPasswordCode called', ['user_id' => Auth::id()]);
-        $request->validate(['code' => 'required|numeric']);
+        $request->validate(['code' => 'required|numeric'], [
+            'code.required' => 'Vui lòng nhập mã xác nhận.',
+            'code.numeric' => 'Mã xác nhận phải là số.',
+        ]);
 
         $user = Auth::user();
 
@@ -286,6 +336,10 @@ class UserController extends Controller
 
         $request->validate([
             'password' => 'required|min:6|confirmed',
+        ], [
+            'password.required' => 'Vui lòng nhập mật khẩu mới.',
+            'password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'password.confirmed' => 'Xác nhận mật khẩu mới không khớp.',
         ]);
 
         $user = Auth::user();
@@ -357,6 +411,11 @@ class UserController extends Controller
         $request->validate([
             'current_password' => 'required',
             'new_password' => 'required|min:6|confirmed',
+        ], [
+            'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+            'new_password.required' => 'Vui lòng nhập mật khẩu mới.',
+            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'new_password.confirmed' => 'Xác nhận mật khẩu mới không khớp.',
         ]);
 
         if (!Hash::check($request->current_password, Auth::user()->password)) {
@@ -402,6 +461,9 @@ class UserController extends Controller
         Log::info('UserController@confirmPasswordChangeCode called', ['user_id' => Auth::id()]);
         $request->validate([
             'code' => 'required|digits:6',
+        ], [
+            'code.required' => 'Vui lòng nhập mã xác nhận.',
+            'code.digits' => 'Mã xác nhận phải có đúng 6 chữ số.',
         ]);
 
         if ($request->code == session('password_code')) {

@@ -685,10 +685,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($wallet && $wallet->transactions ? $wallet->transactions : [] as $tx)
+                        @forelse ($walletTransactions ?? [] as $tx)
                             <tr class="hover:bg-gray-50 border-b">
                                 <td class="p-2">{{ \Carbon\Carbon::parse($tx->created_at)->format('d/m/Y H:i') }}</td>
-                                <td class="p-2 font-mono text-xs">{{ $tx->transaction_code ?? $tx->id }}</td>
+                                <td class="p-2 font-mono text-xs">{{ $tx->display_code }}</td>
                                 <td class="p-2">
                                     @switch($tx->type)
                                         @case('deposit')
@@ -702,6 +702,10 @@
                                             @break
                                         @case('refund')
                                             <span class="text-yellow-600">Hoàn tiền</span>
+                                            @break
+                                        @case('advertising')
+                                        @case('advertising_bid')
+                                            <span class="text-purple-600">Quảng cáo</span>
                                             @break
                                         @default
                                             <span>{{ ucfirst($tx->type) }}</span>
@@ -736,6 +740,12 @@
                         @endforelse
                     </tbody>
                 </table>
+
+                @if(($walletTransactions && method_exists($walletTransactions, 'links')))
+                    <div class="mt-4">
+                        {{ $walletTransactions->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

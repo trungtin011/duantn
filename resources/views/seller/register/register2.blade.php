@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="">
             <!-- Breadcrumb -->
             <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-8">
                 <a href="{{ route('home') }}" class="hover:text-orange-500 transition-colors">
@@ -17,7 +17,7 @@
             <div class="grid lg:grid-cols-3 gap-8">
                 <!-- Left Column - Form -->
                 <div class="lg:col-span-2">
-                    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                    <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                         <!-- Header -->
                         <div class="bg-gradient-to-r from-blue-400 to-purple-500 px-8 py-6">
                             <div class="flex items-center space-x-3">
@@ -260,7 +260,7 @@
                         </div>
 
                         <!-- Tips Card -->
-                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="bg-white rounded-2xl border border-gray-100 p-6">
                             <div class="flex items-center space-x-3 mb-4">
                                 <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                                     <i class="fas fa-lightbulb text-green-600"></i>
@@ -284,7 +284,7 @@
                         </div>
 
                         <!-- Progress Card -->
-                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="bg-white rounded-2xl border border-gray-100 p-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Tiến độ đăng ký</h3>
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between">

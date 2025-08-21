@@ -7,10 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Shop;
+use App\Models\ShopAddress;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
+use Illuminate\Support\Arr;
 
 class SellerSettingsController extends Controller
 {
@@ -18,7 +20,12 @@ class SellerSettingsController extends Controller
     {
         $user = Auth::user();
         $shop = Shop::where('ownerID', $user->id)->first();
-        return view('seller.settings', compact('shop'));
+        $address = ShopAddress::where('shopID', $shop->id)
+            ->where('is_default', true)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->first();
+        return view('seller.settings', compact('shop', 'address'));
     }
 
     public function update(Request $request)
@@ -33,6 +40,15 @@ class SellerSettingsController extends Controller
             'shop_logo' => 'nullable|image|max:2048',
             'shop_banner' => 'nullable|image|max:4096',
             'shop_status' => 'required|in:active,inactive,banned',
+            // Address fields
+            'shop_address' => 'nullable|string|max:255',
+            'shop_province' => 'nullable|string|max:100',
+            'shop_district' => 'nullable|string|max:100',
+            'shop_ward' => 'nullable|string|max:100',
+            'shop_province_name' => 'nullable|string|max:100',
+            'shop_district_name' => 'nullable|string|max:100',
+            'shop_ward_name' => 'nullable|string|max:100',
+            'address_note' => 'nullable|string|max:500',
         ]);
         if ($request->hasFile('shop_logo')) {
             if ($shop->shop_logo) Storage::delete($shop->shop_logo);
@@ -42,7 +58,28 @@ class SellerSettingsController extends Controller
             if ($shop->shop_banner) Storage::delete($shop->shop_banner);
             $validated['shop_banner'] = $request->file('shop_banner')->store('shop_banners', 'public');
         }
-        $shop->update($validated);
+        // Update shop basic fields only
+        $shopData = Arr::only($validated, [
+            'shop_name','shop_phone','shop_email','shop_description','shop_status','shop_logo','shop_banner'
+        ]);
+        $shop->update($shopData);
+
+        // Upsert default shop address if any address field provided
+        // Prefer human-readable names if provided from client hidden inputs
+        $addressPayload = [
+            'shop_address' => $validated['shop_address'] ?? null,
+            'shop_province' => $validated['shop_province_name'] ?? ($validated['shop_province'] ?? null),
+            'shop_district' => $validated['shop_district_name'] ?? ($validated['shop_district'] ?? null),
+            'shop_ward' => $validated['shop_ward_name'] ?? ($validated['shop_ward'] ?? null),
+            'note' => $validated['address_note'] ?? null,
+        ];
+
+        $hasAddressInput = collect($addressPayload)->filter(function($v){ return !is_null($v) && $v !== ''; })->isNotEmpty();
+        if ($hasAddressInput) {
+            $addr = ShopAddress::firstOrNew(['shopID' => $shop->id, 'is_default' => true]);
+            $addr->fill(array_merge($addressPayload, ['shopID' => $shop->id, 'is_default' => true]));
+            $addr->save();
+        }
         return redirect()->route('seller.settings')->with('success', 'Cập nhật thông tin cửa hàng thành công!');
     }
 
@@ -173,5 +210,39 @@ class SellerSettingsController extends Controller
             ]);
             return back()->withErrors(['password' => 'Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.']);
         }
+    }
+
+    // ===== Seller Profile (basic user info) =====
+    public function profile()
+    {
+        return view('seller.profile');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'fullname' => 'nullable|string|max:100',
+            'username' => 'required|string|max:50|unique:users,username,' . Auth::id(),
+            'email' => 'nullable|email|max:100',
+            'phone' => 'nullable|string|max:20',
+            'gender' => 'nullable|in:male,female,other',
+            'birthday' => 'nullable|date',
+            'avatar' => 'nullable|image|max:2048',
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) Storage::delete(str_replace('storage/', '', $user->avatar));
+            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = 'storage/' . $validated['avatar'];
+        }
+
+        // Update simple fields
+        $user->fill($validated);
+        $user->save();
+
+        return redirect()->route('seller.profile')->with('success', 'Cập nhật thông tin cá nhân thành công!');
     }
 }

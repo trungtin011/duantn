@@ -27,7 +27,14 @@ class AdBiddingService
             ->where('status', 'active')
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
-            ->where('bid_amount', '>', 0);
+            ->where('bid_amount', '>', 0)
+            // Chỉ hiển thị quảng cáo khi số dư ví của shop >= giá thầu
+            ->whereExists(function($q) {
+                $q->select(DB::raw(1))
+                  ->from('shop_wallets')
+                  ->whereColumn('shop_wallets.shop_id', 'ads_campaigns.shop_id')
+                  ->whereRaw('shop_wallets.balance >= ads_campaigns.bid_amount');
+            });
 
             // Nếu có từ khóa tìm kiếm, lọc theo sản phẩm
             if ($query) {
@@ -74,6 +81,11 @@ class AdBiddingService
             }
 
             if ($shopWallet->balance < $campaign->bid_amount) {
+                // Tự động tạm dừng chiến dịch khi hết tiền
+                if ($campaign->status === 'active') {
+                    $campaign->update(['status' => 'pending']);
+                }
+                DB::commit();
                 return ['success' => false, 'message' => 'Số dư ví không đủ để trả phí quảng cáo'];
             }
 
