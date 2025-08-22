@@ -520,6 +520,8 @@ Route::prefix('seller')->middleware('auth')->group(function () {
     Route::post('/register3', [RegisterShopController::class, 'step4'])->name('seller.register.step4.post');
     Route::get('/register4', [RegisterShopController::class, 'showStep5'])->name('seller.register.step5');
     Route::post('/register4', [RegisterShopController::class, 'finish'])->name('seller.register.finish');
+    // Route trang chờ duyệt
+    Route::get('/register/pending', [RegisterShopController::class, 'showPendingApproval'])->name('seller.register.pending');
     Route::get('/settings', [SellerSettingsController::class, 'index'])->name('seller.settings');
     Route::post('/settings', [SellerSettingsController::class, 'update'])->name('seller.settings');
     // Seller password menu & flows (reuse user password controllers)

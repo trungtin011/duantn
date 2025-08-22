@@ -879,11 +879,18 @@
                         <li><a href="{{ route('signup') }}" class="hover:text-orange-500">Đăng ký</a></li>
                     @endguest
                     @auth
-                        @if (Auth::user()->role === 'customer')
+                        @if (Auth::user()->role === 'customer' && !Auth::user()->seller)
                             <li>
                                 <a href="{{ route('seller.register') }}"
                                     class="text-orange-500 font-semibold hover:text-orange-600">
                                     {{ __('messages.become_seller') }}
+                                </a>
+                            </li>
+                        @elseif (Auth::user()->role === 'customer' && Auth::user()->seller && Auth::user()->seller->status === 'suspended')
+                            <li>
+                                <a href="{{ route('seller.register.pending') }}"
+                                    class="text-orange-500 font-semibold hover:text-orange-600">
+                                    Đang chờ duyệt
                                 </a>
                             </li>
                         @endif

@@ -21,10 +21,38 @@ class RegisterShopController extends Controller
      */
     private function checkAlreadySeller()
     {
-        if (Seller::where('userID', Auth::id())->exists()) {
-            return redirect()->route('seller.dashboard')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
+        $seller = Seller::where('userID', Auth::id())->first();
+        
+        if ($seller) {
+            // Kiểm tra trạng thái của seller
+            if ($seller->status === 'suspended') {
+                return redirect()->route('seller.register.pending');
+            } elseif ($seller->status === 'banned') {
+                return redirect()->route('seller.dashboard')->withErrors(['error' => 'Tài khoản người bán của bạn đã bị cấm. Không thể đăng ký lại.']);
+            } else {
+                return redirect()->route('seller.dashboard')->withErrors(['error' => 'Bạn đã đăng ký trở thành người bán. Không thể đăng ký lại.']);
+            }
         }
+        
         return null;
+    }
+
+    /**
+     * Hiển thị trang chờ duyệt từ admin
+     */
+    public function showPendingApproval()
+    {
+        $seller = Seller::where('userID', Auth::id())->first();
+        
+        if (!$seller) {
+            return redirect()->route('seller.register');
+        }
+        
+        if ($seller->status !== 'suspended') {
+            return redirect()->route('seller.dashboard');
+        }
+        
+        return view('seller.register.pending-approval');
     }
 
     public function index()
