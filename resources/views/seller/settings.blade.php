@@ -67,12 +67,7 @@
                                     <label class="block text-xs text-gray-600 font-medium mb-1">Tỉnh/Thành</label>
                                     <select id="business_province" name="shop_province"
                                         class="text-xs text-gray-700 border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        @php $p = old('shop_province', $address->shop_province ?? ''); @endphp
-                                        @if ($p)
-                                            <option value="{{ $p }}" selected>{{ $p }}</option>
-                                        @else
-                                            <option value="" selected>-- Chọn tỉnh/thành --</option>
-                                        @endif
+                                        <option value="" disabled selected>Chọn tỉnh/thành</option>
                                     </select>
                                     <input type="hidden" id="business_province_name" name="shop_province_name" value="{{ old('shop_province_name', $address->shop_province ?? '') }}">
                                 </div>
@@ -80,12 +75,7 @@
                                     <label class="block text-xs text-gray-600 font-medium mb-1">Quận/Huyện</label>
                                     <select id="business_district" name="shop_district"
                                         class="text-xs text-gray-700 border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        @php $d = old('shop_district', $address->shop_district ?? ''); @endphp
-                                        @if ($d)
-                                            <option value="{{ $d }}" selected>{{ $d }}</option>
-                                        @else
-                                            <option value="" selected>-- Chọn quận/huyện --</option>
-                                        @endif
+                                        <option value="" disabled selected>Chọn quận/huyện</option>
                                     </select>
                                     <input type="hidden" id="business_district_name" name="shop_district_name" value="{{ old('shop_district_name', $address->shop_district ?? '') }}">
                                 </div>
@@ -93,12 +83,7 @@
                                     <label class="block text-xs text-gray-600 font-medium mb-1">Phường/Xã</label>
                                     <select id="business_ward" name="shop_ward"
                                         class="text-xs text-gray-700 border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        @php $w = old('shop_ward', $address->shop_ward ?? ''); @endphp
-                                        @if ($w)
-                                            <option value="{{ $w }}" selected>{{ $w }}</option>
-                                        @else
-                                            <option value="" selected>-- Chọn phường/xã --</option>
-                                        @endif
+                                        <option value="" disabled selected>Chọn phường/xã</option>
                                     </select>
                                     <input type="hidden" id="business_ward_name" name="shop_ward_name" value="{{ old('shop_ward_name', $address->shop_ward ?? '') }}">
                                 </div>
@@ -178,50 +163,9 @@
             </form>
         </div>
     </div>
-    <script src="{{ asset('js/seller/address-data.js') }}"></script>
-    @vite('resources/js/seller/register.js')
+
     <script>
-        (function() {
-            // Preselect saved values if any
-            const currentProvince = @json(old('shop_province', $address->shop_province ?? ''));
-            const currentDistrict = @json(old('shop_district', $address->shop_district ?? ''));
-            const currentWard = @json(old('shop_ward', $address->shop_ward ?? ''));
-
-            // Nếu đã có dữ liệu từ DB thì GIỮ nguyên các option đã render sẵn, không nạp API
-            const hasDBAddress = !!(currentProvince || currentDistrict || currentWard);
-            if (hasDBAddress) {
-                const provinceNameInput = document.getElementById('business_province_name');
-                const districtNameInput = document.getElementById('business_district_name');
-                const wardNameInput = document.getElementById('business_ward_name');
-                if (provinceNameInput) provinceNameInput.value = currentProvince || '';
-                if (districtNameInput) districtNameInput.value = currentDistrict || '';
-                if (wardNameInput) wardNameInput.value = currentWard || '';
-                return;
-            }
-
-            // Helpers to map stored names to codes (for legacy data)
-            const findProvinceCodeByName = (name) => {
-                const f = VIETNAM_ADDRESS_DATA.provinces.find(p => p.name === name);
-                return f ? f.code : '';
-            };
-            const findDistrictCodeByName = (provinceCode, name) => {
-                const list = getDistrictsByProvince(provinceCode);
-                const f = list.find(d => d.name === name);
-                return f ? f.code : '';
-            };
-            const findWardCodeByName = (districtCode, name) => {
-                const list = getWardsByDistrict(districtCode);
-                const f = list.find(w => w.name === name);
-                return f ? f.code : '';
-            };
-
-            // Normalize current values to codes if they are names
-            let provinceCode = currentProvince;
-            if (!VIETNAM_ADDRESS_DATA.provinces.some(p => p.code === provinceCode)) {
-                provinceCode = findProvinceCodeByName(currentProvince);
-            }
-
-            // Locals from register2 API loader
+        document.addEventListener('DOMContentLoaded', function() {
             const provinceSelect = document.getElementById('business_province');
             const districtSelect = document.getElementById('business_district');
             const wardSelect = document.getElementById('business_ward');
@@ -229,30 +173,32 @@
             const districtNameInput = document.getElementById('business_district_name');
             const wardNameInput = document.getElementById('business_ward_name');
 
+            // Lấy giá trị hiện tại từ session hoặc database
+            const currentProvince = @json(old('shop_province', $address->shop_province ?? ''));
+            const currentDistrict = @json(old('shop_district', $address->shop_district ?? ''));
+            const currentWard = @json(old('shop_ward', $address->shop_ward ?? ''));
+
             function showLoading(select, text = 'Đang tải...') {
                 select.innerHTML = `<option value="" disabled selected>${text}</option>`;
                 select.disabled = true;
             }
+
             function doneLoading(select, placeholder) {
                 select.disabled = false;
                 if (placeholder) {
                     select.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
                 }
             }
-            function selectByValueOrText(selectEl, valueCode, valueName) {
-                let matched = false;
-                Array.from(selectEl.options).forEach(o => {
-                    if (valueCode && o.value == valueCode) { o.selected = true; matched = true; }
-                });
-                if (!matched && valueName) {
-                    const target = (valueName || '').toString().trim().toLowerCase();
-                    Array.from(selectEl.options).forEach(o => {
-                        if (o.textContent.toString().trim().toLowerCase() === target) { o.selected = true; matched = true; }
-                    });
-                }
-                return matched;
+
+            function showError(message) {
+                const div = document.createElement('div');
+                div.className = 'mt-2 text-sm text-red-600';
+                div.textContent = message;
+                provinceSelect.parentNode.appendChild(div);
+                setTimeout(() => div.remove(), 5000);
             }
 
+            // Load Provinces (VNPost -> fallback)
             function loadProvinces() {
                 showLoading(provinceSelect, 'Đang tải tỉnh/thành...');
                 fetch('https://api.vnpost.vn/api/v1/province')
@@ -264,15 +210,18 @@
                                 const opt = document.createElement('option');
                                 opt.value = p.provinceCode;
                                 opt.textContent = p.provinceName;
+                                // Preselect nếu có giá trị hiện tại
+                                if (opt.value == currentProvince || opt.textContent == currentProvince) {
+                                    opt.selected = true;
+                                }
                                 provinceSelect.appendChild(opt);
                             });
-                            // Preselect by code or name
-                            selectByValueOrText(provinceSelect, provinceCode, currentProvince);
                         } else {
                             throw new Error('VNPost provinces failed');
                         }
                     })
                     .catch(() => {
+                        // Fallback
                         fetch('https://provinces.open-api.vn/api/p/')
                             .then(r => r.json())
                             .then(list => {
@@ -281,10 +230,14 @@
                                     const opt = document.createElement('option');
                                     opt.value = p.code;
                                     opt.textContent = p.name;
+                                    // Preselect nếu có giá trị hiện tại
+                                    if (opt.value == currentProvince || opt.textContent == currentProvince) {
+                                        opt.selected = true;
+                                    }
                                     provinceSelect.appendChild(opt);
                                 });
-                                selectByValueOrText(provinceSelect, provinceCode, currentProvince);
-                            });
+                            })
+                            .catch(() => showError('Không thể tải danh sách tỉnh/thành'));
                     })
                     .finally(() => {
                         if (provinceSelect.value) {
@@ -293,11 +246,14 @@
                         }
                     });
             }
-            function loadDistricts(provCode) {
+
+            // Load Districts by Province
+            function loadDistricts(provinceCode) {
                 showLoading(districtSelect, 'Đang tải quận/huyện...');
                 wardSelect.innerHTML = '<option value="" disabled selected>Chọn phường/xã</option>';
                 wardSelect.disabled = true;
-                fetch(`https://api.vnpost.vn/api/v1/district?provinceCode=${provCode}`)
+
+                fetch(`https://api.vnpost.vn/api/v1/district?provinceCode=${provinceCode}`)
                     .then(r => r.json())
                     .then(data => {
                         if (data.success && data.data) {
@@ -306,15 +262,19 @@
                                 const opt = document.createElement('option');
                                 opt.value = d.districtCode;
                                 opt.textContent = d.districtName;
+                                // Preselect nếu có giá trị hiện tại
+                                if (opt.value == currentDistrict || opt.textContent == currentDistrict) {
+                                    opt.selected = true;
+                                }
                                 districtSelect.appendChild(opt);
                             });
-                            selectByValueOrText(districtSelect, currentDistrict, currentDistrict);
                         } else {
                             throw new Error('VNPost districts failed');
                         }
                     })
                     .catch(() => {
-                        fetch(`https://provinces.open-api.vn/api/p/${provCode}?depth=2`)
+                        // Fallback
+                        fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
                             .then(r => r.json())
                             .then(p => {
                                 doneLoading(districtSelect, 'Chọn quận/huyện');
@@ -322,10 +282,14 @@
                                     const opt = document.createElement('option');
                                     opt.value = d.code;
                                     opt.textContent = d.name;
+                                    // Preselect nếu có giá trị hiện tại
+                                    if (opt.value == currentDistrict || opt.textContent == currentDistrict) {
+                                        opt.selected = true;
+                                    }
                                     districtSelect.appendChild(opt);
                                 });
-                                selectByValueOrText(districtSelect, currentDistrict, currentDistrict);
-                            });
+                            })
+                            .catch(() => showError('Không thể tải danh sách quận/huyện'));
                     })
                     .finally(() => {
                         if (districtSelect.value) {
@@ -334,9 +298,11 @@
                         }
                     });
             }
-            function loadWards(distCode) {
+
+            // Load Wards by District
+            function loadWards(districtCode) {
                 showLoading(wardSelect, 'Đang tải phường/xã...');
-                fetch(`https://api.vnpost.vn/api/v1/ward?districtCode=${distCode}`)
+                fetch(`https://api.vnpost.vn/api/v1/ward?districtCode=${districtCode}`)
                     .then(r => r.json())
                     .then(data => {
                         if (data.success && data.data) {
@@ -345,13 +311,19 @@
                                 const opt = document.createElement('option');
                                 opt.value = w.wardCode;
                                 opt.textContent = w.wardName;
+                                // Preselect nếu có giá trị hiện tại
+                                if (opt.value == currentWard || opt.textContent == currentWard) {
+                                    opt.selected = true;
+                                }
                                 wardSelect.appendChild(opt);
                             });
-                            selectByValueOrText(wardSelect, currentWard, currentWard);
-                        } else { throw new Error('VNPost wards failed'); }
+                        } else {
+                            throw new Error('VNPost wards failed');
+                        }
                     })
                     .catch(() => {
-                        fetch(`https://provinces.open-api.vn/api/d/${distCode}?depth=2`)
+                        // Fallback
+                        fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
                             .then(r => r.json())
                             .then(d => {
                                 doneLoading(wardSelect, 'Chọn phường/xã');
@@ -359,80 +331,60 @@
                                     const opt = document.createElement('option');
                                     opt.value = w.code;
                                     opt.textContent = w.name;
+                                    // Preselect nếu có giá trị hiện tại
+                                    if (opt.value == currentWard || opt.textContent == currentWard) {
+                                        opt.selected = true;
+                                    }
                                     wardSelect.appendChild(opt);
                                 });
-                                selectByValueOrText(wardSelect, currentWard, currentWard);
-                            });
-                    })
-                    .finally(() => {
-                        if (wardSelect.value) {
-                            wardNameInput.value = wardSelect.options[wardSelect.selectedIndex]?.text || '';
-                        }
+                            })
+                            .catch(() => showError('Không thể tải danh sách phường/xã'));
                     });
             }
 
-            provinceSelect.addEventListener('change', function(){
+            // Events
+            provinceSelect.addEventListener('change', function() {
+                const code = this.value;
+                // lưu tên
                 provinceNameInput.value = this.options[this.selectedIndex]?.text || '';
-                loadDistricts(this.value);
+                districtSelect.innerHTML = '<option value="" disabled selected>Chọn quận/huyện</option>';
+                wardSelect.innerHTML = '<option value="" disabled selected>Chọn phường/xã</option>';
+                districtSelect.disabled = false;
+                loadDistricts(code);
             });
-            districtSelect.addEventListener('change', function(){
+
+            districtSelect.addEventListener('change', function() {
+                const code = this.value;
+                // lưu tên
                 districtNameInput.value = this.options[this.selectedIndex]?.text || '';
-                loadWards(this.value);
+                wardSelect.disabled = false;
+                loadWards(code);
             });
-            wardSelect.addEventListener('change', function(){
+
+            wardSelect.addEventListener('change', function() {
+                // lưu tên
                 wardNameInput.value = this.options[this.selectedIndex]?.text || '';
             });
 
-            // If DB trống: vẫn load danh sách để người dùng chọn mới
+            // Init
             loadProvinces();
-            // Nếu DB có sẵn thì preselect sẽ thực hiện khi danh sách tải xong (ở finally)
 
-            const fillDistricts = (provCode, selectedDistrictCode) => {
-                districtSelect.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
-                wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
-                if (!provCode) return;
-                const list = getDistrictsByProvince(provCode);
-                // If stored as name, convert
-                let distCode = selectedDistrictCode;
-                if (distCode && !list.some(d => d.code === distCode)) {
-                    distCode = findDistrictCodeByName(provCode, selectedDistrictCode);
+            // Nếu đã có giá trị cũ thì điền tên tương ứng lần đầu tải
+            const setInitialNames = () => {
+                if (provinceSelect.value) {
+                    provinceNameInput.value = provinceSelect.options[provinceSelect.selectedIndex]?.text || provinceNameInput.value;
                 }
-                list.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d.code;
-                    opt.textContent = d.name;
-                    if (d.code === distCode) opt.selected = true;
-                    districtSelect.appendChild(opt);
-                });
-                return distCode;
-            };
-
-            const fillWards = (distCode, selectedWardCode) => {
-                wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
-                if (!distCode) return;
-                const list = getWardsByDistrict(distCode);
-                // If stored as name, convert
-                let wCode = selectedWardCode;
-                if (wCode && !list.some(w => w.code === wCode)) {
-                    wCode = findWardCodeByName(distCode, selectedWardCode);
+                if (districtSelect.value) {
+                    districtNameInput.value = districtSelect.options[districtSelect.selectedIndex]?.text || districtNameInput.value;
                 }
-                list.forEach(w => {
-                    const opt = document.createElement('option');
-                    opt.value = w.code;
-                    opt.textContent = w.name;
-                    if (w.code === wCode) opt.selected = true;
-                    wardSelect.appendChild(opt);
-                });
+                if (wardSelect.value) {
+                    wardNameInput.value = wardSelect.options[wardSelect.selectedIndex]?.text || wardNameInput.value;
+                }
             };
+            // đợi danh sách load xong rồi set
+            setTimeout(setInitialNames, 1000);
+        });
 
-            provinceSelect.addEventListener('change', (e) => { fillDistricts(e.target.value, ''); });
-            districtSelect.addEventListener('change', (e) => { fillWards(e.target.value, ''); });
-
-            // Initialize with current values
-            let selectedDistrictCode = '';
-            if (provinceCode) selectedDistrictCode = fillDistricts(provinceCode, currentDistrict);
-            if (selectedDistrictCode || currentDistrict) fillWards(selectedDistrictCode || currentDistrict, currentWard);
-        })();
         // Click placeholder to open file chooser always works via label[for],
         // but ensure preview when user selects a file
         (function() {

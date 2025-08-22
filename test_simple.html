@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Radio Button State</title>
+</head>
+<body>
+    <h2>Test Radio Button State Restoration</h2>
+    
+    <div>
+        <label>
+            <input type="radio" name="product_type" value="simple" checked> Sản phẩm đơn
+        </label>
+        <label style="margin-left: 16px;">
+            <input type="radio" name="product_type" value="variant"> Sản phẩm có biến thể
+        </label>
+    </div>
+    
+    <br>
+    <button onclick="testRestore()">Test Restore to Variant</button>
+    <button onclick="testRestoreSimple()">Test Restore to Simple</button>
+    
+    <script>
+        function testRestore() {
+            // Simulate old('product_type') returning 'variant'
+            const productType = 'variant';
+            const radioButton = document.querySelector(`input[name="product_type"][value="${productType}"]`);
+            if (radioButton) {
+                radioButton.checked = true;
+                console.log('Radio button set to:', radioButton.value);
+            }
+        }
+        
+        function testRestoreSimple() {
+            // Simulate old('product_type') returning 'simple'
+            const productType = 'simple';
+            const radioButton = document.querySelector(`input[name="product_type"][value="${productType}"]`);
+            if (radioButton) {
+                radioButton.checked = true;
+                console.log('Radio button set to:', radioButton.value);
+            }
+        }
+        
+        // Test on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, current selection:');
+            const checkedRadio = document.querySelector('input[name="product_type"]:checked');
+            console.log('Checked radio:', checkedRadio ? checkedRadio.value : 'none');
+        });
+    </script>
+</body>
+</html>

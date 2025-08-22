@@ -103,61 +103,67 @@ class UserAddressController extends Controller
             'receiver_name' => 'required|string|max:100',
             'receiver_phone' => 'required|string|regex:/^[0-9]{10,11}$/',
             'address' => 'required|string|max:255',
-            // Không chấp nhận chỉ toàn số (mã), bắt buộc là tên hiển thị
-            'province' => 'required|string|max:100|not_regex:/^\\d+$/',
-            'district' => 'required|string|max:100|not_regex:/^\\d+$/',
-            'ward' => 'required|string|max:100|not_regex:/^\\d+$/',
+            'province' => 'required|string|max:100',
+            'district' => 'required|string|max:100',
+            'ward' => 'required|string|max:100',
             'address_type' => 'required|in:home,office,other',
         ], [
+            'receiver_name.required' => 'Vui lòng nhập tên người nhận.',
+            'receiver_phone.required' => 'Vui lòng nhập số điện thoại.',
             'receiver_phone.regex' => 'Số điện thoại phải có 10-11 chữ số.',
             'receiver_name.max' => 'Tên người nhận không được quá 100 ký tự.',
+            'address.required' => 'Vui lòng nhập địa chỉ chi tiết.',
             'address.max' => 'Địa chỉ không được quá 255 ký tự.',
             'province.required' => 'Vui lòng chọn Tỉnh/Thành phố.',
             'district.required' => 'Vui lòng chọn Quận/Huyện.',
             'ward.required' => 'Vui lòng chọn Phường/Xã.',
-            'province.not_regex' => 'Vui lòng chọn Tỉnh/Thành (không phải mã số).',
-            'district.not_regex' => 'Vui lòng chọn Quận/Huyện (không phải mã số).',
-            'ward.not_regex' => 'Vui lòng chọn Phường/Xã (không phải mã số).',
+            'address_type.required' => 'Vui lòng chọn loại địa chỉ.',
         ]);
 
         if ($request->has('is_default')) {
             UserAddress::where('userID', Auth::id())->update(['is_default' => 0]);
         }
 
-        // Chuẩn hóa tên địa phương: ưu tiên tên từ form, fallback chuyển code -> tên bằng API
-        $provinceName = $request->input('province_name')
-            ?: $this->getNameFromApi('province', $request->province)
-            ?: $this->getVNPostProvinceName($request->province)
-            ?: $request->province; // cuối cùng dùng code để tránh null
-        $districtName = $request->input('district_name')
-            ?: $this->getNameFromApi('district', $request->district)
-            ?: $this->getVNPostDistrictName($request->province, $request->district)
-            ?: $request->district;
-        $wardName = $request->input('ward_name')
-            ?: $this->getNameFromApi('ward', $request->ward)
-            ?: $this->getVNPostWardName($request->district, $request->ward)
-            ?: $request->ward;
+        // Ưu tiên sử dụng tên từ hidden inputs, fallback về tên từ select options
+        $provinceName = $request->input('province_name') ?: $request->province;
+        $districtName = $request->input('district_name') ?: $request->district;
+        $wardName = $request->input('ward_name') ?: $request->ward;
 
-        // Ưu tiên lưu tên hiển thị nếu được gửi kèm, fallback lưu tên từ API (không bao giờ lưu mã số)
-        $store = UserAddress::create([
-            'receiver_name' => $request->receiver_name,
-            'receiver_phone' => $request->receiver_phone,
-            'address' => $request->address,
-            'province' => $provinceName,
-            'district' => $districtName,
-            'ward' => $wardName,
-            'address_type' => $request->address_type,
-            'userID' => Auth::id(),
-            'is_default' => $request->has('is_default') ? 1 : 0,
-            'zip_code' => null, // Bỏ trường zip_code
-        ]);
-        Log::info($store);
-        if ($store) {
-            Log::info('Đã thêm địa chỉ thành công.');
-            return redirect()->route('account.addresses')->with('success', 'Đã thêm địa chỉ thành công!');
+        // Nếu vẫn là mã số, thử chuyển đổi thành tên bằng API
+        if (is_numeric($provinceName)) {
+            $provinceName = $this->getVNPostProvinceName($provinceName) ?: $this->getNameFromApi('province', $provinceName) ?: $provinceName;
+        }
+        if (is_numeric($districtName)) {
+            $districtName = $this->getVNPostDistrictName($request->province, $districtName) ?: $this->getNameFromApi('district', $districtName) ?: $districtName;
+        }
+        if (is_numeric($wardName)) {
+            $wardName = $this->getVNPostWardName($request->district, $wardName) ?: $this->getNameFromApi('ward', $wardName) ?: $wardName;
         }
 
-        return redirect()->back()->with('error', 'Đã xảy ra lỗi khi thêm địa chỉ. Vui lòng kiểm tra lại thông tin và thử lại.');
+        try {
+            $store = UserAddress::create([
+                'receiver_name' => $request->receiver_name,
+                'receiver_phone' => $request->receiver_phone,
+                'address' => $request->address,
+                'province' => $provinceName,
+                'district' => $districtName,
+                'ward' => $wardName,
+                'address_type' => $request->address_type,
+                'userID' => Auth::id(),
+                'is_default' => $request->has('is_default') ? 1 : 0,
+                'zip_code' => null,
+                'note' => $request->input('note'),
+            ]);
+
+            Log::info('Đã thêm địa chỉ thành công.', ['address_id' => $store->id]);
+            return redirect()->route('account.addresses')->with('success', 'Đã thêm địa chỉ thành công!');
+
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi thêm địa chỉ: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Đã xảy ra lỗi khi thêm địa chỉ. Vui lòng kiểm tra lại thông tin và thử lại.');
+        }
     }
 
     public function edit(UserAddress $address)
@@ -175,55 +181,66 @@ class UserAddressController extends Controller
             'receiver_name' => 'required|string|max:100',
             'receiver_phone' => 'required|string|regex:/^[0-9]{10,11}$/',
             'address' => 'required|string|max:255',
-            'province' => 'required|string|max:100|not_regex:/^\\d+$/',
-            'district' => 'required|string|max:100|not_regex:/^\\d+$/',
-            'ward' => 'required|string|max:100|not_regex:/^\\d+$/',
+            'province' => 'required|string|max:100',
+            'district' => 'required|string|max:100',
+            'ward' => 'required|string|max:100',
             'address_type' => 'required|in:home,office,other',
         ], [
+            'receiver_name.required' => 'Vui lòng nhập tên người nhận.',
+            'receiver_phone.required' => 'Vui lòng nhập số điện thoại.',
             'receiver_phone.regex' => 'Số điện thoại phải có 10-11 chữ số.',
             'receiver_name.max' => 'Tên người nhận không được quá 100 ký tự.',
+            'address.required' => 'Vui lòng nhập địa chỉ chi tiết.',
             'address.max' => 'Địa chỉ không được quá 255 ký tự.',
             'province.required' => 'Vui lòng chọn Tỉnh/Thành phố.',
             'district.required' => 'Vui lòng chọn Quận/Huyện.',
             'ward.required' => 'Vui lòng chọn Phường/Xã.',
-            'province.not_regex' => 'Vui lòng chọn Tỉnh/Thành (không phải mã số).',
-            'district.not_regex' => 'Vui lòng chọn Quận/Huyện (không phải mã số).',
-            'ward.not_regex' => 'Vui lòng chọn Phường/Xã (không phải mã số).',
+            'address_type.required' => 'Vui lòng chọn loại địa chỉ.',
         ]);
 
         if ($request->has('is_default')) {
             UserAddress::where('userID', Auth::id())->update(['is_default' => 0]);
         }
 
-        // Chuẩn hóa tên địa phương: ưu tiên tên từ form, fallback chuyển code -> tên bằng API
-        $provinceName = $request->input('province_name')
-            ?: $this->getNameFromApi('province', $request->province)
-            ?: $this->getVNPostProvinceName($request->province)
-            ?: $request->province;
-        $districtName = $request->input('district_name')
-            ?: $this->getNameFromApi('district', $request->district)
-            ?: $this->getVNPostDistrictName($request->province, $request->district)
-            ?: $request->district;
-        $wardName = $request->input('ward_name')
-            ?: $this->getNameFromApi('ward', $request->ward)
-            ?: $this->getVNPostWardName($request->district, $request->ward)
-            ?: $request->ward;
+        // Ưu tiên sử dụng tên từ hidden inputs, fallback về tên từ select options
+        $provinceName = $request->input('province_name') ?: $request->province;
+        $districtName = $request->input('district_name') ?: $request->district;
+        $wardName = $request->input('ward_name') ?: $request->ward;
 
-        // Ưu tiên lưu tên hiển thị nếu được gửi kèm, fallback lưu tên từ API (không bao giờ lưu mã số)
-        $address->update([
-            'receiver_name' => $request->receiver_name,
-            'receiver_phone' => $request->receiver_phone,
-            'address' => $request->address,
-            'province' => $provinceName,
-            'district' => $districtName,
-            'ward' => $wardName,
-            'address_type' => $request->address_type,
-            'note' => $request->note,
-            'is_default' => $request->has('is_default') ? 1 : 0,
-            'zip_code' => null, // Bỏ trường zip_code
-        ]);
+        // Nếu vẫn là mã số, thử chuyển đổi thành tên bằng API
+        if (is_numeric($provinceName)) {
+            $provinceName = $this->getVNPostProvinceName($provinceName) ?: $this->getNameFromApi('province', $provinceName) ?: $provinceName;
+        }
+        if (is_numeric($districtName)) {
+            $districtName = $this->getVNPostDistrictName($request->province, $districtName) ?: $this->getNameFromApi('district', $districtName) ?: $districtName;
+        }
+        if (is_numeric($wardName)) {
+            $wardName = $this->getVNPostWardName($request->district, $wardName) ?: $this->getNameFromApi('ward', $wardName) ?: $wardName;
+        }
 
-        return redirect()->route('account.addresses')->with('success', 'Đã cập nhật địa chỉ thành công!');
+        try {
+            $address->update([
+                'receiver_name' => $request->receiver_name,
+                'receiver_phone' => $request->receiver_phone,
+                'address' => $request->address,
+                'province' => $provinceName,
+                'district' => $districtName,
+                'ward' => $wardName,
+                'address_type' => $request->address_type,
+                'note' => $request->input('note'),
+                'is_default' => $request->has('is_default') ? 1 : 0,
+                'zip_code' => null,
+            ]);
+
+            Log::info('Đã cập nhật địa chỉ thành công.', ['address_id' => $address->id]);
+            return redirect()->route('account.addresses')->with('success', 'Đã cập nhật địa chỉ thành công!');
+
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi cập nhật địa chỉ: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Đã xảy ra lỗi khi cập nhật địa chỉ. Vui lòng kiểm tra lại thông tin và thử lại.');
+        }
     }
 
     public function destroy(UserAddress $address)

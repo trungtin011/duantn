@@ -44,9 +44,9 @@
                     <div class="relative">
                         <input type="text" name="name" id="product-name"
                             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Nhập tên sản phẩm" value="{{ old('name') }}" maxlength="100">
+                            placeholder="Nhập tên sản phẩm" value="{{ old('name') }}" maxlength="255">
                         <div class="absolute right-2 top-2 text-xs text-gray-400">
-                            <span id="name-char-count">0</span>/100
+                            <span id="name-char-count">0</span>/255
                         </div>
                     </div>
                     @error('name')
@@ -78,12 +78,13 @@
                             class="text-red-500">*</span></label>
                     <div>
                         <label>
-                            <input type="radio" name="product_type" value="simple" checked> Sản phẩm đơn
+                            <input type="radio" name="product_type" value="simple" {{ old('product_type', 'simple') === 'simple' ? 'checked' : '' }}> Sản phẩm đơn
                         </label>
                         <label class="ml-4">
-                            <input type="radio" name="product_type" value="variant"> Sản phẩm có biến thể
+                            <input type="radio" name="product_type" value="variant" {{ old('product_type') === 'variant' ? 'checked' : '' }}> Sản phẩm có biến thể
                         </label>
                     </div>
+
                 </div>
             </div>
 
@@ -347,7 +348,7 @@
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                         ảnh chính</label>
                                     <input type="file" id="mainImage" name="main_image" class="hidden"
-                                        accept="image/*">
+                                        accept="image/*" value="{{ old('main_image') }}">
                                 </div>
                                 @error('main_image')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -364,7 +365,7 @@
                                         class="inline-block py-2 px-4 bg-blue-100 text-blue-700 rounded-md cursor-pointer hover:bg-blue-200">Chọn
                                         ảnh phụ</label>
                                     <input type="file" id="additionalImages" name="images[]" multiple class="hidden"
-                                        accept="image/*">
+                                        accept="image/*" value="{{ old('images') }}">
                                 </div>
                                 @error('images.*')
                                     <span class="text-sm text-red-500 block mt-1">{{ $message }}</span>
@@ -543,15 +544,18 @@
                                         <input type="text" name="attributes[{{ $index }}][values]"
                                             value="{{ old("attributes.$index.values", $attribute['values'] ?? '') }}"
                                             class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values"
-                                            placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)">
+                                            placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)"
+                                            {{ old("attributes.$index.values") ? 'data-has-old-value="true"' : '' }}>
                                         <button type="button"
                                             class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
                                     </div>
                                 @endforeach
                             </div>
-                            <button type="button" id="add-attribute-btn"
-                                class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Thêm thuộc
-                                tính</button>
+                            <div class="flex gap-2 mt-2">
+                                <button type="button" id="add-attribute-btn"
+                                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Thêm thuộc
+                                    tính</button>
+                            </div>
                         </div>
 
                         <!-- Khu vực hiển thị biến thể -->
@@ -805,10 +809,13 @@
                 const selects = attributeContainer.querySelectorAll('.attribute-select');
                 selects.forEach(select => {
                     select.addEventListener('change', function() {
-                        updateAttributeValues(this);
+                        updateAttributeValues(this, true);
                     });
-                    if (select.value) {
-                        updateAttributeValues(select);
+                    // Chỉ cập nhật giá trị nếu không có dữ liệu old() hoặc giá trị đã nhập
+                    const row = select.closest('.attribute-row');
+                    const valuesInput = row.querySelector('.attribute-values');
+                    if (select.value && (!valuesInput.value.trim() || !valuesInput.hasAttribute('data-has-old-value'))) {
+                        updateAttributeValues(select, false);
                     }
                 });
 
@@ -822,13 +829,13 @@
 
                 attributeContainer.querySelectorAll('input[name$="[name]"]').forEach(input => {
                     input.addEventListener('input', function() {
-                        const names = Array.from(attributeContainer.querySelectorAll(
-                                'input[name$="[name]"]'))
-                            .map(i => i.value.trim().toLowerCase());
-                        if (names.filter(name => name === this.value.trim().toLowerCase()).length > 1) {
-                            alert('Tên thuộc tính đã tồn tại!');
-                            this.value = '';
-                        }
+                        validateAttributeName(this);
+                    });
+                });
+
+                attributeContainer.querySelectorAll('input[name$="[values]"]').forEach(input => {
+                    input.addEventListener('input', function() {
+                        validateAttributeValues(this);
                     });
                 });
             }
@@ -848,7 +855,7 @@
         }
 
         // Hàm cập nhật giá trị thuộc tính khi chọn từ dropdown
-        function updateAttributeValues(select) {
+        function updateAttributeValues(select, force = false) {
             debugLog('Cập nhật giá trị thuộc tính', {
                 selectValue: select.value
             });
@@ -863,21 +870,35 @@
 
             if (select.value === 'new') {
                 nameInput.classList.remove('hidden');
-                nameInput.value = '';
-                valuesInput.value = '';
+                // Không xóa giá trị đã nhập nếu có
+                if (!nameInput.value.trim()) {
+                    nameInput.value = '';
+                }
+                if (!valuesInput.value.trim()) {
+                    valuesInput.value = '';
+                }
                 debugLog('Chọn tạo thuộc tính mới, hiển thị input tên');
             } else {
                 nameInput.classList.add('hidden');
                 const selectedAttribute = window.allAttributes.find(attr => attr.id == select.value);
                 if (selectedAttribute) {
                     nameInput.value = selectedAttribute.name;
-                    valuesInput.value = Array.isArray(selectedAttribute.values) ?
-                        selectedAttribute.values.join(', ') :
-                        (selectedAttribute.values || '');
-                    debugLog('Cập nhật giá trị thuộc tính', {
-                        name: selectedAttribute.name,
-                        values: valuesInput.value
-                    });
+                    // Nếu là thao tác đổi thuộc tính (force=true) thì luôn cập nhật giá trị
+                    // Nếu khởi tạo ban đầu (force=false) chỉ cập nhật khi input đang trống hoặc chưa có giá trị
+                    if (force || !valuesInput.value.trim()) {
+                        valuesInput.value = Array.isArray(selectedAttribute.values) ?
+                            selectedAttribute.values.join(', ') :
+                            (selectedAttribute.values || '');
+                        debugLog('Cập nhật giá trị thuộc tính từ dropdown', {
+                            name: selectedAttribute.name,
+                            values: valuesInput.value
+                        });
+                    } else {
+                        debugLog('Giữ nguyên giá trị đã nhập', {
+                            name: selectedAttribute.name,
+                            existingValues: valuesInput.value
+                        });
+                    }
                 } else {
                     nameInput.value = '';
                     valuesInput.value = '';
@@ -908,14 +929,14 @@
                         .join('')}
                 </select>
                 <input type="text" name="attributes[${attributeIndex}][name]" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name hidden" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
-                <input type="text" name="attributes[${attributeIndex}][values]" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)">
+                <input type="text" name="attributes[${attributeIndex}][values]" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" data-has-old-value="false">
                 <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
             `;
             container.appendChild(newAttribute);
 
             const newSelect = newAttribute.querySelector('.attribute-select');
             newSelect.addEventListener('change', function() {
-                updateAttributeValues(this);
+                updateAttributeValues(this, true);
             });
 
             newAttribute.querySelector('.remove-attribute').addEventListener('click', () => {
@@ -927,15 +948,152 @@
             });
 
             newAttribute.querySelector('input[name$="[name]"]').addEventListener('input', function() {
-                const names = Array.from(container.querySelectorAll('input[name$="[name]"]'))
-                    .map(input => input.value.trim().toLowerCase());
-                if (names.filter(name => name === this.value.trim().toLowerCase()).length > 1) {
-                    alert('Tên thuộc tính đã tồn tại!');
-                    this.value = '';
-                }
+                validateAttributeName(this);
+            });
+
+            newAttribute.querySelector('input[name$="[values]"]').addEventListener('input', function() {
+                validateAttributeValues(this);
             });
 
             attributeIndex++;
+        }
+
+        // Hàm kiểm tra trùng lặp tên thuộc tính
+        function validateAttributeName(input) {
+            const currentName = input.value.trim().toLowerCase();
+            const container = document.getElementById('attribute-container');
+            const allNameInputs = container.querySelectorAll('input[name$="[name]"]');
+            const currentRow = input.closest('.attribute-row');
+            
+            // Xóa lỗi cũ
+            clearFieldError(input);
+            
+            if (!currentName) {
+                return true; // Không validate nếu trống -> coi như hợp lệ
+            }
+            
+            let duplicateCount = 0;
+            allNameInputs.forEach(nameInput => {
+                if (nameInput !== input && nameInput.value.trim().toLowerCase() === currentName) {
+                    duplicateCount++;
+                }
+            });
+            
+            if (duplicateCount > 0) {
+                showFieldError(input, 'Tên thuộc tính này đã tồn tại!');
+                input.classList.add('border-red-500');
+                return false;
+            } else {
+                input.classList.remove('border-red-500');
+                return true;
+            }
+        }
+
+        // Hàm kiểm tra trùng lặp giá trị thuộc tính
+        function validateAttributeValues(input) {
+            const currentValues = input.value.split(',').map(v => v.trim().toLowerCase()).filter(v => v);
+            const container = document.getElementById('attribute-container');
+            const allValueInputs = container.querySelectorAll('input[name$="[values]"]');
+            const currentRow = input.closest('.attribute-row');
+            
+            // Xóa lỗi cũ
+            clearFieldError(input);
+            
+            if (currentValues.length === 0) {
+                return true; // Không validate nếu trống -> coi như hợp lệ
+            }
+            
+            // Kiểm tra trùng lặp trong cùng một input
+            const uniqueValues = [...new Set(currentValues)];
+            if (uniqueValues.length !== currentValues.length) {
+                showFieldError(input, 'Có giá trị trùng lặp trong cùng một thuộc tính!');
+                input.classList.add('border-red-500');
+                return false;
+            }
+            
+            // Kiểm tra trùng lặp với các thuộc tính khác
+            let hasDuplicate = false;
+            let duplicateWith = '';
+            allValueInputs.forEach(valueInput => {
+                if (valueInput !== input) {
+                    const otherValues = valueInput.value.split(',').map(v => v.trim().toLowerCase()).filter(v => v);
+                    const intersection = currentValues.filter(value => otherValues.includes(value));
+                    if (intersection.length > 0) {
+                        hasDuplicate = true;
+                        const otherRow = valueInput.closest('.attribute-row');
+                        const otherNameInput = otherRow.querySelector('input[name$="[name]"]');
+                        const otherName = otherNameInput.value.trim() || 'Thuộc tính khác';
+                        duplicateWith = otherName;
+                    }
+                }
+            });
+            
+            if (hasDuplicate) {
+                showFieldError(input, `Có giá trị trùng lặp với thuộc tính "${duplicateWith}"!`);
+                input.classList.add('border-red-500');
+                return false;
+            } else {
+                input.classList.remove('border-red-500');
+                return true;
+            }
+        }
+
+        // Hàm kiểm tra tổng thể tất cả thuộc tính
+        function validateAllAttributes() {
+            const container = document.getElementById('attribute-container');
+            const nameInputs = container.querySelectorAll('input[name$="[name]"]');
+            const valueInputs = container.querySelectorAll('input[name$="[values]"]');
+            
+            let errors = [];
+            let hasErrors = false;
+            let duplicateNames = new Set();
+            let duplicateValues = new Set();
+
+            // Kiểm tra tên thuộc tính
+            nameInputs.forEach((input, index) => {
+                const name = input.value.trim().toLowerCase();
+                if (name) {
+                    if (duplicateNames.has(name)) {
+                        hasErrors = true;
+                        errors.push(`- Tên thuộc tính "${input.value.trim()}" bị trùng lặp`);
+                    } else {
+                        duplicateNames.add(name);
+                    }
+                }
+            });
+
+            // Kiểm tra giá trị thuộc tính
+            valueInputs.forEach((input, index) => {
+                const values = input.value.split(',').map(v => v.trim().toLowerCase()).filter(v => v);
+                const row = input.closest('.attribute-row');
+                const nameInput = row.querySelector('input[name$="[name]"]');
+                const attrName = nameInput.value.trim() || `Thuộc tính ${index + 1}`;
+
+                // Kiểm tra trùng lặp trong cùng một thuộc tính
+                const uniqueValues = [...new Set(values)];
+                if (uniqueValues.length !== values.length) {
+                    hasErrors = true;
+                    errors.push(`- Thuộc tính "${attrName}" có giá trị trùng lặp trong cùng một thuộc tính`);
+                }
+
+                // Kiểm tra trùng lặp với các thuộc tính khác
+                values.forEach(value => {
+                    if (duplicateValues.has(value)) {
+                        hasErrors = true;
+                        errors.push(`- Giá trị "${value}" bị trùng lặp giữa các thuộc tính`);
+                    } else {
+                        duplicateValues.add(value);
+                    }
+                });
+            });
+
+            if (hasErrors) {
+                const errorMessage = 'Các lỗi validation:\n' + errors.join('\n');
+                alert(errorMessage);
+                return false;
+            }
+
+            return true;
         }
 
         // Hàm cập nhật chỉ số thuộc tính
@@ -971,8 +1129,13 @@
                 return;
             }
 
+            // Xóa lỗi cũ ở nút tạo biến thể (nếu có)
+            const generateBtn = document.getElementById('generate-variants-btn');
+            clearFieldError(generateBtn);
+
             let attributeData = [];
             let hasValidAttribute = false;
+            let hasValidationError = false;
 
             selects.forEach((select, index) => {
                 const attrId = select.value;
@@ -984,6 +1147,7 @@
 
                 if (attrId === 'new' && !attrName) {
                     showFieldError(names[index], `Vui lòng nhập tên thuộc tính cho thuộc tính ${index + 1}.`);
+                    hasValidationError = true;
                     return;
                 }
 
@@ -994,6 +1158,12 @@
                     }
                 }
 
+                if (!valuesArray.length) {
+                    showFieldError(values[index], `Vui lòng nhập giá trị thuộc tính cho thuộc tính ${index + 1}.`);
+                    hasValidationError = true;
+                    return;
+                }
+
                 if (attrName && valuesArray.length) {
                     attributeData.push({
                         name: attrName,
@@ -1002,6 +1172,12 @@
                     hasValidAttribute = true;
                 }
             });
+
+            if (hasValidationError) {
+                showFieldError(generateBtn, 'Vui lòng sửa các lỗi validation trước khi tạo biến thể.');
+                debugLog('Validation errors found, cannot generate variants');
+                return;
+            }
 
             if (!hasValidAttribute) {
                 showFieldError(document.querySelector('#generate-variants-btn'),
@@ -1031,6 +1207,9 @@
             const variants = getCombinations(attributeData.map(attr => attr.values));
             debugLog('Generated variants', variants);
 
+            const baseSkuInput = document.querySelector('input[name="sku"]');
+            const baseSku = (baseSkuInput && baseSkuInput.value ? baseSkuInput.value.trim() : '').toUpperCase();
+
             variants.forEach((variant, index) => {
                 const variantDiv = document.createElement('div');
                 variantDiv.classList.add('p-6', 'border', 'border-gray-300', 'rounded-md', 'mb-6', 'bg-white',
@@ -1038,6 +1217,16 @@
 
                 const variantName = variant.join(' - ');
                 const oldData = oldVariants[variantName] || {};
+                const variantSlug = (function(t){
+                    return t.toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/đ/g,'d')
+                        .replace(/[^a-z0-9 -]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-');
+                })(variantName);
+                const autoSku = baseSku ? `${baseSku}-${variantSlug.toUpperCase().replace(/-/g,'')}` : variantSlug.toUpperCase().replace(/-/g,'');
 
                 let variantHTML = `
                     <div class="flex justify-between items-center mb-3">
@@ -1069,7 +1258,7 @@
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">SKU</label>
-                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" value="${oldData.sku || ''}">
+                                <input type="text" name="variants[${index}][sku]" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-2 focus:ring-blue-500" placeholder="Nhập SKU" value="${oldData.sku || autoSku}">
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-medium mb-1">Số lượng tồn kho</label>
@@ -1425,8 +1614,8 @@
             const nameInput = document.querySelector('input[name="name"]');
             if (!nameInput || !nameInput.value.trim()) {
                 errors.push('Vui lòng nhập tên sản phẩm.');
-            } else if (nameInput.value.trim().length > 100) {
-                errors.push('Tên sản phẩm không được vượt quá 100 ký tự.');
+            } else if (nameInput.value.trim().length > 255) {
+                errors.push('Tên sản phẩm không được vượt quá 255 ký tự.');
             } else {
                 const nameError = nameInput.parentNode.querySelector('.field-error');
                 if (nameError && nameError.textContent.includes('đã tồn tại')) {
@@ -1594,6 +1783,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('DOM fully loaded');
 
+            // Đảm bảo loại sản phẩm được chọn đúng ngay từ đầu
+            const productType = '{{ old('product_type', 'simple') }}';
+            debugLog('Initial product type from old()', { productType });
+            
+            // Set radio button ngay lập tức
+            const radioButton = document.querySelector(`input[name="product_type"][value="${productType}"]`);
+            if (radioButton) {
+                radioButton.checked = true;
+                debugLog('Radio button set to', { value: radioButton.value });
+            }
+
             // Khởi tạo TinyMCE
             tinymce.init({
                 selector: '#description',
@@ -1702,6 +1902,8 @@
                 debugLog('Add attribute button NOT found');
             }
 
+            // Nút kiểm tra thuộc tính đã được loại bỏ
+
             // Gắn sự kiện cho nút Tạo biến thể
             const generateVariantsButton = document.getElementById('generate-variants-btn');
             if (generateVariantsButton) {
@@ -1712,6 +1914,30 @@
                 });
             } else {
                 debugLog('Generate variants button NOT found');
+            }
+
+            // Auto-update empty variant SKUs when product SKU changes
+            const baseSkuInput = document.querySelector('input[name="sku"]');
+            if (baseSkuInput) {
+                baseSkuInput.addEventListener('input', () => {
+                    const newBase = baseSkuInput.value.trim().toUpperCase();
+                    document.querySelectorAll('#variant-container .variant-item').forEach((item) => {
+                        const nameInput = item.querySelector('input[name$="[name]"]');
+                        const skuInput = item.querySelector('input[name$="[sku]"]');
+                        if (!nameInput || !skuInput) return;
+                        if (skuInput.value && skuInput.value.trim()) return; // keep user-entered
+                        const variantName = nameInput.value || '';
+                        const slug = variantName.toLowerCase()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .replace(/đ/g,'d')
+                            .replace(/[^a-z0-9 -]/g, '')
+                            .replace(/\s+/g, '-')
+                            .replace(/-+/g, '-');
+                        const autoSku = newBase ? `${newBase}-${slug.toUpperCase().replace(/-/g,'')}` : slug.toUpperCase().replace(/-/g,'');
+                        skuInput.value = autoSku;
+                    });
+                });
             }
 
             // Khởi tạo trạng thái ban đầu
@@ -1734,7 +1960,7 @@
             const tabAttributesVariants = document.getElementById('tab-attributes-variants');
 
             function toggleProductTypeSections() {
-                const selectedProductType = document.querySelector('input[name="product_type"]:checked').value;
+                const selectedProductType = document.querySelector('input[name="product_type"]:checked')?.value || '{{ old('product_type', 'simple') }}';
 
                 // Reset all tab content visibility
                 tabGeneralDetails.classList.add('hidden');
@@ -1801,7 +2027,24 @@
                 document.querySelector('input[name="sku"]').disabled = false;
             }
 
-            productTypeRadios.forEach(radio => radio.addEventListener('change', toggleProductTypeSections));
+            productTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    console.log('Product type changed to:', this.value);
+                    toggleProductTypeSections();
+                    
+                    // Đảm bảo tab đầu tiên được hiển thị khi thay đổi loại sản phẩm
+                    setTimeout(() => {
+                        const activeTabButton = document.querySelector('.tab-button.active');
+                        if (activeTabButton) {
+                            const targetTabId = activeTabButton.dataset.tab;
+                            const targetTabContent = document.getElementById(`tab-${targetTabId}`);
+                            if (targetTabContent) {
+                                targetTabContent.classList.remove('hidden');
+                            }
+                        }
+                    }, 50);
+                });
+            });
 
             // Initial call on load
             toggleProductTypeSections();
@@ -1921,8 +2164,8 @@
                 nameInput.addEventListener('blur', function() {
                     if (!this.value.trim()) {
                         showFieldError(this, 'Vui lòng nhập tên sản phẩm.');
-                    } else if (this.value.trim().length > 100) {
-                        showFieldError(this, 'Tên sản phẩm không được vượt quá 100 ký tự.');
+                    } else if (this.value.trim().length > 255) {
+                        showFieldError(this, 'Tên sản phẩm không được vượt quá 255 ký tự.');
                     } else {
                         // Kiểm tra ngay khi blur
                         checkProductName(this.value.trim());
@@ -2103,9 +2346,6 @@
                 // Nếu có lỗi, form sẽ tự động giữ dữ liệu cũ thông qua Laravel's old() helper
                 console.log('Form có lỗi validation, dữ liệu cũ đã được khôi phục');
 
-                // Khôi phục trạng thái tab và loại sản phẩm
-                restoreProductTypeState();
-
                 // Khôi phục dữ liệu biến thể nếu có
                 restoreVariantData();
             }
@@ -2114,11 +2354,17 @@
         // Hàm khôi phục trạng thái loại sản phẩm
         function restoreProductTypeState() {
             const productType = '{{ old('product_type', 'simple') }}';
+            debugLog('Restoring product type state', { productType });
+            
             const radioButton = document.querySelector(`input[name="product_type"][value="${productType}"]`);
             if (radioButton) {
                 radioButton.checked = true;
+                debugLog('Product type radio button checked', { value: radioButton.value });
+                
                 // Trigger change event để cập nhật UI
                 radioButton.dispatchEvent(new Event('change'));
+            } else {
+                debugLog('Product type radio button not found', { productType });
             }
         }
 
@@ -2162,7 +2408,7 @@
                             .join('')}
                     </select>
                     <input type="text" name="attributes[${index}][name]" value="${attribute.name || ''}" class="w-1/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-name ${attribute.id === 'new' ? '' : 'hidden'}" placeholder="Tên thuộc tính (VD: Màu sắc, Kích thước)">
-                    <input type="text" name="attributes[${index}][values]" value="${attribute.values || ''}" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)">
+                    <input type="text" name="attributes[${index}][values]" value="${attribute.values || ''}" class="w-2/3 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 attribute-values" placeholder="Giá trị (VD: Đỏ, Xanh, Vàng - phân cách bằng dấu phẩy)" data-has-old-value="true">
                     <button type="button" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 remove-attribute">Xóa</button>
                 `;
 
@@ -2178,6 +2424,14 @@
                 attributeRow.querySelector('.remove-attribute').addEventListener('click', () => {
                     attributeRow.remove();
                     updateAttributeIndices();
+                });
+
+                attributeRow.querySelector('input[name$="[name]"]').addEventListener('input', function() {
+                    validateAttributeName(this);
+                });
+
+                attributeRow.querySelector('input[name$="[values]"]').addEventListener('input', function() {
+                    validateAttributeValues(this);
                 });
             });
 

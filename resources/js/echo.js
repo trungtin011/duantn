@@ -10,7 +10,6 @@ window.Echo = new Echo({
     forceTLS: false
 });
 
-
 if (window.Laravel.user.role === 'seller') {
     console.log('Seller notification:', window.Laravel.user.role);
 
@@ -62,13 +61,11 @@ function addNotificationToList(notification) {
     const dropdownContent = document.querySelector('.dropdown-notification-content');
     if (!dropdownContent) return;
 
-    // Xóa thông báo "Không có thông báo mới" nếu có
     const emptyMessage = dropdownContent.querySelector('.text-center');
     if (emptyMessage) {
         emptyMessage.remove();
     }
 
-    // Xóa thông báo trùng lặp nếu có
     const existing = dropdownContent.querySelector(
         `[data-notification-title="${escapeHtml(notification.title)}"][data-notification-type="${notification.type}"][data-notification-receiver-type="${notification.receiver_type}"]`
     );
@@ -76,10 +73,8 @@ function addNotificationToList(notification) {
         existing.remove();
     }
 
-    // Tìm container chính chứa notifications
     let notificationsContainer = dropdownContent.querySelector('.p-4');
     if (!notificationsContainer) {
-        // Tạo container mới nếu chưa có
         notificationsContainer = document.createElement('div');
         notificationsContainer.className = 'p-4';
         notificationsContainer.innerHTML = `
@@ -91,17 +86,14 @@ function addNotificationToList(notification) {
         dropdownContent.appendChild(notificationsContainer);
     }
 
-    // Tìm hoặc tạo section cho loại thông báo
     let typeSection = notificationsContainer.querySelector(`[data-type="${notification.type}"]`);
     if (!typeSection) {
         typeSection = createNotificationTypeSection(notification.type);
-        notificationsContainer.appendChild(typeSection);
+        notificationsContainer.appendChild(typeSection);    
     }
 
-    // Tạo thông báo mới
     const notificationItem = createNotificationItem(notification);
 
-    // Thêm thông báo vào đầu section
     const notificationsList = typeSection.querySelector('.notifications-list');
     if (notificationsList) {
         notificationsList.insertBefore(notificationItem, notificationsList.firstChild);
@@ -275,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Thêm hàm để hiển thị thông báo realtime trên seller_home
+// Thêm hàm để  thị thông báo realtime trên seller_home
 function addNotificationToSellerHome(notification) {
     const notificationList = document.getElementById('notification-list');
     if (!notificationList) return;

@@ -23,7 +23,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('chat.{shopId}.{userId}', function ($user, $shopId, $userId) {
-    // If the authenticated user is the customer in this conversation
+    // If the authenticated user is the customerin this conversation
     if ($user->id == $userId && $user->role->value === UserRole::CUSTOMER->value) {
         return true;
     }
@@ -55,6 +55,7 @@ Broadcast::channel('shop.{role}', function ($user, $role) {
 });
 
 Broadcast::channel('notifications.all', function () {
+    Log::info('notifications.all');
     return true;    
 });
 

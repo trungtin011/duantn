@@ -108,6 +108,11 @@ class ProductControllerSeller extends Controller
             $this->validationMessages()
         );
 
+        // Custom validation cho attributes và variants
+        if ($request->product_type === 'variant') {
+            $this->validateAttributes($request);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -636,6 +641,11 @@ class ProductControllerSeller extends Controller
             $this->validationMessages()
         );
 
+        // Custom validation cho attributes và variants
+        if ($request->product_type === 'variant') {
+            $this->validateAttributes($request);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -1108,11 +1118,11 @@ class ProductControllerSeller extends Controller
             : 'required|string|max:100|unique:product_variants,sku';
 
         // Tạo rule cho tên sản phẩm unique trong shop
-        $nameRule = 'required|string|max:100';
+        $nameRule = 'required|string|max:255';
         if ($shop) {
             $nameRule = $isUpdate
-                ? 'required|string|max:100|unique:products,name,' . $productId . ',id,shopID,' . $shop->id
-                : 'required|string|max:100|unique:products,name,NULL,id,shopID,' . $shop->id;
+                ? 'required|string|max:255|unique:products,name,' . $productId . ',id,shopID,' . $shop->id
+                : 'required|string|max:255|unique:products,name,NULL,id,shopID,' . $shop->id;
         }
 
         $rules = [
@@ -1137,7 +1147,8 @@ class ProductControllerSeller extends Controller
             $rules = array_merge($rules, [
                 'attributes' => 'required|array|min:1',
                 'attributes.*.name' => 'nullable|string|max:100',
-                'attributes.*.values' => 'nullable|string',
+                'attributes.*.values' => 'required|string',
+                'attributes.*.id' => 'nullable|string',
                 'variants' => 'required|array|min:1',
                 'variants.*.name' => 'required|string|max:100',
                 'variants.*.price' => 'required|numeric|min:0',
@@ -1167,7 +1178,7 @@ class ProductControllerSeller extends Controller
     {
         return [
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
-            'name.max' => 'Tên sản phẩm không được vượt quá 100 ký tự.',
+            'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự.',
             'name.unique' => 'Tên sản phẩm này đã tồn tại trong shop của bạn.',
             'sku.required' => 'Vui lòng nhập mã SKU.',
             'sku.unique' => 'Mã SKU này đã tồn tại.',
@@ -1187,6 +1198,11 @@ class ProductControllerSeller extends Controller
             'meta_title.max' => 'Tiêu đề SEO không vượt quá :max ký tự.',
             'meta_description.max' => 'Mô tả SEO không vượt quá :max ký tự.',
             'meta_keywords.max' => 'Từ khóa SEO không vượt quá :max ký tự.',
+            'attributes.required' => 'Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.',
+            'attributes.min' => 'Vui lòng thêm ít nhất một thuộc tính cho sản phẩm biến thể.',
+            'attributes.*.name.required' => 'Vui lòng nhập tên thuộc tính.',
+            'attributes.*.name.max' => 'Tên thuộc tính không được vượt quá 100 ký tự.',
+            'attributes.*.values.required' => 'Vui lòng nhập giá trị thuộc tính.',
             'variants.*.name.required' => 'Vui lòng nhập tên phiên bản.',
             'variants.*.sku.required' => 'Vui lòng nhập mã SKU cho phiên bản.',
             'variants.*.sku.unique' => 'Mã SKU phiên bản đã tồn tại.',
@@ -1207,6 +1223,50 @@ class ProductControllerSeller extends Controller
             'main_image.mimes' => 'Ảnh chính chỉ chấp nhận định dạng jpeg, png, jpg, webp, svg.',
             'main_image.max' => 'Ảnh chính không được vượt quá 5MB.',
         ];
+    }
+
+    /**
+     * Custom validation cho attributes và variants
+     */
+    protected function validateAttributes(Request $request)
+    {
+        $attributes = $request->input('attributes', []);
+        $variants = $request->input('variants', []);
+        $errors = [];
+
+        // Validation cho attributes
+        foreach ($attributes as $index => $attribute) {
+            // Kiểm tra nếu id là 'new' thì name phải được nhập
+            if (($attribute['id'] ?? '') === 'new' && empty(trim($attribute['name'] ?? ''))) {
+                $errors["attributes.{$index}.name"] = 'Vui lòng nhập tên thuộc tính khi tạo thuộc tính mới.';
+            }
+
+            // Kiểm tra values không được trống
+            if (empty(trim($attribute['values'] ?? ''))) {
+                $errors["attributes.{$index}.values"] = 'Vui lòng nhập giá trị thuộc tính.';
+            }
+        }
+
+        // Validation cho variants
+        foreach ($variants as $index => $variant) {
+            // Kiểm tra logic giá nhập và giá bán
+            if (!empty($variant['purchase_price']) && !empty($variant['sale_price'])) {
+                $purchasePrice = floatval($variant['purchase_price']);
+                $salePrice = floatval($variant['sale_price']);
+                
+                if ($purchasePrice > $salePrice) {
+                    $errors["variants.{$index}.purchase_price"] = 'Giá nhập không được lớn hơn giá bán.';
+                    $errors["variants.{$index}.sale_price"] = 'Giá bán phải lớn hơn hoặc bằng giá nhập.';
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            throw new \Illuminate\Validation\ValidationException(
+                validator([], []),
+                response()->json($errors, 422)
+            );
+        }
     }
 
     /**

@@ -1021,3 +1021,25 @@ Route::prefix('simple-ad')->name('simple.ad.')->group(function () {
     Route::get('/reset', [App\Http\Controllers\SimpleAdClickController::class, 'resetTestData'])->name('reset');
     Route::get('/debug', [App\Http\Controllers\SimpleAdClickController::class, 'debugClicks'])->name('debug');
 });
+
+// Test route để kiểm tra việc khôi phục trạng thái
+Route::get('/test-product-type', function () {
+    // Simulate old input data
+    session()->flash('_old_input', [
+        'product_type' => 'variant',
+        'name' => 'Test Product',
+        'sku' => 'TEST001'
+    ]);
+    
+    return view('seller.products.create', [
+        'brands' => \App\Models\Brand::all(),
+        'categories' => \App\Models\Category::all(),
+        'allAttributes' => \App\Models\Attribute::with('values')->get()->map(function ($attr) {
+            return [
+                'id' => $attr->id,
+                'name' => $attr->name,
+                'values' => $attr->values->pluck('value')->toArray(),
+            ];
+        })->toArray()
+    ]);
+});
