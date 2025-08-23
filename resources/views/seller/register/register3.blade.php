@@ -279,7 +279,12 @@
                                                 </label>
                                                 <input type="date" name="birthday" required
                                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                    value="{{ old('birthday') }}">
+                                                    value="{{ old('birthday') }}"
+                                                    max="{{ date('Y-m-d', strtotime('-18 years')) }}">
+                                                <p class="text-sm text-gray-500 mt-1">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Bạn phải đủ 18 tuổi để đăng ký làm người bán
+                                                </p>
                                                 @error('birthday')
                                                     <p class="text-red-500 text-sm">{{ $message }}</p>
                                                 @enderror
@@ -341,7 +346,12 @@
                                                 </label>
                                                 <input type="text" name="id_number" maxlength="20" required
                                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                    placeholder="Nhập số CCCD/CMND" value="{{ old('id_number') }}">
+                                                    placeholder="Nhập số CCCD/CMND (9-12 số)" value="{{ old('id_number') }}"
+                                                    pattern="[0-9]{9,12}">
+                                                <p class="text-sm text-gray-500 mt-1">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Số CCCD/CMND phải có từ 9-12 chữ số
+                                                </p>
                                                 @error('id_number')
                                                     <p class="text-red-500 text-sm">{{ $message }}</p>
                                                 @enderror
@@ -353,7 +363,12 @@
                                                 </label>
                                                 <input type="date" name="identity_card_date" required
                                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
-                                                    value="{{ old('identity_card_date') }}">
+                                                    value="{{ old('identity_card_date') }}"
+                                                    max="{{ date('Y-m-d') }}">
+                                                <p class="text-sm text-gray-500 mt-1">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Ngày cấp phải sau ngày sinh ít nhất 14 năm và không thể là ngày trong tương lai
+                                                </p>
                                                 @error('identity_card_date')
                                                     <p class="text-red-500 text-sm">{{ $message }}</p>
                                                 @enderror
@@ -853,5 +868,95 @@
                 if (backUploadContent) backUploadContent.classList.add('hidden');
             }
         });
+
+    // Real-time validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const birthdayInput = document.querySelector('input[name="birthday"]');
+        const idNumberInput = document.querySelector('input[name="id_number"]');
+        const identityCardDateInput = document.querySelector('input[name="identity_card_date"]');
+
+        // Validate birthday (must be 18+ years old)
+        if (birthdayInput) {
+            birthdayInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                const today = new Date();
+                const age = today.getFullYear() - selectedDate.getFullYear();
+                const monthDiff = today.getMonth() - selectedDate.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < selectedDate.getDate())) {
+                    age--;
+                }
+
+                if (age < 18) {
+                    this.setCustomValidity('Bạn phải đủ 18 tuổi để đăng ký làm người bán.');
+                    this.classList.add('border-red-500');
+                } else if (age > 100) {
+                    this.setCustomValidity('Ngày sinh không hợp lệ.');
+                    this.classList.add('border-red-500');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('border-red-500');
+                }
+            });
+        }
+
+        // Validate ID number (must be 9-12 digits)
+        if (idNumberInput) {
+            idNumberInput.addEventListener('input', function() {
+                const value = this.value.replace(/\D/g, '');
+                this.value = value;
+                
+                if (value.length < 9) {
+                    this.setCustomValidity('Số CCCD/CMND phải có ít nhất 9 chữ số.');
+                    this.classList.add('border-red-500');
+                } else if (value.length > 12) {
+                    this.setCustomValidity('Số CCCD/CMND không được vượt quá 12 chữ số.');
+                    this.classList.add('border-red-500');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('border-red-500');
+                }
+            });
+        }
+
+        // Validate identity card date
+        if (identityCardDateInput && birthdayInput) {
+            identityCardDateInput.addEventListener('change', function() {
+                const cardDate = new Date(this.value);
+                const birthday = new Date(birthdayInput.value);
+                const today = new Date();
+                
+                // Check if card date is in the future
+                if (cardDate > today) {
+                    this.setCustomValidity('Ngày cấp không thể là ngày trong tương lai.');
+                    this.classList.add('border-red-500');
+                    return;
+                }
+                
+                // Check if card date is at least 14 years after birthday
+                const minCardDate = new Date(birthday);
+                minCardDate.setFullYear(birthday.getFullYear() + 14);
+                
+                if (cardDate < minCardDate) {
+                    this.setCustomValidity('Ngày cấp CCCD/CMND phải sau ngày sinh ít nhất 14 năm.');
+                    this.classList.add('border-red-500');
+                } else {
+                    this.setCustomValidity('');
+                    this.classList.remove('border-red-500');
+                }
+            });
+        }
+
+        // Auto-format ID number (add spaces every 4 digits)
+        if (idNumberInput) {
+            idNumberInput.addEventListener('input', function() {
+                let value = this.value.replace(/\D/g, '');
+                if (value.length > 0) {
+                    value = value.match(/.{1,4}/g).join(' ');
+                }
+                this.value = value;
+            });
+        }
+    });
     </script>
 @endsection

@@ -91,14 +91,6 @@
                     </button>
                 </form>
                 
-                <!-- Test Button -->
-                <button type="button" 
-                        onclick="document.getElementById('approveForm').submit()"
-                        class="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-colors duration-200 flex items-center justify-center gap-2">
-                    <i class="fas fa-test"></i>
-                    Test Duyệt
-                </button>
-                
                 <!-- Reject -->
                 <button type="button" 
                         data-shop-id="{{ $shop->id }}" 
@@ -273,16 +265,37 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Loại hình kinh doanh</label>
-                            <p class="text-gray-800">{{ $shop->owner->seller->businessLicense->business_type }}</p>
+                            @php 
+                                $businessType = $shop->owner->seller->businessLicense->business_type;
+                                $businessTypeLabels = [
+                                    'individual' => 'Cá nhân / Kinh doanh cá nhân',
+                                    'household' => 'Hộ kinh doanh',
+                                    'company' => 'Công ty / Doanh nghiệp'
+                                ];
+                            @endphp
+                            <p class="text-gray-800 font-medium">
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                    {{ $businessTypeLabels[$businessType] ?? ucfirst($businessType) }}
+                                </span>
+                            </p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Mã số thuế</label>
-                            <p class="text-gray-800 font-mono">{{ $shop->owner->seller->businessLicense->tax_number }}</p>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Số giấy phép</label>
+                                <p class="text-gray-800 font-mono">{{ $shop->owner->seller->businessLicense->business_license_number }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Mã số thuế</label>
+                                <p class="text-gray-800 font-mono">{{ $shop->owner->seller->businessLicense->tax_number }}</p>
+                            </div>
                         </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Email nhận hóa đơn</label>
                             <p class="text-gray-800">{{ $shop->owner->seller->businessLicense->invoice_email }}</p>
                         </div>
+                        
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Ngày cấp</label>
@@ -293,6 +306,43 @@
                                 <p class="text-gray-800">{{ $shop->owner->seller->businessLicense->expiry_date->format('d/m/Y') }}</p>
                             </div>
                         </div>
+                        
+                        <!-- Hiển thị ảnh giấy phép nếu có -->
+                        @if($shop->owner->seller->businessLicense->license_file_path && $businessType !== 'individual')
+                            @php
+                                $licenseFiles = json_decode($shop->owner->seller->businessLicense->license_file_path, true);
+                            @endphp
+                            @if($licenseFiles && isset($licenseFiles['front']) && isset($licenseFiles['back']))
+                                <div class="space-y-3">
+                                    <label class="block text-sm font-medium text-gray-600 mb-2">Ảnh giấy phép kinh doanh</label>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-500 mb-1">Mặt trước</label>
+                                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                                <img src="{{ asset('storage/' . $licenseFiles['front']) }}" 
+                                                     alt="Mặt trước giấy phép" 
+                                                     class="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                                     data-image="{{ asset('storage/' . $licenseFiles['front']) }}"
+                                                     data-title="Mặt trước giấy phép"
+                                                     onclick="openImageModal(this.dataset.image, this.dataset.title)">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-500 mb-1">Mặt sau</label>
+                                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                                <img src="{{ asset('storage/' . $licenseFiles['back']) }}" 
+                                                     alt="Mặt sau giấy phép" 
+                                                     class="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                                     data-image="{{ asset('storage/' . $licenseFiles['back']) }}"
+                                                     data-title="Mặt sau giấy phép"
+                                                     onclick="openImageModal(this.dataset.image, this.dataset.title)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
+                        
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Trạng thái</label>
@@ -449,6 +499,23 @@
     </div>
 </div>
 
+<!-- Image Modal -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-5 max-w-4xl">
+        <div class="bg-white rounded-lg shadow-xl">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="text-lg font-semibold text-gray-900" id="imageModalTitle">Xem ảnh</h3>
+                <button onclick="closeImageModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <img id="imageModalImage" src="" alt="Image" class="w-full h-auto max-h-96 object-contain mx-auto">
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -469,6 +536,20 @@
         shopNameSpan.textContent = shopName;
         rejectForm.action = '/admin/shops/' + shopId + '/reject';
         modal.classList.remove('hidden');
+    }
+
+    function openImageModal(imageUrl, title) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('imageModalImage');
+        const modalTitle = document.getElementById('imageModalTitle');
+
+        modalImage.src = imageUrl;
+        modalTitle.textContent = title;
+        modal.classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
     }
 </script>
 @endsection

@@ -171,15 +171,34 @@ class RegisterShopController extends Controller
        
 
         
-        $request->validate([
-            'business_type' => 'required|in:personal,household,company', // sửa lại cho đúng value radio
+        // Validation cơ bản
+        $basicValidation = [
+            'business_type' => 'required|in:individual,household,company',
             'business_province' => 'required',
             'business_district' => 'required',
             'business_ward' => 'required',
             'business_address_detail' => 'required|max:255',
             'invoice_email' => 'required|email|max:100',
             'tax_code' => 'required|max:20|unique:business_licenses,tax_number',
-        ], [
+        ];
+
+        // Validation tùy theo loại hình kinh doanh
+        $businessType = $request->business_type;
+        if ($businessType === 'household' || $businessType === 'company') {
+            // Yêu cầu thêm cho hộ kinh doanh và công ty
+            $basicValidation['business_license_number'] = 'required|max:50';
+            $basicValidation['business_license_date'] = 'required|date|before:today';
+            
+            // Chỉ validate file nếu chưa có trong session (tránh mất ảnh đã chọn)
+            if (!session('register_shop.business_license_front')) {
+                $basicValidation['business_license_front'] = 'required|file|image|mimes:jpg,jpeg,png|max:5120';
+            }
+            if (!session('register_shop.business_license_back')) {
+                $basicValidation['business_license_back'] = 'required|file|image|mimes:jpg,jpeg,png|max:5120';
+            }
+        }
+
+        $request->validate($basicValidation, [
             'business_type.required' => 'Loại hình kinh doanh là bắt buộc.',
             'business_province.required' => 'Tỉnh/thành phố là bắt buộc.',
             'business_district.required' => 'Quận/huyện là bắt buộc.',
@@ -192,6 +211,19 @@ class RegisterShopController extends Controller
             'tax_code.required' => 'Mã số thuế là bắt buộc.',
             'tax_code.unique' => 'Mã số thuế đã được sử dụng.',
             'tax_code.max' => 'Mã số thuế không được vượt quá 20 ký tự.',
+            'business_license_number.required' => 'Số giấy phép kinh doanh là bắt buộc cho loại hình này.',
+            'business_license_date.required' => 'Ngày cấp giấy phép kinh doanh là bắt buộc.',
+            'business_license_date.before' => 'Ngày cấp giấy phép không thể là ngày trong tương lai.',
+            'business_license_front.required' => 'Ảnh mặt trước giấy phép kinh doanh là bắt buộc.',
+            'business_license_back.required' => 'Ảnh mặt sau giấy phép kinh doanh là bắt buộc.',
+            'business_license_front.file' => 'Tệp ảnh mặt trước giấy phép không hợp lệ.',
+            'business_license_back.file' => 'Tệp ảnh mặt sau giấy phép không hợp lệ.',
+            'business_license_front.image' => 'Ảnh mặt trước giấy phép phải là định dạng hình ảnh.',
+            'business_license_back.image' => 'Ảnh mặt sau giấy phép phải là định dạng hình ảnh.',
+            'business_license_front.max' => 'Ảnh mặt trước giấy phép không được vượt quá 5MB.',
+            'business_license_back.max' => 'Ảnh mặt sau giấy phép không được vượt quá 5MB.',
+            'business_license_front.mimes' => 'Ảnh mặt trước giấy phép chỉ chấp nhận các định dạng: jpg, jpeg, png.',
+            'business_license_back.mimes' => 'Ảnh mặt sau giấy phép chỉ chấp nhận các định dạng: jpg, jpeg, png.',
         ]);
 
         // Gộp địa chỉ kinh doanh
@@ -205,8 +237,11 @@ class RegisterShopController extends Controller
         $business_address .= $business_district_name . ', ';
         $business_address .= $business_province_name;
 
+        // Xử lý logic khác nhau cho từng loại hình kinh doanh
+        $businessTypeData = $this->processBusinessTypeData($request->business_type, $request->all());
+        
         // Lưu dữ liệu kinh doanh vào session
-        session(['register_shop' => array_merge(session('register_shop', []), [
+        $sessionData = [
             'business_type' => $request->business_type,
             'business_province' => $request->business_province,
             'business_district' => $request->business_district,
@@ -218,7 +253,31 @@ class RegisterShopController extends Controller
             'business_address' => $business_address,
             'invoice_email' => $request->invoice_email,
             'tax_code' => $request->tax_code,
-        ])]);
+            'business_type_data' => $businessTypeData, // Thêm dữ liệu xử lý theo loại hình
+        ];
+
+        // Thêm dữ liệu bổ sung cho hộ kinh doanh và công ty
+        if ($request->business_type === 'household' || $request->business_type === 'company') {
+            $sessionData['business_license_number'] = $request->business_license_number;
+            $sessionData['business_license_date'] = $request->business_license_date;
+            
+            // Giữ lại ảnh cũ nếu có, chỉ upload ảnh mới nếu được chọn
+            if ($request->hasFile('business_license_front')) {
+                $frontPath = $request->file('business_license_front')->store('business_licenses/front', 'public');
+                $sessionData['business_license_front'] = $frontPath;
+            } elseif (session('register_shop.business_license_front')) {
+                $sessionData['business_license_front'] = session('register_shop.business_license_front');
+            }
+            
+            if ($request->hasFile('business_license_back')) {
+                $backPath = $request->file('business_license_back')->store('business_licenses/back', 'public');
+                $sessionData['business_license_back'] = $backPath;
+            } elseif (session('register_shop.business_license_back')) {
+                $sessionData['business_license_back'] = session('register_shop.business_license_back');
+            }
+        }
+
+        session(['register_shop' => array_merge(session('register_shop', []), $sessionData)]);
 
 
 
@@ -244,25 +303,47 @@ class RegisterShopController extends Controller
     public function step4(Request $request)
     {
         $request->validate([
-            'id_number' => 'required|string|max:20',
-            'full_name' => 'required|string|max:100',
-            'birthday' => 'required|date',
+            'id_number' => 'required|string|max:20|regex:/^[0-9]{9,12}$/',
+            'full_name' => 'required|string|max:100|min:2',
+            'birthday' => [
+                'required',
+                'date',
+                'before:today',
+                function ($attribute, $value, $fail) {
+                    $age = \Carbon\Carbon::parse($value)->age;
+                    if ($age < 18) {
+                        $fail('Bạn phải đủ 18 tuổi để đăng ký làm người bán.');
+                    }
+                    if ($age > 100) {
+                        $fail('Ngày sinh không hợp lệ.');
+                    }
+                }
+            ],
             'nationality' => 'required|string|max:100',
             'gender' => 'required|in:male,female,other',
-            'hometown' => 'required|string|max:255',
-            'residence' => 'required|string|max:255',
-            'identity_card_date' => 'required|date',
-            'identity_card_place' => 'required|string|max:255',
+            'hometown' => 'required|string|max:255|min:2',
+            'residence' => 'required|string|max:255|min:2',
+            'identity_card_date' => [
+                'required',
+                'date',
+                'before:today',
+                'after:' . \Carbon\Carbon::parse($request->birthday)->addYears(14)->format('Y-m-d')
+            ],
+            'identity_card_place' => 'required|string|max:255|min:2',
             'cccd_image' => 'required|string',
             'back_cccd_image' => 'required|string',
             'confirm' => 'required',
         ], [
             'id_number.required' => 'Số CCCD/CMND là bắt buộc.',
             'id_number.max' => 'Số CCCD/CMND không được vượt quá 20 ký tự.',
+            'id_number.min' => 'Số CCCD/CMND phải có ít nhất 9 ký tự.',
+            'id_number.regex' => 'Số CCCD/CMND chỉ được chứa số từ 9-12 ký tự.',
             'full_name.required' => 'Họ và tên là bắt buộc.',
             'full_name.max' => 'Họ và tên không được vượt quá 100 ký tự.',
+            'full_name.min' => 'Họ và tên phải có ít nhất 2 ký tự.',
             'birthday.required' => 'Ngày sinh là bắt buộc.',
             'birthday.date' => 'Ngày sinh không hợp lệ.',
+            'birthday.before' => 'Ngày sinh không thể là ngày trong tương lai.',
             'nationality.required' => 'Quốc tịch là bắt buộc.',
             'nationality.max' => 'Quốc tịch không được vượt quá 100 ký tự.',
             'cccd_image.required' => 'Ảnh mặt trước CCCD/CMND là bắt buộc.',
@@ -272,12 +353,17 @@ class RegisterShopController extends Controller
             'gender.in' => 'Giới tính không hợp lệ.',
             'hometown.required' => 'Quê quán là bắt buộc.',
             'hometown.max' => 'Quê quán không được vượt quá 255 ký tự.',
+            'hometown.min' => 'Quê quán phải có ít nhất 2 ký tự.',
             'residence.required' => 'Nơi thường trú là bắt buộc.',
             'residence.max' => 'Nơi thường trú không được vượt quá 255 ký tự.',
+            'residence.min' => 'Nơi thường trú phải có ít nhất 2 ký tự.',
             'identity_card_date.required' => 'Ngày cấp là bắt buộc.',
             'identity_card_date.date' => 'Ngày cấp không hợp lệ.',
+            'identity_card_date.before' => 'Ngày cấp không thể là ngày trong tương lai.',
+            'identity_card_date.after' => 'Ngày cấp CCCD/CMND phải sau ngày sinh ít nhất 14 năm.',
             'identity_card_place.required' => 'Nơi cấp là bắt buộc.',
             'identity_card_place.max' => 'Nơi cấp không được vượt quá 255 ký tự.',
+            'identity_card_place.min' => 'Nơi cấp phải có ít nhất 2 ký tự.',
         ]);
 
         // Kiểm tra số CCCD đã tồn tại cho user khác chưa
@@ -401,22 +487,27 @@ class RegisterShopController extends Controller
             // Đã xóa logic tạo shop_shipping_options vì shop chỉ có 1 đơn vị vận chuyển
 
             // 4. Lưu vào bảng business_licenses
-            $businessLicense = BusinessLicense::create([
-                'shop_id' => $shop->id, // Thêm dòng này
-                'business_license_number' => 'LIC' . time(),
+            $businessLicenseData = [
+                'shop_id' => $shop->id,
+                'business_license_number' => $data['business_type'] === 'individual' ? 'LIC' . time() : $data['business_license_number'],
                 'tax_number' => $data['tax_code'],
                 'business_ID' => 'BUS' . time(),
                 'business_name' => $data['shop_name'],
                 'business_type' => $data['business_type'],
                 'invoice_email' => $data['invoice_email'],
-                'business_license_date' => now(),
+                'business_license_date' => $data['business_type'] === 'individual' ? now() : $data['business_license_date'],
                 'expiry_date' => now()->addYears(5),
                 'status' => 'pending',
-                'license_file_path' => '', // Sửa null thành chuỗi rỗng để tránh lỗi SQL
+                'license_file_path' => $data['business_type'] === 'individual' ? '' : json_encode([
+                    'front' => $data['business_license_front'] ?? '',
+                    'back' => $data['business_license_back'] ?? ''
+                ]),
                 'is_active' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+
+            $businessLicense = BusinessLicense::create($businessLicenseData);
 
             // 5. Lưu vào bảng sellers
             try {
@@ -460,12 +551,22 @@ class RegisterShopController extends Controller
                 ]);
             }
 
-            // 7. Gửi thông báo
+            // 7. Gửi thông báo với thời gian xử lý theo loại hình kinh doanh
+            $businessTypeData = $data['business_type_data'] ?? null;
+            $approvalTime = $businessTypeData['approval_time'] ?? '3-4 ngày';
+            $verificationLevel = $businessTypeData['verification_level'] ?? 'basic';
+            
+            $notificationContent = "Shop của bạn đã được tạo. ";
+            $notificationContent .= "Loại hình kinh doanh: " . ucfirst($data['business_type']) . ". ";
+            $notificationContent .= "Hệ thống sẽ xác thực thông tin trong {$approvalTime} làm việc. ";
+            $notificationContent .= "Mức độ xác thực: " . ucfirst($verificationLevel) . ". ";
+            $notificationContent .= "Vui lòng chờ kết quả xác thực!";
+            
             DB::table('notifications')->insert([
                 'sender_id' => null,
                 'shop_id' => null,
                 'title' => 'Đăng ký shop thành công',
-                'content' => 'Shop của bạn đã được tạo. Hệ thống sẽ xác thực thông tin trong 3-4 ngày làm việc. Vui lòng chờ kết quả xác thực!',
+                'content' => $notificationContent,
                 'type' => 'shop_registration',
                 'reference_id' => Auth::id(), // dùng để theo dõi ai là người nhận nếu cần
                 'receiver_type' => 'user',
@@ -492,6 +593,78 @@ class RegisterShopController extends Controller
     public function finish(Request $request)
     {
         return redirect()->route('home')->with('success', 'Đăng ký shop thành công. Bạn có thể bắt đầu thêm sản phẩm.');
+    }
+
+    /**
+     * Xử lý logic khác nhau cho từng loại hình kinh doanh
+     */
+    private function processBusinessTypeData($businessType, $requestData)
+    {
+        $data = [
+            'type' => $businessType,
+            'requires_additional_docs' => false,
+            'tax_requirements' => [],
+            'verification_level' => 'basic',
+            'approval_time' => '3-4 ngày',
+            'special_notes' => [],
+        ];
+
+        switch ($businessType) {
+            case 'individual':
+                // Cá nhân / Kinh doanh cá nhân
+                $data['requires_additional_docs'] = false;
+                $data['tax_requirements'] = [
+                    'personal_tax_code' => 'Bắt buộc',
+                    'business_registration' => 'Không bắt buộc',
+                    'tax_declaration' => 'Hàng tháng/quý'
+                ];
+                $data['verification_level'] = 'basic';
+                $data['approval_time'] = '2-3 ngày';
+                $data['special_notes'] = [
+                    'Chỉ cần CCCD/CMND hợp lệ',
+                    'Mã số thuế cá nhân',
+                    'Không cần giấy phép kinh doanh'
+                ];
+                break;
+
+            case 'household':
+                // Hộ kinh doanh
+                $data['requires_additional_docs'] = true;
+                $data['tax_requirements'] = [
+                    'household_business_license' => 'Bắt buộc',
+                    'tax_code' => 'Bắt buộc',
+                    'tax_declaration' => 'Hàng tháng/quý'
+                ];
+                $data['verification_level'] = 'medium';
+                $data['approval_time'] = '3-5 ngày';
+                $data['special_notes'] = [
+                    'Cần giấy phép hộ kinh doanh',
+                    'Mã số thuế hộ kinh doanh',
+                    'Xác minh địa chỉ kinh doanh'
+                ];
+                break;
+
+            case 'company':
+                // Công ty
+                $data['requires_additional_docs'] = true;
+                $data['tax_requirements'] = [
+                    'business_registration_certificate' => 'Bắt buộc',
+                    'tax_code' => 'Bắt buộc',
+                    'tax_declaration' => 'Hàng tháng/quý',
+                    'financial_statements' => 'Hàng năm'
+                ];
+                $data['verification_level'] = 'high';
+                $data['approval_time'] = '5-7 ngày';
+                $data['special_notes'] = [
+                    'Cần giấy phép kinh doanh công ty',
+                    'Mã số thuế doanh nghiệp',
+                    'Xác minh địa chỉ trụ sở chính',
+                    'Kiểm tra tư cách pháp nhân'
+                ];
+                break;
+        }
+
+        return $data;
     }
 
     // Helper lấy tên từ API

@@ -17,6 +17,8 @@ class BusinessLicense extends Model
         'tax_number',
         'business_ID',
         'business_name',
+        'business_type',
+        'invoice_email',
         'business_license_date',
         'expiry_date',
         'status',

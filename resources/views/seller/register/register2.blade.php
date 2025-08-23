@@ -33,7 +33,7 @@
 
                         <!-- Form Content -->
                         <div class="p-8">
-                            <form method="POST" action="{{ route('seller.register.step3') }}" class="space-y-8">
+                            <form method="POST" action="{{ route('seller.register.step3') }}" class="space-y-8" enctype="multipart/form-data">
                                 @csrf
 
                                 @if ($errors->any())
@@ -58,8 +58,8 @@
                                     </label>
                                     <div class="grid md:grid-cols-3 gap-4">
                                         <label class="relative">
-                                            <input type="radio" name="business_type" value="personal" class="sr-only peer"
-                                                {{ old('business_type', session('register.business_type')) == 'personal' ? 'checked' : '' }}>
+                                            <input type="radio" name="business_type" value="individual" class="sr-only peer business-type-radio"
+                                                {{ old('business_type', session('register.business_type')) == 'individual' ? 'checked' : '' }}>
                                             <div
                                                 class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all duration-200">
                                                 <div class="flex items-center space-x-3">
@@ -79,7 +79,7 @@
 
                                         <label class="relative">
                                             <input type="radio" name="business_type" value="household"
-                                                class="sr-only peer"
+                                                class="sr-only peer business-type-radio"
                                                 {{ old('business_type', session('register.business_type')) == 'household' ? 'checked' : '' }}>
                                             <div
                                                 class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all duration-200">
@@ -99,7 +99,7 @@
                                         </label>
 
                                         <label class="relative">
-                                            <input type="radio" name="business_type" value="company" class="sr-only peer"
+                                            <input type="radio" name="business_type" value="company" class="sr-only peer business-type-radio"
                                                 {{ old('business_type', session('register.business_type')) == 'company' ? 'checked' : '' }}>
                                             <div
                                                 class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all duration-200">
@@ -121,6 +121,131 @@
                                     @error('business_type')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
+                                    
+                                    <!-- Dynamic Business Type Info -->
+                                    <div id="business-type-info" class="hidden mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                                        <div class="flex items-center space-x-2 mb-3">
+                                            <i class="fas fa-info-circle text-blue-600"></i>
+                                            <h4 class="font-semibold text-blue-900">Thông tin chi tiết</h4>
+                                        </div>
+                                        <div id="business-type-details" class="space-y-2 text-sm text-blue-800">
+                                            <!-- Content will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Fields for Household and Company Business -->
+                                <div id="additional-business-fields" class="hidden space-y-6">
+                                    <div class="border-t border-gray-200 pt-6">
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                                            <i class="fas fa-file-alt mr-2 text-blue-500"></i>
+                                            Thông tin giấy phép kinh doanh
+                                        </h3>
+                                        
+                                        <div class="grid md:grid-cols-2 gap-6">
+                                            <div class="space-y-2">
+                                                <label class="block text-sm font-medium text-gray-600">
+                                                    Số giấy phép kinh doanh <span class="text-red-500">*</span>
+                                                </label>
+                                                <input type="text" name="business_license_number"
+                                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    placeholder="GP123456789"
+                                                    value="{{ old('business_license_number', session('register.business_license_number')) }}">
+                                                @error('business_license_number')
+                                                    <p class="text-red-500 text-sm">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+
+                                            <div class="space-y-2">
+                                                <label class="block text-sm font-medium text-gray-600">
+                                                    Ngày cấp giấy phép <span class="text-red-500">*</span>
+                                                </label>
+                                                <input type="date" name="business_license_date"
+                                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    value="{{ old('business_license_date', session('register.business_license_date')) }}">
+                                                @error('business_license_date')
+                                                    <p class="text-red-500 text-sm">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- File Upload Section -->
+                                        <div class="mt-6 space-y-4">
+                                            <div class="space-y-2">
+                                                <label class="block text-sm font-medium text-gray-600">
+                                                    <i class="fas fa-file-image mr-2 text-blue-500"></i>
+                                                    Ảnh giấy phép kinh doanh <span class="text-red-500">*</span>
+                                                </label>
+                                                <div class="space-y-3">
+                                                    <!-- Front Side -->
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2">
+                                                            Mặt trước giấy phép
+                                                        </label>
+                                                        <div class="flex items-center space-x-4">
+                                                            <div class="flex-1">
+                                                                <input type="file" name="business_license_front" 
+                                                                    accept="image/*" 
+                                                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                                    onchange="previewImage(this, 'preview-front')">
+                                                            </div>
+                                                            <div id="preview-front" class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                                                                @if(session('register_shop.business_license_front'))
+                                                                    <img src="{{ asset('storage/' . session('register_shop.business_license_front')) }}" class="w-full h-full object-cover rounded-lg" alt="Front Preview">
+                                                                @else
+                                                                    <i class="fas fa-image text-gray-400 text-2xl"></i>
+                                                                @endif
+                                                            </div>
+                                                            @if(session('register_shop.business_license_front'))
+                                                                <button type="button" onclick="removeImage('business_license_front', 'preview-front')" 
+                                                                    class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                        @error('business_license_front')
+                                                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                                        @enderror
+                                                    </div>
+
+                                                    <!-- Back Side -->
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2">
+                                                            Mặt sau giấy phép
+                                                        </label>
+                                                        <div class="flex items-center space-x-4">
+                                                            <div class="flex-1">
+                                                                <input type="file" name="business_license_back" 
+                                                                    accept="image/*" 
+                                                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                                    onchange="previewImage(this, 'preview-back')">
+                                                            </div>
+                                                            <div id="preview-back" class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                                                                @if(session('register_shop.business_license_back'))
+                                                                    <img src="{{ asset('storage/' . session('register_shop.business_license_back')) }}" class="w-full h-full object-cover rounded-lg" alt="Back Preview">
+                                                                @else
+                                                                    <i class="fas fa-image text-gray-400 text-2xl"></i>
+                                                                @endif
+                                                            </div>
+                                                            @if(session('register_shop.business_license_back'))
+                                                                <button type="button" onclick="removeImage('business_license_back', 'preview-back')" 
+                                                                    class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                        @error('business_license_back')
+                                                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <p class="text-sm text-gray-500 mt-2">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Chỉ chấp nhận file ảnh (JPG, PNG, JPEG). Kích thước tối đa: 5MB mỗi file.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Business Address -->
@@ -506,5 +631,147 @@
             // đợi danh sách load xong rồi set
             setTimeout(setInitialNames, 1000);
         });
+
+        // Xử lý hiển thị thông tin theo loại hình kinh doanh
+        const businessTypeRadios = document.querySelectorAll('.business-type-radio');
+        const businessTypeInfo = document.getElementById('business-type-info');
+        const businessTypeDetails = document.getElementById('business-type-details');
+        const additionalFields = document.getElementById('additional-business-fields');
+
+        const businessTypeData = {
+            individual: {
+                title: 'Cá nhân / Kinh doanh cá nhân',
+                requirements: [
+                    'Chỉ cần CCCD/CMND hợp lệ',
+                    'Mã số thuế cá nhân',
+                    'Không cần giấy phép kinh doanh'
+                ],
+                approvalTime: '2-3 ngày làm việc',
+                verificationLevel: 'Cơ bản',
+                taxRequirements: 'Mã số thuế cá nhân (bắt buộc)'
+            },
+            household: {
+                title: 'Hộ kinh doanh',
+                requirements: [
+                    'Cần giấy phép hộ kinh doanh',
+                    'Mã số thuế hộ kinh doanh',
+                    'Xác minh địa chỉ kinh doanh',
+                    'Ảnh giấy phép kinh doanh (mặt trước + mặt sau)'
+                ],
+                approvalTime: '3-5 ngày làm việc',
+                verificationLevel: 'Trung bình',
+                taxRequirements: 'Mã số thuế hộ kinh doanh (bắt buộc)'
+            },
+            company: {
+                title: 'Công ty / Doanh nghiệp',
+                requirements: [
+                    'Cần giấy phép kinh doanh công ty',
+                    'Mã số thuế doanh nghiệp',
+                    'Xác minh địa chỉ trụ sở chính',
+                    'Kiểm tra tư cách pháp nhân',
+                    'Ảnh giấy phép kinh doanh (mặt trước + mặt sau)'
+                ],
+                approvalTime: '5-7 ngày làm việc',
+                verificationLevel: 'Cao',
+                taxRequirements: 'Mã số thuế doanh nghiệp (bắt buộc)'
+            }
+        };
+
+        function showBusinessTypeInfo(type) {
+            if (!type || !businessTypeData[type]) {
+                businessTypeInfo.classList.add('hidden');
+                return;
+            }
+
+            const data = businessTypeData[type];
+            businessTypeDetails.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <h5 class="font-semibold mb-2">Yêu cầu tài liệu:</h5>
+                        <ul class="list-disc list-inside space-y-1">
+                            ${data.requirements.map(req => `<li>${req}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 class="font-semibold mb-2">Thông tin khác:</h5>
+                        <div class="space-y-2">
+                            <div><strong>Thời gian xử lý:</strong> ${data.approvalTime}</div>
+                            <div><strong>Mức độ xác thực:</strong> ${data.verificationLevel}</div>
+                            <div><strong>Yêu cầu thuế:</strong> ${data.taxRequirements}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            businessTypeInfo.classList.remove('hidden');
+
+            // Hiển thị/ẩn các trường bổ sung
+            if (type === 'household' || type === 'company') {
+                additionalFields.classList.remove('hidden');
+            } else {
+                additionalFields.classList.add('hidden');
+            }
+        }
+
+        // Xử lý sự kiện thay đổi loại hình kinh doanh
+        businessTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    showBusinessTypeInfo(this.value);
+                }
+            });
+        });
+
+        // Hiển thị thông tin nếu đã có giá trị được chọn
+        const selectedBusinessType = document.querySelector('.business-type-radio:checked');
+        if (selectedBusinessType) {
+            showBusinessTypeInfo(selectedBusinessType.value);
+        }
+
+        // Function để preview ảnh
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+            
+            if (file) {
+                // Kiểm tra kích thước file (5MB = 5 * 1024 * 1024 bytes)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File quá lớn! Kích thước tối đa là 5MB.');
+                    input.value = '';
+                    return;
+                }
+                
+                // Kiểm tra định dạng file
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Chỉ chấp nhận file ảnh (JPG, PNG, JPEG)!');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded-lg" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Nếu không có file mới, kiểm tra xem có ảnh cũ trong session không
+                const sessionImage = preview.querySelector('img');
+                if (sessionImage) {
+                    // Giữ lại ảnh cũ
+                    return;
+                }
+                preview.innerHTML = '<i class="fas fa-image text-gray-400 text-2xl"></i>';
+            }
+        }
+
+        // Function để xóa ảnh
+        function removeImage(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            
+            input.value = '';
+            preview.innerHTML = '<i class="fas fa-image text-gray-400 text-2xl"></i>';
+        }
     </script>
 @endpush
